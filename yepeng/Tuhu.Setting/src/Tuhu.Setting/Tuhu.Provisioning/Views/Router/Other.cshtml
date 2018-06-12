@@ -1,0 +1,372 @@
+﻿@{
+    ViewBag.Title = "HFive";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+@model Tuhu.Provisioning.DataAccess.Entity.Router.RouterLink
+<link href="~/Scripts/zTree/css/zTreeStyle/zTreeStyle.css" rel="stylesheet"/>
+<script src="~/Scripts/zTree/js/jquery.ztree.core-3.5.min.js"></script>
+<script src="~/Scripts/zTree/js/jquery.ztree.excheck-3.5.min.js"></script>
+
+<div style="font-size: 13px">
+    <div class="container" id="container" style="height: 480px; width: 800px;">
+        <br />
+        <br />
+        <input type="hidden" id="vid" value="@(ViewBag.id)"/>
+        <div class="form-group">
+            @if (Model != null)
+            {
+                foreach (var item in Model.RouterParameterList)
+                {
+                    if (item.Kind == 1)
+                    {
+                        <div class="col-sm-3">
+                            <input type="radio" name="other" class="check" value="@item.Content" style="font-size: 100px" @(item.State == 1 ? "checked=\"checked\"" : "")/><span>@item.Discription</span>
+                        </div>
+                    }
+                    else if (item.Kind == 2)
+                    {
+                        <div class="col-sm-4">
+                            <label>@item.Discription</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="text" name="text" class="text" id="text" value="@item.Url"/>
+                        </div>
+                    }
+                }
+            }
+        </div>
+        <br/>
+        <br/>
+        <div class="container" style="min-height: 250px; width: 800px;">
+        @if (ViewBag.linkKind == 1)
+        {
+            <br />
+            <br />
+            <br />
+            <div class="form-group">
+                <div class="col-sm-3">
+                    <input type="radio" name="other" id="tire" value="/tire" @(ViewBag.State == "/tire" ? "checked=\"checked\"" : "") /><span>轮胎列表</span>
+                </div>
+                <div class="col-sm-8">
+                    <select id="Brand" name="Brand" style="display: inline;" multiple="multiple">
+                        <option value="">请选择</option>
+                    </select>
+                </div>
+            </div>
+            <br />
+            <br />
+            <div class="form-group">
+                <div class="col-sm-3">
+                    <input type="radio" name="other" id="search" value="/searchResult" @(ViewBag.State == "/search" ? "checked=\"checked\"" : "") /><span>搜索结果页</span>
+                </div>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="Parameter" disabled="disabled" placeholder="参数" />
+                </div>
+            </div>
+            <br />
+            <br />
+            <div class="form-group">
+                <div class="col-sm-3">
+                    <input type="radio" name="other" id="ProductCatalog" value="/searchResult" @(ViewBag.State == "/searchResult" ? "checked=\"checked\"" : "") /><span>商品类目页</span>
+                </div>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="keyword" placeholder="关键词" />
+                </div>
+                <div class="col-sm-6" style="margin: 0 0 0 0; height: 200px; width: 300px; overflow-y: auto">
+                    <ul id="CategoryTagTree" style="margin-left: auto; margin-right: auto; width: 25%;" class="ztree"></ul>
+                </div>
+            </div>
+        }
+            
+            @if (ViewBag.linkKind == 2)
+            {
+                <br />
+                <br />
+                <br />
+                <div class="form-group">
+                    <div class="col-sm-3">
+                        <input type="radio" name="other" id="search" value="/pages/search/search" @(ViewBag.State == "/pages/search/search" ? "checked=\"checked\"" : "") /><span>搜索结果页</span>
+                    </div>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="Parameter" disabled="disabled" placeholder="keyword" />
+                    </div>
+                </div>
+                <br />
+                <br />
+                <div class="form-group">
+                    <div class="col-sm-3">
+                        <input type="radio" name="other" id="TireList" value="/pages/tire_list/tire_list" @(ViewBag.State == "/pages/tire_list/tire_list" ? "checked=\"checked\"" : "") /><span>轮胎列表页</span>
+                    </div>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="TireParameter" disabled="disabled" placeholder="ActivityId" />
+                    </div>
+                </div>
+
+            }
+            <div class="form-group">
+
+            </div>
+            <input type="hidden" id="myValue" Value="@ViewBag.value" />
+            <input type="hidden" id="myState" Value="@ViewBag.state" />
+
+            <br />
+        </div>
+
+        <div class="col-sm-4">
+            <input type="hidden" class="form-control" id="MainLinkContent" name="MainLinkContent" value="@Model.MainLink.Content"/>
+        </div>
+        <div class="col-sm-12">
+            <input type="hidden" class="form-control" id="linkId" name="linkId" value="@ViewBag.linkId"/>
+        </div>
+        <div class="col-sm-12">
+            <input type="hidden" class="form-control" id="noLinkId" name="noLinkId" value="@ViewBag.noLinkId"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="modal-footer" style="text-align: center;">
+            <button type="button" class="btn btn-default btn-sm" style="width: 160px;" id="btnSave" name="btnSave">生成</button>
+        </div>
+    </div>
+    <div class="col-sm-12">
+        <input type="hidden" class="form-control" id="linkKind" name="linkKind" value="@ViewBag.linkKind" />
+    </div>
+</div>
+
+<link rel="stylesheet" href="~/Scripts/multiple/multiple-select.css" type="text/css"/>
+<script type="text/javascript" src="~/Scripts/multiple/multiple-select.js"></script>
+<script type="text/javascript" src="~/Scripts/layer/layer.js"></script>
+<script type="text/javascript">
+    $(function() {
+        //获取轮胎列表名称
+        $.ajax({
+            url: (location.origin.indexOf('.cn') > 0 ? 'https://api.tuhu.cn' : 'http://api.tuhu.work') +
+                '/Tires/GetTiresBrand',
+            type: 'post',
+            dataType: 'json'
+        }).done(function(result) {
+            if (result.TiresBrand) {
+                $('#Brand').empty();
+                var html = '';
+                for (var i = 0; i < result.TiresBrand.length; i++) {
+                    html += '<option value="' +
+                        result.TiresBrand[i].BrandName +
+                        '">' +
+                        result.TiresBrand[i].BrandName +
+                        '</option>';
+                }
+                $('#Brand').html(html);
+                $('#Brand').multipleSelect({
+                    width: '100%',
+                    selectAll: false
+                });
+            }
+
+
+            getBrandState(); //初始赋值
+
+        });
+
+
+        //参数启用禁用效果：仅在选中搜索项时启用
+        $("input[name^='other']").on('click',
+            function() {
+                //$("#Parameter").attr("disabled");
+
+                if ($(this).prop("id") !== 'search') {
+                    $("#Parameter").attr("disabled", true);
+                } else $("#Parameter").removeAttr("disabled");
+            });
+        //参数启用禁用效果：仅在选中搜索项时启用
+        $("input[name^='other']").on('click',
+            function() {
+                //$("#TireParameter").attr("disabled");
+
+                if ($(this).prop("id") !== 'TireList') {
+                    $("#TireParameter").attr("disabled", true);
+                } else $("#TireParameter").removeAttr("disabled");
+            });
+
+        //生成参数
+        $('#btnSave').on('click',
+            function() {
+
+
+                var check = "";
+                var num = 0;
+                var pId;
+                if (linkKind=="1")pId= zTreeSetting.getItems();
+                $("input[name^='other']").each(function() {
+
+
+                    if ($(this).prop("checked")) {
+                        num++;
+
+                        if ($(this).prop("id") === 'tire') {
+                            if ($("#Brand").val() === "" || $("#Brand").val() === null) {
+                                //alert("请选择轮胎品牌");
+                                //return;
+                                check = $("#tire").val();
+                            }
+                            else check = $("#tire").val() + "?brand=" + encodeURIComponent($("#Brand").val());
+                        } else if ($(this).prop("id") === 'ProductCatalog') {
+                            //商品类目的关键字选填，种类必填，无需编码
+                            if (pId === null) {
+                                alert("请选择商品类目");
+                                return;
+                            }
+                            if (pId === 0) {
+                                alert("仅能选择一项商品类目");
+                                return;
+                            }
+                            if ($("#keyword").val() === "") {
+                                check = $("#ProductCatalog").val() + "?categoryName=" + pId;
+                            }
+                            else check = $("#ProductCatalog").val() + "?categoryName=" + pId + "&keyword=" + $("#keyword").val();
+                        } else if ($(this).prop("id") ===  'search') {
+                            if ($("#Parameter").val() === "") {
+                                alert("请输入参数");
+                                return;
+                            }
+                            if (linkKind=="1")
+                                check = $("#search").val() + "?keyword=" + encodeURIComponent($("#Parameter").val());
+                            else if (linkKind == "2")
+                                check = $("#search").val() + "?keyword=" + $("#Parameter").val();
+
+                        }
+                        else if ($(this).prop("id") === 'TireList') {
+                            //小程序的搜索结果页活动id可选填
+                            if ($("#TireParameter").val() === "")
+                                check = $(this).val();
+                            else 
+                            check = $(this).val() + "?ActivityId=" + encodeURIComponent($("#TireParameter").val());
+                        }else check = ($(this).val());
+                    }
+
+                });
+                if (num === 0) {
+                    alert("请选择种类");
+                } else {
+                    var url = check;
+                    var linkId = $('#linkId').val();
+                    var noLinkId = $('#noLinkId').val();
+                    if (url && linkId !== "" && noLinkId !== "") {
+
+
+                        $("#Link").val(url);
+                        parent.$("#" + linkId).val(url);
+                        parent.$("#" + noLinkId).val(decodeURIComponent(url));
+                        
+                        //关闭窗口
+                        var index = parent.layer.getFrameIndex(window.name);
+                        parent.layer.close(index);
+                    }
+                }
+            });
+    });
+
+
+    //初始化轮胎品牌
+    function getBrandState() {
+        var value = $("#myValue").val();
+        // alert(value);
+        if (value !== "") {
+            // alert(value);
+            $("#Brand").multipleSelect("setSelects", value.split(","));
+        }
+
+    }
+
+
+    //初始化搜索文本
+    function setParameter() {
+        var state = $("#myState").val();
+        var value = $("#myValue").val();
+        var linkKind = $('#linkKind').val();
+
+        if ((state === "/search" && linkKind == "1") || (state === "/pages/search/search" && linkKind == "2"))
+            $("#Parameter").val(value);
+        if (state === "/pages/tire_list/tire_list" && linkKind == "2")
+            $("#TireParameter").val(value);
+    }
+
+    setParameter();
+
+    var linkKind = $('#linkKind').val();
+
+    //商品类目树
+    if (linkKind == "1")
+    {
+        var zTreeSetting = {
+            setting: {
+                check: {
+                    enable: true,
+                    chkboxType: { "Y": "", "N": "" }
+                },
+                data: {
+                    simpleData: {
+                        enable: true
+                    }
+                },
+                callback: {
+                    onCheck: function() {
+                    }
+                }
+            },
+            zTreeJson: @Html.Raw(ViewBag.CategoryTagManager),
+            zTreeInit: function() {
+                $.fn.zTree.init($("#CategoryTagTree"), zTreeSetting.setting, zTreeSetting.zTreeJson);
+            },
+            model: function() {
+                this.key,
+                    this.value,
+                    this.isShow;
+            },
+            getItems: function() {
+                var treeObj = $.fn.zTree.getZTreeObj("CategoryTagTree"),
+                    nodes = treeObj.getCheckedNodes(true);
+                var num = 0;
+                var result = null;
+                for (var i = 0; i < nodes.length; i++) {
+                    num++;
+                    var model = new zTreeSetting.model();
+                    model.key = nodes[i].id;
+                    model.value = nodes[i].name;
+                    model.isShow = 0;
+                    if (num > 1) {
+                        // alert("只能选中一项商品类");
+                        return 0;
+                    }
+
+                    result = nodes[i].CategoryName;
+                }
+
+                return result;
+            },
+            setInit: function () {
+            
+                var treeObj = $.fn.zTree.getZTreeObj("CategoryTagTree"),
+                    nodes = treeObj.getCheckedNodes(false);
+                var key = $("#myValue").val();
+                var array = key.split('&');
+                var keyword;
+                if (array.length > 1) {
+                    keyword = array[1].split('=')[1];
+                    $("#keyword").val(keyword);
+                }
+                var categoryName = array[0];
+                for (var i = 0; i < nodes.length; i++) {
+              
+                    if (nodes[i].CategoryName == categoryName)
+                    {
+                        //alert(key);
+                        nodes[i].checked = true;
+                    }
+                }
+            }
+        };
+        zTreeSetting.zTreeInit();
+        zTreeSetting.setInit();
+    }
+    
+
+</script>

@@ -1,0 +1,86 @@
+﻿
+@{
+    Layout = null;
+}
+
+@model Tuhu.WebSite.Component.Discovery.BusinessData.Article
+
+
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>@Model.SmallTitle</title>
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, width=device-width,minimal-ui">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta http-equiv="Cache-Control" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <link href="https://res.tuhu.org/react/findDetail/static/css/main.fb1fee6c.css" type="text/css" rel="stylesheet" />
+    <!--页面的路径-->
+    <link rel="canonical" href="@HttpContext.Current.Request.Url.AbsoluteUri" />
+
+    <script src="//msite.baidu.com/sdk/c.js?appid=1548775750720912"></script>
+
+   
+
+</head>
+<body>
+    <div style="margin-left: 17px; margin-right: 17px;">
+        <script>cambrian.render('head')</script>
+    </div>
+
+    <div class="section boxContent martop44" style="margin-top:0px;">
+        <div class="imgBox banner">
+            <img alt="" height="280" src="@Model.Image">
+            <div class="bannerCover">
+                <img src="https://res.tuhu.org/Content/images/cover.png" alt="">
+            </div>
+            <p class="content title">@Model.SmallTitle</p>
+        </div>
+        <div class="floor1 de-floor0 boxSizing">
+            <div class="toHomepage1">
+                <div class="toHomepageCon1">
+                    <div class="authorInfo">
+                        <div class="authorImg">
+                            <img src="@(ViewBag.authorModel.AuthorHead)">
+                        </div>
+                        <div class="authorName">@(ViewBag.authorModel.AuthorName)</div>
+                        <div class="aboutAuthor">@(ViewBag.authorModel.Description)</div>
+                    </div>
+                </div>
+            </div>
+            <div class="brief">
+                <h3>@Model.Brief</h3>
+            </div>
+            <div class="de-page">
+                <div>
+                    @(new HtmlString(Model.ContentHtml))
+                </div>
+            </div>
+            <div class="two-code">
+                <img alt="" height="550" src="@Model.QRCodeImg">
+            </div>
+        </div>
+    </div>
+
+    <script type="application/ld+json">
+        {
+        "@@context": "https://zhanzhang.baidu.com/contexts/cambrian.jsonld",
+        "@@id": "@HttpContext.Current.Request.Url.AbsoluteUri",
+        "title": "@Model.SmallTitle",
+        "images": [
+        "@Model.Image"
+        ],
+        "description": "途虎养车是国内领先的汽车保养服务平台,汇集各大热门品牌轮胎、机油、汽车配件。为用户解决汽车保养、更换轮胎、机油、机滤、刹车片、电瓶、雨刷等养车难题。服务门店覆盖31个省直辖市。低价保证,特约门店帮你安装更换,致力保障优质的购物体验",
+        "pubDate": "@Model.CreateDateTime.ToString("yyyy-MM-ddTHH:mm:ss")",
+        "isOriginal": "0"
+        }
+    </script>
+</body>
+</html>
+

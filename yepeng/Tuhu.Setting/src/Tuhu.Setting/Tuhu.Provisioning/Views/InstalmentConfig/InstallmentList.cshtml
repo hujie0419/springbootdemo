@@ -1,0 +1,96 @@
+﻿
+@using Newtonsoft.Json
+@using Tuhu.Provisioning
+@using Tuhu.Service.Product.Enum
+@using Tuhu.Service.Product.Request
+@model Tuhu.Models.PagedModel<Tuhu.Service.Product.Response.TireInstallmentQueryResponse>
+@{
+    Layout = null;
+    var query = ViewBag.Query as TireInstallmentQueryRequest;
+    Func<InstallmentType, string> selectname = type =>
+    {
+        switch (type)
+        {
+            case InstallmentType.Tuhu:
+                return "途虎";
+            case InstallmentType.User:
+                return "用户";
+            default:
+                return "";
+        }
+    };
+}
+<table data-count="@Model.Pager.Total" class="table" width="100%">
+    <tr>
+        <th>
+            <input type="checkbox" name="SelectAll" value="" />全选
+        </th>
+        <th>PID</th>
+        <th>产品名称</th>
+        <th>规格</th>
+        <th>详情页分期</th>
+        <th>3期</th>
+        <th>6期</th>
+        <th>12期</th>
+        <th>操作</th>
+        <th>操作历史</th>
+    </tr>
+    @if (Model != null && Model.Any())
+    {
+        foreach (var response in Model)
+        {
+            <tr>
+                <td><input type="checkbox" name="selectSingle" value="@response.PID" data-pid="@response.PID" /></td>
+                <td>@response.PID</td>
+                <td>@response.ProductName</td>
+                @if (ViewBag.CategoryName == "hub")
+                {
+                    <td>@response.CP_Tire_Rim</td>
+                }
+                else
+                {
+                    <td>@response.TireSize</td>
+                }
+
+                <td>@(response.IsInstallmentOpen ? "开启" : "关闭")</td>
+                <td>@(response.ThreePeriods.HasValue ? selectname(response.ThreePeriods.Value) : "")</td>
+                <td>@(response.SixPeriods.HasValue ? selectname(response.SixPeriods.Value) : "")</td>
+                <td>@(response.TwelvePeriods.HasValue ? selectname(response.TwelvePeriods.Value) : "")</td>
+                <td>
+                    <a href="javascript:void(0)" onclick="TuhuTire.Logic.InstallmentConfig.EditProduct('@JsonConvert.SerializeObject(response)','@ViewBag.CategoryName')">编辑</a>
+                </td>
+                <td>
+                    <a target="_blank" href="@Url.Action("ShowTireInstallmentLog", new {pid = response.PID})">查看</a>
+                </td>
+            </tr>
+        }
+    }
+</table>
+@Html.Pager(new Tuhu.Component.Common.Models.PagerModel()
+{
+    PageSize = Model.Pager.PageSize,
+    CurrentPage = Model.Pager.CurrentPage,
+    TotalItem = Model.Pager.Total
+}, true, id => Url.Action("InstallmentList", new
+{
+    query.Brands,
+    query.Patterns,
+    query.TireSize,
+    IsOnSale = query.IsOnSale.HasValue ? (query.IsOnSale.Value ? "1" : "0") : "",
+    IsInstallmentOpen = query.IsInstallmentOpen.HasValue ? (query.IsInstallmentOpen.Value ? "1" : "0") : "",
+    query.ThreePeriods,
+    query.SixPeriods,
+    query.TwelvePeriods,
+    query.PID,
+    query.ProductName,
+    query.CategoryName,
+    PageIndex = id,
+    PageSize = query.PageSize
+}))
+
+
+<script>
+    $("[name=SelectAll]").change(function () {
+        $("[name=selectSingle]").prop("checked", $(this).prop("checked"));
+    })
+</script>

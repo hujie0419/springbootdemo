@@ -1,0 +1,66 @@
+﻿@using Tuhu.WebSite.Component.Discovery.BusinessData;
+@model Article
+@{
+    Model.CoverImage = string.IsNullOrEmpty(Model.CoverImage) ? "" : Model.CoverImage.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries)[0];
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>@Model.SmallTitle</title>
+    <link href="http://resource.tuhu.cn/css/activity/detailcss/detail.min.css?v=2" rel="stylesheet" />
+    <link href="http://resource.tuhu.cn/css/activity/detailcss/list.min.css?v=2" rel="stylesheet" />
+    @*<link href="~/Content/detailCss/detail.min.css" rel="stylesheet" />
+        <link href="~/Content/detailCss/list.min.css" rel="stylesheet" />*@
+</head>
+<body>
+    <div style="margin:0 auto;" class="maxwidth">
+        <div id="userInfo"></div>
+        <section class='section boxContent'>
+            @if (Model.Type == 5)//新文章
+            {
+                if (Model.CoverMode != CoverMode.NoPicMode.ToString() && !string.IsNullOrEmpty(Model.CoverImage))
+                {
+                    <div class="imgBox banner">
+                        <img src="@Model.CoverImage" alt="@Model.SmallTitle">
+                        <div class="bannerCover"><img src="http://resource.tuhu.cn/Content/images/cover.png"></div>
+                        <p class="content title">@Model.SmallTitle</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="imgBox theme">@Model.SmallTitle</div>
+                }
+            }
+            else//旧文章
+            {
+                if (!string.IsNullOrEmpty(Model.Image))
+                {
+                    <div class="imgBox banner">
+                        <img src="@Model.Image" alt="@Model.SmallTitle">
+                        <div class="bannerCover"><img src="http://resource.tuhu.cn/Content/images/cover.png"></div>
+                        <p class="content title">@Model.SmallTitle</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="imgBox theme">@Model.SmallTitle</div>
+                }
+            }
+            <div class='floor1 de-floor0'>
+                <div class="brief">
+                    <h3>@Model.Brief</h3>
+                </div>
+                <div class='de-page'>
+                    @Html.Raw(Model.Content)
+                </div>
+            </div>
+            <p style="color:#222222;font-size:15px;padding-left:15px;margin-top:40px">由途虎养车授权转载</p>
+        </section>
+    </div>
+
+</body>
+
+</html>

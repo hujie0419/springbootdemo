@@ -1,0 +1,60 @@
+﻿<!doctype html>
+<!--[if lt IE 9]><html class="ie"><![endif]-->
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>@(ViewBag.Title ?? "途虎养车网-轮胎，轮胎在线销售-中国领先轮胎、保养在线商城") - 途虎养车网-Tuhu.cn</title>
+	<meta name="keywords" content="@(ViewBag.MetaKeywords ?? "轮胎,保养服务,雨刷,滤清器,机油,电瓶,刹车片,途虎养车网,卡帕养车网")" />
+	<meta name="description" content="@(ViewBag.MetaDescription ?? "中国领先轮胎、汽车保养在线商城，在线预约就近安装，网点遍布全国。")" />
+	<link rel="shortcut icon" href="http://image.tuhu.cn/images/favicon.ico" type="image/x-icon" />
+	<meta name="renderer" content="webkit"> 
+	<meta name="verify-v1" content="ds3k/twmV2E/JG5e29nW9LF+JnDvqJmslCWJQYBSRZM=" />
+	<meta property="qc:admins" content="555137717764505636" />
+	<meta property="wb:webmaster" content="adde67608b3d5b4a" />
+	<link href="http://resource.tuhu.cn/css/grid.min.css" rel="stylesheet" />
+	<link href="http://resource.tuhu.cn/Css/Www/UserOperator.min.css" rel="stylesheet" />
+	<link href="http://resource.tuhu.cn/css/global.min.css" rel="stylesheet" />
+	<link href="http://resource.tuhu.cn/css/carhistorycss.css" rel="stylesheet" />@RenderSection("head", false)
+</head>
+<body data-page="new">
+	<div id="headSection">
+		@Html.Header_TopBar()
+		@Html.Header_MainBar()
+		@Html.Header_NaviBar()
+	</div>
+	<div id="bodySection"><div class="container_24">@RenderBody()</div></div>
+	<div id="footSection">
+		@Html.Footer_Icon()
+		@Html.Footer_Notice()
+		@Html.Footer_Bottom()
+	</div>
+	<div id="scriptSection">
+		@Html.Raw(JavascriptConfig.JQueryCompatibleHtml)
+        <script type="text/javascript" src="http://resource.tuhu.cn/Scripts/tuhu.public.js"></script>
+		@RenderSection("scripts", false)
+		<script type="text/javascript">
+			var _hmt = _hmt || [];//百度
+			(function ()
+			{
+				var hm = document.createElement("script");
+				hm.src = "//hm.baidu.com/hm.js?cec8ce2d875c5cc615e9bfdf73d4e2fd";
+				var s = document.getElementsByTagName("script")[0];
+				s.parentNode.insertBefore(hm, s);
+			})();
+			var _gaq = _gaq || [];//google
+			_gaq.push(['_setAccount', 'UA-24728550-1']);
+			_gaq.push(['_setDomainName', 'tuhu.cn']);
+			_gaq.push(['_trackPageview']);
+			(function ()
+			{
+				var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+				ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+				var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+		<script type="text/javascript" src="http://www.tuhu.cn/User/welcome.aspx"></script>
+		<script>Tuhu.CustomerService.LoadScript();</script>
+	</div>
+</body>
+</html>

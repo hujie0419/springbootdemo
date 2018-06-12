@@ -1,0 +1,36 @@
+﻿@{
+    ViewBag.Title = "ArticleEdit";
+    Layout = null;
+}
+@model Tuhu.Provisioning.DataAccess.Entity.SE_BrandFlagshipDetail
+
+<form id="ArticleEditForm">
+    <table width="100%">
+        <tr>
+            <td>文章ID：</td>
+            <td>
+                <input type="text" id="ArticleID" style="width:300px;" name="ArticleID" value="@(Model.ArticleID == 0?"":Model.ArticleID.ToString())" onblur="ArticleValidate(this, 'ArticleEditForm')"/>
+            </td>
+        </tr>
+        <tr>
+            <td>文章标题:</td>
+            <td>
+                <input type="text" id="ArticleTitle" style="width:300px;" name="ArticleTitle" value="@Model.ArticleTitle"/>
+            </td>
+        </tr>
+        <tr>
+            <td>描述:</td>
+            <td>
+                <textarea id="Description1" name="Description1" style="width:350px;height:114px; font-size:12px; overflow:hidden;">@Model.Description</textarea>
+            </td>
+        </tr>
+        <tr>
+            <td>排序:</td>
+            <td>
+                <input type="number" id="OrderBy" name="OrderBy" value="@Model.OrderBy"/>
+            </td>
+        </tr>
+    </table>
+    <input type="hidden" id="ArticleType" name="ArticleType" value="@Model.ArticleType"/>
+</form>
+

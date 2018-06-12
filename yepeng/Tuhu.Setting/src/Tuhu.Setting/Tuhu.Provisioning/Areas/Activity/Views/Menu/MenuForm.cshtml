@@ -1,0 +1,170 @@
+﻿
+@{
+    ViewBag.Title = "MenuForm";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+
+<div style="padding-left: 20px;padding-top:20px;padding-right:20px;" >
+   
+        <div style="text-align:center;">
+            <span style="font-size:15px;">组 号:</span>
+            <input type="text" id="Group" name="Group"  style="display:inline;width:260px;" />
+            <span style="font-size:15px;">菜单类型:</span>
+            <select  id="MenuType" name="MenuType">
+                <option value="">===请选择===</option>
+                <option value="0">上下菜单</option>
+                <option value="1">左右菜单</option>
+            </select>
+        </div>
+     <div id="list">
+
+     </div>
+    <a class="btn btn-primary" href="javascript:void(0)" onclick="add_menu()" style="display: block;width:120px;margin-top:15px;margin-left:auto;margin-right:auto;">添加菜单</a>
+</div>
+<input type="hidden" id="Number" name="Number" value="0"/>
+<script type="text/javascript">
+    var keyValue = $.request("keyValue");
+    var group = new Date().Format("yyyyMMddhhmmssS");
+    var pkid = $.request("pkid");
+
+    function add_menu() {
+        $("#Number").val(parseInt($("#Number").val()) + 1);
+        var n = $("#Number").val();
+
+        var html = `<form id="form${n}">   <table class="form"> <tr>
+                <th class ="formTitle" style="width:50px;">菜单名称: </th>
+                <td class="formValue">
+                    <input  class ="form-control required" id="MenuName" name="MenuName" style="width:150px;" />
+                </td>
+                <th class ="formTitle" style="width:50px;">颜 色: </th>
+                <td class="formValue">
+                    <input class ="form-control required" id="Color" name="Color" value="#DF3348" />
+                </td>
+                <th class ="formTitle" style="width:50px;">排 序: </th>
+                <th class="formValue">
+                    <input type="text" class ="form-control required" id="Sort" name="Sort" value="${n
+            }" disabled="disabled" />
+                </th>
+                <th class ="formTitle" style="width:50px;">开始值: </th>
+                <td class="formValue" >
+                   <div class ="input-group">
+                        <input id="MenuValue" name="MenuValue" type="text" disabled="disabled" class ="form-control required" style="width:150px;">
+                        <span class ="input-group-btn">
+                            <a class ="btn  btn-primary"><i class ="fa fa-ellipsis-h"></i></a>
+                        </span>
+                    </div>
+                </td>
+                <th class ="formTitle" style="width:50px;">结束值: </th>
+                <td class="formValue" >
+                    <div class ="input-group">
+                        <input id="MenuValueEnd" name="MenuValueEnd" type="text" disabled="disabled" class ="form-control required" style="width:150px;">
+                        <span class ="input-group-btn">
+                            <a class ="btn  btn-primary"><i class ="fa fa-ellipsis-h"></i></a>
+                        </span>
+                    </div>
+                </td>
+                <td class="formTitle" style="width: 44px;padding-right: 0px;">
+                    <a class="btn btn-primary" href="javascript:void(0)" onclick="btnDel('form${n}')" style="margin-right:5px;">删 除</a>
+                </td>
+            </tr> </table>  </form>`;
+        $('#list').append(html);
+        $('.input-group-btn').on("click", selectedGroupNo);
+    }
+
+
+    function selectedGroupNo() {
+        var obj = $(this);
+        top.$.modalOpen({
+            id: "SelectedActiveContentList",
+            url: "/Activity/Menu/SelectedActiveContentList?keyValue=" + keyValue,
+            title: "选择菜单组",
+            width: "1080px",
+            height: "850px",
+            callBack: function(iframeId) {
+                top.frames[iframeId].submitForm(obj);
+            }
+        });
+    }
+
+    function initControl() {
+        if (pkid) {
+            group = $.request("group");
+            $("#Group").attr("disabled", "disabled")
+            $.ajax({
+                url: "/Activity/Menu/GetMenuList",
+                data: {
+                    pkid: pkid
+                },
+                dataType: "json",
+                async: false,
+                success: function(res) {
+                    if (res.length > 0) {
+                        for (var i = 1; i <= res.length; i++) {
+                            add_menu();
+                            $("#form" + i).formSerialize(res[i - 1]);
+                           // $("#Number").val(res[i - 1].Sort);
+                            if (res.length == i) {
+                                var n = $('#Number').val()*1;
+                                $('#Number').val(n + 1);
+                            }
+                        }
+                    }
+                }
+            })
+            $.ajax({
+                url: "/Activity/ActivityUnity/GetListFormJson",
+                data: { keyValue: keyValue },
+                dataType: "json",
+                async: false,
+                success: function(data) {
+                    if (data) {
+                        $("#MenuType").val(data.MenuType);
+                    }
+                }
+            });
+        }
+
+        $('#Group').val(group);
+    }
+
+    function submitForm() {
+        var n = parseInt($("#Number").val());
+
+        if (n == 0)
+            return false;
+        var array = [];
+        for (var i = 1; i <= n; i++) {
+            if ($("#form" + i).html() == undefined)
+                continue;
+
+            if (!$("#form" + i).formValid()) {
+                return false;
+            } else {
+                array.push($("#form" + i).formSerialize());
+            }
+        }
+        $.submitForm({
+            url: "/Activity/Menu/Submit",
+            param: {
+                json: JSON.stringify(array),
+                group: $("#Group").val(),
+                fkActivityID: keyValue,
+                pkid: pkid,
+                MenuType: $("#MenuType").val()
+            },
+            success: function() {
+                $.currentWindow().$("#gridList").trigger("reloadGrid");
+            }
+        });
+
+
+    }
+
+    $(function() {
+        initControl();
+    });
+
+    function btnDel(formId) {
+        $('#' + formId).remove();
+    }
+</script>

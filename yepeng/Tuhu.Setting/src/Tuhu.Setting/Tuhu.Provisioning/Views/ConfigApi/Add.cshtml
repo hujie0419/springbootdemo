@@ -1,0 +1,77 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@model ConfigApi
+
+@{
+    Layout = null;
+}
+
+<div>
+    <table>
+        <tbody>
+            <tr>
+                <td>Key:</td>
+                <td>
+                    @if (Model.Id > 0)
+                    {
+                        <input type="text" readonly="readonly" class="Key" value="@Model.Key" /><span style="color:red">*</span>
+                    }
+                    else
+                    {
+                        <input type="text" class="Key" value="@Model.Key" /><span style="color:red">*</span>
+                    }
+
+                </td>
+            </tr>
+            <tr>
+                <td>Value:</td>
+                <td>
+                    <textarea class="Value">@Model.Value</textarea><span style="color:red">*</span>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Remark:</td>
+                <td><input type="text" class="Remark" value="@Model.Remark" /></td>
+            </tr>
+            <tr>
+                <td>Type:</td>
+                <td>
+                    <select class="Type">
+                        @if (Model.Type == 1)
+                        {
+                            <option value="1" selected="selected">全局配置</option>
+                            <option value="2">全局开关</option>
+                            <option value="3">立即生效开关</option>
+                        }
+                        else if (Model.Type == 2)
+                        {
+                            <option value="1">全局配置</option>
+                            <option value="2" selected="selected">全局开关</option>
+                            <option value="3">立即生效开关</option>
+
+                        }
+                        else if (Model.Type == 3)
+                        {
+                            <option value="1">全局配置</option>
+                            <option value="2">全局开关</option>
+                            <option value="3" selected="selected">立即生效开关</option>
+                        }
+                        else
+                        {
+                            <option value="1">全局配置</option>
+                            <option value="2">全局开关</option>
+                            <option value="3">立即生效开关</option>
+                        }
+
+                    </select>
+                </td>
+            </tr>
+            @*<tr>
+                    <td></td>
+                    <td>
+                        <span style="color:red">注：Key和Value 不可为空 且 不能为汉字！</span>
+                    </td>
+                </tr>*@
+        </tbody>
+    </table>
+</div>

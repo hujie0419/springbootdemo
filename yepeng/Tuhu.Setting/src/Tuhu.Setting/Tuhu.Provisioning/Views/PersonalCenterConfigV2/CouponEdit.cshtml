@@ -1,0 +1,113 @@
+﻿@{
+    ViewBag.Title = ViewBag.ModuleName;
+    Layout = null;
+    int sort = ViewBag.Sort;
+}
+@model List<Tuhu.Provisioning.DataAccess.Entity.ExchangeCenterConfig>
+
+<div class="modal-dialog row ibox ibox-content">
+
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+            &times;
+        </button>
+        <h4 class="modal-title">
+            添加优惠券
+        </h4>
+    </div>
+    <div class="modal-body">
+        <table id="table1" class="table table-bordered" style="text-align:center;">
+            <thead>
+                <tr>
+                    <th>选择</th>
+                    <th>排序</th>
+                    <th>优惠券Id</th>
+                    <th>优惠券名称</th>
+                    <th>兑换周期（天）</th>
+                    <th>兑换积分值</th>
+                    <th>兑换截至时间</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    sort++;
+
+                    <tr>
+                        <td>
+                            <input value="@item.Id" type="checkbox" />
+                            <input type="hidden" value="@item.Id" />
+                        </td>
+                        <td>
+                            <input style="width:60px;" type="number" value="@sort" />
+                        </td>
+                        <td>@item.CouponId</td>
+                        <td>@item.CouponName</td>
+                        <td>@item.Period</td>
+                        <td>@item.PointsValue</td>
+                        <td>@item.EndTime</td>
+
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="modal-footer">
+        <div class="row" style="text-align:right;margin-bottom:5px;">
+            <a href="javascript:void(0)" class="btn btn-primary " id="btnInsert" data-toggle="modal" data-target="#edit"> 保 存</a>
+            <a href="javascript:void(0)" class="btn btn-danger btn-small " id="btnNone" data-toggle="modal" data-target="#edit">取 消</a>
+
+        </div>
+    </div>
+</div>
+<input type="hidden" id="hiddenModuleID" name="hiddenModuleID" value="@ViewBag.moduleID" />
+<input type="hidden" id="hiddenModuleHelperID" name="hiddenModuleHelperID" value="@ViewBag.moduleHelperID" />
+<div id="edit" class="modal fade" aria-hidden="true" role="dialog" tabindex="-1">
+
+</div>
+<script type="text/javascript">
+    $('#btnNone').on('click', function () {
+        var dialog = $('#edit');
+        dialog.empty();
+    });
+    var moduleId = GetQueryString("moduleID");
+    $('#btnInsert').on("click", function () {
+        var ids = '';
+        var dataArr = new Array();
+        $('#table1 >tbody> tr').each(function (i) {
+            if (i >= 0) {
+                var columns = $(this).children();
+                if (columns.eq(0).find(":checkbox").is(':checked')) {
+                    var jsonStr = { "ExchangeCenterId": "", "HomePageModuleId": "", "Sort": "" }
+                    jsonStr.ExchangeCenterId = columns.eq(0).find(":hidden").val();
+                    jsonStr.Sort = columns.eq(1).find("input[type=number]").val();
+                    jsonStr.HomePageModuleId = moduleId;
+                    dataArr.push(jsonStr)
+                }
+            }
+        });
+
+        console.log(JSON.stringify(dataArr));
+
+        $.ajax({
+            method: 'POST',
+            url: '/PersonalCenterConfigV2/InsertPersonalCenterCouponConfig',
+            data: {
+                data: JSON.stringify(dataArr)
+            },
+            dataType: 'json'
+        }).done(function (result) {
+            if (result == 1) {
+                location.reload();
+            }
+        });
+        var dialog = $('#edit');
+        dialog.empty();
+    })
+    function GetQueryString(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+        var r = window.location.search.substr(1).match(reg);
+        if (r != null) return unescape(r[2]); return null;
+    }
+</script>

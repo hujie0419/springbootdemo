@@ -1,0 +1,558 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>订单确认</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <link href="css/css.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="receipt-info" id="receipt_info">
+            <ul>
+                <li>
+                    <label for="">收 货 人：</label>
+                    <input type="text" id="name">
+                </li>
+                <li>
+                    <label for="">联系方式：</label>
+                    <input type="text" value="" id="mobile">
+                </li>
+                <li>
+                    <label for="">所在地区：</label>
+                    <input type="text" value="" readonly="readonly" id="region">
+                </li>
+                <li>
+                    <label for="">详细地址：</label>
+                    <input type="text" id="address">
+                </li>
+            </ul>
+        </div>
+        <div class="tips2">
+            <span class="i-tip"></span>更换电瓶，免费上门安装
+        </div>
+        <div class="order-product">
+            <div class="item">
+                <div class="info">
+                    <img src="" alt="">
+                    <p class="name"></p>
+                </div>
+                <p class="other">
+                    <span class="price"></span>
+                    <span class="num">x1</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="ticket" id="ticket">
+            <div class="item select">
+                <span>不使用优惠券</span>
+                <span class="checkbox select"></span>
+            </div>
+        </div>
+
+        <div class="cost">
+            <p>
+                <span>商品总额</span>
+                <span class="price" id="sumMoney"></span>
+            </p>
+            <p id="coupon">
+                <span>优惠券</span>
+                <span class="price cuts"></span>
+            </p>
+        </div>
+
+    </div>
+    <div class="footer">
+        <div class="price"><span class="txt">实付款：</span><span id="RealPayMoney"></span></div>
+        <a href="javascript:void(0);" class="btn btn-min" onclick="validateForm();">去结算</a>
+    </div>
+    <script src="js/jquery.min.js"></script>
+    <script src="http://resource.tuhu.cn/Scripts/jquery-2.1.0.js"></script>
+    <script src="http://resource.tuhu.cn/Js/WebViewJavascriptBridge.js"></script>
+    <script>
+
+
+        //判断手机号是否正确
+        function IsMobile(val) {
+            if (val.match(/^[1][3|4|5|6|7|8]{1}[0-9]{9}$/) != null) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        //获取页面参数
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURIComponent(r[2]); return null;
+        }
+
+        var isIosVersion = false;
+        var isAndroidVersion = false;
+        //-----------------------------IOS版本判断------------------------
+        function VersionForIos(version) {
+            isIosVersion = true;//true:新版本 false:老版本
+        }
+        //----------------------------安卓版本判断------------------------
+        function VersionForAndroid(version) {
+            isAndroidVersion = true;//true:新版本 false:老版本
+        }
+        //---------------------------- Andorid&IOS------------------------
+        var userAgentInfo = navigator.userAgent;
+        function connectWebViewJavascriptBridge(callback) {
+            if (window.WebViewJavascriptBridge) {
+                callback(WebViewJavascriptBridge)
+            } else {
+                document.addEventListener(
+                    'WebViewJavascriptBridgeReady'
+                    , function () {
+                        callback(WebViewJavascriptBridge)
+                    },
+                    false
+                );
+            }
+        }
+        connectWebViewJavascriptBridge(function (bridge) {
+            bridge.init(function (message, responseCallback) {
+                var data = {
+                    'Javascript Responds': 'Wee!'
+                };
+                responseCallback(data);
+            });
+            bridge.registerHandler("functionInJs", function (data, responseCallback) {
+                var responseData = "Javascript Says Right back aka!";
+                responseCallback(responseData);
+            });
+        });
+
+        //判断系统&版本
+        function CreateOrderInfo(serialNumbers, payAmount, subject, body, casgiersData, orderNumber) {
+            if (userAgentInfo.indexOf("Android") >= 0) {
+                if (isAndroidVersion) {
+                    window.WebViewJavascriptBridge.callHandler(
+                                'toActityBridge'
+                                , { 'FunctionID': 'cn.TuHu.Activity.OrderSubmit.PayOrderConfirm', 'SerialNumbers': serialNumbers, 'PayAmount': payAmount, 'subject': subject, 'body': body }
+                                , function () {
+                                });
+
+                }
+                else {
+                    window.WebViewJavascriptBridge.callHandler(
+                                'toActityBridge'
+                                , { 'FunctionID': 'cn.TuHu.Activity.OrderInfomation', 'OrderNO': orderNumber }
+                                , function () {
+                                });
+                }
+            }
+            else {
+                if (isIosVersion) {
+                    iosend("customSegue#THOrderCashiersVC", '{"casgiersData":' + JSON.stringify(casgiersData) + ',"orderNumber":"' + orderNumber + '"}');
+                }
+                else {
+                    iosend("customSegue#TNOrderDetailVC", '{ "orderNumber":"' + orderNumber + '"}');
+                }
+            }
+        };
+
+        //进入iosApp
+        function iosend(cmd, arg) { location.href = '#testapp#' + cmd + '#' + encodeURIComponent(arg); }
+
+        //写cookie
+        function SetCookie(name, value) {
+            var OneDayTimes = 3600 * 24;
+            var exp = new Date();
+            exp.setTime(exp.getTime() + OneDayTimes * 7 * 1000);
+            document.cookie = name + "=" + escape(value) + ";path=/;expires=" + exp.toGMTString();
+        }
+
+        //获取cookie
+        function GetCookie(name) {
+            var arr = document.cookie.match(new RegExp("(^| )" + name + "=([^;]*)(;|$)"));
+            if (arr != null) return unescape(arr[2]); return null;
+        }
+
+        //定义模型类
+        var DataDetailModel = function () {
+            this.BookType = "";//1：到店安装 2:送货上门
+            this.Name = "";//收货人姓名
+            this.Cellphone = "";//收货人电话
+            this.UserId = "";//用户ID
+            this.PayMothed = "";//付款方式(1：支付宝)
+            this.OrderChannel = "";//订单渠道
+            this.PromotionCode = "";//优惠券ID
+            this.OrderList = "";//产品列表[数组]
+            this.DefaultCar = "";//车型信息集合
+            this.DefaultAddress = "";//地址信息集合
+        }
+
+        //定义产品模型类
+        var OrderDetailModel = function () {
+            this.ProductId = ""; //产品编号
+            this.VariantId = "";//产品系列编号
+            this.Quantity = "";//产品数量
+            this.Price = "";//产品价格
+        }
+
+        //定义车型模型类
+        var CarDetailModel = function () {
+            this.CarID = "";//汽车ID
+            this.Brand = "";//品牌
+            this.ProductID = "";//车型ID
+            this.Vehicle = "";//车型名称
+            this.LIYANGID = ""; //LYID
+            this.Nian = ""; //年份
+            this.Pailiang = ""; //排量
+            this.TID = "";
+            this.VehicleLogin = "";
+            this.SalesName = "";
+        }
+
+        //定义地址模型类
+        var AddressDetailModel = function () {
+            this.AddressID = "";// 地址编号
+            this.AddressDetail = "";//详细地址
+            this.CityID = "";// 市编号
+            this.City = "";//市
+            this.ProvinceID = "";// 省编号
+            this.Province = "";//省
+            this.Cellphone = "";//电话
+            this.Consignees = "";//收货人
+        }
+
+        //支付方式参数模板
+        var CashierModel = function () {
+            this.Id,
+            this.Payment_way_order,
+            this.Payment_way_name,
+            this.Describe,
+            this.ColorValue_1,
+            this.ActivityInformation,
+            this.ColorValue_2,
+            this.State,
+            this.Field_1,
+            this.Field_2
+        }
+
+        //获取用户ID
+        var userId = GetCookie("UserId");
+
+        //产品（电瓶）集合
+        var productList = jQuery.parseJSON(GetCookie("currentSelecrProduct"));
+        
+        //地址集合
+        //var addressList = jQuery.parseJSON(GetCookie("SelectedRegion"));
+        //var addressList = eval('(' + GetCookie("SelectedRegion") + ')');
+
+        var addressList = JSON.parse(GetQueryString("RegionSelect"));
+
+        //汽车集合
+        var carList = jQuery.parseJSON(GetCookie("carData"));
+        //var carList = { "CarId": "", "LIYANGID": "", "Nian": "1231", "Pailiang": "1.5L", "TID": "", "ProductID": "", "Vehicle": "", "Brand": "", "VehicleLogin": "", "SalesName": "" };
+
+        //页面加载数据
+        window.onload = function () {
+            //加载地址信息集合
+            GetUserAddressDetailList(userId, addressList.ProvinceName, addressList.CityName);
+            //GetUserAddressDetailList("{FC6C9AEC-4C0C-4281-9E2B-87E4BB20ABB8}", "山东省", "菏泽市");
+            //加载优惠券信息集合
+            GetCouponsList('{\"' + productList.ProductID + "|" + productList.VariantID + '\":\"1\"}', userId);
+            //GetCouponsList("{\"TR-KH-KH15|6\":\"10\"}", "4F79E798-502C-1891-AFE5-156B452BF4B2");
+            GetProduct();
+        }
+
+        //获取产品(电瓶)集合
+        function GetProduct() {
+            $(".name").text(productList.DisplayName);
+            $(".other .price").text("¥" + parseFloat(productList.Price).toFixed(2));
+            $(".info img").attr("src", productList.Image);
+
+            //商品金额
+            $("#sumMoney").text("¥" + parseFloat(productList.Price).toFixed(2));
+            //判断默认选中金额是否为空(实付金额)
+            var currentPrice = $(".current .price").text();
+            if (currentPrice == "") {
+                $("#RealPayMoney").text("¥" + parseFloat($("#sumMoney").text().toString()).toFixed(2));
+                $("#coupon").hide();
+            }
+            else {
+                //默认优惠券价格
+                $(".cuts").text(currentPrice);
+                var realPayMoney = $("#sumMoney").text() - $.trim(currentPrice).substring(currentPrice.indexOf("¥") + 1);
+                $("#RealPayMoney").text("¥" + parseFloat(realPayMoney).toFixed(2));
+                $("#coupon").show();
+            }
+        }
+
+        //获取地址详细信息集合
+        function GetUserAddressDetailList(userId, province, city) {
+            $("#region").val(province + "" + city);//绑定地区
+            $.ajax({
+                url: "http://wx.tuhu.cn" + "/Battery/GetUserAddressDetailList",
+                type: "GET",
+                async: false,
+                data: { "userId": userId, "province": province, "city": city },
+                dataType: "jsonp",
+                success: function (str) {
+                    var addressModelList = eval('(' + str + ')');
+                    $(addressModelList).each(function (i) {
+                        $("#name").val(addressModelList[i].Consignees);//绑定收货人
+                        $("#mobile").val(addressModelList[i].Cellphone);//绑定联系方式
+                        $("#address").val(addressModelList[i].AddressDetail);//绑定详细地址
+                        //$("#region").val(addressModelList[i].Province + "" + addressModelList[i].City);//绑定地区
+                    });
+                }
+            });
+        }
+
+        //获取优惠卷集合
+        function GetCouponsList(products, uerID) {
+            var activityId = "";
+            var orderType = "Battery";
+            $.ajax({
+                url: "http://api.tuhu.cn" + "/User/SelectPromotion",
+                type: "POST",
+                async: false,
+                data: { "Products": products, "UserID": uerID, "ActivityId": activityId, "OrderType": orderType },
+                dataType: "jsonp",
+                success: function (str) {
+                    var couponsModelList = jQuery.parseJSON(JSON.stringify(str));
+                    //获取优惠券集合（没有则不显示该模块）
+                    var promotionList = couponsModelList.PromotionCodeList;
+                    if (promotionList.length > 0) {
+                        var templateHTML = "";
+                        $(promotionList).each(function (i) {
+                            if (i == 0) {
+                                templateHTML += "<div class='first current'>";
+                                templateHTML += "<span class='price'>¥" + promotionList[i].Discount + "</span>";
+                                templateHTML += "<span>优惠券</span>";
+                                templateHTML += "<p style='display:none;'>" + promotionList[i].PKID + "</p>";
+                                templateHTML += "<div class='launch' id='launch'><span class='arrow'></span></div>";
+                                templateHTML += "</div>";
+
+                                templateHTML += "<div class='item active'>";
+                                templateHTML += "<span class='price'>¥" + promotionList[i].Discount + "</span>";
+                                templateHTML += "<span>优惠券</span>";
+                                templateHTML += "<p style='display:none;'>" + promotionList[i].PKID + "</p>";
+                                templateHTML += "<span class='checkbox'></span>";
+                                templateHTML += "</div>";
+                            }
+                            else {
+                                templateHTML += "<div class='item'>";
+                                templateHTML += "<span class='price'>¥" + promotionList[i].Discount + "</span>";
+                                templateHTML += "<span>优惠券</span>";
+                                templateHTML += "<p style='display:none;'>" + promotionList[i].PKID + "</p>";
+                                templateHTML += "<span class='checkbox'></span>";
+                                templateHTML += "</div>";
+                            }
+                        });
+                        $("#ticket").find(".item").before(templateHTML);
+                    }
+                    else {
+                        $("#ticket").hide();
+                    }
+                    //判断默认选中优惠券金额是否为空
+                    var currentPrice = $(".current .price").text();
+                    if (currentPrice.length <= 0) {
+                        //实付金额
+                        $("#RealPayMoney").text("¥" + parseFloat(productList.Price).toFixed(2));
+                        $("#coupon").hide();
+                    }
+                    else {
+                        //默认优惠券价格
+                        $(".cuts").text(currentPrice);
+                        //实付金额
+                        var realPayMoney = productList.Price - $.trim(currentPrice).substring(currentPrice.indexOf("¥") + 1);
+                        $("#RealPayMoney").text("¥" + parseFloat(realPayMoney).toFixed(2));
+                        $("#coupon").show();
+                    }
+                }
+            });
+        }
+
+        //表单验证
+        function validateForm() {
+            if ($("#name").val().length <= 0) {
+                $("#name").attr("placeholder", "请填写完整信息");
+                return false;
+            }
+            if ($.trim($("#mobile").val()).length <= 0) {
+                $("#mobile").attr("placeholder", "请填写完整信息");
+                return false;
+            }
+            if (!IsMobile($.trim($("#mobile").val().toString()))) {
+                $("#mobile").val("").attr("placeholder", "请输入正确的手机号码");
+                return false;
+            }
+            if ($("#address").val().length <= 0) {
+                $("#address").attr("placeholder", "请填写完整信息");
+                return false;
+            }
+
+            var model = new DataDetailModel();
+            var orderArr = new Array();
+            orderArr[0] = new OrderDetailModel();//产品模型
+            var carModel = new CarDetailModel();//汽车模型
+            var addressModel = new AddressDetailModel();//地址模型
+
+            model.BookType = 2;//1：到店安装 2:送货上门
+            model.Name = $.trim($("#name").val());//收货人姓名
+            model.Cellphone = $.trim($("#mobile").val());//收货人电话
+            model.UserId = userId;//用户ID
+
+
+            //判断Android和IOS
+            if (userAgentInfo.indexOf("Android") >= 0) {
+                if (isAndroidVersion) {
+                    model.PayMothed = 4;//(新)线上支付
+                    model.OrderChannel = "8手机";//订单渠道(安卓)
+                }
+                else {
+                    model.PayMothed = 1;//(老)支付宝
+                    model.OrderChannel = "8手机";//订单渠道(安卓)
+                }
+            }
+            else {
+                if (isIosVersion) {
+                    model.PayMothed = 4;//(新)线上支付
+                    model.OrderChannel = "JIOS";//订单渠道(ios)
+                }
+                else {
+                    model.PayMothed = 1;//(老)支付宝
+                    model.OrderChannel = "JIOS";//订单渠道(ios)
+                }
+            }
+            model.PromotionCode = $.trim($(".active p").text());//优惠券ID
+
+            model.BookType = 3;//1：到店安装 2:送货上门3:上门安装
+            model.Name = $.trim($("#name").val());//收货人姓名
+            model.Cellphone = $.trim($("#mobile").val());//收货人电话
+            model.UserId = userId;//用户ID
+
+
+            //产品
+            orderArr[0].ProductId = (productList.ProductID == undefined) ? "" : productList.ProductID;;
+            orderArr[0].Quantity = 1;//数量
+            orderArr[0].VariantId = (productList.VariantID == undefined) ? "" : productList.VariantID;;
+            orderArr[0].Price = (productList.Price == undefined) ? "" : productList.Price;;
+
+            //汽车
+            carModel.CarID = carList.CarID;
+            carModel.Brand = carList.Brand;
+            carModel.ProductID = carList.ProductID;
+            carModel.Vehicle = carList.Vehicle;
+            carModel.LIYANGID = carList.LIYANGID; //LYID
+            carModel.Nian = carList.Nian; //年份
+            carModel.Pailiang = carList.Pailiang; //排量
+            carModel.TID = carList.TID;
+            carModel.VehicleLogin = carList.VehicleLogin;
+            carModel.SalesName = carList.SalesName;
+
+            //地址
+            addressModel.AddressID = "";
+            addressModel.AddressDetail = $.trim($("#address").val());
+            addressModel.CityID = addressList.CityId;
+            addressModel.City = addressList.CityName;
+            addressModel.ProvinceID = addressList.ProvinceId;
+            addressModel.Province = addressList.ProvinceName;
+            addressModel.Cellphone = $.trim($("#mobile").val());
+            addressModel.Consignees = $.trim($("#name").val());
+
+            //产品列表[数组]
+            model.OrderList = orderArr;
+            //车型信息集合
+            model.DefaultCar = carModel;
+            //地址信息集合`
+            model.DefaultAddress = addressModel;
+
+            var jsonStr = JSON.stringify(model);
+            $.ajax({
+                url: "http://api.tuhu.cn/Order/CreateOrder?",
+                type: "POST",
+                dataType: "json",
+                data: { "jsonStr": jsonStr },
+                success: function (str) {
+                    var orderModelList = jQuery.parseJSON(JSON.stringify(str));
+                    var serialNumbers = orderModelList.PayInfo.SerialNumbers;
+                    var payAmount = orderModelList.PayInfo.Price;
+                    var subject = orderModelList.PayInfo.Title;
+                    var body = orderModelList.PayInfo.Body;
+                    var orderNumber = orderModelList.PayInfo.OrderNO;
+                    //过滤(IOS(老))支付方式（银行卡）CashierModel
+                    var _Cashier = new Array();
+                    for (var i = 0; i < orderModelList.Cashier.length; i++)
+                    {
+                        if (orderModelList.Cashier[i].Payment_way_name != "银行卡")
+                        {
+                            var Cashier = new CashierModel();
+                            Cashier.Id = orderModelList.Cashier[i].Id;
+                            Cashier.Payment_way_order = orderModelList.Cashier[i].Payment_way_order;
+                            Cashier.Payment_way_name = orderModelList.Cashier[i].Payment_way_name;
+                            Cashier.Describe = orderModelList.Cashier[i].Describe;
+                            Cashier.ColorValue_1 = orderModelList.Cashier[i].ColorValue_1;
+                            Cashier.ActivityInformation = orderModelList.Cashier[i].ActivityInformation;
+                            Cashier.ColorValue_2 = orderModelList.Cashier[i].ColorValue_2;
+                            Cashier.State = orderModelList.Cashier[i].State;
+                            Cashier.Field_1 = orderModelList.Cashier[i].Field_1;
+                            Cashier.Field_2 = orderModelList.Cashier[i].Field_2;
+                            _Cashier.push(Cashier);
+                        }
+                    }
+
+                    orderModelList.Cashier = _Cashier;
+                    var casgiersData = orderModelList;
+                    //alert("返回值（金额）" + casgiersData.PayInfo.Price);
+                    CreateOrderInfo(serialNumbers, payAmount, subject, body, casgiersData, orderNumber);
+                    //刷新页面
+                    window.location.reload();
+                }
+            });
+        }
+
+        //随机数
+        function getRandom(n) {
+            return Math.floor(Math.random() * n + 1)
+        }
+
+        //优惠券（缩进）
+        $("#ticket").on("click", ".first", function () {
+            var $launch = $(this);
+            if ($launch.hasClass('select')) {
+                $launch.removeClass('select').siblings('.item').hide();
+                $("#launch").children('.arrow').removeClass("down");
+            } else {
+                $launch.addClass('select').siblings('.item').show();
+                $("#launch").children('.arrow').addClass("down");
+            }
+        });
+
+        //选择优惠券
+        $("#ticket").on("click", ".item", function () {
+            $(this).addClass('active').siblings().removeClass("active");
+            $("#launch").children('.arrow').removeClass("down").click();
+            //判断是否使用优惠券
+            if ($(this).children().siblings(".price").text().length <= 0) {
+                $("#ticket .current .price").text("不使用").css("color", "#333").css("font-size", "14px");
+                $(".cuts").text("¥" + 0);//优惠券金额
+                $("#RealPayMoney").text("¥" + parseFloat(productList.Price).toFixed(2));//实付金额
+                $(".current p").text("");//优惠券ID
+                $("#coupon").hide();
+                
+            }
+            else {
+                var couponsPrice = $(this).children().siblings(".price").text();
+                $("#ticket .current .price").text(couponsPrice).css("color", "red").css("font-size", "18px");
+                $(".cuts").text(couponsPrice);//选中优惠券金额
+                var realPayMoney = productList.Price - $.trim(couponsPrice).substring(couponsPrice.indexOf("¥") + 1);
+                $("#RealPayMoney").text("¥" + parseFloat(realPayMoney).toFixed(2));//实付金额
+                $(".current p").text($.trim($(this).siblings("p").text()));//优惠券ID
+                $("#coupon").show();
+            }
+        });
+    </script>
+</body>
+</html>

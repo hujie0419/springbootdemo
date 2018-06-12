@@ -1,0 +1,1596 @@
+﻿@{
+    ViewBag.Title = "保养定价系统配置";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model  Tuhu.Provisioning.Models.PackageActivityViewModel
+<link href="~/Styles/zTreeStyle.css" type="text/css" rel="stylesheet" />
+<style>
+    table { width: 100%; }
+
+        table th, table table td { text-align: center; }
+
+        table .type label { cursor: pointer; }
+
+        table .category { width: 100%; }
+
+            table .category .gouxuan { width: 15px; height: 15px; border: 1px solid grey; display: inline-block; vertical-align: top; }
+
+            table .category .cate { vertical-align: top; display: inline-block; height: 15px; line-height: 15px; }
+
+            table .category li { min-height: 30px; line-height: 30px; }
+
+    .area { margin-bottom: 20px; }
+
+        .area > label { font-size: 20px; font-weight: bold; }
+
+    #brand .select { width: 90px; display: inline-block; float: left; border: 1px solid #e8e8e8; position: relative; height: 22px; }
+
+        #brand .select .arrow_down { position: absolute; display: inline-block; border: 4px solid; border-color: #666 #fff #fff #fff; right: 4px; top: 9px; }
+
+        #brand .select .input { border: none; width: 100%; float: left; height: 20px; line-height: 20px; cursor: pointer; }
+
+        #brand .select .item { width: 90px; position: absolute; top: 23px; left: -1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-style: none solid solid; border-color: #e8eef4; background-color: #FFFFFF; }
+
+            #brand .select .item label { width: 90px; display: block; height: 20px; line-height: 20px; margin-bottom: 3px; margin-top: 3px; cursor: pointer; display: inline-block; }
+
+        #brand .select.children, #brand .select.grandson { display: none; border-left: none; }
+
+    #brand .branditem { display: inline-block; height: 20px; line-height: 20px; margin-right: 20px; }
+
+        #brand .branditem input { vertical-align: bottom; }
+
+    .item_delete { display: block; width: 40px; height: 30px; margin: 0 auto; background-color: #DEEEFE; text-align: center; line-height: 30px; }
+
+    .tip { color: red; font-size: 14px; font-weight: bolder; }
+
+    h2 { width: 200px; color: #333; float: left; }
+
+    .button { width: 50px; height: 25px; text-align: center; line-height: 25px; margin-top: 20px; background: rgb(135, 182, 217); cursor: pointer; }
+
+    .addPromotion { margin-left: 200px; color: #08c; }
+
+    .fontClass { font-weight: bolder; }
+    div.activity-priceConfig label { display: inline-block; width: 8%; height: 25px; }
+    div.activity-priceConfig input { display: inline-block; width: 21.5%; height: 25px }
+    div.activity-priceConfig div { margin-top: 5px; margin-bottom: 5px; }
+</style>
+<h2>保养定价活动配置</h2>
+<input type="hidden" value="@Model.ActivityId" class="activity-activityId"/>
+<table style="margin-bottom: 20px;">
+    <tr>
+        <th width="100%" style="text-align:left;" colspan="2">保养定价活动配置</th>
+    </tr>
+    <tr>
+        <td style="font-weight:bold;width:10%">活动名称:</td>
+        <td style="font-weight:bold"><input class="activity-Name" style="width:30%;height:25px" value="@Model.ActivityName" /></td>
+    </tr>
+    <tr>
+        <td style="font-weight:bold">活动时间:</td>
+        <td style="font-weight:bold">开始时间：<span class="span-start"> @(Model.StartTime == DateTime.MinValue ? "无" : Model.StartTime.ToString())</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>结束时间：<span class="span-end"> @(Model.EndTime == DateTime.MinValue ? "无" : Model.EndTime.ToString())</span></td>
+    </tr>
+    <tr>
+        <td style="font-weight:bold">总限购数量:</td>
+        <td style="font-weight:bold"><span class="activity-MaxSaleQuantity validNum">@Model.MaxSaleQuantity</span></td>
+    </tr>
+    <tr>
+        <td style="font-weight:bold">场次配置:</td>
+        <td style="font-weight:bold">
+            <table class="roundConfig" style="width:100%">
+                @if (Model != null && Model.RoundConfig != null && Model.RoundConfig.Any())
+                {
+                    for (var i = 0; i < Model.RoundConfig.Count; i++)
+                    {
+                        var item = Model.RoundConfig[i];
+                        <tr>
+                            <td>场次<span>@(i + 1)</span></td>
+                            <td>开始时间：</td>
+                            <td><input value="@item.StartTime" onchange="RoundConfigChange()" disabled="@(item.StartTime<=DateTime.Now?"disabled":null)" onclick="WdatePicker({ dateFmt :'yyyy/MM/dd HH:mm:ss'})" /></td>
+                            <td>结束时间：</td>
+                            <td><input value="@item.EndTime" onchange="RoundConfigChange()" disabled="@(item.StartTime<=DateTime.Now?"disabled":null)" onclick="WdatePicker({ dateFmt :'yyyy/MM/dd HH:mm:ss'})" /></td>
+                            <td>场次限购数量：</td>
+                            <td><input value="@item.LimitedQuantity" data-PKID="@item.PKID" class="validNum" onchange="RoundConfigChange()" name="SceneQuantity" /></td>
+                            <td><a href="javascript:void(0)" style="display:@(item.StartTime<=DateTime.Now?"none":null)" onclick="RemoveRoundConfig(this)">删除</a></td>
+                        </tr>
+                    }
+                }
+                <tr class="appendRoundConfig">
+                    <td>
+                        <a href="javascript:void(0)" onclick="AppendRoundConfig()">+新增一个场次</a>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td style="font-weight:bold">是否车型限制</td>
+        <td>
+            <div id="vehicle-limt">
+                <div>
+                    <input type="radio" :value="false" v-model="isLimit" />不限制
+                    <input type="radio" :value="true" v-model="isLimit" />限制
+                </div>
+                <div is="PackageActivityVehicle" v-if="isLimit" v-model="vehicles" :brands="brands" :series="series"></div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td><span>门店范围：</span></td>
+        <td>
+            <div class="area">
+                <label><input type="checkbox" name="name" value="" checked="@(Model != null && Model.ShopConfig != null && Model.ShopConfig.Any(C => C.ShopType > 0) ? "checked" : null)" />按类型</label>
+                <div id="Shop_Type" style="display:@(Model != null && Model.ShopConfig != null && Model.ShopConfig.Any(C => C.ShopType > 0) ? null : "none")">
+                    <label><input type="checkbox" name="shoptype" value="512" checked="@(Model != null && Model.ShopConfig != null && Model.ShopConfig.Any(C => C.ShopType == 512) ? "checked" : null)" />工场店</label>
+                    <label><input type="checkbox" name="shoptype" value="128" checked="@(Model != null && Model.ShopConfig != null && Model.ShopConfig.Any(C => C.ShopType == 128) ? "checked" : null)" />星级保养店</label>
+                    <label><input type="checkbox" name="shoptype" value="2048" checked="@(Model != null && Model.ShopConfig != null && Model.ShopConfig.Any(C => C.ShopType == 2048) ? "checked" : null)" />技术中心</label>
+                </div>
+            </div>
+
+            <div class="area">
+                <label><input type="checkbox" name="name" value="" checked="@(Model != null && Model.ShopConfig != null && Model.ShopConfig.Any(C => C.ShopId > 0) ? "checked" : null)" />按ShopID</label>
+                <div id="Shop_ID" style="display:@(Model != null && Model.ShopConfig != null && Model.ShopConfig.Any(C => C.ShopId > 0) ? null : "none")">
+                    <table>
+                        <tr>
+                            <th width="25%">ShopID</th>
+                            <th>门店名称</th>
+                            <th width="15%">操作</th>
+                        </tr>
+                        @if (Model != null && Model.ShopConfig != null && Model.ShopConfig.Any(C => C.ShopId > 0))
+                        {
+                            foreach (var item in Model.ShopConfig.Where(C => C.ShopId > 0).Select(C => C.ShopId + "|" + C.ShopName).Distinct())
+                            {
+                                <tr>
+                                    <td><input class="ChangeShopName validNum" type="text" name="shopid" value="@item.Split('|')[0]" onblur="FetchShopName(this)" /></td>
+                                    <td><span>@item.Split('|')[1]</span></td>
+                                    <td><a href="javascript:void(0)" onclick="$(this).parent().parent().remove()">删除</a></td>
+                                </tr>
+                            }
+                        }
+                        <tr class="appendShipButton">
+                            <td>
+                                <a href="javascript:void(0)" onclick="AppendShopID()">继续添加门店</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td style="font-weight:bold">项目数量种类:</td>
+        <td style="font-weight:bold">
+            <input type="radio" id="activity-PackageSingle" checked="@(Model != null && String.Join(",", Model.PackageTypes).ToList().Count() > 1 ? null : "checked")" name="packageType" />单一项目单次
+            <input type="radio" id="activity-PackageMore" checked="@(Model != null && String.Join(",", Model.PackageTypes).ToList().Count() > 1 ? "checked" : null)" name="packageType" />多个项目单次
+        </td>
+    </tr>
+    <tr>
+        <td style="font-weight:bold">保养项目:</td>
+        <td style="font-weight:bold">
+            @{
+                var packageTypeCount = String.Join(",", Model.PackageTypes).ToList().Count();
+                var packageBaoYang = ViewData["PackageTypes"] as List<Tuple<string, string>>;
+                if (packageBaoYang != null && packageBaoYang.Any())
+                {
+                    foreach (var item in packageBaoYang)
+                    {
+                        <input type="checkbox" class="activity-baoyangType" name="@(packageTypeCount > 1 ? null : "BaoYangPackageType")" value="@item.Item1" checked="@(!string.IsNullOrEmpty(Model.PackageTypes)&& Model.PackageTypes.Contains(item.Item1)?"checked":null)" /><span>@item.Item2</span>
+                    }
+
+                }
+            }
+        </td>
+    </tr>
+    <tr>
+        <td style="font-weight:bold"><span class="content">商品范围：</span></td>
+        <td>
+            <div class="area">
+                <label><input type="checkbox" name="name" value="" checked="@(Model != null && Model.ProductConfigDetails!=null&& Model.ProductConfigDetails.Categories!=null && Model.ProductConfigDetails.Categories.Any() ? "checked":null)" />按类别</label>
+                <div id="category" style="display:@(Model != null && Model.ProductConfigDetails!=null&& Model.ProductConfigDetails.Categories!=null && Model.ProductConfigDetails.Categories.Any() ? null:"none")">
+                    <ul id="tree1" class="ztree"></ul>
+                </div>
+            </div>
+
+            <div class="area">
+                <label><input type="checkbox" name="name" value="" checked="@(Model != null && Model.ProductConfigDetails!=null&& Model.ProductConfigDetails.BrandDetails!=null && Model.ProductConfigDetails.BrandDetails.Any() ? "checked":null)" />按品牌</label>
+                <div id="brand" style="display:@(Model != null && Model.ProductConfigDetails!=null&& Model.ProductConfigDetails.BrandDetails!=null && Model.ProductConfigDetails.BrandDetails.Any() ? null:"none")">
+                    <table>
+                        <tr>
+                            <th width="25%">商品类别</th>
+                            <th>请选择品牌</th>
+                            <th width="10%">操作</th>
+                        </tr>
+                        @if (Model != null && Model.ProductConfigDetails != null && Model.ProductConfigDetails.BrandDetails != null)
+                        {
+                            foreach (var item in Model.ProductConfigDetails.BrandDetails)
+                            {
+                                if (item.Brands.Count() > 0)
+                                {
+                                    <tr class="per_categoryandbrand">
+                                        <td>
+                                            <input type="hidden" name="Category" value="@item.BrandCategoryName" data_key="@(string.Join(",", item.Brands.ToArray()))" />
+                                            <span class="select parent">
+                                                <span class="input"></span>
+                                                <label class="arrow_down"></label>
+                                                <span class="item" style="display:none;"></span>
+                                            </span>
+                                            <span class="select children" style="display:none;">
+                                                <span class="input">--请选择--</span>
+                                                <label class="arrow_down"></label>
+                                                <span class="item"></span>
+                                            </span>
+                                            <span class="select grandson" style="display:none;">
+                                                <span class="input"></span>
+                                                <label class="arrow_down"></label>
+                                                <span class="item"></span>
+                                            </span>
+                                        </td>
+                                        <td class="result"></td>
+                                        <td>
+                                            <a href="javascript:void(0)" class="item_delete">删除</a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <tr class="per_categoryandbrand">
+                                <td>
+                                    <input type="hidden" name="Category" />
+                                    <span class="select parent">
+                                        <span class="input">--请选择--</span>
+                                        <label class="arrow_down"></label>
+                                        <span class="item" style="display:none;"></span>
+                                    </span>
+                                    <span class="select children">
+                                        <span class="input">--请选择--</span>
+                                        <label class="arrow_down"></label>
+                                        <span class="item" style="display:none;"></span>
+                                    </span>
+                                    <span class="select grandson">
+                                        <span class="input">--请选择--</span>
+                                        <label class="arrow_down"></label>
+                                        <span class="item" style="display:none;"></span>
+                                    </span>
+                                </td>
+                                <td class="result"></td>
+                                <td>
+                                    <a style="cursor:pointer;" class="item_delete">删除</a>
+                                </td>
+                            </tr>
+                        }
+                        <tr>
+                            <td colspan="3">
+                                <a style="cursor:pointer;" href="javascript:void(0)" class="brand_add">新增类别及品牌</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="area">
+                <label><input type="checkbox" name="name" value="" checked="@(Model != null && Model.ProductConfigDetails!=null&& Model.ProductConfigDetails.Pids!=null && Model.ProductConfigDetails.Pids.Any() ? "checked":null)" />按PID</label>
+                <div id="pid" style="display:@(Model != null && Model.ProductConfigDetails!=null&& Model.ProductConfigDetails.Pids!=null && Model.ProductConfigDetails.Pids.Any() ? null:"none")">
+                    <div class="pidtype">
+                        <label><input type="radio" name="pidtype" value="0" checked="@(Model != null && Model.ProductConfigDetails!=null&&Model.ProductConfigDetails.IsIngore ? null:"checked")" />增加PID</label>
+                        <label> <input type="radio" name="pidtype" value="1" checked="@(Model != null && Model.ProductConfigDetails!=null&&Model.ProductConfigDetails.IsIngore ? "checked":null)" />排除PID</label>
+                    </div>
+                    <table>
+                        <tr style="text-align:center;">
+                            <th style="width:25%;">产品编号</th>
+                            <th>产品名称</th>
+                            <th style="width:10%;">操作</th>
+                        </tr>
+                        @if (Model != null && Model.ProductConfigDetails != null && Model.ProductConfigDetails.Pids != null)
+                        {
+                            foreach (var item in Model.ProductConfigDetails.Pids)
+                            {
+                                <tr style="text-align:center;" class="productDis">
+                                    <td><input type="text" name="PID" style="width:80%" value="@item" class="ChangeProductName bitian" /></td>
+                                    <td></td>
+                                    <td><a href="javascript:void(0)" class="item_delete">删除</a></td>
+                                </tr>
+                            }
+                        }
+                        <tr>
+                            <td colspan="3">
+                                <a style="cursor:pointer;" href="javascript:void(0)" class="product_add">添加商品</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td style="font-weight:bold">是否收安装费:</td>
+        <td style="font-weight:bold">
+            <input type="radio" id="activity-ChargeInstallFee" checked="@(Model!=null&&Model.IsChargeInstallFee?"checked":null)" value="1" name="IsChargeInstallFee" />是
+            <input type="radio" id="activity-NoChargeInstallFee" value="0" checked="@(Model!=null&&Model.IsChargeInstallFee?null:"checked")" name="IsChargeInstallFee" />否
+        </td>
+    </tr>
+    <tr>
+        <td style="font-weight:bold">是否使用优惠券:</td>
+        <td style="font-weight:bold">
+            <input type="radio" id="activity-UsePromotion" value="1" checked="@(Model!=null&&Model.IsUsePromotion?"checked":null)" name="IsUsePromotion" />使用
+            <input type="radio" id="activity-NoUsePromotion" value="0" checked="@(Model!=null&&Model.IsUsePromotion?null:"checked")" name="IsUsePromotion" />不适用
+        </td>
+    </tr>
+    <tr>
+        <td style="font-weight:bold">安装/付款方式:</td>
+        <td style="font-weight:bold">
+            @if (Model == null || string.IsNullOrEmpty(Model.InstallOrPayType))
+            {
+                <input type="radio" id="activity-UsePromotion" value="None" name="InstallOrPayType"  checked="checked"/><span>不限</span>
+                <input type="radio" id="activity-NoUsePromotion" name="InstallOrPayType" value="OnlinePay" /><span>在线支付</span>
+                <input type="radio" id="activity-UsePromotion" name="InstallOrPayType" value="ShopInstall" /> <span>到店安装</span>
+                <input type="radio" id="activity-NoUsePromotion" name="InstallOrPayType" value="PayAndInstall" /> <span>在线支付且到店安装</span>
+            }
+            else
+            {
+                <input type="radio" id="activity-UsePromotion" checked="@(Model!=null&&Model.InstallOrPayType=="None"?"checked":null)" value="None" name="InstallOrPayType" /><span>不限</span>
+                <input type="radio" id="activity-NoUsePromotion" name="InstallOrPayType" checked="@(Model!=null&&Model.InstallOrPayType=="OnlinePay"?"checked":null)" value="OnlinePay" /><span>在线支付</span>
+                <input type="radio" id="activity-UsePromotion" checked="@(Model!=null&&Model.InstallOrPayType=="ShopInstall"?"checked":null)" name="InstallOrPayType" value="ShopInstall" /><span>到店安装</span>
+                <input type="radio" id="activity-NoUsePromotion" name="InstallOrPayType" checked="@(Model!=null&&Model.InstallOrPayType=="PayAndInstall"?"checked":null)" value="PayAndInstall" /><span>在线支付且到店安装</span>
+            }
+        </td>
+    </tr>
+    <tr>
+        <td style="font-weight:bold">每人每个项目限购数量:</td>
+        <td style="font-weight:bold"><input class="activity-ItemQuantityPerUser validNum" value="@Model.ItemQuantityPerUser" style="width:30%;height:25px" /></td>
+    </tr>
+    <tr>
+        <td style="font-weight:bold">项目促销价:</td>
+        <td style="font-weight:bold">
+        @if (Model.IsTieredPricing)
+        {
+            <input class="activity-PromotionPrice" style="width: 30%; height: 25px" disabled="disabled" />
+            <span class="tiered-pricing"><input type="checkbox" checked="checked" />分层定价</span>
+            <div class="activity-priceConfig">
+                <div>
+                    <label>4L及以下:</label>
+                    <input data-tier="4" value="@Model.PriceConfig["Four"]" />
+                </div>
+                <div>
+                    <label>5L:</label>
+                    <input data-tier="5" value="@Model.PriceConfig["Five"]" />
+                </div>
+                <div>
+                    <label>6L:</label>
+                    <input data-tier="6" value="@Model.PriceConfig["Six"]" />
+                </div>
+                <div>
+                    <label>7L及以上:</label>
+                    <input data-tier="7" value="@Model.PriceConfig["Seven"]" />
+                </div>
+            </div>
+        }
+        else
+        {
+            <input class="activity-PromotionPrice" value="@Model.PromotionPrice.ToString("f2")" style="width:30%;height:25px" />
+            if (!string.IsNullOrEmpty(Model.PackageTypes) && (Model.PackageTypes.Contains("xby") || Model.PackageTypes.Contains("dby")))
+            {
+                <span class="tiered-pricing"><input type="checkbox" />分层定价</span>
+            }
+            else
+            {
+                <span class="tiered-pricing" style="display:none;"><input type="checkbox" />分层定价</span>
+            }
+            <div class="activity-priceConfig" style="display: none;">
+                <div>
+                    <label>4L及以下:</label>
+                    <input data-tier="4" />
+                </div>
+                <div>
+                    <label>5L:</label>
+                    <input data-tier="5" />
+                </div>
+                <div>
+                    <label>6L:</label>
+                    <input data-tier="6" />
+                </div>
+                <div>
+                    <label>7L及以上:</label>
+                    <input data-tier="7" />
+                </div>
+            </div>
+        }
+        </td>
+    </tr>
+    <tr>
+        <td style="font-weight:bold">提示文字颜色:</td>
+        <td style="font-weight:bold"><input class="activity-TipTextColor" value="@Model.TipTextColor" style="width:30%;height:25px" /></td>
+    </tr>
+    <tr>
+        <td style="font-weight:bold">主按钮背景颜色:</td>
+        <td style="font-weight:bold"><input class="activity-ButtonBackgroundColor" value="@Model.ButtonBackgroundColor" style="width:30%;height:25px" /></td>
+    </tr>
+    <tr>
+        <td style="font-weight:bold">主按钮字体颜色:</td>
+        <td style="font-weight:bold"><input class="activity-ButtonTextColor" value="@Model.ButtonTextColor" style="width:30%;height:25px" /></td>
+    </tr>    
+    <tr>
+        <td style="font-weight:bold">背景图片:</td>
+        <td style="font-weight:bold">
+            <input id="_backgroundImg" name="ColumnImage" type="text" style="width:300px;height:30px" disabled="disabled" value="@(!string.IsNullOrEmpty(Model.BackgroundImg)? Model.BackgroundImg:"")" />
+            <input style="width:160px;" type="file" name="backgroundImg" id="background" onchange="uploadPic('background', HandlerPicResult);" />
+            @if (!string.IsNullOrEmpty(Model.BackgroundImg))
+            {
+                <img src="@Model.BackgroundImg" id="backgroundImg" width="75" height="75" />
+            }
+            else
+            {
+                <img src="" id="backgroundImg" width="75" height="75" style="display:none" />
+            }
+            <input type="button" class="clear_img" data-key="background" value="清空" />
+        </td>
+    </tr>
+    <tr>
+        <td  style="font-weight:bold">活动进行中的文案：</td>
+        <td>
+            <input class="activity-OngoingButtonText" style="width:30%;height:25px" value="@(!string.IsNullOrEmpty(Model.OngoingButtonText)?Model.OngoingButtonText:"立享一元保养")"/>
+        </td>
+    </tr>
+</table>
+<div>
+    <input type="button" value="保存" class="activity-save" />
+    <input type="button" value="返回" class="activity-back" />
+</div>
+
+<script type="text/x-template" id="package-activity-vehicle">
+    <div>
+        <div v-show="condition.searchType!==2" style="margin-top:10px;">
+            <input type="checkbox" v-model="checked.series" v-on:click="clickSelectAll($event, 'series')" />全部
+            <template v-for="item in series">
+                <input type="checkbox" :value="item" v-model="condition.series" />{{item}}
+            </template>
+        </div>
+        <div v-show="condition.searchType!==2" style="margin-top:10px;">
+            价格区间:
+            <input type="number" v-model="condition.minPrice" />
+            -
+            <input type="number" v-model="condition.maxPrice" />
+        </div>
+        <div v-show="condition.searchType!==2" style="margin-top:10px;">
+            <div>
+                品牌车型:
+                <input type="checkbox" v-model="checked.chs" v-on:click="clickSelectAll($event, 'chs')" />全部
+                <template v-for="item in chs">
+                    <input type="checkbox" :value="item" v-model="condition.chs" />{{item}}
+                </template>
+            </div>
+            <div v-show="filterBrands.length > 0" style="margin-top:10px;">
+                <input type="checkbox" v-model="checked.brands" v-on:click="clickSelectAll($event, 'brands')" />全部
+                <template v-for="item in filterBrands">
+                    <input type="checkbox" :value="item" v-model="condition.brands" />{{item.split(' ')[2]}}
+                </template>
+            </div>
+        </div>
+        <div style="margin-top:10px;">
+            查询选项:
+            <select v-model="condition.searchType">
+                <option v-bind:value="0">全部</option>
+                <option v-bind:value="1">未勾选</option>
+                <option v-bind:value="2">已勾选</option>
+            </select>
+            <button type="button" v-on:click="searchVehicles">查询</button>
+            <template>
+                <span v-if="condition.searchType===1" style="color:red;margin-left:10px;">当前选中未勾选,仅展示未勾选的车型</span>
+                <span v-else-if="condition.searchType===2" style="color:red;margin-left:10px;">当前选中已勾选,仅展示已勾选车型(不支持筛选)</span>
+                <span v-else style="color:red;margin-left:10px;">当前选中全部,所有的车型都会展示</span>
+            </template>
+        </div>
+        <table style="margin-top:10px;">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" v-on:click="clickSelectAll($event, 'vehicles')" v-bind:checked="checked.vehicles" />全选</th>
+                    <th>品牌</th>
+                    <th>车系</th>
+                    <th>车价</th>
+                </tr>
+            </thead>
+            <tbody v-if="loading"><tr><td colspan="4"><img src="/Images/loading.gif" />正在加载中,请稍后</td></tr></tbody>
+            <tbody v-else-if="vehicles.length<=0"><tr><td colspan="4">暂无数据</td></tr></tbody>
+            <tbody v-else>
+                <tr v-for="item in vehicles">
+                    <td><input type="checkbox" v-bind:checked="item.IsSelected" v-on:click="change($event,item)" /></td>
+                    <td>{{item.Brand}}</td>
+                    <td>{{item.Vehicle}}</td>
+                    <td>{{item.AvgPrice}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <div is="pager" v-model="pager" :total="total"></div>
+    </div>
+</script>
+
+@section scripts{
+    <script src="~/Scripts/jquery.ztree.all-3.5.min.js"></script>
+    <script src="/Scripts/ajaxfileupload.js"></script>
+    <script type="text/javascript" src="~/Content/My97DatePicker/WdatePicker.js"></script>
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/vue.common.js"></script>
+    <script type="text/javascript">
+        Array.prototype.all = function (func) {
+            var result = true;
+            for (var index = 0; index < this.length; index++) {
+                var value = this[index];
+                if (!func(value, index)) {
+                    result = false;
+                    break;
+                }
+            }
+            return result;
+        };
+        Array.prototype.any = function (func) {
+            var exists = false;
+            for (var index = 0; index < this.length; index++) {
+                if (func(this[index])) {
+                    exists = true;
+                    break;
+                }
+            }
+            return exists;
+        };
+        Vue.component('PackageActivityVehicle', {
+            props: {
+                series: {
+                    type: Array,
+                    default: []
+                },
+                brands: {
+                    type: Array,
+                    default: [],
+                },
+                value: {
+                    type: Array,
+                    default: [],
+                },
+            },
+            
+            template: '#package-activity-vehicle',
+
+            data: function () {
+                return {
+                    vehicles: [],
+                    chs: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                        'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
+                    checked: {
+                        chs: false,
+                        series: false,
+                        brands: false,
+                        vehicles: false,
+                    },
+                    condition: {
+                        series: [],
+                        chs: [],
+                        brands: [],
+                        minPrice: 0.0,
+                        maxPrice: 0.0,
+                        searchType: 2,
+                    },
+                    pager: {
+                        index: 1,
+                        size: 10
+                    },
+                    total: 0,
+                    loading: false,
+                }
+            },
+            mounted: function () {
+                var vm = this;
+                if (!vm.value || !vm.value.length) {
+                    vm.condition.searchType = 0;
+                } else {
+                    vm.searchVehicles();
+                }
+            },
+            watch: {
+                "condition.series": function (value) {
+                    var vm = this;
+                    var series = vm.series.map(function (x) { return x; });
+                    var cSeries = vm.condition.series.map(function (x) { return x; });
+                    vm.checked.series = series.sort().join('') === cSeries.sort().join('');
+                },
+                "condition.chs": function (value) {
+                    var vm = this;
+                    var chs = vm.chs.map(function (x) { return x; });
+                    var cChs = vm.condition.chs.map(function (x) { return x; });
+                    vm.checked.chs = chs.sort().join('') === cChs.sort().join('');
+                    vm.condition.brands = vm.condition.brands.filter(function (x) {
+                        return vm.condition.chs.indexOf(x[0]) > -1;
+                    });
+                },
+                "condition.brands": function (value) {
+                    var vm = this;
+                    var brands = vm.brands.map(function (x) { return x; });
+                    var cBrands = vm.condition.brands.map(function (x) { return x; });
+                    vm.checked.brands = brands.sort().join('') === cBrands.sort().join('');
+                },
+                "condition.searchType": function (value) {
+                    var vm = this;
+                    vm.getVehicles();
+                },
+                "pager.size": function () {
+                    var vm = this;
+                    if (vm.pager.index != 1) {
+                        vm.pager.index = 1;
+                    }
+                    else {
+                        vm.getVehicles();
+                    }
+                },
+                "pager.index": function () {
+                    var vm = this;
+                    vm.getVehicles();
+                },
+                "value": function (value) {
+                    var vm = this;
+                    vm.vehicles.forEach(function (x) {
+                        var item = vm.value.find(function (y) { return x.VehicleID === y.VehicleID; });
+                        x.IsSelected = !!item;
+                    });
+                    if (vm.searchType === 2) {
+                        vm.total = vm.value.length;
+                    }
+                    vm.$emit('input', value);
+                },
+                "vehicles": {
+                    handler: function (value) {
+                        this.checked.vehicles = this.vehicles.all(function (x) { return x.IsSelected; })
+                    },
+                    deep: true,
+                }
+            },
+            computed: {
+                filterBrands: function () {
+                    var vm = this;
+                    return vm.brands.filter(function (x) {
+                        return vm.condition.chs.indexOf(x[0]) > -1;
+                    });
+                }
+            },
+            methods: {
+                getVehicles: function () {
+                    var vm = this;
+                    if (vm.condition.searchType === 2) {
+                        vm.total = vm.value.length;
+                        vm.vehicles = vm.value.filter(function (item, index) {
+                            var skip = (vm.pager.index - 1) * vm.pager.size;
+                            var take = vm.pager.size;
+                            return index >= skip && index < (skip + take);
+                        }).map(function (x) {
+                            return {
+                                VehicleID: x.VehicleID,
+                                Brand: x.Brand,
+                                Vehicle: x.Vehicle,
+                                AvgPrice: x.AvgPrice,
+                                IsSelected: true,
+                            }
+                        });
+                        return;
+                    }
+
+                    var excludeVids = vm.condition.searchType === 1 ? vm.value.map(function (x) { return x.VehicleID }) : [];
+                    vm.loading = true;
+                    $.post("GetVehicles", {
+                        series: vm.condition.series,
+                        brands: vm.condition.brands,
+                        excludeVids: excludeVids,
+                        minPrice: vm.condition.minPrice,
+                        maxPrice: vm.condition.maxPrice,
+                        index: vm.pager.index,
+                        size: vm.pager.size
+                    }, function (data) {
+                        if (!data.status) {
+                            alert(data.msg);
+                            vm.loading = false;
+                            return;
+                        }
+                        vm.vehicles = (data.data || []).map(function (x) {
+                            var existItem = vm.value.find(function (y) { return x.VehicleID === y.VehicleID; });
+                            return {
+                                VehicleID: x.VehicleID,
+                                Brand: x.Brand,
+                                Vehicle: x.Vehicle,
+                                AvgPrice: x.AvgPrice,
+                                IsSelected: !!existItem,
+                            };
+                        });
+                        vm.total = data.total;
+                        vm.loading = false;
+                    }).error(function (xhr) {
+                        vm.brands = [];
+                        vm.loading = false;
+                    });
+                },
+                searchVehicles: function () {
+                    var vm = this;
+                    if (vm.pager.index != 1) {
+                        vm.pager.index = 1;
+                    }
+                    else {
+                        vm.getVehicles();
+                    }
+                },
+                clickSelectAll: function (event, type) {
+                    var vm = this;
+                    var value = event.target.checked;
+                    switch (type) {
+                        case 'series':
+                            vm.condition.series = value ? vm.series.map(function (x) { return x; }) : [];
+                            return;
+                        case 'chs':
+                            vm.condition.chs = value ? vm.chs.map(function (x) { return x; }) : [];
+                            return;
+                        case 'brands':
+                            vm.condition.brands = value ? vm.brands.map(function (x) { return x; }) : [];
+                            return;
+                        case 'vehicles':
+                            vm.checked.vehicles = value;
+                            if (value) {
+                                vm.vehicles.forEach(function (item) {
+                                    if (!vm.value.any(function (x) { return x.VehicleID === item.VehicleID })) {
+                                        vm.value.push({
+                                            VehicleID: item.VehicleID,
+                                            Brand: item.Brand,
+                                            Vehicle: item.Vehicle,
+                                            AvgPrice: item.AvgPrice
+                                        });
+                                    }
+                                });
+                            }
+                            else {
+                                vm.vehicles.forEach(function (item) {
+                                    var index = vm.value.findIndex(function (x) {
+                                        return x.VehicleID == item.VehicleID;
+                                    });
+                                    if (index > -1) {
+                                        vm.value.splice(index, 1);
+                                    }
+                                });
+                            }
+                            return;
+                    }
+                },
+                change: function (event, item) {
+                    var vm = this;
+                    var checked = event.target.checked;
+                    var index = vm.value.findIndex(function (x) {
+                        return x.VehicleID == item.VehicleID;
+                    });
+                    if (checked && index === -1) {
+                        vm.value.push({
+                            VehicleID: item.VehicleID,
+                            Brand: item.Brand,
+                            Vehicle:item.Vehicle,
+                            AvgPrice: item.AvgPrice,
+                        })
+                    }
+                    if (!checked && index > -1) {
+                        vm.value.splice(index, 1);
+                    }
+                }
+            },
+        });
+        var selectVehicles = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.VehicleConfig));
+        var vm = new Vue({
+            el: "#vehicle-limt",
+            data: {
+                isLimit: false,
+                brands: [],
+                series: [],
+                vehicles: (selectVehicles || []).map(function (x) {
+                    return {
+                        VehicleID: x.VehicleID,
+                        Brand: x.Brand,
+                        AvgPrice: x.AvgPrice,
+                        Vehicle: x.Vehicle,
+                    }
+                }),
+            },
+            created: function () {
+                this.getAllVehicleBrandCategory();
+                this.getAllVehicleBrand();
+                if (this.vehicles.length > 0) {
+                    this.isLimit = true;
+                }
+            },
+            methods: {
+                getAllVehicleBrandCategory: function () {
+                    var vm = this;
+                    $.get("GetAllVehicleBrandCategory", function (data) {
+                        vm.series = data || [];
+                    }).error(function (xhr) {
+                        vm.series = [];
+                    });
+                },
+                getAllVehicleBrand: function () {
+                    var vm = this;
+                    $.get("GetAllVehicleBrand", function (data) {
+                        vm.brands = data || [];
+                    }).error(function (xhr) {
+                        vm.brands = [];
+                    });
+                },
+            },
+        });
+        var AppendShopID = function () {
+            var trHtml = '<tr>';
+            trHtml += '<td><input type="text" name="shopid" class="validNum" value="" class="ChangeShopName" onblur="FetchShopName(this)" /></td>';
+            trHtml += '<td></td>';
+            trHtml += '<td><a href="javascript:void(0)" onclick="$(this).parent().parent().remove()">删除</a></td>';
+            trHtml += '</tr>';
+            $(".appendShipButton").before(trHtml);
+        };
+        var FetchShopName = function (target) {
+            var $target = $(target);
+            var shopId = $target.val().trim();
+            if (shopId.length) {
+                $.get("/Promotion/FetchShopNameByID", { shopId: shopId }, function (data) {
+                    if (data && data.length)
+                        $target.parent().next().html('<span>' + data + '</span>');
+                    else
+                        $target.parent().next().html('<span style="color:red;">门店不存在<span>');
+
+                });
+
+            }
+
+        };
+
+        $(".activity-back").on("click", function () {
+            location.href = "/PackageActivity/PackageActivity";
+        });
+
+        $("[name=packageType]").on("click", function () {
+            if ($("#activity-PackageMore").prop("checked")) {
+                $(".activity-baoyangType").attr("name", "");
+            } else {
+                $(".activity-baoyangType").attr("name", "BaoYangPackageType");
+                $(".activity-baoyangType").prop("checked", false);
+            }
+        });
+
+        $(".activity-baoyangType").change(function () {
+            if ($("#activity-PackageSingle").prop("checked")) {
+                $(".activity-baoyangType").not($(this)).prop("checked", false);
+            }
+        });
+
+        $(".clear_img").on("click", function () {
+            var elementId = $(this).attr("data-key");
+            $("#" + elementId + "Img").attr("src", "");
+            $("#" + elementId + "Img").hide();
+            $("#_" + elementId + "Img").val("");
+        });
+
+        function uploadPic(_fileElementId, _callback) {
+            $.ajaxFileUpload({
+                url: '/ArticleManage/ImageUploadToAli',
+                secureuri: false,
+                fileElementId: _fileElementId || '',
+                dataType: 'json',
+                async: false,
+                success: function (result) {
+                    _callback(result, _fileElementId);
+                }
+            });
+        }
+
+        function HandlerPicResult(result, elementId) {
+            $("#" + elementId + "Img").attr("src", result.BImage);
+            $("#" + elementId + "Img").show();
+            $("#_" + elementId + "Img").val(result.BImage);
+        }
+
+        Date.prototype.Format = function (fmt) { //author: meizz 
+            var o = {
+                "M+": this.getMonth() + 1, //月份 
+                "d+": this.getDate(), //日 
+                "h+": this.getHours(), //小时 
+                "m+": this.getMinutes(), //分 
+                "s+": this.getSeconds(), //秒 
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度 
+                "S": this.getMilliseconds() //毫秒 
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        };
+        var addRoundValid = true;
+        var AppendRoundConfig = function () {
+            //var startTime = "";
+            //var addTime = "";
+            //$("[name=SceneQuantity]").each(function (index) {
+            //    var $item = $(this).parent().parent();
+            //    var configStartTime = $item.find("td").eq(2).find("input").val();
+            //    var configEndTime = $item.find("td").eq(4).find("input").val();
+            //    var quantityperuser = $item.find("td").eq(6).find("input").val();
+            //    if (configStartTime == "" || configEndTime == "" || quantityperuser == "" || isNaN(quantityperuser)) {
+            //        addRoundValid = false;
+            //    }
+            //    if (configEndTime != "") { startTime = configEndTime; }
+            //});
+            if (addRoundValid) {
+                //if (startTime != "") {
+                //    var time = new Date(startTime);
+                //    addTime = new Date(time.getTime() + 1000).Format("yyyy/MM/dd hh:mm:ss");
+                //}
+                var roundHtml = "<tr> <td>场次<span></span></td> <td>开始时间：</td> <td><input value='' onchange='RoundConfigChange()'  onclick=\"WdatePicker({ dateFmt :'yyyy/MM/dd HH:mm:ss'})\" /></td><td>结束时间：</td> <td><input value=''   onchange='RoundConfigChange()' onclick=\"WdatePicker({ dateFmt :'yyyy/MM/dd HH:mm:ss'})\" /></td><td>场次限购数量：</td><td><input value=''  class='validNum' data-PKID='0'  onchange='RoundConfigChange()' name='SceneQuantity' /></td><td><a href='javascript:void(0)' onclick=RemoveRoundConfig(this)>删除</a></td></tr>";
+                $(".appendRoundConfig").before(roundHtml);
+                RefreshNumber();
+            } else {
+                alert("请验证场次配置");
+                return false;
+            }
+        }
+
+        function RemoveRoundConfig(o) {
+            $(o).parent().parent().remove();
+            RefreshNumber();
+        }
+
+        function RoundConfigChange() {
+            RefreshNumber();
+        };
+
+        function RefreshNumber() {
+            var startTime = "";
+            var endTime = "";
+            var rowStartTime = "";
+            var maxQuantity = 0;
+            $("[name=SceneQuantity]").each(function (index) {
+                var $item = $(this).parent().parent();
+                if (rowStartTime != "") {
+                    var time = new Date(rowStartTime);
+                    addTime = new Date(time.getTime() + 1000).Format("yyyy/MM/dd hh:mm:ss");
+                    $item.find("td").eq(2).find("input").val(addTime);
+                }
+                var configStartTime = $item.find("td").eq(2).find("input").val();
+                var configEndTime = $item.find("td").eq(4).find("input").val();
+                var quantityperuser = $item.find("td").eq(6).find("input").val();
+                if (startTime == "") {
+                    startTime = configStartTime;
+                }
+                if (configEndTime != "") {
+                    endTime = configEndTime;
+                    rowStartTime = configEndTime;
+                }
+                $item.find("td").eq(0).find("span").html(index+1);
+                if (quantityperuser != "") {
+                    maxQuantity += parseInt(quantityperuser);
+                }
+            });
+            $(".span-start").text(startTime);
+            $(".span-end").text(endTime);
+            $(".activity-MaxSaleQuantity").text(maxQuantity);
+        }
+
+    $(function () {
+        //商品范围 按类别/按品牌/按PID
+        $(".area>label").on("click", function () {
+            if ($(this).find("input").prop("checked"))
+                $(this).next().show();
+            else
+                $(this).next().hide();
+
+        });
+
+        //获得产品的类别
+        var treeObj = null;
+        $.ajax({
+            url: "/Promotion/GetCategory",
+            type: "get",
+            dataType: "json",
+            data: { type: "category" },
+            success: function (data) {
+                if (data != null) {
+                    var setting = {
+                        check: {
+                            enable: true,
+                            nocheckInherit: true,
+                            chkStyle: "checkbox",
+                            chkboxType: { "Y": "s", "N": "ps" }
+                        },
+                        callback: {
+                        }
+                    };
+                    treeObj = $.fn.zTree.init($("#tree1"), setting, data);
+                    var presentcate = "@(Model!= null&& Model.ProductConfigDetails!=null&& Model.ProductConfigDetails.Categories!=null? String.Join(",", Model.ProductConfigDetails.Categories.ToArray()) : "")".split(',');//原有的类别
+                    var nodes = treeObj.getNodes();
+                    if (presentcate.length > 0) {
+                        for (var i = 0, l = nodes.length; i < l; i++) {
+                            if (presentcate.indexOf(nodes[i].title) >= 0)
+                                treeObj.checkNode(nodes[i], true, true);
+                            else if (nodes[i].children.length > 0) {
+                                var f = true;
+                                $.each(nodes[i].children, function (i, v) {
+                                    if (presentcate.indexOf(v.title) >= 0)
+                                        treeObj.checkNode(v, true, true);
+                                    else
+                                        f = false;
+                                });
+                                if (f)
+                                    treeObj.checkNode(nodes[i], true, true);
+
+                            }
+                            var allchecked = true;
+                            $.each(nodes[i].children, function (i, v) {
+                                if (!v.checked)
+                                    allchecked = false;
+                            });
+
+                            if (allchecked) {
+                                treeObj.checkNode(nodes[i], true, true);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        var firstbrand = true;
+        var firstpid = true;
+
+        //获得产品品牌
+        var categories = [];
+        var children = [];
+        var content1 = "";//产品大种类
+
+        if (firstbrand) {
+            $("#brand .parent .item").text("正在加载数据...");
+            $.ajax({
+                url: "/Promotion/GetCategory",
+                type: "get",
+                dataType: "json",
+                data: { type: "brand" },
+                success: function (data) {
+                    if (data != null) {
+                        categories = data;
+                        firstbrand = false;
+                        $.each(data, function (i, v) {
+                            children[v.CategoryName] = v.ChildrenCategory;
+                            if (v.ChildrenCategory.length > 0) {
+                                $.each(v.ChildrenCategory, function (j, k) {
+                                    children[k.CategoryName] = k.ChildrenCategory;
+                                });
+                            }
+                        });
+                        $.each(categories, function (i, v) {
+                            content1 += "<label data-catagory='" + v.CategoryName + "'>" + v.DisplayName + "</label>";
+                        });
+                        $("#brand .parent .item").text("").append(content1).css("display", "block").hide();//
+                        $("#brand .parent").parent().parent().css({ "vertical-align": "top" });// "height": "230px",
+
+
+                            $(".per_categoryandbrand input[name=Category]").each(function () {
+                                var td = $(this).parent();
+                                var val = $(this).val();
+                                var self = $(this);
+                                var content2 = "";
+                                var content3 = "";
+                                var originalbrands = $(this).attr("data_key");
+                                var brands = originalbrands != "" && originalbrands != undefined ? originalbrands.split(',') : "";
+                                var flag = false;
+                                @*var originalbrands = "@(Model!=null&&Model.Count()>0 ? String.Join(",", Model.Select(m => m.Brand).ToArray()) : "")";*@
+                                //品牌设置
+                                $.ajax({
+                                    url: "/Promotion/GetBrand",
+                                    type: "get",
+                                    dataType: "json",
+                                    data: { type: val },
+                                    success: function (data) {
+                                        if (data != null) {
+                                            var content = "";
+                                            $.each(data, function (i, v) {
+                                                flag = false;
+                                                if (brands.length > 0) {
+                                                    for (var i = 0; i < brands.length; i++) {
+                                                        if (brands[i] == v.Cp_Brand) {
+                                                            flag = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                if (originalbrands.length > 0 && originalbrands.indexOf(v.Cp_Brand) >= 0 && flag == true) {
+                                                    content += '<span class="branditem"><input type="checkbox" name="brand" value="' + v.Cp_Brand + '" checked="checked" />' + v.Cp_Brand + '</span>';
+                                                }
+                                                else {
+                                                    content += '<span class="branditem"><input type="checkbox" name="brand" value="' + v.Cp_Brand + '" />' + v.Cp_Brand + '</span>';
+                                                }
+                                            });
+                                            td.next().text("").append(content);
+                                        }
+                                    }
+                                });
+
+                                //下拉框设置
+                                $.each(categories, function (i, v) {
+                                    //self.siblings(".parent").find(".item").append(content1);
+                                    //self.siblings(".parent").find(".item").hide();
+                                    if (v.CategoryName.trim() == val) {
+                                        self.siblings(".parent").find(".input").text(v.DisplayName);
+                                        return;
+                                    }
+                                    else {
+                                        var parent = v.CategoryName;
+                                        var grandpa = v.CategoryName;
+                                        var grandpaName = v.DisplayName;
+                                        var parentName = v.DisplayName;
+                                        if (v.ChildrenCategory.length > 0) {
+                                            $.each(v.ChildrenCategory, function (i, v) {
+                                                parentName = v.DisplayName;
+                                                if (v.CategoryName.trim() == val) {
+                                                    $.each(children[parent], function (i, v) {
+                                                        content2 += "<label data-catagory='" + v.CategoryName + "'>" + v.DisplayName + "</label>";
+                                                    });
+                                                    self.siblings(".parent").find(".input").text(grandpaName);
+                                                    self.siblings(".parent").find(".item").hide();
+                                                    self.siblings(".children").find(".input").text(parentName);
+                                                    self.siblings(".children").show().find(".item").append(content2).hide();
+                                                    return;
+                                                }
+                                                else {
+                                                    if (v.ChildrenCategory.length > 0) {
+                                                        parent = v.CategoryName;
+                                                        $.each(v.ChildrenCategory, function (i, v) {
+                                                            if (v.CategoryName.trim() == val) {
+                                                                self.siblings(".children").find(".input").text(parentName);
+                                                                $.each(children[parent], function (i, v) {
+                                                                    content3 += "<label data-catagory='" + v.CategoryName + "'>" + v.DisplayName + "</label>";
+                                                                });
+                                                                $.each(children[grandpa], function (i, v) {
+                                                                    content2 += "<label data-catagory='" + v.CategoryName + "'>" + v.DisplayName + "</label>";
+                                                                });
+                                                                self.siblings(".parent").find(".input").text(grandpaName);
+                                                                self.siblings(".parent").find(".item").hide();
+                                                                self.siblings(".children").show().find(".item").append(content2).hide();
+                                                                self.siblings(".children").show().find(".input").text(parentName);
+                                                                self.siblings(".grandson").show().find(".item").append(content3).hide();
+                                                                self.siblings(".grandson").show().find(".input").text(v.DisplayName);
+                                                                return;
+                                                            }
+                                                        });
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+                            });
+                    }
+                }
+            });
+
+        }
+
+        $("input[name=type]").click(function () {
+            if ($(this).val() == "brand") {
+                $("#category").hide();
+                $("#brand").show();
+                $("#pid").hide();
+            }
+            else if ($(this).val() == "category") {
+                $("#category").show();
+                $("#brand").hide();
+                $("#pid").hide();
+            }
+            else if ($(this).val() == "pid") {
+                $("#category").hide();
+                $("#brand").hide();
+                $("#pid").show();
+            }
+        });
+        //下拉框点击
+        $("#brand").on("click", ".select .input", function () {
+            var s = $(this);
+            //s.siblings(".item").toggleClass("current");
+            if (s.siblings(".item").is(":visible") == false) {
+                s.parent().parent().parent().css({ "height": "320px", "vertical-align": "top" });
+                s.siblings(".item").css("display", "block");
+
+                //让其前后下拉框隐藏
+                s.parent().next().find(".item").hide();
+                s.parent().prev().find(".item").hide();
+                s.parent().next().next().find(".item").hide();
+                s.parent().prev().prev().find(".item").hide();
+            }
+            else {
+                s.siblings(".item").hide();
+                s.parent().parent().parent().css({ "height": "auto", "vertical-align": "top" });
+            }
+        });
+        //新增产品类别及品牌
+        $("#brand").on("click", ".brand_add", function () {
+            var content = '<tr style="height:230px; vertical-align:top;" class="per_categoryandbrand"><td><input type="hidden" name="Category" /><span class="select parent"><span class="input">--请选择--</span><label class="arrow_down"></label><span class="item">' + content1 + '</span></span><span class="select children"><span class="input">--请选择--</span><label class="arrow_down"></label><span class="item" style="display:none;"></span></span><span class="select grandson"><span class="input">--请选择--</span><label class="arrow_down"></label><span class="item" style="display:none;"></span></span></td><td></td><td><a style="cursor:pointer;" href="javascript: void(0)" class="item_delete" >删除</a></td></tr>';
+            $(this).parent().parent().before(content);
+        });
+
+        //添加商品
+        $("#pid").on("click", ".product_add", function () {
+            var content = '<tr style="text-align:center;" class="productDis"><td><input type="text" name="PID" style="width:80%" value="" class="ChangeProductName bitian" /></td><td></td><td><a style="cursor:pointer;" href="javascript:void(0)" class="item_delete">删除</a></td></tr>';
+            $(this).parent().parent().before(content);
+        });
+
+        //某一行数据删除
+        $("table").on("click", ".item_delete", function () {
+            $(this).parent().parent().remove();
+        });
+
+        //每个类别的改变事件
+        $("#brand").on("click", ".item label", function () {
+            var s = $(this);
+            var td = s.parent().parent().parent();
+            var content2 = "";
+            s.parent().siblings(".input").text(s.text());
+            s.parent().hide();
+            s.parent().parent().next().hide().find(".input").text("--请选择--");
+            s.parent().parent().next().find(".item label").remove();
+            s.parent().parent().next().next().hide().find(".input").text("--请选择--");
+            s.parent().parent().next().next().find(".item label").remove();
+            if (children[s.attr("data-catagory")] != null && children[s.attr("data-catagory")].length > 0) {
+                $.each(children[s.attr("data-catagory")], function (i, v) {
+                    content2 += "<label data-catagory='" + v.CategoryName + "'>" + v.DisplayName + "</label>";
+                });
+                s.parent().parent().next().css("display", "inline-block").find(".item label").remove();
+                s.parent().parent().next().find(".item").css("display", "block").append(content2);
+
+                s.parent().parent().siblings("input[type=hidden]").val(null);
+                td.parent().css({ "height": "320px", "vertical-align": "top" });
+                td.next().text("");
+            }
+            else {
+                s.parent().parent().siblings("input[type=hidden]").val(s.attr("data-catagory"));
+                //table行的高度
+                td.parent().css({ "height": "auto", "vertical-align": "top" });
+                //单元格
+                //加载品牌
+                $.ajax({
+                    url: "/Promotion/GetBrand",
+                    type: "get",
+                    dataType: "json",
+                    data: { type: s.attr("data-catagory") },
+                    success: function (data) {
+                        if (data != null) {
+                            var content = "";
+                            $.each(data, function (i, v) {
+                                content += '<span class="branditem"><input type="checkbox" name="brand" value="' + v.Cp_Brand + '" />' + v.Cp_Brand + '</span>';
+                            });
+                            td.next().text("").append(content);
+                        }
+                    }
+                });
+
+            }
+
+        });
+
+        //当输入产品ID时将显示它的名称 价格
+        $("#pid").on("input", ".productDis .ChangeProductName", function () {
+            var _ParentTr = $(this).parent();
+            var _NewPID = $(this).val();
+            if (_NewPID != "") {
+                $.ajax({
+                    type: "post",
+                    url: '/Advertise/GetProductNamebyPID',
+                    data: { "PID": _NewPID, "Cate": 1 },
+                    success: function (result) {
+                        if (result != "")
+                            _ParentTr.next().text(result);
+                        else
+                            _ParentTr.next().text("无此产品");
+                    }
+                });
+            }
+        });
+
+        $("#pid .ChangeProductName").each(function () {
+            $(this).trigger("input");
+        });
+
+        $("#Shop_ID .ChangeShopName").each(function () {
+            FetchShopName($(this));
+        });
+
+        $(".activity-save").on("click", function () {
+            var button = $(this);
+            //button.css("pointer-events", "none");
+            var packageTypes = "";
+            $(".activity-baoyangType").each(function () {
+                if ($(this).prop("checked")) {
+                    packageTypes += $(this).val() + ",";
+                }
+            });
+            var data = {};
+            data.ActivityId = $(".activity-activityId").val();
+            data.ActivityName = $(".activity-Name").val();
+            data.PackageTypes = packageTypes;
+            data.IsChargeInstallFee = $("#activity-ChargeInstallFee").prop("checked");
+            data.IsUsePromotion = $("#activity-UsePromotion").prop("checked");
+            data.InstallOrPayType = $("[name=InstallOrPayType]:checked").val();;
+            data.ItemQuantityPerUser = $(".activity-ItemQuantityPerUser").val();
+            data.PromotionPrice = $(".activity-PromotionPrice").val();
+            data.IsTieredPricing = $(".tiered-pricing input").prop("checked");
+            data.PriceConfig = { Four: "", Five: "", Six: "", Seven: "" };
+            data.PriceConfig.Four = $(".activity-priceConfig input[data-tier=4]").val();
+            data.PriceConfig.Five = $(".activity-priceConfig input[data-tier=5]").val();
+            data.PriceConfig.Six = $(".activity-priceConfig input[data-tier=6]").val();
+            data.PriceConfig.Seven = $(".activity-priceConfig input[data-tier=7]").val();
+
+            data.TipTextColor = $(".activity-TipTextColor").val();
+            data.ButtonBackgroundColor = $(".activity-ButtonBackgroundColor").val();
+            data.ButtonTextColor = $(".activity-ButtonTextColor").val();
+            data.BackgroundImg = $("#_backgroundImg").val();
+            data.OngoingButtonText = $(".activity-OngoingButtonText").val();
+            data.ShopConfig = [];
+            data.RoundConfig = [];
+            data.ProductConfig = [];
+            var tip = "";
+            var flag = true;
+            if (data.ActivityName == "") {
+                alert("请输入活动名称");
+                flag = false;
+                return false;
+            }
+
+            if (data.IsTieredPricing) {
+                data.PromotionPrice = 0;
+                if ((data.PriceConfig.Four != "/" && !isNumeric(data.PriceConfig.Four)) ||
+                    (data.PriceConfig.Five != "/" && !isNumeric(data.PriceConfig.Five)) ||
+                    (data.PriceConfig.Six != "/" && !isNumeric(data.PriceConfig.Six)) ||
+                    (data.PriceConfig.Seven != "/" && !isNumeric(data.PriceConfig.Seven))) {
+                    alert("分层定价输入价格格式有误");
+                    return;
+                }
+                data.PriceConfig.Four = Number(data.PriceConfig.Four);
+                data.PriceConfig.Five = Number(data.PriceConfig.Five);
+                data.PriceConfig.Six = Number(data.PriceConfig.Six);
+                data.PriceConfig.Seven = Number(data.PriceConfig.Seven);
+                if (data.PriceConfig.Four <= 0 ||
+                    data.PriceConfig.Five <= 0 ||
+                    data.PriceConfig.Six <= 0 ||
+                    data.PriceConfig.Seven <= 0) {
+                    alert("分层定价价格必须大于0");
+                    return;
+                }
+            } else {
+                data.PriceConfig.Four = 0;
+                data.PriceConfig.Five = 0;
+                data.PriceConfig.Six = 0;
+                data.PriceConfig.Seven = 0;
+                if (!isNumeric(data.PromotionPrice)) {
+                    alert("促销价格式有误");
+                    return;
+                }
+                data.PromotionPrice = Number(data.PromotionPrice);
+                if (data.PromotionPrice <= 0) {
+                    alert("促销价价格必须大于0");
+                    return;
+                }
+            }
+
+
+            if (isNaN(data.ItemQuantityPerUser) || isNaN(data.PromotionPrice)) {
+                alert("个人限购数量以及促销价格式有误");
+                return false;
+            }
+
+            if (data.PackageTypes == "") {
+                alert("请选择保养项目");
+                flag = false;
+                return false;
+            }
+
+            if (data.ItemQuantityPerUser == "" || isNaN(data.ItemQuantityPerUser)) {
+                alert("每人每个项目限购数量格式有误");
+                return false;
+            } else if (parseInt(data.ItemQuantityPerUser) <= 0) {
+                alert("每人每个项目限购数量要大于0");
+                return false;
+            }
+
+            if (data.OngoingButtonText == "") {
+                alert("活动进行中的文案不能为空");
+                return false;
+            }
+
+            //检验商品范围
+            if (!$("#category").prev().find("[type=checkbox]").prop("checked") && !$("#brand").prev().find("[type=checkbox]").prop("checked") && !$("#pid").prev().find("[type=checkbox]").prop("checked")) {
+                alert("类别,品牌.PID都未配置");
+                flag = false;
+                return false;
+            }
+            else if ($("#category").prev().find("[type=checkbox]").prop("checked")) {
+                var allNodes = treeObj.getNodes();
+                $.each(allNodes, function (i, v) {
+                     if (v.check_Child_State == 1 || v.check_Child_State == 2) {
+                        $.each(v.children, function (i, v) {
+                            if (v.checked)
+                                data.ProductConfig.push({
+                                    IsIngore: false,
+                                    Brand: "",
+                                    PID: "",
+                                    CategoryName: v.title
+                                });
+                        });
+                    }
+                });
+                if (data.length <= 0) {
+                    alert("请至少选择一种类别");
+                    flag = false;
+                    return false;
+                }
+            }
+
+            if ($("#brand").prev().find("[type=checkbox]").prop("checked")) {
+                $(".per_categoryandbrand").each(function () {
+                    var b_flag = false;
+                    var cate = $(this).find("input[name=Category]").val();
+                    $(this).find("input[name=brand]").each(function () {
+                        if ($(this)[0].checked) {
+                            data.ProductConfig.push({
+                                IsIngore: false,
+                                Brand: $(this).val(),
+                                PID: "",
+                                CategoryName: cate
+                            });
+                            b_flag = true;
+                        }
+                    });
+                    if (!b_flag) {
+                        alert("请完善品牌的选择");
+                        flag = false;
+                        return false;
+                    }
+                });
+            }
+
+            if ($("#pid").prev().find("[type=checkbox]").prop("checked")) {
+                $("input[name=PID]").each(function () {
+                    if ($(this).val() == "") {
+                        alert("请完善PID");
+                        flag = false;
+                        return false;
+                    }
+                    else if ($(this).parent().next().text() == "无此产品") {
+                        alert("请正确填写PID");
+                        flag = false;
+                        return false;
+                    }
+                    else
+                        data.ProductConfig.push({
+                            IsIngore: ($("[name=pidtype]:checked").val() - 0)==1,
+                            Brand: "",
+                            PID: $(this).val(),
+                            CategoryName: ""
+                        });
+                });
+            }
+
+            //门店Type
+            if ($("#Shop_Type").prev().find("[type=checkbox]").prop("checked")) {
+                if ($("input[name=shoptype]:checked").length == 0) {
+                    alert("请选择门店类型");
+                    flag = false;
+                    return false;
+                }
+                else {
+                    $("input[name=shoptype]:checked").each(function () {
+                        data.ShopConfig.push({ ShopType: $(this).val(), ShopId: 0 });
+                    });
+                }
+            }
+
+            //门店ID
+            if ($("#Shop_ID").prev().find("[type=checkbox]").prop("checked")) {
+                $("input[name=shopid]").each(function () {
+                    if ($(this).val() == "") {
+                        alert("填写门店ID");
+                        flag = false;
+                        return false;
+                    }
+                    else if ($(this).parent().next().find("span").text() == "门店不存在") {
+                        alert("请正确填写门店ID");
+                        flag = false;
+                        return false;
+                    }
+                    else
+                        data.ShopConfig.push({ ShopType: "0", ShopId: $(this).val() });
+
+                });
+            }
+
+            var roundValid = true;
+            $("[name=SceneQuantity]").each(function (index) {
+                var $item = $(this).parent().parent();
+                var configStartTime = $item.find("td").eq(2).find("input").val();
+                var configEndTime = $item.find("td").eq(4).find("input").val();
+                var sceneQuantity = $item.find("td").eq(6).find("input").val();
+                var pkid = $(this).attr("data-PKID");
+                if (configStartTime == "" || configEndTime == "" || sceneQuantity == "" || isNaN(sceneQuantity)) {
+                    roundValid = false;
+                }
+                data.RoundConfig.push({ PKID: pkid, StartTime: configStartTime, EndTime: configEndTime, LimitedQuantity: sceneQuantity });
+            });
+
+            if (!roundValid) {
+                alert("请完善场次配置");
+                flag = false;
+                return false;
+            }
+
+            data.VehicleConfig = !vm.isLimit ? [] : vm.vehicles.map(function (x) {
+                return {
+                    VehicleID: x.VehicleID,
+                    Brand: x.Brand,
+                    Vehicle: x.Vehicle,
+                    AvgPrice: x.AvgPrice
+                };
+            });
+            data.PriceConfig = Object.keys(data.PriceConfig).map(function (key) {
+                return { TierType: key, Price: data.PriceConfig[key] };
+            });
+            if (flag) {
+                var r = confirm("是否确定保存信息？");
+                if (r) {
+                    $.post("UpsertPaceageActivityConfig", { jsonData: JSON.stringify(data) }, function (result) {
+                        if (result.status) {
+                            alert("操作成功");
+                            location.href = "/PackageActivity/PackageActivity";
+                        } else {
+                            alert(result.msg);
+                            //button.css("pointer-events", "all");
+                        }
+                    });
+                }
+            }
+        });
+
+        $(".activity-baoyangType").on("click", function () {
+            var types = [];
+            var $checkboxs = $(".activity-baoyangType");
+            $checkboxs.each(function () {
+                var $this = $(this);
+                var checked = $this.prop("checked");
+                if (checked) {
+                    var value = $this.val();
+                    types.push(value);
+                }
+            });
+            if (types.indexOf('xby') > -1 || types.indexOf('dby') > -1) {
+                $(".tiered-pricing").show();
+            }
+            else {
+                $(".tiered-pricing").hide();
+                $(".tiered-pricing input").prop("checked", false);
+                $(".activity-priceConfig").hide();
+                $(".activity-PromotionPrice").prop("disabled", false);
+                $(".activity-PromotionPrice").css("text-decoration", "");
+            }
+        });
+        $(".tiered-pricing > input").on("click", function () {
+            var $this = $(this);
+            var $input
+            var checked = $this.prop("checked");
+            console.log(checked);
+            var $priceInput = $(".activity-PromotionPrice");
+            if (checked) {
+                $(".activity-priceConfig").show();
+                $priceInput.prop("disabled", true);
+                $priceInput.css("text-decoration", "line-through");
+
+            } else {
+                $(".activity-priceConfig").hide();
+                $priceInput.prop("disabled", false);
+                $priceInput.css("text-decoration", "");
+            }
+        });
+    });
+        function isNumeric(input) {
+            var value = Number(input);
+            return !isNaN(value);
+        }
+
+    </script>
+}

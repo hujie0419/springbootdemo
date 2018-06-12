@@ -1,0 +1,107 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>途虎免费洗车活动报名</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-2.1.1.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/vue.min.js"></script>
+    <script>
+        window.onload = function() {
+            var vm = new Vue({
+                el: "#app",
+                data: {
+                    errorText: "",
+                    applyBtnText:false,
+                    userActivityModel: {
+                        activityId: '@ViewBag.ActivityId',
+                        mobile: "",
+                        carNum: "",
+                        driverNum: "",
+                        userName: ""
+                    }
+                },
+                methods: {
+                    userApplyActivity: function() {
+                        var _this = this;
+                        if (!_this.userActivityModel.userName.trim() || !_this.userActivityModel.mobile.trim() || !_this.userActivityModel.carNum.trim() || !_this.userActivityModel.driverNum.trim()) {
+                            _this.errorText = "缺少必要参数";
+                            return;
+                        }
+                        var reMobile = /^1\d{10}$/;
+                        if (!reMobile.test(_this.userActivityModel.mobile)) {
+                            _this.errorText = "请输入正确的手机号";
+                            return;
+                        }
+                        var reDriverNum = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/;
+                        if (!reDriverNum.test(_this.userActivityModel.driverNum)) {
+                            _this.errorText = "请输入正确的驾驶证号";
+                            return;
+                        }
+                        var reCarNum = /^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}[A-Z]{1}[A-Z0-9]{4}[A-Z0-9挂学警港澳]{1}$/;
+                        if (!reCarNum.test(_this.userActivityModel.carNum)) {
+                            _this.errorText = "请输入正确的车牌号";
+                            return;
+                        }
+                        _this.applyBtnText = true;
+                        $.ajax({
+                            url: "/Activity/UserApplyActivity?userName="+_this.userActivityModel.userName,
+                            type: "post",
+                            data: { userActivityModel: _this.userActivityModel },
+                            success: function(data) {
+                                if (data.statusCode == 200) {
+                                    _this.errorText = "";
+                                    alert(data.msg);
+                                    window.location.href ="/Activity/ApplySuccessPage";
+                                } else {
+                                    alert(data.msg);
+                                    _this.applyBtnText = false;
+                                }
+                            },
+                            error: function(data) {
+                                alert("请求出错");
+                                _this.applyBtnText = false;
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div id="app" class="container" v-cloak>
+        <h2>途虎免费洗车活动报名</h2>
+        <span style="color: red;font-size:12px">*请详实填写如下信息，如果信息虚假，车辆与本人不符，途虎有权取消用户线下活动享受。本活动最终解释权由途虎所有*</span>
+        <form role="form">
+            <div class="form-group">
+                <label for="userName">姓名</label><span style="color: red;float: right">{{errorText}}</span>
+                <input type="text" name="" id="userName" class="form-control" placeholder="请输入姓名" v-model="userActivityModel.userName">
+            </div>
+            <div class="form-group">
+                <label for="mobile">手机号</label>
+                <input type="number" name="" id="mobile" class="form-control" placeholder="请输入手机号...请如实填写，将用来接收服务码,凭码线下享受服务" v-model="userActivityModel.mobile">
+            </div>
+            <div class="form-group">
+                <label for="carNum">车牌号</label>
+                <input type="text" name="" id="carNum" class="form-control" placeholder="请输入车牌号" v-model="userActivityModel.carNum">
+            </div>
+            <div class="form-group">
+                <label for="driverNum">驾驶证号</label>
+                <input type="text" name="" id="driverNum" class="form-control" placeholder="请输入驾驶证号" v-model="userActivityModel.driverNum">
+            </div>
+            <div class="form-group">
+                <input type="button" value="报名" v-bind:disabled="applyBtnText" class="btn btn-primary" v-on:click="userApplyActivity" />
+                <input type="reset" value="重置" class="btn btn-danger" />
+            </div>
+        </form>
+    </div>
+</body>
+</html>

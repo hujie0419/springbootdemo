@@ -1,0 +1,208 @@
+﻿@using Tuhu.MMS.Web.Domain.UserFilter
+
+@{
+    ViewBag.Title = "会员筛选条件编辑";
+    var jobid = ViewBag.jobid as string;
+    var configs = ViewBag.configs as IEnumerable<UserFilterValueConfig>;
+    var job = ViewBag.job as UserFilterRuleJob;
+    Func<JobStatus, string> getjobstatusname = status =>
+    {
+        switch (status)
+        {
+            case JobStatus.Created:
+                return "正式提交";
+            case JobStatus.WaittingForRun:
+                return "等待执行";
+            case JobStatus.Running:
+                return "正在执行";
+            case JobStatus.Failed:
+                return "执行失败";
+            default:
+                return "正式提交";
+        }
+    };
+}
+@Html.Hidden("jobid", jobid)
+
+
+
+<div id="edituserfilterrule">
+    <div class="ibox-content">
+        @*<h1 class="font-bold">
+                会员筛选条件编辑
+            </h1>
+            <p>
+                <b>行选中添加class</b>:ui-state-highlight
+            </p>*@
+        <div class="form-inline">
+            <input type="text" value="@job.Description" placeholder="输入Job描述" v-model="JobDescription" class="form-control" />
+            <input type="button" class="btn btn-success" v-on:click="SaveJobDescription" value="保存描述" />
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>
+                            合并条件
+                        </th>
+                        <th>查询大类</th>
+                        <th>查询小类</th>
+                        <th>条件详情</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="detail in FilterRuleJobDetails">
+                        <td>
+                            {{detail.JoinType}}
+                        </td>
+                        <td>
+                            {{detail.BasicAttribute}}
+                        </td>
+                        <td>
+                            {{detail.SecondAttribute}}
+                        </td>
+                        <td>
+                            {{detail.values}}
+                        </td>
+                        <td>
+                            <a href="javascript:void(0)" v-on:click="DeleteFilterRuleJobDetail(detail.BatchID)">删除</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+    <div class="ibox-content">
+        <nav aria-label="...">
+            <ul class="pager">
+                <li>
+                    <button class="btn btn-w-m btn-success">@(job.ResultCount>0?job.ResultCount.ToString()+"条记录":"预览计数")</button>
+                </li>
+                <li>
+                    <button v-on:click="SetJobStartRun" class="btn btn-w-m btn-warning" @(job.JobStatus != JobStatus.Created ? " disabled " : "")>@getjobstatusname(job.JobStatus)</button>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <div class="alert alert-success">
+        会员筛选条件编辑
+    </div>
+    <div class="ibox-content">
+        <p>
+            <button type="button" :class="BaseCategorySelect=='ShowStaticProperty'?'btn btn-lg btn-success':'btn btn-lg  btn-default'" v-on:click="BaseCategoryClick('ShowStaticProperty')">静态属性统计</button>
+            <button type="button" v-on:click="BaseCategoryClick('ShowVehicle')" :class="BaseCategorySelect=='ShowVehicle'?'btn btn-lg btn-success':'btn btn-lg  btn-default'">车辆统计</button>
+            <button type="button" v-on:click="BaseCategoryClick('ShowViews')" :class="BaseCategorySelect=='ShowViews'?'btn btn-lg btn-success':'btn btn-lg  btn-default'">浏览统计</button>
+            <button type="button" v-on:click="BaseCategoryClick('ShowOrders')" :class="BaseCategorySelect=='ShowOrders'?'btn btn-lg btn-success':'btn btn-lg  btn-default'">订单统计</button>
+        </p>
+    </div>
+    <div class="ibox-content" v-show="BaseCategorySelect=='ShowStaticProperty'">
+        <p>
+            <button type="button" v-on:click="SecondCategoryClick('RegisterTime')" :class="SecondCategorySelect=='RegisterTime'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">注册时间</button>
+            <button type="button" v-on:click="SecondCategoryClick('FirstLoginTime')" :class="SecondCategorySelect=='FirstLoginTime'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">首登APP时间</button>
+            <button type="button" v-on:click="SecondCategoryClick('Sex')" :class="SecondCategorySelect=='Sex'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">性别</button>
+            <button type="button" v-on:click="SecondCategoryClick('Area')" :class="SecondCategorySelect=='Area'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">所在地区</button>
+        </p>
+    </div>
+    <div class="ibox-content" v-show="BaseCategorySelect=='ShowVehicle'">
+        <p>
+            <button type="button" v-on:click="SecondCategoryClick('DefaultVehicle')" :class="SecondCategorySelect=='DefaultVehicle'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">默认车型</button>
+            <button type="button" v-on:click="SecondCategoryClick('DefaultTire')" :class="SecondCategorySelect=='DefaultTire'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">默认车型轮胎规格</button>
+            <button type="button" v-on:click="SecondCategoryClick('DefaultTwoLevelPrice')" :class="SecondCategorySelect=='DefaultTwoLevelPrice'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">默认二级车型均价</button>
+            <button type="button" v-on:click="SecondCategoryClick('DefaultFiveLevelPrice')" :class="SecondCategorySelect=='DefaultFiveLevelPrice'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">默认五级车型均价</button>
+            <button type="button" v-on:click="SecondCategoryClick('DefaultVehicleKM')" :class="SecondCategorySelect=='DefaultVehicleKM'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">默认车辆公里数</button>
+            <button type="button" v-on:click="SecondCategoryClick('DefaultVehicleRoadTime')" :class="SecondCategorySelect=='DefaultVehicleRoadTime'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">默认车辆上路时间</button>
+        </p>
+    </div>
+    <div class="ibox-content" v-show="BaseCategorySelect=='ShowViews'">
+        <p>
+            <button type="button" v-on:click="SecondCategoryClick('ListPagePV')" :class="SecondCategorySelect=='ListPagePV'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'"> 列表页PV</button>
+            <button type="button" v-on:click="SecondCategoryClick('ProductDetailByCategoryPV')" :class="SecondCategorySelect=='ProductDetailByCategoryPV'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">商品详情页(按品类)PV</button>
+            <button type="button" v-on:click="SecondCategoryClick('ProductDetailByPIDPV')" :class="SecondCategorySelect=='ProductDetailByPIDPV'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">商品详情页(按PID)PV</button>
+            <button type="button" v-on:click="SecondCategoryClick('PageViewByTireSizePV')" :class="SecondCategorySelect=='PageViewByTireSizePV'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">页面浏览统计(按轮胎规格)PV</button>
+        </p>
+    </div>
+    <div class="ibox-content" v-show="BaseCategorySelect=='ShowOrders'">
+        <p>
+            <button type="button" v-on:click="SecondCategoryClick('OrderByOrderChannel')" :class="SecondCategorySelect=='OrderByOrderChannel'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'"> 订单统计(按订单渠道)</button>
+            <button type="button" v-on:click="SecondCategoryClick('OrderByCategoryYewu')" :class="SecondCategorySelect=='OrderByCategoryYewu'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'"> 订单统计(按品类/业务线)</button>
+            <button type="button" v-on:click="SecondCategoryClick('OrderByPID')" :class="SecondCategorySelect=='OrderByPID'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'"> 订单统计(按PID)</button>
+            <button type="button" v-on:click="SecondCategoryClick('OrderByOrderType')" :class="SecondCategorySelect=='OrderByOrderType'?'btn btn-lg btn-success':'btn btn-lg  btn-default'">订单统计(活动类型)</button>
+        </p>
+    </div>
+    @*<div class="ibox-content" v-show="SecondCategorySelect=='RegisterTime'">
+            <div class="form-inline">
+                <div class="form-group">
+                    <label for="exampleInputName2">注册时间</label>
+
+                    <input type="text" class="form-control">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control">
+                </div>
+                <div class="hr-line-dashed"></div>
+            </div>
+        </div>*@
+    @Html.Partial("_Share/_StaticProperty", new ViewDataDictionary() { { "config", configs.Where(x => x.TableName.Equals("dm_userdetail")) } })
+    @Html.Partial("_Share/_Vehicle", new ViewDataDictionary() { { "config", configs.Where(x => x.TableName.Equals("dm_userdetail")) } })
+    @Html.Partial("_Share/_ShowViews", new ViewDataDictionary() { { "config", configs.Where(x => x.TableName.Equals("dm_userlog")) } })
+    @Html.Partial("_Share/_ShowOrders", new ViewDataDictionary() { { "config", configs } })
+
+    <div class="ibox-content">
+        <div class="col-sm-2" style="clear:both">
+            <div class="form-group">
+                <label for="exampleInputName2">
+                    条件关系
+                </label>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <select class="form-control" v-model="JoinType">
+                    <option value="and">且</option>
+                    <option value="or">或</option>
+                    <option value="except">排除</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="ibox-content">
+        <div class="col-sm-3" style="clear:both">
+            <div class="form-group">
+                <button class="btn btn-primary">关闭</button>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="form-group">
+                <button class="btn btn-success" v-on:click="SubmitForm()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script src="https://res.tuhu.org/lib/vuejs/vue.min.js?v=20160704" type="text/javascript"></script>
+    <script src="https://res.tuhu.org/lib/require/require.min.js" type="text/javascript"></script>
+    <script src="~/Scripts/UserFilter.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        setTimeout(function () {
+            $('.date').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                autoclose: true
+            });
+            $('.clockpicker').clockpicker();
+
+        }, 500);
+
+
+        require(['vue-edit-filterrule']);
+
+
+    </script>
+}

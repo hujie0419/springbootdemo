@@ -1,0 +1,78 @@
+﻿@{
+    var Android001List = Model;
+    Tuhu.Provisioning.Business.AutoSuppliesManager manager = new Tuhu.Provisioning.Business.AutoSuppliesManager();
+}
+<div class="ModuleList">
+    @if (Android001List.Count > 0)
+    {
+        <ul>
+            @for (int i = 0; i < Android001List.Count; i++)
+            {
+                if (i >= 4)
+                {
+                    break;
+                }
+                var item = Android001List[i];
+                <li>
+                    <div class="box">
+                        <div class="picbox">
+                            <div class="line7">
+                                <div style="float:left;padding-left:10px;">@Html.Raw(item.State == 1 ? "<font color=\"#006600\">已启用</font>" : "<font color=\"#FF0000\">已停用</font>")</div>
+                                <div style="float:right;padding-right:10px;">
+                                    @{string _StatusName = manager.GetStatusName(item.BeginDateTime, item.EndDateTime);}
+                                    @Html.Raw((_StatusName == "时间已截止" ? "<font color=\"#FF0000\">" : "<font color=\"#006600\">") + _StatusName + "</font>")
+                                </div>
+                            </div>
+                            <div class="line5" title="@item.Name">@item.Name</div>
+                            <div class="line6">
+                                <div style="float:left;padding-left:10px;"><a href="javascript:void(0);" onclick="btnAdd('@item.PKID','0')">编辑</a></div>
+                            </div>
+                            @if (item.Position == 2)
+                            {
+                                <div class="line4">
+                                    <a href="/Advertise/ModuleProducts?AdvertiseID=@item.PKID">产品集合设置(@(manager.GetCountByAdID(item.PKID)))</a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+        if (Android001List.Count > 4)
+        {
+            <ul>
+                @for (int i = 4; i < Android001List.Count; i++)
+                {
+                    var item = Android001List[i];
+                    <li>
+                        <div class="box">
+                            <div class="picbox">
+                                <div class="line7">
+                                    <div style="float:left;padding-left:10px;">@Html.Raw(item.State == 1 ? "<font color=\"#006600\">已启用</font>" : "<font color=\"#FF0000\">已停用</font>")</div>
+                                    <div style="float:right;padding-right:10px;">
+                                        @{string _StatusName = manager.GetStatusName(item.BeginDateTime, item.EndDateTime);}
+                                        @Html.Raw((_StatusName == "时间已截止" ? "<font color=\"#FF0000\">" : "<font color=\"#006600\">") + _StatusName + "</font>")
+                                    </div>
+                                </div>
+                                <div class="line5" title="@item.Name">@item.Name</div>
+                                <div class="line6">
+                                    <div style="float:left;padding-left:10px;"><a href="javascript:void(0);" onclick="btnAdd('@item.PKID','0')">编辑</a></div>
+                                </div>
+                                @if (item.Position == 2)
+                                {
+                                    <div class="line4">
+                                        <a href="/Advertise/ModuleProducts?AdvertiseID=@item.PKID">产品集合设置(@(manager.GetCountByAdID(item.PKID)))</a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    }
+    else
+    {
+        <div class="nodata">暂无配置</div>
+    }
+</div>

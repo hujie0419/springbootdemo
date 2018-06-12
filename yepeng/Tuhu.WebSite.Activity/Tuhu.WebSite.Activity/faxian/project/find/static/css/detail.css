@@ -1,0 +1,181 @@
+
+.de-header{
+	width: 100%;
+	height: 44px;
+	position: fixed;
+	background-color: #fff;
+	line-height: 44px;
+	clear: both;
+	overflow: hidden;
+	text-align: left;
+	color: #d9d9d9;
+	font-size: 16px;
+	top: 0;
+}
+.de-header .de-img{
+	font-size: 30px;
+	line-height: 44px;
+	margin-left:15px;
+	width: 10.5px;
+	height: 22px;
+	position: fixed;
+	top: 0;
+}
+.floor1{
+	position: relative;
+	width: 100%;
+	height: auto;
+	overflow: hidden;
+	background: #fff;
+	padding: 0 15px;
+}
+.de-floor0{
+	margin-top:44px;
+	position: relative;
+}
+.de-page{
+	color: #454545;
+	float: left;
+	font-size: 16px;
+	width: 92%;
+	height: auto;
+	margin:10px 0;
+}
+.content h4{
+	position: relative;
+	color: #333;
+	width: 100%;
+	height: auto;
+	margin-bottom: 10px;
+	font-size: 20px;
+}
+.content h6{
+	position: relative;
+	color: #333;
+	width: 100%;
+	height: auto;
+	margin-bottom: 10px;
+	font-weight: normal;
+    font-size: 16px;
+}
+.de-tag{
+	width: 100%;
+	height: auto;
+	float: left;
+	margin-top: 10px;
+	margin-bottom: 37px;
+}
+.tag-item{
+	width: auto;
+	height: 22px;
+	line-height: 22px;
+	text-align: center;
+	background: #eee;
+	color: #c88888;
+	font-size: 14px;
+	padding: 6px;
+	float: left;
+	margin-right: 10px;
+}
+.de-title{
+	color: #999;
+	font-size: 16px;
+	width: 92%;
+	height: 30px;
+	line-height: 30px;
+	border-bottom:0.5px solid #d9d9d9; 
+	font-weight: 0;
+}
+.de-title a{
+	color: #999;
+	font-size: 16px;
+	width: 65px;
+	height: 20px;
+	line-height: 20px;
+	font-weight: 0;
+	text-decoration: none;
+	padding: 4px 0;
+}
+.de-active{
+	width: 68px;
+	border-bottom:2px solid #f57c33; 
+}
+.de-floor-top{
+	border-top: 0.5px solid #d9d9d9;
+}
+.foot-top{
+	margin-bottom: 54px;
+}
+.footer{
+	width: 100%;
+	height: 54px;
+	line-height: 54px;
+	background: #fff;
+	position: fixed;
+	bottom: 0;
+}
+.footer span{
+	width: 19px;
+	height: 19px;
+	margin-left:95px;
+	margin-top: 17px;
+	float: left;
+}
+.load-tip{
+	width: 100%;
+	height: 44px;
+	background: rgba(51, 51, 51, 1);
+	clear: both;
+	overflow: hidden;
+	margin-top: 44px;
+}
+.tuhu-logo{
+	width: 19.3px;
+	height: 16.5px;
+	margin-left:15px;
+	margin-top: 13px;
+	float: left;
+}
+.tuhu-title{
+	width: 60px;
+	height: 44px;
+	line-height: 44px;
+	margin-left:5px;
+	float: left;
+	color: #fff;
+	font-size: 14px
+}
+.load-tap{
+	width: 60px;
+	height: 14px;
+	float: right;
+	background-color: rgba(223, 52, 72, 1);
+	margin-right: 5px;
+	margin-top: 10px;
+    padding: 5px;
+    line-height: 14px;
+    font-size: 14px;
+}
+.load-dele{
+	width: 14px;
+	height: 14px;
+	margin-top: 13px;
+	margin-right: 15px;
+	float: right;
+}
+.de-position{
+	margin-top:0;
+}
+.foot-bottom{
+	margin-bottom: 0;
+}
+.foot-load{
+	width: 100%;
+	height: 32px;
+	line-height: 32px;
+	text-align: center;
+	color: #fff;
+	font-size: 14px;
+	float: left;
+	background-color: rgba(223, 52, 72, 1);
+}

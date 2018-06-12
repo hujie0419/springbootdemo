@@ -1,0 +1,103 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.MessagePush
+
+@{
+	Layout = null;
+}
+<script type="text/javascript">
+	$(function () {
+		$('input:radio[name=aheadradio]').click(function () {
+			var _aheadvalue = $(this).val();
+			$("#TotalDuration").val("0");
+			$("#AheadHour").val("0");
+			if (_aheadvalue == "0") {
+				$("#aheaddiv").hide();
+			}
+			else if (_aheadvalue == "1") {
+				$("#aheaddiv").show();
+				$("#Durationdiv").show();
+				$("#AheadDayOrHour").html("小时");
+			}
+			else {
+				$("#TotalDuration").val("99999");
+				$("#aheaddiv").show();
+				$("#Durationdiv").hide();
+				$("#AheadDayOrHour").html("天");
+			}
+		});
+
+		$("form").submit(function () {
+			if ($("#EnID").val() == "" || $("#MsgTitle").val() == "" || $("#MsgContent").val() == "") {
+				alert('请输入英文标识、标题和内容');
+				return false;
+			}
+			var reg = /^[0-9]*$/;
+			if (!reg.test($("#TotalDuration").val())) {
+				alert('总时长须为正整数');
+				return false;
+			}
+			if (!reg.test($("#AheadHour").val())) {
+				alert('提前时间须为正整数');
+				return false;
+			}
+		});
+	});
+</script>
+@using (Html.BeginForm())
+{
+	@Html.ValidationSummary(true)
+	@Html.HiddenFor(m => m.PKID)
+
+	<table style="background:#ffffff;font-size:12px;width:100%;">
+		<tr>
+			<td align="right" style="width:20%;">英文标识：</td>
+			<td style="width:80%;">@Html.TextBoxFor(model => model.EnID, new { @style = "width:150px" })</td>
+		</tr>
+		<tr>
+			<td align="right">标题：</td>
+			<td>
+				@Html.TextBoxFor(model => model.MsgTitle, new { @style = "width:250px" })
+			</td>
+		</tr>
+		<tr>
+			<td align="right">内容：</td>
+			<td>
+				@Html.TextAreaFor(model => model.MsgContent, new { @style = "width:250px;height:70px;" })
+			</td>
+		</tr>
+		<tr>
+			<td align="right">链接：</td>
+			<td>
+				@Html.TextBoxFor(model => model.MsgLink, new { @style = "width:250px" })
+			</td>
+		</tr>
+		<tr>
+			<td align="right">描述：</td>
+			<td>
+				@Html.TextBoxFor(model => model.MsgDescription, new { @style = "width:250px" })
+			</td>
+		</tr>
+		<tr>
+			<td align="right">时间性：</td>
+			<td>
+				<input type="radio" value="0" name="aheadradio" @Html.Raw(Model.AheadHour == 0 ? " checked=\"checked\"" : "") />即时
+				<input type="radio" value="1" name="aheadradio" @Html.Raw(Model.AheadHour != 0 ? " checked=\"checked\"" : "") />提前小时
+				<input type="radio" value="2" name="aheadradio" @Html.Raw(Model.AheadHour != 0 && Model.TotalDuration == 99999 ? " checked=\"checked\"" : "") />提前天数
+				<div id="aheaddiv" style="padding-top: 10px;@Html.Raw(Model.AheadHour == 0 ? "display: none;" : "")">
+					<span id="Durationdiv" @Html.Raw(Model.TotalDuration == 99999 ? "style=\"display: none;\"" : "")>
+						总时长：@Html.TextBoxFor(model => model.TotalDuration, new { @style = "width:30px;text-align:center;" }) 小时
+					</span>
+					提前时间：@Html.TextBoxFor(model => model.AheadHour, new { @style = "width:30px;text-align:center;" })
+					<span id="AheadDayOrHour">@Html.Raw(Model.TotalDuration == 99999 ? "天" : "小时")</span>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"></td>
+			<td>
+				<input type="submit" value="保存" />
+				&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="button" value="取消并返回" onclick="location = 'MessagePushManage'" />
+			</td>
+		</tr>
+	</table>
+}

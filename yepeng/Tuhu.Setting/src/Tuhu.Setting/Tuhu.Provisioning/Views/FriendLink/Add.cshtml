@@ -1,0 +1,28 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@model FriendLink
+
+@{
+    Layout = null;
+}
+
+<div>
+    <table>
+        <tbody>
+            <tr>
+                <td>友链名称:</td>
+                <td>
+                    <input type="text"  class="FriendLinkName" value="@Model.FriendLinkName" /><span style="color:red">*</span>
+                </td>
+            </tr>
+            <tr>
+                <td>友链链接:</td>
+                <td><input type="text" class="Link" value="@Model.Link" /><span style="color:red">*</span></td>
+            </tr>
+
+            <tr>
+                <td>友链位置:</td>
+                <td><input type="text" class="Position" value="@Model.Position" /></td>
+            </tr>
+        </tbody>
+    </table>
+</div>

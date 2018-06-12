@@ -1,0 +1,125 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3A6027BD-051E-4DBB-B0FC-FBEB1750BE42}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Tuhu.C.Job.UserShareJob</RootNamespace>
+    <AssemblyName>Tuhu.C.Job.UserShareJob</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autofac, Version=4.1.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.4.1.0\lib\net45\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging, Version=3.4.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.3.4.1\lib\net40\Common.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging.Core, Version=3.4.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.Core.3.4.1\lib\net40\Common.Logging.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging.Log4Net1211, Version=3.1.0.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.Log4Net1211.3.1.0\lib\net40\Common.Logging.Log4Net1211.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Quartz">
+      <HintPath>..\packages\Quartz.2.4.1\lib\net40\Quartz.dll</HintPath>
+    </Reference>
+    <Reference Include="RabbitMQ.Client, Version=3.6.0.0, Culture=neutral, PublicKeyToken=89e7d7c5feba84ce, processorArchitecture=MSIL">
+      <HintPath>..\packages\RabbitMQ.Client.3.6.0\lib\net45\RabbitMQ.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Interactive, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Interactive.3.1.1\lib\net45\System.Interactive.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Tuhu, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.2.2.9\lib\net45\Tuhu.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.MessageQueue, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.MessageQueue.2.1.0.0\lib\net45\Tuhu.MessageQueue.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.2.1.4\lib\net45\Tuhu.Service.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Member, Version=1.5.7.9, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Member.1.5.7.9\lib\net45\Tuhu.Service.Member.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Order, Version=2.3.3.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Order.2.3.3\lib\net45\Tuhu.Service.Order.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.UserAccount, Version=1.1.9.2, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.UserAccount.1.1.9.2\lib\net45\Tuhu.Service.UserAccount.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Dal\DalCouponPrice.cs" />
+    <Compile Include="Dal\DalExpiringIntegral.cs" />
+    <Compile Include="Dal\DalShareUser.cs" />
+    <Compile Include="Job\SendCodeForUserGroupJob.cs" />
+    <Compile Include="Job\UpdateCouponPriceJob.cs" />
+    <Compile Include="Job\UserExpiringIntegralJob.cs" />
+    <Compile Include="Job\UserIntegralExpireJob.cs" />
+    <Compile Include="Job\UserIntegralFixJob.cs" />
+    <Compile Include="Job\UserShareRankingJob.cs" />
+    <Compile Include="Model\CouponPriceModel.cs" />
+    <Compile Include="Model\ExpiringIntegralModel.cs" />
+    <Compile Include="Model\ShareUserModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,591 @@
+﻿@{
+    Layout = null;
+}
+@model Tuhu.Provisioning.DataAccess.Mapping.HomePageCarActivityEntity
+
+
+<div class="modal-dialog" style="width:900px;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                &times;
+            </button>
+            <h4 class="modal-title">
+                车型活动
+            </h4>
+        </div>
+        <div class="modal-body">
+            <form id="form1" class="form-horizontal">
+               <div class="form-group">
+                   <label class="col-sm-2 control-label">名称:</label>
+                   <div class="col-sm-4">
+                       <input type="text" class="form-control" id="Name" name="Name" value="@Model.Name" />
+                   </div>
+                   <label class="col-sm-2 control-label">状态: </label>
+                   <div class="col-sm-4">
+                       <input type="radio" name="Status" value="true"  @(Model.Status ==true?"checked=\"checked\"":"")  />启用
+                       <input type="radio" name="Status" value="false" @(Model.Status ==false?"checked=\"checked\"":"")  />禁用
+                   </div>
+               </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">开始时间:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" name="StartDateTime" id="StartDateTime" value="@(string.Format("{0:yyyy-MM-dd HH:mm:ss}",Model.StartDateTime))" />
+                    </div>
+                    <label class="col-sm-2 control-label">结束时间:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" name="EndDateTime" id="EndDateTime" value="@(string.Format("{0:yyyy-MM-dd HH:mm:ss}",Model.EndDateTime))" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">开始版本：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="StartVersion" name="StartVersion" value="@Model.StartVersion" />
+                    </div>
+                    <label class="col-sm-2 control-label">结束版本：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="EndVersion" name="EndVersion" value="@Model.EndVersion" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">选择人群:</label>
+                    <div class="col-sm-4">
+                        <select id="PeopleTip" name="PeopleTip" multiple="multiple" style="width: 90%;"></select>
+                        <input type="hidden" id="UserIDs" name="UserIDs" value="@Model.UserIDs" />
+                    </div>
+                    <label class="col-sm-2 control-label">排序：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="OrderBy" name="OrderBy" value="@Model.OrderBy" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-12" style="text-align:center;border-bottom:solid 1px #EED5B7;">
+                        <span>地区配置</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-2"></div>
+                    <div class="col-sm-8">
+                        <a href="#" class="btn btn-default btn-sm form-control" id="btnAddCity">新增城市</a>
+                    </div>
+                    <div class="col-sm-2"></div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-12" style="text-align:center;border-bottom:solid 1px #EED5B7;">
+                        <span>车型配置</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-2"></div>
+                    <div class="col-sm-8">
+                        <a href="#" class="btn btn-default btn-sm form-control" id="btnAddCar">新增车型</a>
+                    </div>
+                    <div class="col-sm-2"></div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-1 control-label">主标题:</label>
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control" id="MainTitle" name="MainTitle" value="@Model.MainTitle"/>
+                    </div>
+                    <label class="col-sm-2 control-label">主标题颜色:</label>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="MainTitleColor" name="MainTitleColor" value="@Model.MainTitleColor"/>
+                    </div>
+                    <label class="col-sm-2 control-label">主标题高亮颜色:</label>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="MainHighlightColor" name="MainHighlightColor" value="@Model.MainHighlightColor" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-1 control-label">副标题:</label>
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control" id="SubTitle" name="SubTitle" value="@Model.SubTitle" />
+                    </div>
+                    <label class="col-sm-2 control-label">副标题颜色:</label>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="SubTitleColor" name="SubTitleColor" value="@Model.SubTitleColor" />
+                    </div>
+                    <label class="col-sm-2 control-label">副标题高亮颜色:</label>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="SubHighlightColor" name="SubHighlightColor" value="@Model.SubHighlightColor" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">跳转链接:</label>
+                    <div class=" col-sm-3">
+                        <select class="form-control required" id="Category" name="Category" style="display: inline;">
+                            <option value="">请选择</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-7">
+                        <input type="text" class="form-control" id="JumpUrl" name="JumpUrl" size="50" data-toggle="modal"  value="@Model.JumpUrl" >
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">未编码:</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="NoLinkUrl" name="NoLinkUrl" size="50" readonly="readonly">
+                </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">位 置:</label>
+                    <div class="col-sm-4">
+                        <select id="Position" name="Position" class="form-control">
+                            <option value="1" @(Model.Position == 1 ? "selected=\"selected\"" : "")>车型活动</option>
+                            <option value="2" @(Model.Position == 2 ? "selected=\"selected\"" : "")>负一楼活动</option>
+                        </select>
+                    </div>
+                    <label class="col-sm-2 control-label">图 片:</label>
+                    <div class="col-sm-4">
+                        <input type="hidden" id="ImageUrl" name="ImageUrl" value="@Model.ImageUrl" />
+                        <img width="30" height="30" style="display:inline;" id="imgButton" @(string.IsNullOrWhiteSpace(Model.ImageUrl) == false ? "src=" + Model.ImageUrl : "") />
+                        <input type="file" id="uploadImageUrl" name="uploadImageUrl" style="display:inline;width:120px;" onchange="UploadBgImg(this, 'imgButton', 'ImageUrl')" />
+                    </div>
+                </div>
+                    <input type="hidden" id="PKID" name="PKID" value="@Model.PKID" />
+                    <input type="hidden" id="hidCarInfo" name="hidCarInfo" value="@ViewBag.CarItems" />
+                <input type="hidden" id="hidCity" name="hidCity" value="@ViewBag.City" />
+          </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="btnSave" name="btnSave" class="btn btn-primary">
+                保 存
+            </button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                取 消
+            </button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $('#btnAddCity').on('click', function () {
+        var html = '<div class="form-group">';
+        html += ' <label class="col-sm-2 control-label">省/市:</label>';
+        html += ' <div class="col-sm-3" style="margin-top:6px;">';
+        html += ' <select  name="Province" class="form-control"  onchange="GetCityChildOption(this)">';
+        html += ' </select>';
+        html += '</div>';
+        html += ' <label class="col-sm-2 control-label">市/区:</label>';
+        html += ' <div class="col-sm-3" style="margin-top:6px;">';
+        html += ' <select  name="City"></select>';
+        html += '</div>';
+        html += '<div class="col-sm-2">  <a href="#" class="btn btn-default btn-sm" onclick="btnDeleteCity(this)" >删除城市</a>  </div>';
+        html += '</div>';
+        $(this).parent().parent().prepend(html);
+        GetCityJsonOption();
+    });
+
+    $('#btnAddCar').on('click', function () {
+        var html = '<div class="form-group">';
+        html += ' <div class="col-sm-11" style="text-align: center;">';
+        html += '  品牌:<select  name="Brand" style="width:15%"> </select>'
+            + '车系: <select name="Vehicle" style="width:8%"></select>'
+            + '排量: <select name="u_PaiLiang" style="width:10%"></select>'
+            + '年份: <select name="u_Nian" style="width:8%"></select>'
+            + '款式: <select name="SalesName" style="width:32%"></select>';
+        html += ' </div>';
+        html += '<div class="col-sm-1">  <a href="#" class="btn btn-default btn-sm" onclick="btnDeleteCity(this)">删 除</a>  </div>';
+        html += '  </div>';
+        $(this).parent().parent().prepend(html);
+        bindBrand();
+    });
+
+
+    var itemDomian = "http://item.tuhu.cn";
+    $(function () {
+        $.ajax({
+            url: "/HomePageConfigV2/GetHomePopUserJosn",
+            type: "post",
+            dataType: "json",
+            async: false,
+            success: function (res) {
+                if (res) {
+                    for (var key in res) {
+                        $("#PeopleTip").append("<option value=\"" + res[key].id + "\">" + res[key].text + "</option>");
+                    }
+                }
+                $("#PeopleTip").multipleSelect({
+                    selectAll: false
+                });
+                var selValue = $("#UserIDs").val();
+                if (selValue) {
+                    $("#PeopleTip").multipleSelect("setSelects", selValue.split(","));
+                }
+            }
+        });
+
+        init();
+    });
+
+    function init() {
+
+        var citys = $('#hidCity').val();
+        if (citys) {
+            var cityValue = JSON.parse(citys);
+                console.log(cityValue);
+                var province = [];
+
+                for (var n = 0; n < cityValue.length; n++) {
+                    if (province.indexOf((cityValue[n].ParentID == 0 ? cityValue[n].RegionID : cityValue[n].ParentID)) < 0) {
+                        province.push((cityValue[n].ParentID == 0 ? cityValue[n].RegionID : cityValue[n].ParentID));
+                    }
+                }
+
+
+                for (var j = 0; j < province.length; j++) {
+                    console.log(j);
+                    $('#btnAddCity').trigger('click');
+                    $('select[name="Province"]').each(function (e) {
+                        var value = $(this).val();
+                        if (!value) {
+                            $(this).val(province[j]);
+                            $(this).trigger('change');
+                            $('select[name="City"]').each(function () {
+                                var v = $(this).val();
+                                if (!v) {
+                                    $(this).multipleSelect("setSelects", GetCityByParent(cityValue, province[j]));
+                                }
+                            });
+                        }
+                    });
+                }
+
+            
+        }
+
+        var CarInfo = $('#hidCarInfo').val();
+        if (CarInfo) {
+            var CarItmes = JSON.parse(CarInfo);
+            for (var key in CarItmes) {
+                var item = CarItmes[key];
+                $('#btnAddCar').trigger('click');
+                var list = $('select[name="Brand"]');
+                list.each(function () {
+                    var val = $(this).val();
+                    var parent = $(this).parent();
+                    if (!val) {
+                        $(this).val(item.Brand);
+                      
+                        $(this).trigger("change");
+                        $('select[name="Vehicle"]', parent).val(item.Vehicle);
+                        
+                        bindPailing(parent, item.Vehicle, item.u_PaiLiang);
+
+                        if (item.u_PaiLiang && item.u_Nian) {
+                            bindNianFen(parent, item.Vehicle, item.u_PaiLiang, item.u_Nian);
+                        }
+
+                        if (item.u_PaiLiang && item.u_Nian && item.SalesName) {
+                            bindSalesName(parent, item.Vehicle, item.u_PaiLiang, item.u_Nian, item.SalesName);
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    function bindBrand() {
+        $.ajax({
+            url: "/HomePageCarActivity/GetBrand",
+            dataType: "json",
+            async: false,
+            success: function (res) {
+                if (res) {
+                    var list = $('select[name="Brand"]');
+                    list.each(function () {
+                        var select = $(this);
+                        if (select.children().length == 0) {
+                            select.append(`<option value="">===请选择===</option> `);
+                            for (var key in res) {
+                                var value = res[key].Brand;
+                                select.append(`<option value="${value}">${value}</option> `);
+                            }
+                            select.change(function () {
+                                var value = $(this).val();
+                                bindVehicle(this, value);
+                                $('select[name="u_PaiLiang"]', $(this).parent()).empty();
+                                $('select[name="u_Nian"]', $(this).parent()).empty();
+                                $('select[name="SalesName"]', $(this).parent()).empty();
+                            })
+
+                            var parent = $(this).parent();
+                            $('select[name="Vehicle"]', parent).on("change", function () {
+                                bindPailing($(this).parent(), $(this).val());
+                                $('select[name="u_Nian"]', $(this).parent()).empty();
+                                $('select[name="SalesName"]', $(this).parent()).empty();
+                            });
+                            $('select[name="u_PaiLiang"]', parent).on("change", function () {
+                                var vehicleId = $('select[name="Vehicle"]', $(this).parent()).val();
+                                bindNianFen($(this).parent(), vehicleId, $(this).val());
+                                $('select[name="SalesName"]', $(this).parent()).empty();
+                            });
+                            $('select[name="u_Nian"]', parent).on("change", function () {
+                                var vehicleId = $('select[name="Vehicle"]', $(this).parent()).val();
+                                var pailing = $('select[name="u_PaiLiang"]', $(this).parent()).val();
+                                bindSalesName($(this).parent(), vehicleId, pailing, $(this).val())
+                            });
+                        }
+                    });
+
+                }
+            }
+        })
+    }
+
+    function bindVehicle(obj, brand) {
+        var parent = $(obj).parent();
+        var select = $('select[name="Vehicle"]', parent);
+        if (brand) {
+            $.ajax({
+                url: "/HomePageCarActivity/GetVehicle?brand=" + brand,
+                dataType: "json",
+                async: false,
+                success: function (res) {
+                    if (res) {
+
+                        select.empty();
+                        select.append(`<option value="">===请选择===</option> `);
+                        for (var key in res) {
+                            var name = res[key].CarName;
+                            var value = res[key].VehicleId;
+                            select.append(`<option value="${value}">${name}</option> `);
+                        }
+                    }
+                }
+            });
+        } else {
+            select.empty();
+        }
+    }
+
+    function bindPailing(parent, vehicleId,val) {
+        var select = $('select[name="u_PaiLiang"]', parent);
+        if (vehicleId) {
+            $.ajax({
+                url: itemDomian + "/Car/SelectVehicle?VehicleID=" + vehicleId,
+                dataType: "jsonp",
+             //   async: false,
+                success: function (data) {
+                    var res = data.PaiLiang;
+                    if (res) {
+                        select.empty();
+                        select.append(`<option value="">===请选择===</option> `);
+                        for (var key in res) {
+                            var name = res[key].Value;
+                            var value = res[key].Value;
+                            select.append(`<option value="${value}">${name}</option> `);
+                        }
+                        if (val) {
+                            select.val(val);
+                        }
+                    }
+                }
+            });
+        } else {
+            select.empty();
+        }
+    }
+
+    function bindNianFen(parent, vehicleId, paiLing,val) {
+        var select = $('select[name="u_Nian"]', parent);
+        if (paiLing) {
+            $.ajax({
+                url: itemDomian + "/Car/SelectVehicle?VehicleID=" + vehicleId + "&PaiLiang=" + paiLing,
+                dataType: "jsonp",
+             //   async: false,
+                success: function (data) {
+                    var res = data.Nian;
+                    if (res) {
+                        select.empty();
+                        select.append(`<option value="">===请选择===</option> `);
+                        for (var key in res) {
+                            var name = res[key].Value;
+                            var value = res[key].Value;
+                            select.append(`<option value="${value}">${name}</option> `);
+                        }
+                        if (val) {
+                            select.val(val);
+                        }
+                    }
+                }
+            });
+        } else {
+            select.empty();
+        }
+    }
+
+    function bindSalesName(parent, vehicleId, paiLing, nian,val) {
+        var select = $('select[name="SalesName"]', parent);
+        if (nian) {
+            $.ajax({
+                url: itemDomian + "/Car/SelectVehicleSalesName?VehicleID=" + vehicleId + "&PaiLiang=" + paiLing + "&Nian=" + nian,
+                dataType: "jsonp",
+              //  async: false,
+                success: function (data) {
+                    var res = data.SalesName;
+                    if (res) {
+                        select.empty();
+                        select.append(`<option value="">===请选择===</option> `);
+                        for (var key in res) {
+                            var name = res[key].Name;
+                            var value = res[key].TID;
+                            select.append(`<option value="${value}">${name}</option> `);
+                        }
+                        if (val) {
+                            select.val(val);
+                        }
+                    }
+                }
+            });
+        } else {
+            select.empty();
+        }
+    }
+   
+    function GetCityJsonOption() {
+
+        var provinces = $('select[name="Province"]');
+        provinces.each(function (e) {
+            var parentID = $(this).val();
+            var self = $(this);
+            if (!parentID) {
+                parentID = 0;
+                $.ajax({
+                    type: "POST",
+                    url: "/HomePageConfig/GetCity",
+                    async: false,
+                    data: "parentID=" + parentID,
+                    success: function (msg) {
+                        var ResultHtml = ""
+                        var TemplateHtml = '<option value="{value}">{text}</option>';
+                        var obj = eval(msg);
+                        $(obj).each(function (i) {
+                            ResultHtml += TemplateHtml.replace("{value}", obj[i].Value).replace("{text}", obj[i].Text);
+                        });
+                        $(self).empty();
+                        $(self).append('<option value="">请选择</option>');
+                        $(self).append(ResultHtml);
+
+                    }
+                });
+            }
+        });
+
+
+    }
+
+
+    function GetCityChildOption(self) {
+        var parentID = $(self).val();
+        if (parentID) {
+            $.ajax({
+                type: "POST",
+                url: "/HomePageConfig/GetCity",
+                async: false,
+                data: "parentID=" + parentID,
+                success: function (msg) {
+                    var ResultHtml = '<option value="">请选择</option>';
+                    var TemplateHtml = '<option value="{value}">{text}</option>';
+                    var obj = eval(msg);
+                    $(obj).each(function (i) {
+                        ResultHtml += TemplateHtml.replace("{value}", obj[i].Value).replace("{text}", obj[i].Text);
+                    });
+                    var child = $(self).parent().parent().find('select[name="City"]');
+                    child.empty();
+                    child.append(ResultHtml);
+                    child.multipleSelect({
+                        width: '100%',
+                        selectAll: true
+                    });
+                }
+            });
+        }
+    }
+
+    function GetCityByParent(cityValue, parent) {
+        var temp = [];
+        for (var i = 0; i < cityValue.length; i++) {
+            var p = (cityValue[i].ParentID == 0 ? cityValue[i].RegionID : cityValue[i].ParentID);
+            if (parent == p) {
+                temp.push(cityValue[i].RegionID);
+            }
+        }
+        return temp;
+    }
+
+    function btnDeleteCity(self) {
+        $(self).parent().parent().remove();
+    }
+
+    $('#btnSave').on('click', function () {
+        var data = {};
+        data.PKID = $('#PKID').val();
+        data.Name = $('#Name').val();
+        data.StartDateTime = $('#StartDateTime').val();
+        data.EndDateTime = $('#EndDateTime').val();
+        data.StartVersion = $('#StartVersion').val();
+        data.EndVersion = $('#EndVersion').val();
+        data.MainTitle = $('#MainTitle').val();
+        data.MainTitleColor = $('#MainTitleColor').val();
+        data.MainHighlightColor = $('#MainHighlightColor').val();
+        data.SubTitle = $('#SubTitle').val();
+        data.SubTitleColor = $('#SubTitleColor').val();
+        data.SubHighlightColor = $('#SubHighlightColor').val();
+        data.Status = $('input[name="Status"]:checked').val();
+        data.UserIDs = $("#PeopleTip").multipleSelect("getSelects").toString();
+        data.OrderBy = $("#OrderBy").val();
+        data.JumpUrl = $('#JumpUrl').val();
+        var citys = $('select[name="City"]');
+        citys.each(function () {
+            var sel = $(this).multipleSelect("getSelects");
+            data.City += sel.toString() + ',';
+        });
+
+
+        data.Cars = [];
+        var cars = $('select[name="Brand"]');
+        cars.each(function () {
+            var value = $(this).val();
+            var parent = $(this).parent();
+            var vehicleId = $('select[name="Vehicle"]', parent).val();
+            var pailing = $('select[name="u_PaiLiang"]', parent).val();
+            var nian = $('select[name="u_Nian"]', parent).val();
+            var tid = $('select[name="SalesName"]', parent).val();
+            var item = {
+                Brand: value,
+                Vehicle: vehicleId,
+                SalesName: tid,
+                u_Nian: nian,
+                u_PaiLiang: pailing
+            }
+            data.Cars.push(item);
+        });
+        if (data.Cars.length > 0)
+            data.CarItems = JSON.stringify(data.Cars);
+        data.Position = $('#Position').val();
+        data.ImageUrl = $('#ImageUrl').val();
+
+        $.ajax({
+            url: '/HomePageCarActivity/Save',
+            type: 'post',
+            data: {
+                json: JSON.stringify(data),
+                cityInfo: data.City,
+                cars: JSON.stringify(data.Cars)
+            },
+            dataType: 'json'
+        }).done(function (result) {
+            if (result == 1)
+                location.reload();
+            else
+                alert("保存失败");
+        });
+
+    });
+
+    initSelectRouter(Category,1);             //生成选择项
+    initDocodeLink(JumpUrl, NoLinkUrl);     //生成未编码链接
+    getUrl(JumpUrl, NoLinkUrl, Category,1);   //进入跳转页面
+
+</script>

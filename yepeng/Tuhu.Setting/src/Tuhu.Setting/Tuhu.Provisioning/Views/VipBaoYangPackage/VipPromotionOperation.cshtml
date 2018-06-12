@@ -1,0 +1,305 @@
+﻿@{
+    ViewBag.Title = "大客户保养套餐";
+}
+@section head{
+    <link rel="stylesheet" href="/Scripts/artDialog6.0.4/css/ui-dialog.css" />
+    <link href="~/css/beautyPackage.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+        .ui-dialog {
+            width: auto;
+        }
+    </style>
+}
+
+<div id="div" v-cloak>
+    <h2><a href="/VipBaoYangPackage/VipBaoYangPackage">保养套餐配置</a><a href="/VipBaoYangPackage/VipPromotionOperation" style="margin-left:30px">给用户塞券</a><a href="/VipBaoYangPackage/PromotionOperationRecord" style="margin-left:30px">塞券记录</a><a href="/VipBaoYangPackage/VipBaoYangPackageSmsConfig" style="margin-left:30px">短信配置</a></h2>
+    <div style="margin-top:20px;">
+        <select :disabled="promotion.batchCode!=''" id="vipUserId" onchange="ChangeUser()" style="height:30px;">
+            <option value="00000000-0000-0000-0000-000000000000">请选择申请塞券的大客户</option>
+            <option v-for="item in configUser" :value="item.VipUserId">{{item.VipUserName}}</option>
+        </select>
+        <select :disabled="promotion.batchCode!=''" v-model="promotion.packageInfo" style="margin-left:20px;height:30px;">
+            <option value="">请选择套餐名称</option>
+            <option v-for="item in configPackages" :value="item">{{item.PackageName}}</option>
+        </select>
+        <select :disabled="promotion.batchCode!=''" v-model="promotion.ruleGUID" style="margin-left:20px;height:30px;">
+            <option value="">领取规则（ID+优惠券名称+描述）</option>
+            <option v-for="item in ruleIds" :value="item.RuleGUID">{{item.PKID}}-{{item.PromotionName}}-{{item.Description}}</option>
+        </select>
+        <a style="margin-left:10px;margin-right:10px" href="/VipBaoYangPackage/ExportVipBaoYangPackageTemplate">模板下载</a>
+        <input type='text' name='textfield' id='textfield' class='txt' style="display:none " />
+        <input type="file" v-on:change="uploadFileChange($event)" />
+        <input type="button" value="批量导入" v-on:click="UploadFile()" /><span>(导入数据不能超过1000条)</span>
+    </div>
+    <div style="margin-top:20px;">
+        <span style="color:red;">1.上传成功后，30s后会自动对上传的数据进行处理，可以到塞券记录查看结果<br/>
+                                 2.塞券时填写的起始时间默认为当天的00:00，截止时间为所填写日期的24:00，起始时间和截止时间必须两者都填写，如果两者都不填写，则塞券有效期仍是使用券规则配置的有效期数据</span>
+    </div>
+    <table class="tableContainer" style="margin-top:30px">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>手机号</th>
+                <th>套餐PID</th>
+                <th>套餐名称</th>
+                <th>机油升数</th>
+            </tr>
+        </thead>
+        <tr v-if="list.length<=0&&!loading">
+            <td colspan="5">无数据</td>
+        </tr>
+        <tr v-if="loading">
+            <td colspan="5"><img src="/Images/loading.gif" /></td>
+        </tr>
+        <tr v-for="(item,index) in list">
+            <td>{{index+1}}</td>
+            <td>{{item.MobileNumber}}</td>
+            <td>{{promotion.packageInfo.PID}}</td>
+            <td>{{promotion.packageInfo.PackageName}}</td>
+            <td>{{promotion.packageInfo.Volume | formatValue}}</td>
+        </tr>
+    </table>
+    <div style="margin-top:20px;">
+        <select v-model="pager.size">
+            <option v-for="size in sizes" v-bind:value="size">{{size}}</option>
+        </select>
+        <button v-on:click="pager.current=1" v-bind:disabled="pager.current<=1">首页</button>
+        <button v-on:click="pager.current-=1" v-bind:disabled="pager.current<=1">上一页</button>
+        <button v-on:click="pager.current+=1" v-bind:disabled="pager.current>=pager.pages">下一页</button>
+        <button v-on:click="pager.current=pager.pages" v-bind:disabled="pager.current>=pager.pages">最后一页</button>
+        <label>当前第{{pager.current}}页</label>
+        <label>共{{pager.pages}}页</label>
+        <label>共{{pager.total}}个手机号</label>
+    </div>
+    @*<div style="margin-top:20px;margin-left:40%">
+        <input type="button" style="height:30px" v-on:click="createPromotion" value="确认给以上用户塞券" />
+    </div>*@
+    <table class="errorInfo-template" style="display:none;width:100%">
+        <tr>
+            <th>#</th>
+            <th>手机号</th>
+            <th>车牌号</th>
+            <th>错误消息</th>
+        </tr>
+    </table>
+</div>
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script type="text/javascript" src="~/Content/My97DatePicker/WdatePicker.js"></script>
+    <script src="/Scripts/artDialog6.0.4/dist/dialog-min.js"></script>
+    <script src="/Scripts/artDialog6.0.4/dist/dialog-plus-min.js"></script>
+    <script src="/Scripts/ajaxfileupload.js"></script>
+    <script type="text/javascript">
+        function ChangeUser() {
+            vue.promotion.vipUserId = $("#vipUserId").val();
+        }
+        function formatDate(value) {
+            if (value) {
+                var time = value instanceof Date ? value : eval('new ' + value.toString().replace(/\//g, ""));
+                var year = time.getFullYear();
+                var day = time.getDate();
+                var month = time.getMonth() + 1;
+                var hours = time.getHours();
+                var minutes = time.getMinutes();
+                var seconds = time.getSeconds();
+                var func = function (value, number) {
+                    var str = value.toString();
+                    while (str.length < number) {
+                        str = "0" + str;
+                    }
+                    return str;
+                }
+                if (year == 1) {
+                    return "";
+                } else {
+                    return func(year, 4) + '-' + func(month, 2) + '-' + func(day, 2) + ' ' + func(hours, 2) + ":" + func(minutes, 2) + ":" + func(seconds, 2)
+                }
+            }
+        }
+        function formatValue(value) {
+            var result = value;
+            if (value == "" || value == null || value == undefined) {
+                result = "/"
+            }
+            return result;
+        }
+
+        Vue.filter('formatDate', formatDate);
+        Vue.filter('formatValue', formatValue);
+        var vue = new Vue({
+            el: "#div",
+            data: {
+                pager: { current: 1, size: 10, total: 0, pages: 0 },
+                file: "",
+                packages: [],
+                brands: [],
+                loading: false,
+                uploadInfo: [],
+                sizes: [5, 10, 20, 40, 50, 100, 200],
+                configUser: [],
+                configPackages: [],
+                ruleIds: [],
+                promotion: {
+                    promotionId: "",
+                    batchCode:"",
+                    miniMoney: "",
+                    discount: "",
+                    name: "",
+                    des: "",
+                    validDay: "",
+                    startTime: "",
+                    endTime: "",
+                    validTime: "1",
+                    packageInfo: "",
+                    vipUserId: "00000000-0000-0000-0000-000000000000",
+                    ruleGUID: "",
+                    volume: ""
+                },
+            },
+            watch: {
+                "pager.size": function () {
+                    this.pager.pages = Math.ceil(self.pager.total / self.pager.size);
+                },
+                "promotion.validTime": function () {
+                    var self = this;
+                    if (self.promotion.validTime == "1") {
+                        self.promotion.startTime = "";
+                        self.promotion.endTime = "";
+                    } else {
+                        self.promotion.validDay = "";
+                    }
+                },
+                "promotion.vipUserId": function () {
+                    var self = this;
+                    self.promotion.packageInfo = "";
+                    this.GetBaoYangPackageNameByVipUserId();
+                },
+                uploadInfo: function () {
+                    this.pager.total = this.uploadInfo.length;
+                    this.pager.pages = Math.ceil(this.pager.total / this.pager.size);
+                },
+            },
+            created: function () {
+                this.GetBaoYangPackageConfigUser();
+                this.GetAllRulesIds();
+                //this.GetOilBrands();
+                //this.Init();
+            },
+            computed: {
+                list: function () {
+                    var self = this;
+                    if (self.uploadInfo && self.uploadInfo.length > 0) {
+                        var pager = self.pager;
+                        pager.current = pager.current < 1 ? 1 : (pager.current > pager.pages ? pager.pages : pager.current);
+                        return self.uploadInfo.filter(function (item, index) {
+                            return (index + 1) > (pager.size * (pager.current - 1)) && (index + 1) <= pager.size * pager.current;
+                        });
+                    }
+                    return [];
+                }
+            },
+            methods: {
+                GetBaoYangPackageConfigUser: function () {
+                    var self = this;
+                    $.get("GetBaoYangPackageConfigUser", function (result) {
+                        self.configUser = result || [];
+                    });
+                },
+                GetBaoYangPackageNameByVipUserId: function () {
+                    var self = this;
+                    self.promotion.vipUserId=$("#vipUserId").val();
+                    $.post("GetBaoYangPackageNameByVipUserId", { vipUserId: self.promotion.vipUserId }, function (result) {
+                        self.configPackages = result || [];
+                    })
+                },
+                GetAllRulesIds: function () {
+                    var self = this;
+                    $.get("/VipBaoYangPackage/GetCouponRules", function (result) {
+                        self.ruleIds = result || [];
+                    });
+                },
+                uploadFileChange: function (event) {
+                    //this.promotion.batchCode = "";
+                    var input = event.target;
+                    var file = input.files[0];
+                    if (file) {
+                        this.file = file;
+                    }
+                    else this.file = null;
+                },
+                UploadFile: function () {
+                    var self = this;
+                    if (!self.promotion.packageInfo || self.promotion.packageInfo.length <= 0) {
+                        alert("请选择大客户套餐"); return;
+                    }
+                    if (!self.promotion.ruleGUID || self.promotion.ruleGUID == "") {
+                        alert("请选择领取规则"); return;
+                    }
+                    if (!self.file) {
+                        alert("请先选择文件再上传");
+                        return;
+                    }
+                    var formData = new FormData();
+                    formData.append("file", self.file);
+                    formData.append("packageId", self.promotion.packageInfo.PKID);
+                    formData.append("ruleGUID", self.promotion.ruleGUID);
+                    $.ajax({
+                        url: '/VipBaoYangPackage/UploadExcel',
+                        type: "post",
+                        data: formData,
+                        contentType: false,
+                        processData: false,
+                        success: function (data) {
+                            if (data.status) {
+                                self.uploadInfo = data.data || [];
+                                alert("上传成功,正在塞券,请稍后");
+                            } else {
+                                alert(data.msg);
+                            }
+                        }
+                    });
+                },
+                createPromotion: function () {
+                    var self = this;
+                    if (!self.file) {
+                        alert("请先选择文件再上传"); return;
+                    }
+                    if (self.promotion.batchCode == "") {
+                        alert("请勿重复点击"); return;
+                    }
+                    //if (confirm("是否确认操作")) {
+                    //    $.post("CreatePromotion", { batchCode: self.promotion.batchCode }, function (result) {
+                    //        self.promotion.batchCode = "";
+                    //        if (result.status && result.data.length == 0) {
+                    //            alert("操作成功");
+                    //        } else {
+                    //            $(".errorInfo-template tr:not(:first)").empty();
+                    //            var html = "";
+                    //            var d = dialog({
+                    //                title: "失败信息",
+                    //                width: 600,
+                    //                height: 400,
+                    //                fixed: true,
+                    //                button: [
+                    //                    {
+                    //                        value: "取消"
+                    //                    }
+                    //                ]
+                    //            });
+                    //            $.each(result.data, function (index) {
+                    //                html += "<tr><td>" + (index + 1) + "</td><td>" + result.data[index].MobileNumber + "</td><td>" + result.data[index].Carno + "</td><td>" + result.data[index].ErrorMsg + "</td></tr>";
+                    //            });
+                    //            $(".errorInfo-template").append(html);
+                    //            d.content($(".errorInfo-template").html());
+                    //            d.showModal();
+                    //        }
+                    //    });
+                    //}
+                },
+            },
+        });
+        $(function(){
+            $("#vipUserId").filtrateSelect();
+        });
+    </script>
+}

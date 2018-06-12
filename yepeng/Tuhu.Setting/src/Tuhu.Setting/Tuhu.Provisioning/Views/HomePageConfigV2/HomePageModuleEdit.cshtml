@@ -1,0 +1,441 @@
+﻿@{
+    Layout = null;
+}
+@model Tuhu.Provisioning.DataAccess.Entity.SE_HomePageModuleConfig
+<style type="text/css">
+    .four1 {
+        background-image: url('/Content/imgs/pulzz/index0.png');
+        background-repeat: no-repeat;
+        background-position: 2% 58%;
+        padding-left: 70px;
+    }
+
+    .four2 {
+        background-image: url('/Content/imgs/pulzz/index1.png');
+        background-repeat: no-repeat;
+        background-position: 2% 58%;
+        padding-left: 70px;
+    }
+
+    .four3 {
+        background-image: url('/Content/imgs/pulzz/index5.png');
+        background-repeat: no-repeat;
+        background-position: 2% 58%;
+        padding-left: 70px;
+    }
+
+    .four4 {
+        background-image: url('/Content/imgs/pulzz/index2.png');
+        background-repeat: no-repeat;
+        background-position: 2% 58%;
+        padding-left: 70px;
+    }
+
+    .four5 {
+        background-image: url('/Content/imgs/pulzz/index3.png');
+        background-repeat: no-repeat;
+        background-position: 2% 58%;
+        padding-left: 70px;
+    }
+</style>
+
+<div class="modal-dialog" style="width:96%;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                &times;
+            </button>
+            <h4 class="modal-title">
+                编辑模块配置
+            </h4>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <form id="form1" class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">模块名称:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="ModuleName" name="ModuleName" value="@Model.ModuleName" />
+                        </div>
+                        <label class="col-sm-2 control-label">活动类型：</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="ModeulTypeName" name="ModeulTypeName" value="@ViewBag.ModuleTypeName" />
+                            <input type="hidden" id="ModeulType" name="ModeulType" value="@Model.ModuleType" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">状态：</label>
+                        <div class="col-sm-4" style="margin-top:6px;">
+                            <div class="col-sm-4">
+                                <input type="radio" name="IsEnabled" value="true" @(Model.IsEnabled == true ? "checked=\"checked\"" : "") /><span>启用</span>
+                            </div>
+                            <div class="col-sm-4">
+                                <input type="radio" name="IsEnabled" value="false" @(Model.IsEnabled == false ? "checked=\"checked\"" : "") /><span>禁用</span>
+                            </div>
+                        </div>
+                        <label class="col-sm-2 control-label">排序:</label>
+                        <div class="col-sm-4">
+                            <input type="number" class="form-control" id="PriorityLevel" name="PriorityLevel" readonly="readonly" value="@Model.PriorityLevel" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">底部边距:</label>
+                        <div class="col-sm-4" style="margin-top:6px;">
+                            <input type="radio" name="SpliteLine" value="0" @(string.IsNullOrWhiteSpace(Model.SpliteLine) == false ? (Model.SpliteLine.Contains("0") == true ? "checked=\"checked\"" : "") : "") /><span>不显示</span>
+                            <input type="radio" name="SpliteLine" value="1" @(string.IsNullOrWhiteSpace(Model.SpliteLine) == false ? (Model.SpliteLine.Contains("1") == true ? "checked=\"checked\"" : "") : "") /><span>显示</span>
+                            <span>边距</span>
+                            <input type="text" name="Margin" id="Margin" style="@(string.IsNullOrWhiteSpace(Model.SpliteLine) == false?Model.SpliteLine.Contains("1")?"":"display:none;":"")" value="@(string.IsNullOrWhiteSpace(Model.SpliteLine) == false ? (Model.SpliteLine.Contains("1") == true ? Model.Margin.ToString() : "") : "")" />
+                            @*<input type="checkbox" name="ckSpliteLine" value="2"  @(string.IsNullOrWhiteSpace( Model.SpliteLine)==false?( Model.SpliteLine.Contains("2")==true?"checked=\"checked\"":""):"") /><span>下分隔线</span>
+                                <input type="checkbox" name="ckSpliteLine" value="3"  @(string.IsNullOrWhiteSpace( Model.SpliteLine)==false?( Model.SpliteLine.Contains("3")==true?"checked=\"checked\"":""):"") /><span>底部边距</span>*@
+                            @*<input type="hidden" id="SpliteLine" name="SpliteLine" value="@Model.SpliteLine" />*@
+                        </div>
+                        <label class="col-sm-2 control-label">是否有子模块:</label>
+                        <div class="col-sm-4" style="margin-top:6px;">
+                            <input type="radio" name="IsChildModule" value="true" @(Model.IsChildModule == true ? "checked=\"checked\"" : "") /><span>有</span>
+                            <input type="radio" name="IsChildModule" value="false" @(Model.IsChildModule == false ? "checked=\"checked\"" : "") /><span>无</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @*<label class="col-sm-2 control-label"> 背景图片格式</label>
+            <label class="radio-inline">
+                <input type="radio" name="ImageType" value="1" @(Model.ImageType == "1" ? "checked=\"checked\"" : "")>*@
+                        <label class="col-sm-2 control-label">静态图片:</label>
+                        <div class="col-sm-10">
+                            <img width="30" height="30" id="imgBgImageUrl" @(string.IsNullOrWhiteSpace(Model.BgImageUrl) == false ? "src=" + Model.BgImageUrl : "") />
+                            <input type="file" id="bguploadFile" name="bguploadFile" style="display: inline;" onchange="UploadBgImg(this, 'imgBgImageUrl', 'BgImageUrl')" />
+                        </div>
+                </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">AE格式动图 :</label>
+                        <div class="col-sm-10">
+                            <input type="file" id="uploadfileUrl" name="uploadfileUrl" style="display: inline;" onchange="UploadBgImg2(this)" />
+                        </div>
+                    </div>
+                <div class="form-group">
+
+                    <label class="col-sm-2 control-label">背景图片Url:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="BgImageUrl" name="BgImageUrl" value="@Model.BgImageUrl"/>
+                    </div>
+                </div>
+                    
+                    <div class="form-group" >
+
+                        <label class="col-sm-2 control-label">ae动图或者zipUrl:</label>
+
+                        <div class="col-sm-10">
+                            <input type="text" id="fileUrl" name="fileUrl" class="form-control" value="@Model.FileUrl"  />
+                        </div>
+
+                    </div>
+                @if (Model.ModuleType != 30)
+                    {
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">动画模块排版:</label>
+                            <div class="col-sm-4">
+                                <select id="Pattern" name="Pattern" class="form-control">
+                                    <option value="">请选择</option>
+                                    <option value="1111" @(Model.Pattern.Equals(1111) == true ? "selected=\"selected\"" : "")>1111</option>
+                                    <option value="112" @(Model.Pattern.Equals(112) == true ? "selected=\"selected\"" : "")>112</option>
+                                    <option value="121" @(Model.Pattern.Equals(121) == true ? "selected=\"selected\"" : "")>121</option>
+                                    <option value="211" @(Model.Pattern.Equals(211) == true ? "selected=\"selected\"" : "")>211</option>
+                                    <option value="22" @(Model.Pattern.Equals(22) == true ? "selected=\"selected\"" : "")>22</option>
+                                </select>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">拼图类型:</label>
+                            <div class="col-sm-4">
+                                @*<input type="radio" name="Pattern" value="1" @(( Model.Pattern.Equals(1) || Model.Pattern == null) == true ? "checked= \"checked\"" : "")  /><img src="~/Content/imgs/pulzz/index0.png" />
+                                    <input type="radio" name="Pattern"  value="2"  @(Model.Pattern.Equals(2) == true ? "checked= \"checked\"" : "")  /><img src="~/Content/imgs/pulzz/index1.png" />
+                                    <input type="radio" name="Pattern" value="3"  @(Model.Pattern.Equals(3) == true ? "checked= \"checked\"" : "")  /><img src="~/Content/imgs/pulzz/index5.png" />
+                                    <input type="radio" name="Pattern" value="4"  @(Model.Pattern.Equals(4) == true ? "checked= \"checked\"" : "")  /><img src="~/Content/imgs/pulzz/index2.png" />
+                                    <input type="radio" name="Pattern" value="5"  @(Model.Pattern.Equals(5) == true ? "checked= \"checked\"" : "")  /><img src="~/Content/imgs/pulzz/index3.png" />*@
+                                <select name="Pattern" id="Pattern" class="form-control">
+                                    <option @((Model.Pattern.Equals(1) || Model.Pattern == null) == true ? "selected=\"selected\"" : "") value="1">活动一行四</option>
+                                    <option @(  Model.Pattern.Equals(2) == true ? "selected=\"selected\"" : "") value="2">活动一二一</option>
+                                    <option @(  Model.Pattern.Equals(3) == true ? "selected=\"selected\"" : "") value="3">活动一行三</option>
+                                    <option @(  Model.Pattern.Equals(4) == true ? "selected=\"selected\"" : "") value="4">A区Ⅰ型</option>
+                                    <option @(  Model.Pattern.Equals(5) == true ? "selected=\"selected\"" : "") value="5">A区II型</option>
+                                </select>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">背景颜色:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="BgColor" name="BgColor" value="@Model.BgColor" />
+                        </div>
+                        <label class="col-sm-2 control-label">字体颜色：</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="FontColor" name="FontColor" value="@Model.FontColor" />
+                        </div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">开始版本：</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="StartVersion" name="StartVersion" value="@Model.StartVersion" />
+                        </div>
+                        <label class="col-sm-2 control-label">结束版本:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="EndVersion" name="EndVersion" value="@Model.EndVersion" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">统计：</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="UriCount" name="UriCount" value="@Model.UriCount" />
+                        </div>
+                        <label class="col-sm-2 control-label" style="display:@(Model.ModuleType == 7?"":"none")">是否新人：</label>
+                        <div class="col-sm-4" style="margin-top:6px;display:@(Model.ModuleType == 7?"":"none")">
+                            <input type="radio" name="IsNewUser" value="1" @(Model.IsNewUser == 1 ? "checked=\"checked\"" : "") /><span>新人</span>
+                            <input type="radio" name="IsNewUser" value="0" @(Model.IsNewUser == 0 ? "checked=\"checked\"" : "") /><span>非新人</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-12" style="text-align:center;border-bottom:solid 1px #EED5B7;">
+                            <span>标题配置</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">标题名称:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title" />
+                        </div>
+
+                        <label class="col-sm-2 control-label">标题字体颜色:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="TitleColor" name="TitleColor" value="@Model.TitleColor" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">标题图片:</label>
+                        <div class="col-sm-4">
+                            <img width="30" height="30" id="imgTitleImageUrl" @(string.IsNullOrWhiteSpace(Model.TitleImageUrl) == false ? "src=" + Model.TitleImageUrl : "") />
+                            <input type="file" id="lbuploadFile" name="lbuploadFile" style="display: inline;" onchange="UploadBgImg(this, 'imgTitleImageUrl', 'TitleImageUrl')" />
+
+                        </div>
+                        <label class="col-sm-2 control-label">标题背景颜色:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="TitleBgColor" name="TitleBgColor" value="@Model.TitleBgColor" />
+                        </div>
+
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">标题图片Url:</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="TitleImageUrl" name="TitleImageUrl" value="@Model.TitleImageUrl" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">显示"更多"(倒计时):</label>
+                        <div class="col-sm-4" style="margin-top:6px;">
+                            <input type="radio" name="IsMore" value="true" @(Model.IsMore == true ? "checked=\"checked\"" : "") /><span>显示</span>
+                            <input type="radio" name="IsMore" value="false" @(Model.IsMore == false ? "checked=\"checked\"" : "") /><span>隐藏</span>
+                        </div>
+                        <label class="col-sm-2 control-label">更多链接:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="MoreUri" name="MoreUri" value="@Model.MoreUri" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-12" style="text-align:center;border-bottom:solid 1px #EED5B7;">
+                            <span>秒杀配置</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+
+                        <label class="col-sm-2 control-label">更多"标签":</label>
+                        <div class="col-sm-4" style="margin-top:6px;">
+                            <input type="radio" name="IsTag" value="true" @(Model.IsMore == true ? "checked=\"checked\"" : "") /><span>显示</span>
+                            <input type="radio" name="IsTag" value="false" @(Model.IsTag == false ? "checked=\"checked\"" : "") /><span>隐藏</span>
+                        </div>
+                        <label class="col-sm-2 control-label">标签内容:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="TagContent" name="TagContent" value="@Model.TagContent" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-12" style="text-align:center;border-bottom:solid 1px #EED5B7;">
+                            <span>多种情况显示配置</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">是否多城市:</label>
+                        <div class="col-sm-4" style="margin-top:6px;">
+                            <input type="radio" name="IsMoreCity" value="true" @(Model.IsMoreCity == true ? "checked=\"checked\"" : "") /><span>是</span>
+                            <input type="radio" name="IsMoreCity" value="false" @(Model.IsMoreCity == false ? "checked=\"checked\"" : "") /><span>否</span>
+                        </div>
+                        <label class="col-sm-2 control-label">是否分平台:</label>
+                        <div class="col-sm-4" style="margin-top:6px;">
+                            <input type="radio" name="IsMoreChannel" value="true" @(Model.IsMoreChannel == true ? "checked=\"checked\"" : "") /><span>是</span>
+                            <input type="radio" name="IsMoreChannel" value="false" @(Model.IsMoreChannel == false ? "checked=\"checked\"" : "") /><span>否</span>
+                        </div>
+                    </div>
+                    <input type="hidden" id="FKHomePage" name="FKHomePage" value="@Model.FKHomePage" />
+                    <input type="hidden" id="ID" name="ID" value="@Model.ID" /><!--模块ID-->
+
+                </form>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="btnSaveHomePage" name="btnSaveHomePageModule" class="btn btn-primary">
+                保 存
+            </button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                取 消
+            </button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        $('input[name="SpliteLine"]').on('change', function () {
+            var val = $('input[name="SpliteLine"]:checked').val();
+            if (val) {
+                if (val == "0") {
+                    $('#Margin').hide();
+                } else {
+                    $('#Margin').show();
+                    if ($('#Margin').val() == '') {
+                        $('#Margin').val(5);
+                    }
+                }
+            }
+        });
+        $('[name="ImageType"]').on('change', function () {
+            debugger;
+            if ($(this).val() == "1") {
+                $('#bguploadFile').removeAttr("disabled");
+                $('#uploadfileUrl').removeAttr("disabled");
+                $('#uploadfileUrl').attr("disabled", "disabled");
+                $("#fileUrl").val('');
+            }
+            if ($(this).val() == "2") {
+                $('#bguploadFile').removeAttr("disabled");
+                $('#uploadfileUrl').removeAttr("disabled");
+                $('#bguploadFile').attr("disabled", "disabled");
+                $("#BgImageUrl").val('');
+            }
+        });
+        //是否多城市 是否多渠道
+        $('input[name="IsMoreCity"]').on('change', function () {
+            var isMore = $('input[name="IsMoreChannel"]:checked').val();
+            var value = $(this).val();
+
+            if (value == "true" || isMore == "true") {
+                // $('input[name="IsChildModule"]')
+                $('input[name="IsChildModule"][value="true"]').trigger('click')
+            } else {
+                $('input[name="IsChildModule"][value="false"]').trigger('click')
+            }
+
+        });
+        $('input[name="IsMoreChannel"]').on('change', function () {
+            var isMore = $('input[name="IsMoreCity"]:checked').val();
+            var value = $(this).val();
+
+            if (value == "true" || isMore == "true") {
+                // $('input[name="IsChildModule"]')
+                $('input[name="IsChildModule"][value="true"]').trigger('click')
+            } else {
+                $('input[name="IsChildModule"][value="false"]').trigger('click')
+            }
+        });
+
+
+
+        $('#form1').validate({
+            rules: {
+                ModuleName: {
+                    required: true
+                }
+            },
+            messages: {
+                ModuleName: {
+                    required: "模块名称"
+                }
+            }
+        });
+
+
+        //保存
+        $('#btnSaveHomePage').on('click', function () {
+            var valid = $('#form1').valid();
+            if (valid) {
+
+                var module = {};
+                module.ID = $('#ID').val();
+                module.FKHomePage = $('#FKHomePage').val(),//首页ID
+                    module.ModuleName = $('#ModuleName').val();
+                module.ModuleType = $('#ModeulType').val();
+                module.PriorityLevel = $('#PriorityLevel').val();
+                module.IsEnabled = $('input[name="IsEnabled"]:checked').val() || "false";
+                module.SpliteLine = $('input[name="SpliteLine"]:checked').val() || "0"//SpliteLine
+                module.BgImageUrl = $('#BgImageUrl').val();
+                module.Title = $('#Title').val();
+                module.TitleImageUrl = $('#TitleImageUrl').val();
+                module.FontColor = $('#FontColor').val();
+                module.TitleColor = $('#TitleColor').val();
+                module.StartVersion = $('#StartVersion').val();
+                module.EndVersion = $('#EndVersion').val();
+                module.IsMore = $('input[name="IsMore"]:checked').val() || false;
+                module.IsTag = $('input[name="IsTag"]:checked').val() || false;
+                module.MoreUri = $('#MoreUri').val();
+                module.TagContent = $('#TagContent').val();
+                module.IsChildModule = $('input[name="IsChildModule"]:checked').val() || false;
+                module.IsMoreChannel = $('input[name="IsMoreChannel"]:checked').val() || false;
+                module.IsMoreCity = $('input[name="IsMoreCity"]:checked').val() || false;
+                module.BgColor = $('#BgColor').val();
+                module.TitleBgColor = $('#TitleBgColor').val();
+                if (module.ModuleType != 30)
+                    module.Pattern = $('#Pattern').val();
+                else
+                    module.Pattern = $('#Pattern').val();
+
+                module.Margin = $('#Margin').val();
+                module.UriCount = $('#UriCount').val();
+                module.IsNewUser = $('input[name="IsNewUser"]:checked').val();
+                module.FileUrl = $('#fileUrl').val();
+                debugger;
+                module.ImageType = 0;
+                $(this).attr("disabled", "disabled");
+                $.ajax({
+                    url: '/HomePageConfigV2/HomePageModuleSave',
+                    type: 'post',
+                    data: module
+                }).done(function (result) {
+                    if (result == 1) {
+                        alert('保存成功');
+                        $('#edit').modal("hide");
+                        location.reload();
+                        //  var moduleList = $('#moduleList');
+                        //  moduleList.append(' <div class="style" data-type="' + module.ModeulType + '"> ' + ' <span class="col1">' + module.ModuleName + '</span>' + ' <span class="col2">' + (module.IsEnabled == 'true' ? '启用' : '禁用') + '</span>' + '  <span class="col3">' + module.PriorityLevel + '</span> </div>');
+                    } else if (result == 2) {
+                        alert('保存修改成功');
+                        $('#edit').modal("hide");
+                        location.reload();
+                    } else {
+                        console.log(result);
+                        alert("保存失败");
+                    }
+                });
+
+
+            }
+        });
+
+
+
+
+    });
+
+</script>

@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tuhu.C.YunYing.WinService.JobSchedulerService", "Tuhu.C.YunYing.WinService.JobSchedulerService\Tuhu.C.YunYing.WinService.JobSchedulerService.csproj", "{FCB7FA41-9A00-4224-A98C-F7841D3100F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tuhu.C.YunYing.WinService.JobSchedulerService.BaoYangCoupon", "Tuhu.C.YunYing.WinService.JobSchedulerService.BaoYangCoupon\Tuhu.C.YunYing.WinService.JobSchedulerService.BaoYangCoupon.csproj", "{05DFA8E5-D9A3-43A2-9003-D31342AF4789}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tuhu.C.YunYing.WinService.JobSchedulerService.PromotionTask", "Tuhu.C.YunYing.WinService.JobSchedulerService.PromotionTask\Tuhu.C.YunYing.WinService.JobSchedulerService.PromotionTask.csproj", "{C38752C2-1B5A-42A5-87C9-70D3CFD4F8F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tuhu.C.YunYing.WinService.DataStore", "Tuhu.C.YunYing.WinService.DataStore\Tuhu.C.YunYing.WinService.DataStore.csproj", "{E7D94A13-FFA2-487B-BCD6-803C257B85F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tuhu.C.YunYing.WinService.JobSchedulerService.SendEmail", "Tuhu.C.YunYing.WinService.JobSchedulerService.SendEmail\Tuhu.C.YunYing.WinService.JobSchedulerService.SendEmail.csproj", "{F544D850-5117-4AD9-B277-AE444A5063D0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tuhu.C.YunYing.WinService.JobSchedulerService.CaculateUserGrade", "Tuhu.C.YunYing.WinService.JobSchedulerService.CaculateUserGrade\Tuhu.C.YunYing.WinService.JobSchedulerService.CaculateUserGrade.csproj", "{4A12733E-5F1D-401C-BDBD-C230A4281268}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tuhu.C.YunYing.WinService.JobSchedulerService.YLHCouponInit", "Tuhu.C.YunYing.WinService.JobSchedulerService.YLHCouponInit\Tuhu.C.YunYing.WinService.JobSchedulerService.YLHCouponInit.csproj", "{0CB93026-28FB-4B67-A998-B66B0D8B4892}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FCB7FA41-9A00-4224-A98C-F7841D3100F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCB7FA41-9A00-4224-A98C-F7841D3100F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCB7FA41-9A00-4224-A98C-F7841D3100F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCB7FA41-9A00-4224-A98C-F7841D3100F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05DFA8E5-D9A3-43A2-9003-D31342AF4789}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05DFA8E5-D9A3-43A2-9003-D31342AF4789}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05DFA8E5-D9A3-43A2-9003-D31342AF4789}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05DFA8E5-D9A3-43A2-9003-D31342AF4789}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C38752C2-1B5A-42A5-87C9-70D3CFD4F8F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C38752C2-1B5A-42A5-87C9-70D3CFD4F8F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C38752C2-1B5A-42A5-87C9-70D3CFD4F8F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C38752C2-1B5A-42A5-87C9-70D3CFD4F8F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7D94A13-FFA2-487B-BCD6-803C257B85F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7D94A13-FFA2-487B-BCD6-803C257B85F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7D94A13-FFA2-487B-BCD6-803C257B85F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7D94A13-FFA2-487B-BCD6-803C257B85F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F544D850-5117-4AD9-B277-AE444A5063D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F544D850-5117-4AD9-B277-AE444A5063D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F544D850-5117-4AD9-B277-AE444A5063D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F544D850-5117-4AD9-B277-AE444A5063D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A12733E-5F1D-401C-BDBD-C230A4281268}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A12733E-5F1D-401C-BDBD-C230A4281268}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A12733E-5F1D-401C-BDBD-C230A4281268}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A12733E-5F1D-401C-BDBD-C230A4281268}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CB93026-28FB-4B67-A998-B66B0D8B4892}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CB93026-28FB-4B67-A998-B66B0D8B4892}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CB93026-28FB-4B67-A998-B66B0D8B4892}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CB93026-28FB-4B67-A998-B66B0D8B4892}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DA65F206-098A-411D-BA8C-41333840274C}
+	EndGlobalSection
+EndGlobal

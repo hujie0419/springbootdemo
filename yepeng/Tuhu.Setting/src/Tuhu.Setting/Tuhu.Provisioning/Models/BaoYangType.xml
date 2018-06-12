@@ -1,0 +1,176 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BaoYangConfig>
+  <BaoYangTypes>
+    <!--Accessory-->
+    <BaoYangType type="jiyou" zh="机油" names="发动机油,机油" catalogName="Oil" group="Accessory" />
+    <BaoYangType type="lm" zh="空调制冷剂" names="空调制冷剂," catalogName="Refrigerant" group="Accessory"/>
+    <BaoYangType type="gfd" zh="更换防冻液" names="发动机防冻液" catalogName="Antifreeze" group="Accessory" />
+    <BaoYangType type="scy" zh="刹车油" names="刹车油" catalogName="Dampingoil" group="Accessory" />
+    <!--Part-->
+    <BaoYangType type="jv" zh="机油滤清器" names="机油滤清器,机油滤清器滤芯
+                 " catalogName="OilFilter" group="Part"/>
+    <BaoYangType type="qv" zh="空气滤清器" names="空气滤清器,空气滤清器芯" catalogName="AirFilter" group="Part"/>
+    <BaoYangType type="rv" zh="燃油滤清器" names="燃油滤清器" catalogName="FuelFilter" group="Part"/>
+    <BaoYangType type="irv" zh="内置燃油滤" names="燃油泵内置滤清器" catalogName="FuelFilter" group="Part" />
+    <BaoYangType type="okv" zh="外置空调滤清器" names="空调滤清器（外）" catalogName="CabinFilter" group="Part"   />
+    <BaoYangType type="ikv" zh="内置空调滤清器" names="空调滤清器" catalogName="CabinFilter" group="Part"   />
+    <BaoYangType type="zys" zh="左前雨刷" names="左前雨刷" catalogName="LeftWiper" group="Part" />
+    <BaoYangType type="yys" zh="右前雨刷" names="右前雨刷" catalogName="RightWiper" group="Part"/>
+    <BaoYangType type="qys" zh="前雨刷" names="前雨刷" catalogName="FrontWiper"  group="Part"/>
+    <BaoYangType type="pm" zh="PM2.5滤芯" names="PM 2.5" catalogName="FilterElement" group="Part" />
+    <BaoYangType type="scpanf" zh="刹车盘前" names="刹车盘前" catalogName="BrakeDiscFront" group="Part" />
+    <BaoYangType type="scpanb" zh="刹车盘后" names="刹车盘后" catalogName="BrakeDiscBack"  group="Part"/>
+    <BaoYangType type="scpf" zh="刹车片前" names="刹车片前" catalogName="BrakePadFront" group="Part"/>
+    <BaoYangType type="scpb" zh="刹车片后" names="刹车片后" catalogName="BrakePadBack" group="Part"/>
+    <BaoYangType type="hhs" zh="火花塞" names="火花塞" catalogName="Sparkplug" group="Part" />
+    <BaoYangType type="battery" zh="蓄电池" names="蓄电池" catalogName="Battery" group="Part" />
+    <BaoYangType type="fdyn" zh="远光灯" names="远光灯" catalogName="FarDynamo" group="Part"/>
+    <BaoYangType type="ndyn" zh="近光灯" names="近光灯" catalogName="NearDynamo"  group="Part"/>
+    <BaoYangType type="fndyn" zh="远近一体灯" names="远近一体" catalogName="FarNearDynamo" group="Part"/>
+    <BaoYangType type="ffdyn" zh="雾灯" names="前雾灯" catalogName="Dynamo" group="Part" />
+    <!--Maintainence-->
+    <BaoYangType type="rx" zh="燃油系统养护" names="燃油系统养护" catalogName="Additive" group="Maintainence" />
+    <BaoYangType type="fsc" zh="燃油系统清洁" names="燃油系统清洁" catalogName="TheFuelSystemCleaning" group="Maintainence" />
+    <BaoYangType type="stc" zh="节气门清洗" names="节气门清洗" catalogName="SolarTtermCleaning" group="Maintainence" />
+    <BaoYangType type="ew" zh="发动机清洗" names="发动机清洗" catalogName="EngineWash" group="Maintainence" />
+    <BaoYangType type="asc" zh="空调管路清洗" names="空调管路清洗" catalogName="AirSystemCleaning" group="Maintainence" />
+    <BaoYangType type="bmk" zh="刹车系统养护" names="刹车系统养护" catalogName="BrakeMaintenanceKit" group="Maintainence" />
+    <BaoYangType type="wtm" zh="冷却系统养护" names="冷却系统养护" catalogName="WaterTankMaintenance" group="Maintainence" />
+    <BaoYangType type="elc" zh="发动机养护清洗" names="发动机养护清洗" catalogName="EngLubCleaning" group="Maintainence" />
+    <BaoYangType type="wtc" zh="水箱清洗" names="水箱清洗" catalogName="WaterTankCleaning" group="Maintainence" />
+    <BaoYangType type="fic" zh="进气系统清洗" names="进气系统清洗" catalogName="FuelIntakeCleaning" group="Maintainence" />
+    <BaoYangType type="twc" zh="三元催化清洗" names="三元催化清洗" catalogName="TWCCleaning" group="Maintainence" />
+    <BaoYangType type="pyc" zh="喷油嘴清洗" names="喷油嘴清洗" catalogName="PYZCLEAN" group="Maintainence" />
+    <BaoYangType type="ptc" zh="底盘装甲" names="底盘装甲" catalogName="ProtectCoatings"  group="Maintainence" />
+  </BaoYangTypes>
+  <BaoYangPackages>
+    <BaoYangPackage type="xby" items="jiyou,jv" zh="小保养服务" suggestTip="5000km/次" birefDescription="车辆常规养护，保障发动机稳定工作" No="1" descriptionLink="http://file.tuhu.cn/activity/news/EE451167-34D2-4D52-A165-A89BEFC6279E_1221.html"/>
+    <BaoYangPackage type="dby" items="jiyou,jv,qv,rv" zh="大保养服务" suggestTip="10000km/次" birefDescription="车辆常规养护，保障车辆稳定工作" No="2" descriptionLink="http://file.tuhu.cn/activity/news/D52662E3-3770-4DC3-A360-1C7E1C507F3D_1204.html"/>
+    <BaoYangPackage type="irv" items="irv" zh="内置燃油滤" suggestTip="50000km/次" birefDescription="保障油路畅通，将油品杂质过滤，避免发动机损伤" No="23" descriptionLink="http://file.tuhu.cn/activity/news/D9B11CCA-1BD1-430A-93FB-A62FEFB85896_1217.html"/>
+    <BaoYangPackage type="fd" items="gfd"  zh="更换防冻液" suggestTip="24个月/次" birefDescription="保持发动机散热和冷启动性能" No="11" descriptionLink="http://file.tuhu.cn/activity/news/94F9A0C5-4392-4F6D-94FA-8FA8C9D511F0_1207.html" />
+    <BaoYangPackage type="ys" items="zys,yys,qys" zh="雨刷" catalogName="Wiper" suggestTip="6个月/次" birefDescription="提高雨刷工作效率，保障车辆在雨雪天气的行驶安全" No="4" descriptionLink="http://file.tuhu.cn/activity/news/9C3FB4CB-D983-4680-81D4-4A82ACE929C9_1208.html" />
+    <BaoYangPackage type="rx" items="rx" zh="燃油系统养护" suggestTip="2500km/次" birefDescription="全面清洗喷油嘴、燃油管路、进气阀和燃烧室等整车燃油系统，恢复整车性能" No="3" descriptionLink="http://file.tuhu.cn/activity/news/C90E2599-0D60-4645-9DB4-EE57F7728DF2_1219.html" />
+    <BaoYangPackage type="kv" items="okv,ikv" zh="空调滤清器"  suggestTip="12个月/次" birefDescription="迅速清除空调内风扇与蒸发器的灰尘、霉菌和微生物、降低能耗和延长空调使用寿命的作用" No="10" descriptionLink="http://file.tuhu.cn/activity/news/D8E229CA-7049-4E95-9BC6-357700D7F402_1205.html"  />
+    <BaoYangPackage type="scpan" items="scpanf,scpanb" zh="刹车盘" catalogName="BrakeDisc"  suggestTip="50000km/次" birefDescription="保障车辆行驶安全" No="22" descriptionLink="http://file.tuhu.cn/activity/news/554AB9E0-6A39-4DD2-B5BB-80B335F6FF40_1209.html"  />
+    <BaoYangPackage type="scp" items="scpf,scpb" zh="刹车片" catalogName="BrakePad" suggestTip="50000km/次" birefDescription="保障车辆行驶安全" No="21" descriptionLink="http://file.tuhu.cn/activity/news/AB91E1F2-6BF1-40D9-B413-50E7314C272E_1210.html"  />
+    <BaoYangPackage type="lm" items="lm" zh="空调制冷剂" suggestTip="24个月/次" birefDescription="提高空调系统制冷效率" No="12" descriptionLink="http://file.tuhu.cn/activity/news/DF4D9B98-4719-47A3-95F8-44582A37A85E_1211.html"  />
+    <BaoYangPackage type="pm" items="pm" zh="PM2.5滤芯" catalogName="FilterElement" suggestTip="10000km/次" birefDescription="有效降低车内PM2.5指数，净化空气"  No="7" descriptionLink="http://file.tuhu.cn/activity/news/5DACF255-2F8E-4CC2-A66C-465D63D5F86C_1206.html"   />
+    <BaoYangPackage type="stc" items="stc" zh="节气门清洗" catalogName="SolarTtermCleaning" suggestTip="20000km/次" birefDescription="清除节气门上的积碳，增加空气流通，使怠速稳定，提升加速性能和燃油经济性" No="13" descriptionLink="http://file.tuhu.cn/activity/news/633EC445-4FE2-45FB-A4DC-D277C179B3F6_1212.html"   />
+    <BaoYangPackage type="ew" items="ew" zh="发动机清洗" catalogName="EngineWash" suggestTip="10000km/次" birefDescription="清洁引擎内部积碳、提升发动机功效，降低噪音，减少燃油和机油损耗" No="8" descriptionLink="http://file.tuhu.cn/activity/news/90CB76E6-9B17-4CFB-A13A-C6C35741BA50_1213.html"  />
+    <BaoYangPackage type="asc" items="asc" zh="空调管路清洗" catalogName="AirSystemCleaning" suggestTip="10000km/次" birefDescription="迅速清除空调内风扇与蒸发器的灰尘、霉菌和微生物、降低能耗和延长空调使用寿命的作用" No="9" descriptionLink="http://file.tuhu.cn/activity/news/2CBA4B81-4B0D-4975-99A1-AA0B991D64A3_1214.html" />
+    <BaoYangPackage type="scy" items="scy" zh="刹车油" catalogName="Dampingoil" suggestTip="40000km/次" birefDescription="保持刹车油的洁净程度，保障刹车系统正常工作" No="20" descriptionLink="http://file.tuhu.cn/activity/news/FD7882F1-F2C9-4D14-81E6-002B8C721C52_1215.html" />
+    <BaoYangPackage type="hhs" items="hhs" zh="火花塞" catalogName="Sparkplug" suggestTip="30000km/次" birefDescription="火花塞长期使用会有积碳产生，如果不定期更换会使发动机启动困难，燃烧不充分" No="19" descriptionLink="http://file.tuhu.cn/activity/news/F7AACBC9-61EB-433D-846E-54B802CEDF59_1216.html" />
+    <BaoYangPackage type="bmk" items="bmk" zh="刹车系统养护" catalogName="BrakeMaintenanceKit" suggestTip="10000km/次" birefDescription="保证汽车安全行驶，有效降低制动噪音，提高制动器的散热效果，并能改善制动器拆装的方便性，有利于延长制动器的使用寿命" No="6" descriptionLink="http://file.tuhu.cn/activity/news/F4103725-E0B6-4985-8504-D623660F6D68_1218.html"  />
+    <BaoYangPackage type="wtm" items="wtm" zh="冷却系统养护" catalogName="WaterTankMaintenance"  suggestTip="10000km/次" birefDescription="冷却系统中的锈蚀会大大降低冷却系统的效率，增加能耗，增大发动机负担，本品可保护冷却系统中的重要金属，并在水泵及冷却系统其他部件表面形成润滑保护层，从而延长水泵和冷却系统的使用寿命"  No="5" descriptionLink="http://file.tuhu.cn/activity/news/0769AB34-C3B0-414B-8B60-F2A46CD2CCB4_1220.html"  />
+    <BaoYangPackage type="wtc" items="wtc" zh="水箱清洗" catalogName="WaterTankCleaning" suggestTip="24个月/次" birefDescription="去除冷却系统的水垢、污渍、锈斑，提高散热效果，恢复冷却系统功能，延长汽车水箱的使用寿命" No="18" descriptionLink="http://file.tuhu.cn/activity/news/8150C15E-6750-4EAB-9CBF-F79B1D20A5A3_1432.html" />
+    <BaoYangPackage type="fic" items="fic" zh="进气系统清洗" catalogName="FuelIntakeCleaning" suggestTip="20000Km/次" birefDescription="去除发动机进气管中的积碳，恢复进气流量和增加进气速度，改善引擎耗油及马力不足。减少引擎抖动及怠速不稳，增加运动的顺畅性" No="14" descriptionLink="http://file.tuhu.cn/activity/news/817AE22E-723F-422B-8975-780D27268079_1431.html"  />
+    <BaoYangPackage type="twc" items="twc" zh="三元催化清洗" catalogName="TWCCleaning" suggestTip="20000Km/次" birefDescription="三元催化器，是安装在汽车排气系统中最重要的机外净化装置，它可将汽车尾气排出的CO一氧化碳、HC碳氢化合物和NOx氮氧化物等有害气体通过氧化和还原作用转变为无害的二氧化碳、水和氮气" No="15" descriptionLink="http://file.tuhu.cn/activity/news/847829B5-F09D-4563-BD39-96F2FF9A1D75_1426.html" />
+    <BaoYangPackage type="pyc" items="pyc" zh="喷油嘴清洗" catalogName="PYZCLEAN" suggestTip="20000Km/次" birefDescription="汽车喷油嘴是个简单的电磁阀,当电磁线圈通电时,产生吸力,针阀被吸起,打开喷孔,燃油经针阀头部的轴针与喷孔之间的环形间隙高速喷出,形成雾状,利于燃烧充分" No="16" descriptionLink="http://file.tuhu.cn/activity/news/ECF8B0CE-8DBC-4698-82A2-DDA0576A8B44_1430.html" />
+    <BaoYangPackage type="ptc" items="ptc" zh="底盘装甲" catalogName="ProtectCoatings"  suggestTip="" birefDescription="防止飞石和沙砾的撞击,避免潮气、酸雨、盐分对车辆底盘金属的侵蚀，防止底盘生锈和锈蚀，保护车主的行车安全" No="17" descriptionLink="http://file.tuhu.cn/activity/news/F20FE4D6-22BD-4B78-AFD8-4EA354531E9E_1429.html" />
+    <BaoYangPackage type="battery" items="battery" zh="蓄电池" catalogName="Battery" suggestTip="24个月/次" birefDescription="为车辆正常使用供电，建议每24个月保养一次" No="18" descriptionLink="http://file.tuhu.cn/activity/news/3C60936C-B0F0-4DE2-BF94-67C4E7A7026B_1433.html" />
+    <BaoYangPackage type="dyn" items="fdyn,ndyn,fndyn" zh="大灯" catalogName="Dynamo" suggestTip="" birefDescription="汽车大灯，也称汽车前照灯。作为汽车的眼睛，不仅关系到一个车主的外在形象，更与夜间开车或坏天气条件下的安全驾驶紧密联系。车灯的使用及保养，是不可忽略的。" No="19" descriptionLink="http://file.tuhu.cn/activity/news/D3247578-3756-422B-9B7E-8DE2C3AC163A_2733.html" />
+    <BaoYangPackage type="ffdyn" items="ffdyn" zh="雾灯" catalogName="Dynamo" suggestTip="" birefDescription="汽车大灯，也称汽车前照灯。作为汽车的眼睛，不仅关系到一个车主的外在形象，更与夜间开车或坏天气条件下的安全驾驶紧密联系。车灯的使用及保养，是不可忽略的。" No="20" descriptionLink="http://file.tuhu.cn/activity/news/9C377C7B-16E1-4251-9142-E9AF157A4D94_2735.html" />
+  </BaoYangPackages>
+  <TypeNameMap>
+    <PartAccessory>
+      <Item type="jiyou" accessoryName="发动机油"/>
+      <Item type="gfd" accessoryName="发动机防冻液"/>
+      <Item type="hhs" accessoryName="火花塞"/>
+    </PartAccessory>
+    <TuhuBaoYangParts>
+      <Item type="jv" partNames="机油滤清器,机油滤清器滤芯" refType="PartCode"/>
+      <Item type="qv" partNames="空气滤清器,空气滤清器芯" refType="PartCode"/>
+      <Item type="rv" partNames="燃油滤清器" refType="PartCode"/>
+      <Item type="irv" partNames="燃油泵内置滤清器" refType="PartCode"/>
+      <Item type="okv" partNames="空调滤清器（外）" refType="PartCode"/>
+      <Item type="ikv" partNames="空调滤清器" refType="PartCode"/>
+      <Item type="zys" partNames="左前雨刷" refType="PartNo"/>
+      <Item type="yys" partNames="右前雨刷" refType="PartNo"/>
+      <Item type="qys" partNames="前雨刷" refType="PartNo"/>
+      <Item type="pm" partNames="PM 2.5" refType="ProductId"/>
+      <Item type="scpanf" partNames="刹车盘前" refType="PartCode"/>
+      <Item type="scpanb" partNames="刹车盘后" refType="PartCode"/>
+      <Item type="scpf" partNames="刹车片前" refType="PartCode"/>
+      <Item type="scpb" partNames="刹车片后" refType="PartCode"/>
+      <Item type="battery" partNames="蓄电池" refType="PartCode"/>
+      <Item type="fdyn" partNames="远光灯" refType="PartNo"/>
+      <Item type="ndyn" partNames="近光灯" refType="PartNo"/>
+      <Item type="fndyn" partNames="远近一体" refType="PartNo"/>
+      <Item type="ffdyn" partNames="前雾灯" refType="PartNo"/>
+    </TuhuBaoYangParts>
+    <PrioritySetting>
+      <Item type="fdyn" partName="车灯" />
+      <Item type="ndyn" partName="车灯" />
+      <Item type="fndyn" partName="车灯" />
+      <Item type="ffdyn"  partName="车灯"  />
+      <Item type="ew"  partName="发动机清洗" />
+      <Item type="jiyou"  partName="机油"  />
+      <Item type="jv"  partName="机油滤清器" />
+      <Item type="stc"  partName="节气门清洗"  />
+      <Item type="asc"  partName="空调管路清洗"  />
+      <Item type="okv"  partName="空调滤清器"    />
+      <Item type="ikv"  partName="空调滤清器"   />
+      <Item type="lm"  partName="空调制冷剂" />
+      <Item type="qv"  partName="空气滤清器" />
+      <Item type="wtm"  partName="冷却系统养护"  />
+      <Item type="rv"  partName="燃油滤清器" />
+      <Item type="rx"  partName="燃油系统养护"  />
+      <Item type="scpanf"  partName="刹车盘"  />
+      <Item type="scpanb"  partName="刹车盘"/>
+      <Item type="scpf"  partName="刹车片" />
+      <Item type="scpb"  partName="刹车片" />
+      <Item type="bmk"  partName="刹车系统养护"  />
+      <Item type="scy"  partName="刹车油" />
+      <Item type="wtc"  partName="水箱清洗"  />
+      <Item type="battery"  partName="蓄电池"  />
+      <Item type="zys"  partName="雨刷" />
+      <Item type="yys"  partName="雨刷" />
+      <Item type="qys"  partName="雨刷" />
+    </PrioritySetting>
+  </TypeNameMap>
+  <VehicleFuelConfig>
+    <Fuel type="柴油" notSupportedPackageTypes="hhs,rx,fic,twc,pyc"/>
+    <Fuel type="电动" notSupportedPackageTypes="xby,dby,fd,hhs,irv,battery,stc,ew,rx,wtm,wtc,fic,twc,pyc"/>
+  </VehicleFuelConfig>
+  <BaoYangServiceConfig>
+    <BaoYangService type="dby" serviceId="FU-BY-DBY|"/>
+    <BaoYangService type="irv" serviceId="FU-BY-RY|"/>
+    <BaoYangService type="xby" serviceId="FU-BY-XBY|"/>
+    <BaoYangService type="gfd" serviceId="FU-BY-BYGH|1"/>
+    <BaoYangService type="lm" serviceId="FU-BY-LM|"/>
+    <BaoYangService type="ikv" serviceId="FU-BY-KONGTIAO|"/>
+    <BaoYangService type="okv" serviceId="FU-BY-KONGTIAOW|"/>
+    <BaoYangService type="pm" serviceId="FU-PM-ANZHUANGFEI|"/>
+    <BaoYangService type="ys" serviceId="FU-BY-YUSHUA|"/>
+    <BaoYangService type="scpanb" serviceId="FU-TU-ABD|"/>
+    <BaoYangService type="scpanf" serviceId="FU-TU-BBD|"/>
+    <BaoYangService type="scpb" serviceId="FU-TU-ABP|"/>
+    <BaoYangService type="scpf" serviceId="FU-TU-BBP|"/>
+    <BaoYangService type="ew" serviceId="FU-TU-Fadongji|"/>
+    <BaoYangService type="stc" serviceId="FU-TU-Jieqimen|"/>
+    <BaoYangService type="asc" serviceId="FU-TU-Kongtiaoguanlu|"/>
+    <BaoYangService type="scy" serviceId="FU-TU-Shacheyou|"/>
+    <BaoYangService type="hhs" serviceId="FU-TU-Huohuasai|"/>
+    <BaoYangService type="qv" serviceId="FU-BY-KONGQI|"/>
+    <BaoYangService type="rv" serviceId="FU-BY-RANYOU|"/>
+    <BaoYangService type="bmk" serviceId="FU-TU-SCYH|"/>
+    <BaoYangService type="wtm" serviceId="FU-BY-LQYH|"/>
+    <BaoYangService type="wtc" serviceId="FU-BY-BYQX|4"/>
+    <BaoYangService type="fic" serviceId="FU-BY-BYQX|1"/>
+    <BaoYangService type="twc" serviceId="FU-BY-BYQX|2"/>
+    <BaoYangService type="pyc" serviceId="FU-BY-BYQX|3"/>
+    <BaoYangService type="ptc" serviceId="FU-TU-DPZJFW|1"/>
+    <BaoYangService type="elc" serviceId="FU-TU-FadongjiQXJ|1"/>
+    <BaoYangService type="battery" serviceId="FU-TU-XDC|"/>
+    <BaoYangService type="ffdyn" serviceId="FU-BY-CDAZ|1" additionalServiceId="FU-BY-CDAZ|2"/>
+    <BaoYangService type="fdyn" serviceId="FU-BY-CDAZ|1" additionalServiceId="FU-BY-CDAZ|2"/>
+    <BaoYangService type="ndyn" serviceId="FU-BY-CDAZ|1" additionalServiceId="FU-BY-CDAZ|2"/>
+    <BaoYangService type="fndyn" serviceId="FU-BY-CDAZ|1" additionalServiceId="FU-BY-CDAZ|2"/>
+  </BaoYangServiceConfig>
+  <DependNumService>
+    <BaoYangService serviceId="FU-BY-CDAZ|1"/>
+    <BaoYangService serviceId="FU-BY-LM|"/>
+    <BaoYangService serviceId="FU-TU-Huohuasai|"/>
+    <BaoYangService serviceId="FU-TU-DPZJFW|1"/>
+  </DependNumService>
+</BaoYangConfig>

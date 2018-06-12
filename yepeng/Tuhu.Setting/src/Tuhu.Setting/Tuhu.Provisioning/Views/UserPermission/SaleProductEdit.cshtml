@@ -1,0 +1,176 @@
+﻿@{
+    ViewBag.Title = "SaleProductEdit";
+    Layout = null;
+}
+@model Tuhu.Provisioning.DataAccess.Entity.UserPermissionActivityProduct
+<style>
+    table {
+        width: 100%;
+    }
+</style>
+<input type="hidden" value="@Model.PKID" name="PKID" id="PKID" />
+<form id="form1">
+    <table>
+        <tr>
+            <td>
+                用户等级:
+            </td>
+            <td colspan="3">
+                <select id="SelRank" name="SelRank" style="width:120px;">
+                    @if (Model.ActivityID.ToString().ToLower() == "ac9a66e8-6fdf-4a96-a157-c5e166297d52")
+                    {
+                        <option value="ac9a66e8-6fdf-4a96-a157-c5e166297d52" selected="selected">LV0</option>
+                    }
+                    else
+                    {
+                        <option value="ac9a66e8-6fdf-4a96-a157-c5e166297d52">LV0</option>
+                    }
+
+                    @if (Model.ActivityID.ToString().ToUpper() == "8312FE9D-6DCE-4CD5-87D5-99CE064336A3")
+                    {
+                        <option value="8312FE9D-6DCE-4CD5-87D5-99CE064336A3" selected="selected">LV1</option>
+                    }
+                    else
+                    {
+                        <option value="8312FE9D-6DCE-4CD5-87D5-99CE064336A3">LV1</option>
+                    }
+
+                    @if (Model.ActivityID.ToString().ToUpper() == "650C6D05-51F8-46FB-A84F-F136D727A59B")
+                    {
+                        <option value="650C6D05-51F8-46FB-A84F-F136D727A59B" selected="selected">LV2</option>
+                    }
+                    else
+                    {
+                        <option value="650C6D05-51F8-46FB-A84F-F136D727A59B">LV2</option>
+                    }
+
+                    @if (Model.ActivityID.ToString().ToUpper() == "663543D4-5B62-4133-935D-F0A4C68751F8")
+                    {
+                        <option value="663543D4-5B62-4133-935D-F0A4C68751F8" selected="selected">LV3</option>
+                    }
+                    else
+                    {
+                        <option value="663543D4-5B62-4133-935D-F0A4C68751F8">LV3</option>
+                    }
+
+                    @if (Model.ActivityID.ToString().ToUpper() == "88C467DB-622E-4F02-89A5-F80405076599")
+                    {
+                        <option value="88C467DB-622E-4F02-89A5-F80405076599" selected="selected">LV4</option>
+                    }
+                    else
+                    {
+                        <option value="88C467DB-622E-4F02-89A5-F80405076599">LV4</option>
+                    }
+
+
+
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>PID：</td>
+            <td colspan="3">
+                <input type="text" value="@Model.PID" name="PID" id="PID" style="width:160px;" />
+            </td>
+        </tr>
+        <tr>
+            <td>名称:</td>
+            <td colspan="3">
+                <input type="text" value="@Model.DisplayName" name="DisplayName" style="width:160px;" />
+            </td>
+        </tr>
+        <tr>
+            <td>个人限购:</td>
+            <td colspan="3">
+                <input type="text" value="@Model.MaxQuantity" name="PersonCount" style="width:60px;" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                原价:
+            </td>
+            <td>
+                <input type="text" value="@(Convert.ToDouble(Model.FalseOriginalPrice).ToString("0.00")=="0.00"?"":Convert.ToDouble(Model.FalseOriginalPrice).ToString("0.00"))" name="OldPrice" style="width:60px;" />
+            </td>
+            <td>
+                活动价格:
+            </td>
+            <td>
+                <input type="text" value="@(Convert.ToDouble( Model.Price).ToString("0.00"))" name="ActivityPrice" id="ActivityPrice" style="width:60px;" />
+            </td>
+        </tr>
+        <tr>
+            <td>库存:</td>
+            <td>
+                <input type="text" value="@Model.TotalQuantity" name="Total" id="Total" style="width:60px;" />
+            </td>
+            <td>剩余库存:</td>
+            <td>
+                <input type="text" value="@(Model.TotalQuantity-Model.SaleOutQuantity)" name="Sursplus" style="width:60px;" disabled="disabled" />
+            </td>
+        </tr>
+    </table>
+</form>
+<script type="text/javascript">
+    $('input[name=PID]').focusout(function () {
+        var value = $(this).val();
+        if (value != "" && value != undefined) {
+            $.ajax({ url: '/sale/pinfo', data: { pnum: value } }).done(function (data) {
+                var r = JSON.parse(data);
+                if (!r.error) {
+                    var d = r[0];
+                    //$(self).parent().next().next().next().empty().text(d.cy_list_price);
+                    $('input[name=DisplayName]').val(d.displayname);
+                    $('input[name=OldPrice]').val(d.cy_list_price);
+                }
+            });
+        } else {
+            $('input[name=DisplayName]').val("");
+            $('input[name=OldPrice]').val("");
+        }
+    });
+
+    function GetForm() {
+        var data = {};
+        data.PID = $('input[name=PID]').val();
+        data.DisplayName = $('input[name=DisplayName]').val();
+        data.Price = $('input[name=ActivityPrice]').val();
+        data.TotalQuantity = $('input[name=Total]').val();
+        data.MaxQuantity = $('input[name=PersonCount]').val();
+        data.ActivityID = $('#SelRank').val();
+        data.PKID = $('#PKID').val();
+        data.FalseOriginalPrice = $("input[name=OldPrice]").val();
+        return data;
+    }
+
+
+    $("#form1").validate({
+        rules: {
+            PID: {
+                required: true
+            },
+            ActivityPrice: {
+                required: true,
+                number: true
+            },
+            Total: {
+                required: true,
+                number: true
+            }
+        },
+        messages: {
+            PID: {
+                required: '请输入产品PID'
+            },
+            ActivityPrice: {
+                required: '请输入活动价格',
+                number: '请输入数字'
+            },
+            Total: {
+                required: '请输入库存',
+                number: '请输入数字'
+            }
+        }
+    });
+
+</script>

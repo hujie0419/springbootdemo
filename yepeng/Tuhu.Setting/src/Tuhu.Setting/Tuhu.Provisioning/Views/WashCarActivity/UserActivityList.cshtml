@@ -1,0 +1,297 @@
+﻿
+@{
+    ViewBag.Title = "用户报名列表";
+}
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+<style>
+    .page-bar {
+        float: right;
+    }
+
+        .page-bar ul, li {
+            display: inline-block;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .page-bar li {
+            list-style: none
+        }
+
+            .page-bar li:first-child > a {
+                margin-left: 0px
+            }
+
+        .page-bar a {
+            border: 1px solid #ddd;
+            text-decoration: none;
+            position: relative;
+            float: left;
+            padding: 6px 12px;
+            margin-left: -1px;
+            line-height: 1.42857143;
+            color: #337ab7;
+            cursor: pointer
+        }
+
+            .page-bar a:hover {
+                background-color: #eee;
+            }
+
+            .page-bar a.banclick {
+                cursor: not-allowed;
+            }
+
+        .page-bar .active a {
+            color: #fff;
+            cursor: default;
+            background-color: #337ab7;
+            border-color: #337ab7;
+        }
+
+        .page-bar i {
+            font-style: normal;
+            color: #d44950;
+            margin: 0px 4px;
+            font-size: 14px;
+        }
+</style>
+<div id="app" class="container" v-cloak>
+    <div class="form-group" style="float: right">
+        <label for="auditStatus">审核状态</label>
+        <select id="auditStatus" v-model="status" class="btn btn-default dropdown-toggle" v-on:change="getUserActivityList">
+            <option v-for="value in auditStatus" v-bind:value="value.value">{{value.name}}</option>
+        </select>
+    </div>
+    <!--报名列表-->
+    <table class="table table-bordered table-hover">
+        <caption class="h3 text-center">用户报名列表</caption>
+        <th class="text-center">序号</th>
+        <th class="text-center">UserId</th>
+        <th class="text-center">ActivityId</th>
+        <th class="text-center">手机号</th>
+        <th class="text-center">车牌号</th>
+        <th class="text-center">驾驶证号</th>
+        <th class="text-center">IP地址</th>
+        <th class="text-center">地区</th>
+        <th class="text-center">审核状态</th>
+        <th class="text-center">备注</th>
+        <th class="text-center">服务码</th>
+        <th class="text-center">报名时间</th>
+        <th class="text-center">操作</th>
+        <tr class="text-center" v-for="(value,index) in userActivityList">
+            <td>{{index+1}}</td>
+            <td>{{value.userId}}</td>
+            <td>{{value.activityId}}</td>
+            <td>{{value.mobile}}</td>
+            <td>{{value.carNum}}</td>
+            <td>{{value.driverNum}}</td>
+            <td>{{value.ip}}</td>
+            <td>{{value.region}}</td>
+            <td>{{value.status==1?"通过":value.status==2?"未通过":"待审核"}}</td>
+            <td>{{value.remark}}</td>
+            <td>{{value.serviceCode=="00000000-0000-0000-0000-000000000000"?"":value.serviceCode}}</td>
+            <td>{{value.createdDateTime}}</td>
+            <td v-if="value.status!=3">已审核</td>
+            <td v-else>
+                <button class="btn btn-primary btn-sm" v-on:click="auditUserActivity(value.pkid,activityId,1)">通过</button>
+                <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#refuseLayer" v-on:click="pkid=value.pkid">拒绝</button>
+                <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#delLayer" v-on:click="pkid=value.pkid;">删除</button>
+            </td>
+        </tr>
+        <tr v-if="userActivityList.length==0">
+            <td colspan="13" class="text-center text-muted">暂无数据...</td>
+        </tr>
+    </table>
+    <!--分页-->
+    <div class="page-bar">
+        <ul>
+            <li v-if="pager.cur>1">
+                <a v-on:click="pager.cur--,pageClick()">上一页</a>
+            </li>
+            <li v-if="pager.cur==1">
+                <a class="banclick">上一页</a>
+            </li>
+            <li v-for="index in indexs" v-bind:class="{ 'active': pager.cur == index}">
+                <a v-on:click="btnClick(index)">{{ index }}</a>
+            </li>
+            <li v-if="pager.cur!=pager.all">
+                <a v-on:click="pager.cur++,pageClick()">下一页</a>
+            </li>
+            <li v-if="pager.cur == pager.all">
+                <a class="banclick">下一页</a>
+            </li>
+            <li>
+                <a>
+                    共
+                    <i>{{pager.all}}</i>
+                    页
+                </a>
+            </li>
+        </ul>
+    </div>
+    <!-- 删除提示模态框 -->
+    <div class="modal fade bs-example-modal-sm" id="delLayer" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">确认删除吗？</h4>
+                </div>
+                <div class="modal-body text-right">
+                    <button data-dismiss="modal" class="btn btn-primary btn-sm">取消</button>
+                    <button data-dismiss="modal" class="btn btn-danger btn-sm" v-on:click="deleteUserActivity(pkid)">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 拒绝提示模态框 -->
+    <div class="modal fade bs-example-modal-sm" id="refuseLayer" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">拒绝通过吗？</h4>
+                </div>
+                <div class="form-group">
+                    <label for="remark">备注</label>
+                    <input type="text" id="remark" class="form-control" placeholder="请输入活动名称" v-model="remark">
+                </div>
+                <div class="modal-body text-right">
+                    <button data-dismiss="modal" class="btn btn-primary btn-sm">取消</button>
+                    <button data-dismiss="modal" class="btn btn-danger btn-sm" v-on:click="auditUserActivity(pkid,activityId,2)">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-2.1.1.min.js"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>
+<script src="~/Scripts/vue.min.js"></script>
+<script>
+    var vm = new Vue({
+        el: "#app",
+        data: {
+            pkid:0,
+            activityId: '@ViewBag.ActivityId',
+            remark: "",
+            status:-1,
+            userActivityList:[],
+            pager: {
+                total: 0,//总数据条数
+                size:5,
+                all: 1,//总页数
+                cur: 1 //当前页码
+            },
+            auditStatus: [{name:"全部",value:-1},{ name: "通过", value: 1 }, { name: "未通过", value: 2},{name:"待审核",value:3}]
+        },
+        created: function() {
+            this.getUserActivityList();
+        },
+        //watch: {
+        //    cur: function (oldValue, newValue) {
+        //        console.log(arguments);
+        //    }
+        //},
+        computed: {
+            indexs: function () {
+                var left = 1;
+                var right = this.pager.all;
+                var ar = [];
+                if (this.pager.all >= 5) {
+                    if (this.pager.cur > 3 && this.pager.cur < this.pager.all - 2) {
+                        left = this.pager.cur - 2;
+                        right = this.pager.cur + 2;
+                    } else {
+                        if (this.pager.cur <= 3) {
+                            left = 1;
+                            right = 5;
+                        } else {
+                            right = this.pager.all;
+                            left = this.pager.all - 4;
+                        }
+                    }
+                }
+                while (left <= right) {
+                    ar.push(left);
+                    left++;
+                }
+                return ar;
+            }
+
+        },
+        methods: {
+            btnClick: function (data) {//页码点击事件
+                if (data != this.pager.cur) {
+                    this.pager.cur = data;
+                    this.getUserActivityList();
+                }
+            },
+            pageClick: function () {
+                console.log('现在在' + this.pager.cur + '页');
+                this.getUserActivityList();
+            },
+            getUserActivityList: function() {
+                var _this = this;
+                $.ajax({
+                    url: "/WashCarActivity/GetUserActivityModels",
+                    type: "get",
+                    data: { activityId: _this.activityId, pageIndex: _this.pager.cur,pageSize:_this.pager.size,auditStatus:_this.status},
+                    success: function (data) {
+                        if (data.statusCode == 200) {
+                            _this.userActivityList = data.data.item1;
+                            _this.pager.total = data.data.item2;
+                            _this.pager.all = Math.ceil(_this.pager.total / _this.pager.size);
+                        } else {
+                            alert(data.msg);
+                        }
+                    },
+                    error: function (data) {
+                        alert("请求出错");
+                    }
+                });
+            },
+            auditUserActivity: function (pkid,activityId,status) {
+                var _this = this;
+                $.ajax({
+                    url: "/WashCarActivity/AuditUserActivityStatusByPKID",
+                    type: "post",
+                    data: { pkid: pkid, activityId:activityId,status: status, remark: _this.remark },
+                    success: function (data) {
+                        if (data.statusCode == 200) {
+                            alert(data.msg);
+                            window.location.reload();
+                        } else {
+                            alert(data.msg);
+                        }
+                    },
+                    error: function (data) {
+                        alert("请求出错");
+                    }
+                });
+            },
+            deleteUserActivity: function(pkid) {
+                $.ajax({
+                    url: "/WashCarActivity/DeleteUserActivityByPKID",
+                    type: "post",
+                    data: { pkid: pkid},
+                    success: function (data) {
+                        if (data.statusCode == 200) {
+                            alert(data.msg);
+                            window.location.reload();
+                        } else {
+                            alert(data.msg);
+                        }
+                    },
+                    error: function (data) {
+                        alert("请求出错");
+                    }
+                });
+            }
+        }
+    })
+</script>

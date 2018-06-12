@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>电瓶更换</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <link href="css/css.css" rel="stylesheet">
+    <script src="http://resource.tuhu.cn/Scripts/jquery-2.1.0.js"></script>
+    <script src="http://resource.tuhu.cn/Js/WebViewJavascriptBridge.js"></script>
+    <script src="js/page.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="car-info">
+            <img id="loginImg" src="" alt="">
+            <label id="vehicleName"></label>
+        </div>
+        <div class="product">
+            <div class="tit">
+                <span>推荐电瓶</span>
+                <a href="javascript:;" onclick="GengHuan();" class="replace"><span>更换</span><i class="arrow"></i></a>
+            </div>
+            <div class="info" onclick="ToDetail();">
+                <img id="imagev" src="" alt="">
+                <p class="name"></p>
+                <p>
+                    <span class="txt-btn">免费上门</span>
+                    <span class="price">￥<i class="prices"></i> &nbsp;<i class="num">x1</i></span>
+                </p>
+            </div>
+        </div>
+        <div class="tips2">
+            <span class="i-tip"></span><label class="remark"></label>
+        </div>
+        <div class="desc">
+            <div class="label">
+                【注】配送安装后配送人员将对旧蓄电池进行回收，如客户保留或没有旧蓄电池，需现场支付80元折旧费用
+            </div>
+            <ul>
+                <li>顾客采购商品后，服务人员按预约时间送达指定地点后，由于顾客原因取消或退货的，由顾客承担配送服务成本，100元/次</li>
+                <li>超出配送范围需加收配送费用，超出部分3元/公里。由客户现场支付</li>
+            </ul>
+            <div class="more" id="more">更多服务说明<i class="arrow"></i></div>
+            <div class="more-list" id="more_list">
+                <p>以下情况不可退换货</p>
+                <ul>
+                    <li>1.已经被使用的（非产品质量问题）;</li>
+                    <li>2.因客户使用不当或车身有漏电现象导致蓄电池断电的情况;</li>
+                    <li>3.未安装但撕毁防伪标识或客户原因造成损坏的;</li>
+                    <li>4.用户在搬运电池过程中摔坏磕碰导致电池报废;</li>
+                    <li>5.由于不正确的充电、安装及碰撞等引起的问题;</li>
+                    <li>6.擅自增加电器设备、充电机质量问题、配用车辆错误或不当造成无法使用时;</li>
+                    <li>7.擅自对蓄电池进行安装，拆卸等引起的问题;</li>
+                    <li>8.电池用于非汽车启动用途导致电池出现问题;</li>
+                </ul>
+            </div>
+        </div>
+        <div class="clause">
+            <span class="checkbox select"></span>我已仔细阅读条款
+        </div>
+    </div>
+    <div class="footer">
+        <span class="price">¥ <i class="prices"></i></span>
+        <a href="javascript:;" onclick="ToPay();" class="btn btn-min">去结算</a>
+    </div>
+  
+</body>
+</html>

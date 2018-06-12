@@ -1,0 +1,195 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0" name="viewport">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no" name="format-detection">
+    <meta content="email=no" name="format-detection">
+
+    <link rel="stylesheet" href="css/battery.min.css?v=20161102" />
+    <script src="js/pageResponse.min.js"></script>
+    <style type="text/css">
+        .progress {
+            width: 60%;
+            height: 20px;
+            overflow: hidden;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-left: -30%;
+            margin-top: -10px;
+            z-index: 10001;
+        }
+
+        .progress-bar {
+            position: absolute;
+            width: 40px;
+            height: 100%;
+            font-size: 12px;
+            line-height: 20px;
+            color: #fff;
+            background-color: #337ab7;
+            -webkit-box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+            box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+            -webkit-animation: bar 2s linear infinite;
+            -moz-animation: bar 2s linear infinite;
+            animation: bar 2s linear infinite;
+        }
+
+        @-webkit-keyframes bar {
+            from {
+                left: 0;
+            }
+
+            to {
+                left: 100%;
+            }
+        }
+
+        @-moz-keyframes bar {
+            from {
+                left: 0;
+            }
+
+            to {
+                left: 100%;
+            }
+        }
+
+        @keyframes bar {
+            from {
+                left: 0;
+            }
+
+            to {
+                left: 100%;
+            }
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+        var winWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth,
+            winHei = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
+            initWidRes = 720,
+            scale = winWidth / initWidRes;
+
+        var pRheight = winHei * initWidRes / winWidth;
+        pageResponse({
+            selectors: 'html',     //模块选择器，使用querySelectorAll的方法
+            mode: 'auto',     // auto || contain || cover ，默认模式为auto
+            width: '720',      //输入页面的宽度
+            height: pRheight   //输入页面的高度
+        })
+    </script>
+    <title>更换蓄电池</title>
+</head>
+<body>
+    <div class="header">
+        <img src="img/banner.png" alt="banner" id="banner" class="" />
+        <div class="step-warp">
+            <div class="steps">
+                <img src="img/step1.png" alt="" /> <div>根据车型和地区选择电瓶</div>
+                <img src="img/step2.png" alt="" /> <div>完善联系方式后下单</div>
+                <img src="img/step3.png" alt="" /> <div>免费上门安装</div>
+            </div>
+        </div>
+    </div>
+    <div class="car-info">
+        <!--<img src=" " alt="" id="loginImg" class="car" />-->
+        <div id="loginImg" class="car"></div>
+        <div class="car-name">
+            <p id="vehicleName"></p>
+            <p id="plNian"></p>
+        </div>
+        <div style="visibility:hidden;" class="change">换车</div>
+    </div>
+
+    <div class="select-city">
+        <ul class="areaSelect">
+            <li class="">
+                <a class="selectItem" name="province" id="province">
+                    <span class="default">省份/自治区</span>
+                    <input type="hidden" class="provinceid" />
+                    <input type="hidden" class="provinceName" />
+                    <span class="arrowSelect"><i></i></span>
+                </a>
+            </li>
+            <li>
+                <a class="selectItem" name="city" id="city">
+                    <span class="default">城市/地区、自治州</span>
+                    <input type="hidden" class="cityid" />
+                    <input type="hidden" class="cityName" />
+                    <span class="arrowSelect"><i></i></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <ul class="chooseItem" style="display:block;" id="province-ul"></ul>
+    <ul class="chooseItem" id="city-ul"></ul>
+    <div class="scroll">
+        <div class="prod-container">
+            <div class="view-more">
+                <p>点击，查看更多蓄电池</p>
+            </div>
+        </div>
+    </div>
+    <img src="img/action.png" alt="" class="action-icon" />
+    <div class="kf"> <span class="icon"></span> <span>若有疑问，请拨打客服电话400-111-8868</span></div>
+    <div class="foot">
+        <div class="price">&yen;<span class="p-price"></span><span>(免费上门)</span></div>
+        <a href="javascript:void(0)" class="pay">去结算</a>
+
+        <!--<div class="price">
+            合计: &yen;<p style="display:inline-block"></p>
+            <span>
+                (免费上门)
+            </span>
+        </div>
+        <div class="service">
+            <div>
+                <img src="img/service.png" alt="" />
+                <span>客服</span>
+            </div>
+
+        </div>
+        <a href="javascript:;" class="pay" onclick="PayClick()">去结算</a>-->
+    </div>
+
+    <div class="notice">
+        <div>
+            <img id="LodImg" src="img/BatteryImg.png" />
+        </div>
+        <div class="btn">
+            知道了
+        </div>
+    </div>
+    <div class="notice-bg"></div>
+    <!--<div class="loading" style="display:block;">
+        <img src="img/loading.gif" width="42" height="42" />
+    </div>-->
+
+    <div class="progress">
+        <div class="progress-bar"></div>
+    </div>
+
+    <div class="cx-container">
+        <span class="cx-title">请选择车型</span>
+        <div class="cx-list">
+            <div class="cx-wrapper">
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="js/zepto.min.js"></script>
+    <script src="http://resource.tuhu.cn/Js/WebViewJavascriptBridge.min.js"></script>
+    <script src="js/iscroll.js"></script>
+    <script type="text/javascript" src="js/index.min.js?v=1"></script>
+</body>
+</html>

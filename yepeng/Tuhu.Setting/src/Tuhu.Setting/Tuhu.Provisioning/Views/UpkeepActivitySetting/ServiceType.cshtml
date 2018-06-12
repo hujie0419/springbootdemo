@@ -1,0 +1,60 @@
+﻿@model List<Tuhu.Provisioning.DataAccess.Entity.ServiceTypeSetting>
+@{
+    Layout = "";
+}
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+</style>
+
+<div class="servicetype">
+    <fieldset>
+        @foreach (var item in Model)
+        {
+            <input type="checkbox" key="@item.ServiceType" catalogname="@item.CatalogName" value="@item.ServiceTypeName" />
+            <label id="@item.ServiceType">@item.ServiceTypeName</label>
+        }
+    </fieldset>
+    <input type="button" onclick="ServiceTypeChecked()" class="btn" value="选择" />
+</div>
+<script>
+    var types = $("#RelevanceServicesTypes").val() || "";
+    var typesArry = new Array();
+    typesArry = types.split(";");
+    $(function () {
+        $(".servicetype :checkbox").each(function (i) {
+            if (typesArry.indexOf($(this).attr("key")) >= 0) {
+                $(this).attr("checked", "checked");
+            }
+        });
+    })
+
+    function ServiceTypeChecked() {
+        var serviceTypes = "";
+        var catalognames = "";
+        $(".servicetype :checkbox").each(function (i) {
+            if ($(this).attr("checked")) {
+                if ($(this).attr("key")) {
+                    serviceTypes += $(this).attr("key") + ";";
+                    catalognames += $(this).attr("catalogname") + ";"
+                }
+            }
+        });
+
+        $("#RelevanceServicesCatalogs").val(catalognames.substr(0, catalognames.length - 1))
+        $("#RelevanceServicesTypes").val(serviceTypes.substr(0, serviceTypes.length - 1));
+        $("#AddServiceType").dialog('close');
+    }
+</script>

@@ -1,0 +1,149 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+.swiper-container-horizontal > .swiper-pagination {
+  bottom: 0;
+}
+.swiper-slide {
+  height: 280px;
+}
+.swiper-slide.banner1 {
+  background: url(../img/1.png) no-repeat 0;
+  background-size: 100%;
+}
+.swiper-slide.banner2 {
+  background: url(../img/2.png) no-repeat 0;
+  background-size: 100%;
+}
+.swiper-slide.banner3 {
+  background: url(../img/3.png) no-repeat 0;
+  background-size: 100%;
+}
+.swiper-slide.banner4 {
+  background: url(../img/4.png) no-repeat 0;
+  background-size: 100%;
+}
+.swiper-slide.banner5 {
+  background: url(../img/5.png) no-repeat 0;
+  background-size: 100%;
+}
+.wrapper {
+  min-height: 100%;
+  max-width: 630px;
+  background: #eee;
+  padding: 20px 16px 20px 16px;
+  color: #666;
+  background: #fff;
+  font-family: "Helvetica Neue", Helvetica, STHeiTi, Arial, sans-serif;
+  font-size: 14px;
+}
+.wrapper .logo {
+  width: 100%;
+}
+.wrapper .logo .logoicon {
+  background: url(../img/icon.png) no-repeat 0 0;
+  width: 130px;
+  height: 125px;
+  background-size: 100%;
+  float: left;
+}
+.wrapper .logo h3 {
+  font-size: 16px;
+  color: #333;
+  padding: 10px 0 10px 0;
+}
+.wrapper .logo .staricon {
+  background: url(../img/icon.png) no-repeat 0 -110px;
+  width: 120px;
+  height: 30px;
+  background-size: 100%;
+  margin: 5px 0 5px 130px;
+}
+.wrapper .logo::after {
+  clear: both;
+  display: table;
+  content: "";
+}
+.wrapper .authen {
+  text-align: center;
+  padding-right: 16px;
+  width: 100%;
+  margin: 10px 0 20px 0;
+}
+.wrapper .authen span {
+  color: #01892a;
+  background: url(../img/icon.png) no-repeat -45px -229px;
+  padding: 5px 0 5px 9%;
+  background-size: 180px;
+}
+.wrapper .download {
+  width: 100%;
+  border-radius: 6px;
+  background: #df3448;
+  display: block;
+  text-align: center;
+  padding: 15px 0;
+  color: #fff;
+  text-decoration: none;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+.wrapper .download span {
+  padding: 5px 0 5px 37px;
+  position: relative;
+}
+.wrapper .download span::before {
+  position: absolute;
+  content: "";
+  width: 28px;
+  height: 28px;
+  background: url(../img/icon.png) no-repeat 0 -174px;
+  background-size: 140px;
+  left: 0;
+  top: 1px;
+}
+.wrapper .recommend {
+  width: 100%;
+  border-top: 1px solid #d9d9d9;
+  border-bottom: 1px solid #d9d9d9;
+  padding: 13px 0;
+}
+.wrapper .recommend .title {
+  font-size: 16px;
+  color: #333;
+  border-left: 5px solid #df3348;
+  padding-left: 10px;
+  margin-bottom: 15px;
+}
+.wrapper .recommend p {
+  line-height: 22px;
+}
+.wrapper .application {
+  width: 100%;
+  padding: 13px 0;
+}
+.wrapper .application .title {
+  font-size: 16px;
+  color: #333;
+  border-left: 5px solid #df3348;
+  padding-left: 10px;
+  margin-bottom: 15px;
+}
+.wrapper .info {
+  width: 100%;
+  border-top: 1px solid #d9d9d9;
+  padding: 13px 0 25px 0;
+}
+.wrapper .info .title {
+  font-size: 16px;
+  color: #333;
+  border-left: 5px solid #df3348;
+  padding-left: 10px;
+  margin-bottom: 15px;
+}
+.wrapper .info p {
+  line-height: 22px;
+  margin-bottom: 5px;
+}
+/*# sourceMappingURL=application.css.map */

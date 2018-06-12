@@ -1,0 +1,359 @@
+﻿@{
+    ViewBag.Title = "作者管理";
+    var pagerModel = ViewData["PagerModel"] as PagerModel;
+}
+@using Tuhu.Provisioning.DataAccess.Entity.Discovery;
+@model List<CoverAuthor>
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>作者管理</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="@Url.Action("Index", "Home")">首页</a>
+            </li>
+            <li class="active">
+                <strong>作者列表</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-2">
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight ecommerce">
+
+    <div class="ibox-content m-b-sm border-bottom" style="padding-bottom:0">
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <button type="button" class="btn   btn-primary" data-toggle="modal" id="btnAddAuthor" data-target="#myModal5">新增作者</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <table class="table table-bordered" data-page-size="500">
+                        <thead>
+                            <tr>
+                                <th>作者头像</th>
+                                <th>作者名称</th>
+                                <th>手机号</th>
+                                <th width="40%">描述</th>
+                                <th>创建时间</th>
+                                <th>管理</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Count > 0)
+                            {
+                                foreach (var author in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a href="@author.AuthorHead" target="_blank">
+                                                <img src="@author.AuthorHead" width="72" height="72">
+                                            </a>
+                                        </td>
+                                        <td>@author.AuthorName</td>
+                                        <td>@author.AuthorPhone</td>
+                                        <td>@author.Description</td>
+                                        <td>@author.CreateTime</td>
+                                        <td>
+                                            <div class="btn-group" data-pic="@author.AuthorHead" data-phone="@author.AuthorPhone" data-desc="@author.Description">
+                                                <button class="btn-white btn btn-xs btnUpdate" data-target="#myModal6" data-toggle="modal" aid="@author.PKID" aName="@author.AuthorName">修改</button>
+                                                <button class="btn-white btn btn-xs btnDelete"  aid="@author.PKID">删除</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="7">
+                                    <div class="text-center">
+                                        <div class="btn-group" id="tcdPageCode"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal inmodal fade" id="myModal5" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">新增作者</h4>
+                    @*<small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>*@<small class="font-bold"></small>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">作者名称</label>
+                        <div class="col-sm-10"><input type="text" class="form-control" id="txtAuthorName" placeholder="作者名称2~10个字，不可重复"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">作者描述</label>
+                        <div class="col-sm-10"><input type="text" class="form-control" id="txtAuthorDesc" placeholder="100字以内"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">手机号</label>
+                        <div class="col-sm-10"><input type="text" class="form-control" id="txtPhone" placeholder="可空"></div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label class="col-sm-2 control-label">作者头像</label>
+                        <div class="col-sm-10">
+                            <input id="_hdAuthorHead" name="AuthorImage" style="width:150px;display:none;" type="hidden" value="">
+                            <input style="width:150px;" type="file" id="morePicture" name="morePicture" onchange="uploadPic('morePicture', HandlerPicResult);">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-10">
+                            <img src="" id="imgAuthorPic" width="75" height="75" style="display:none" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="btnSave">保存</button>
+                    <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal inmodal fade" id="myModal6" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">修改作者</h4>
+                    @*<small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>*@<small class="font-bold"></small>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">作者名称</label>
+                        <div class="col-sm-10"><input type="text" class="form-control" id="txtAuthorNameUp" placeholder="作者名称2~10个字，不可重复"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">作者描述</label>
+                        <div class="col-sm-10"><input type="text" class="form-control" id="txtAuthorDescUp" placeholder="100字以内"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">手机号</label>
+                        <div class="col-sm-10"><input type="text" class="form-control" id="txtPhoneUp" placeholder="可空"></div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label class="col-sm-2 control-label">作者头像</label>
+                        <div class="col-sm-10">
+                            <input id="_hdAuthorShowImagesUp" name="TagImage" style="width:150px;display:none;" type="hidden" value="">
+                            <input style="width:150px;" type="file" id="morePictureUp" name="morePicture" onchange="uploadPic('morePictureUp', HandlerPicResult);">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-10">
+                            <img src="" id="imgAuthorPicUp" width="75" height="75" style="display:none" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="btnSaveUp">保存</button>
+                    <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" id="_hdAuthorId" value="" />
+    <input type="hidden" id="_hdAuthorOldName" value="" />
+</div>
+@section Styles {
+    @Styles.Render("~/plugins/footableStyles")
+    <style type="text/css">
+        #myModal5 .form-group {
+            height: 40px;
+        }
+
+        #myModal6 .form-group {
+            height: 40px;
+        }
+        .control-label {
+        line-height: 34px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="~/Scripts/ajaxfileupload.js"></script>
+<script src="~/Scripts/CommentFile/jquery.page.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $("#tcdPageCode").createPage({
+                pageCount: @pagerModel.TotalPage,
+                current: @pagerModel.CurrentPage,
+                backFn: function (p) {
+                    //单击回调方法，p是当前页码
+                    location.href="/ArticleManage/AuthorList?pageIndex="+p;
+                }
+            });
+
+
+            $("#btnAddAuthor").click(function () {
+                $("#txtAuthorName").val("");
+                $("#txtAuthorDesc").val("");
+                $("#txtPhone").val("");
+                $("#_hdAuthorHead").val("");
+                $("#imgAuthorPic").hide();
+                $("#imgAuthorPic").attr("src", "");
+            });
+            //保存
+            $("#btnSave").click(function () {
+                var authorName = $.trim($("#txtAuthorName").val());
+                var authorDesc = $("#txtAuthorDesc").val();
+                var phone = $("#txtPhone").val();
+                var headPath = $("#_hdAuthorHead").val();
+
+                if (authorName == "") { alert("作者名称不能为空"); return; }
+                if (authorName.length < 2 || authorName.length > 10) { alert("作者名称长度在2~10个字之间"); return; }
+                if (headPath == "") { alert("请上传作者头像"); return; }
+                if(authorDesc.length>100) { alert("作者描述长度不能超过100个字"); return; }
+                //判断是否已经存在
+                $.ajax({
+                    type: "post",
+                    url: "/ArticleManage/AddAuthor",
+                    data: { AuthorName: authorName, AuthorPhone: phone, Description: authorDesc, AuthorHead:headPath },
+                    success: function (result) {
+                        if (result == "ok") {
+                            $("#myModal5 .modal-header").children(".close").click();//关闭
+                            location.reload();
+                        } else if (result == "exist") {
+                            alert("作者已存在，请勿重复添加");
+                            return;
+                        }
+                        else {
+                            alert("作者添加失败");
+                        }
+                    }
+                });
+            });
+
+            //点击修改
+            $(".btnUpdate").click(function () {
+                var thisObj = $(this);
+                var authorId = thisObj.attr("aid");
+                var authorName = thisObj.attr("aName");
+
+                var authorPhone = thisObj.parent().attr("data-phone");
+                var authorDesc = thisObj.parent().attr("data-desc");
+                var authorPic = thisObj.parent().attr("data-pic");
+
+                $("#txtAuthorNameUp").val(authorName);
+                $("#txtAuthorDescUp").val(authorDesc);
+                $("#txtPhoneUp").val(authorPhone);
+                if (authorPic != "") {
+                    $("#_hdAuthorShowImagesUp").val(authorPic);
+                    $("#imgAuthorPicUp").show();
+                    $("#imgAuthorPicUp").attr("src", authorPic);
+                } else {
+                    $("#_hdAuthorShowImagesUp").val("");
+                    $("#imgAuthorPicUp").hide();
+                    $("#imgAuthorPicUp").attr("src", "");
+                }
+                $("#_hdAuthorId").val(authorId);
+                $("#_hdAuthorOldName").val(authorName);
+            });
+            //修改保存
+            $("#btnSaveUp").click(function () {
+                var authorId = $("#_hdAuthorId").val();
+                var authorName = $.trim($("#txtAuthorNameUp").val());
+                var authorDesc = $("#txtAuthorDescUp").val();
+                var authorPhone = $("#txtPhoneUp").val();
+                var authorHead = $("#_hdAuthorShowImagesUp").val();
+
+                if (authorName == "") { alert("作者名称不能为空"); return; }
+                if (authorName.length < 2 || authorName.length > 10) { alert("作者名称长度在2~10个字之间"); return; }
+                if (authorHead == "") {
+                    alert("请上传作者头像"); return;
+                }
+                if(authorDesc.length>100) { alert("作者描述长度不能超过100个字"); return; }
+                var oldName=$("#_hdAuthorOldName").val();
+                $.ajax({
+                    type: "post",
+                    url: "/ArticleManage/UpdateAuthor",
+                    data: { PKID: authorId, AuthorName: authorName, AuthorPhone: authorPhone, Description: authorDesc, AuthorHead: authorHead, OldName: oldName },
+                    success: function (result) {
+                        if (result == "ok") {
+                            $("#myModal6 .modal-header").children(".close").click();//关闭
+                            location.reload();
+                        } else if (result == "exist") {
+                            alert("作者已存在，请勿重复添加");
+                            return;
+                        }else {
+                            alert("修改添加失败");
+                        }
+                    }
+                });
+
+            });
+            //删除
+            $(".btnDelete").click(function () {
+                var thisObj = $(this);
+                var authorId = thisObj.attr("aid");
+                if (confirm("确定要删除此作者吗？删除后不可恢复")) {
+                    $.ajax({
+                        type: "post",
+                        url: "/ArticleManage/DeleteAuthor",
+                        data: { AuthorID: authorId },
+                        success: function (result) {
+                            if (result == "ok") {
+                                location.reload();
+                            } else {
+                                alert("作者删除失败");
+                            }
+                        }
+                    });
+                    //---end
+                }
+            });
+
+        });
+
+        function uploadPic(_fileElementId, _callback) {
+            $.ajaxFileUpload({
+                url: '/ArticleManage/ImageUploadToAli',
+                secureuri: false,
+                fileElementId: _fileElementId || '',
+                dataType: 'json',
+                async: false,
+                success: function (result) {
+                    _callback(result, _fileElementId);
+                }
+            });
+        }
+        function HandlerPicResult(result, elementId) {
+            if (elementId == "morePicture") {
+                $("#imgAuthorPic").attr("src", result.BImage);
+                $("#imgAuthorPic").show();
+                $("#_hdAuthorHead").val(result.BImage);
+            } else {
+                $("#imgAuthorPicUp").attr("src", result.BImage);
+                $("#imgAuthorPicUp").show();
+                $("#_hdAuthorShowImagesUp").val(result.BImage);
+            }
+
+        }
+    </script>
+}
+

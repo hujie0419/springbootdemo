@@ -1,0 +1,96 @@
+﻿@{
+    Layout = null;
+}
+
+@{
+    Layout = null;
+}
+
+@model Tuhu.Provisioning.DataAccess.Entity.SE_HomePageMenuListConfig
+
+<div class="modal-dialog">
+    <div class="modal-content" style="width:800px;">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                &times;
+            </button>
+            <h4 class="modal-title">
+                编辑首页菜单配置
+            </h4>
+        </div>
+        <div class="modal-body">
+            <form id="form1" class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">名称:</label>
+                    <div class="col-sm-10">
+                        <input type="text" id="Name" name="Name" class="form-control" value="@Model.Name" />
+                    </div>
+                   
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">开始时间:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" name="StartDateTime" id="StartDateTime" value="@(string.Format("{0:yyyy-MM-dd HH:mm:ss}",Model.StartDateTime))" />
+                    </div>
+                    <label class="col-sm-2 control-label">结束时间:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" name="EndDateTime" id="EndDateTime" value="@(string.Format("{0:yyyy-MM-dd HH:mm:ss}",Model.EndDateTime))" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">开始版本：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="StartVersion" name="StartVersion" value="@Model.StartVersion"/>
+                    </div>
+                    <label class="col-sm-2 control-label">结束版本:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="EndVersion" name="EndVersion" value="@Model.EndVersion" />
+                    </div>
+                </div>
+                <input type="hidden" id="ID" name="ID" value="@Model.ID" />
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="btnSave" name="btnSave" class="btn btn-primary">
+                保 存
+            </button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                取 消
+            </button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        $('#btnSave').on('click', function () {
+            var data = {};
+            data.ID = $('#ID').val();
+            data.Name = $('#Name').val();
+            data.StartDateTime = $('#StartDateTime').val();
+            data.EndDateTime = $('#EndDateTime').val();
+            data.StartVersion = $('#StartVersion').val();
+            data.EndVersion = $('#EndVersion').val();
+            if (data) {
+                $(this).attr("disabled", "disabled");
+                $.ajax({
+                    url: '/HomePageConfigV2/HomePageMenuGroupSave',
+                    data: data,
+                    dataType: 'json',
+                    type: 'post'
+                }).done(function (result) {
+                    if (result == 1) {
+                        alert('保存成功');
+                        $('#edit').modal("hide");
+                        location.reload();
+                    } else if(result == 0) {
+                        alert("保存失败");
+                    } else if (result == 2) {
+                        alert("时间区域有重叠不能保存");
+                        $('#btnSave').removeAttr("disabled");
+                    }
+                });
+            }
+
+        });
+    });
+</script>

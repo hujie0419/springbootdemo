@@ -1,0 +1,63 @@
+﻿@model List<Tuhu.Provisioning.DataAccess.Entity.BaoYangActivityRelevance>
+@{
+    Layout = "";
+}
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+</style>
+
+<div class="brand">
+    <fieldset>
+        @foreach (var item in Model)
+        {
+            if (!string.IsNullOrWhiteSpace(item.Brand))
+            {
+                <input type="checkbox" brand="@item.Brand" />
+                <label>@item.Brand</label>
+            }
+
+        }
+    </fieldset>
+
+    <input type="button" onclick="BrandChecked()" class="btn" value="选择" />
+</div>
+<script>
+    var brands = $("#RelevanceBrands").val() || "";
+    var brandArry = new Array();
+    brandArry = brands.split(";");
+    $(function () {
+        $(".brand :checkbox").each(function (i) {
+            if (brandArry.indexOf($(this).attr("brand")) >= 0) {
+                $(this).attr("checked", "checked");
+            }
+        });
+    })
+
+    function BrandChecked() {
+        var serviceTypes = "";
+        $(".brand :checkbox").each(function (i) {
+            if ($(this).attr("checked")) {
+                if ($(this).attr("brand")) {
+                    serviceTypes += $(this).attr("brand") + ";";
+                }
+            }
+        });
+
+        $("#RelevanceBrands").val(serviceTypes.substr(0, serviceTypes.length - 1));
+        $("#AddBand").dialog('close');
+    }
+</script>

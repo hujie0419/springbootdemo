@@ -1,0 +1,73 @@
+﻿@using Tuhu.Provisioning.Models
+@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.BaoYangRecommendServiceConfig>
+@{
+    Layout = null;
+}
+<div>
+    <table style="width:100%;margin-top:20px;">
+        <thead>
+            <tr>
+                <th>编号</th>
+                <th>服务Type</th>
+                <th>服务名称</th>
+                <th>优惠券GUID</th>
+                <th>优惠券信息</th>
+                <th>途虎推荐</th>
+                <th>状态</th>
+                <th>创建时间</th>
+                <th>更新时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Number</td>
+                    <td>@item.ServiceType</td>
+                    <td>@item.ServiceName</td>
+                    <td>
+
+                        @if (!string.IsNullOrWhiteSpace(item.GetRuleGUID))
+                        {
+                            foreach (var name in item.GetRuleGUID.Split(';'))
+                            {
+                                <p>@name</p>
+                            }
+                        }
+                        else
+                        {
+                        }
+                    </td>
+                    <td>
+
+                        @if (!string.IsNullOrWhiteSpace(item.CouponNames))
+                        {
+                            foreach (var name in item.CouponNames.Split(';'))
+                            {
+                                <p>@name</p>
+                            }
+                        }
+                        else
+                        {
+                        }
+
+                    </td>
+                    <td>@(item.Recommend ? "是" : "否")</td>
+                    <td>@(item.Status ? "启用" : "禁用")</td>
+                    <td>@item.CreateTime</td>
+                    <td>@item.UpdateTime</td>
+                    <td>
+                        <a href="javascript:;" onclick="BaoYangRecommendServiceConfig.Update(@item.Id)">编辑</a><br />
+                        <a href="javascript:;" onclick="BaoYangRecommendServiceConfig.Delete(@item.Id)">删除</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div>
+    @Html.Pager(Model.Pager, pageIndex => Url.RouteUrl(new { pageIndex }))
+</div>
+<div id="AddItem"></div>

@@ -1,0 +1,82 @@
+﻿<script type="text/javascript">
+    window.delayready = true;
+</script>
+<script type="text/javascript" src="http://resource.tuhu.cn/js/hd/wxjsapi.js"></script>
+<script type="text/javascript">
+    //调试: "menuItem:jsDebug"    
+    function wxready(hidemenu) {
+        wx.ready(function () {
+            wx.hideMenuItems({
+                menuList: [
+                    'menuItem:readMode', // 阅读模式
+                    'menuItem:copyUrl', // 复制链接
+                    "menuItem:share:qq",
+                    "menuItem:share:weiboApp",
+                    "menuItem:favorite",
+                    "menuItem:share:facebook",
+                    "menuItem:share:QZone",
+                    "menuItem:share:brand",
+                    "menuItem:share:email",
+                    "menuItem:openWithSafari",
+                    "menuItem:openWithQQBrowser",
+                    "menuItem:originPage",
+                    "menuItem:delete",
+                    "menuItem:editTag"
+                ],
+                success: function (res) {
+                    //alert('已隐藏“阅读模式”，“分享到朋友圈”，“复制链接”等按钮');
+                },
+                fail: function (res) {
+                    //alert(JSON.stringify(res));
+                }
+            });
+            if (hidemenu) {
+                wx.hideOptionMenu();
+            } else if (window.wxbag) {
+                var title = wxbag.gtitle;
+                var ftitle = wxbag.ftitle;
+                var desc = wxbag.gdesc;
+                var fdesc = wxbag.fdesc;
+                var link = wxbag.link;
+                var imgurl = wxbag.fimg;
+                var imgurlShare = wxbag.gimg;
+                // 1 判断当前版本是否支持指定 JS 接口，支持批量判断
+                //document.querySelector('#checkJsApi').onclick = function () {
+                wx.checkJsApi({
+                    jsApiList: [
+                        'onMenuShareTimeline',
+                        'onMenuShareAppMessage'
+                    ],
+                    success: function (res) {
+                        //alert(JSON.stringify(res));
+                    }
+                });
+                wx.showOptionMenu();
+                wx.onMenuShareTimeline({
+                    title: desc,// 分享标题
+                    link: link, // 分享链接
+                    imgUrl: imgurlShare, // 分享图标
+                    success: function () {
+                    },
+                    cancel: function () {
+                        // 用户取消分享后执行的回调函数
+                    }
+                });
+                wx.onMenuShareAppMessage({
+                    title: ftitle, // 分享标题
+                    desc: fdesc, // 分享描述
+                    link: link, // 分享链接
+                    imgUrl: imgurl, // 分享图标
+                    type: '', // 分享类型,music、video或link，不填默认为link
+                    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                    success: function () {
+                    },
+                    cancel: function () {
+                        // 用户取消分享后执行的回调函数
+                    }
+                });
+            }
+        });
+    }
+    wxready(true);
+</script>

@@ -1,0 +1,394 @@
+﻿
+@{
+    ViewBag.Title = "SetParameterForm";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+
+<script type="text/javascript" src="~/Scripts/multiple/multiple-select.js"></script>
+<ul id="myTab" class="nav nav-tabs">
+    <li class="active">
+        <a href="#baoyang" data-toggle="tab">
+            保 养
+        </a>
+    </li>
+    <li>
+        <a href="#faxian" data-toggle="tab">
+            发 现
+        </a>
+    </li>
+    <li>
+
+        <a href="#tire" data-toggle="tab">
+            轮胎&轮毂&车品
+        </a>
+    </li>
+    <li>
+        <a href="#h5" data-toggle="tab">
+            H5页面
+        </a>
+    </li>
+    <li>
+        <a href="#others" data-toggle="tab">
+            其 它
+        </a>
+    </li>
+</ul>
+<div id="myTabContent" class="tab-content">
+    <div class="tab-pane fade in active" id="baoyang">
+        <form id="form1">
+            <table class="form">
+                <tr>
+                    <th class="formTitle">途虎推荐:</th>
+                    <td class="formValue">
+                        <input type="radio" name="tuhutuijian" value="1" /><span>是</span>
+                        <input type="radio" name="tuhutuijian" value="0" /><span>否</span>
+                    </td>
+                    <th class="formTitle">选 项:</th>
+                    <td class="formValue">
+                        <div class="ckbox">
+                            <input id="login" name="login" type="checkbox" checked="checked"><label for="login">强制登录</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">保养服务:</th>
+                    <td class="formValue" colspan="3">
+                        <select id="baoyangserver" name="baoyangserver" class="form-control">
+
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">活动ID：</th>
+                    <td class="formValue" colspan="3">
+                        <input type="text" name="activityGuid" class="form-control" />
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <div class="tab-pane fade" id="faxian">
+        <form id="form2">
+            <table class="form">
+                <tr>
+                    <th class="formTitle">发现文章:</th>
+                    <td class="formValue">
+                        <input type="text" class="form-control" id="pageID" />
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <div class="tab-pane fade" id="tire">
+        <form id="form3">
+            <table class="form">
+                <tr>
+                    <th class="formTitle">选项:</th>
+                    <td class="formValue">
+                        <input type="radio" name="rbtire" value="1" /><span>轮胎</span>
+                        <input type="radio" name="rbtire" value="2" /><span>轮毂</span>
+                        <input type="radio" name="rbtire" value="3" /><span>车品</span>
+                        <input type="radio" name="rbtire" value="4" /><span>轮胎列表</span>
+                        
+                        <input type="radio" name="rbtire" value="5" /><span>轮毂列表</span>
+                        <input type="radio" name="rbtire" value="6" /><span>车品商城</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">轮胎品牌:</th>
+                    <td class="formValue">
+                        <select id="Brand" name="Brand" multiple="multiple">
+                           
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">PID：</th>
+                    <td class="formValue">
+                        <input type="text" id="txtPID" name="txtPID" class="form-control" />
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">VID:</th>
+                    <td class="formValue">
+                        <input type="text" id="txtVID" name="txtVID" class="form-control" />
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">活动ID:</th>
+                    <td class="formValue">
+                        <input type="text" id="txtActivityID" name="txtActivityID" class="form-control" />
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <div class="tab-pane fade" id="h5">
+        <form id="form4">
+            <table class="form">
+                <tr>
+                    <th class="formTitle">车型要求:</th>
+                    <td class="formValue">
+                        <select id="tireType" name="tireType" class="form-control">
+                            <option value="0">无</option>
+                            <option value="1">二级车型</option>
+                            <option value="2">4级车型</option>
+                            <option value="3">5级车型</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">规格信息:</th>
+                    <td class="formValue">
+                        <select id="spec" class="form-control">
+                            <option value="0">无</option>
+                            <option value="1">轮胎</option>
+                            <option value="2">轮毂</option>
+                        </select>
+                        <div class="ckbox">
+                            <input id="login1" name="login1" type="checkbox" checked="checked"><label for="login1">强制登录</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">APPURL:</th>
+                    <td class="formValue">
+                        <input type="text" class="form-control" id="appurl" />
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">页面标题:</th>
+                    <td class="formValue">
+                        <input type="text" class="form-control" id="title" />
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <div class="tab-pane fade" id="others">
+        <form id="form5">
+            <table class="form">
+                <tr>
+                    <th class="formTitle">选项:</th>
+                    <td class="formValue">
+                        <input type="radio" name="other" value="/home" /><span>首页</span>
+                        <input type="radio" name="other" value="/search" /><span>搜索</span>
+                        <input type="radio" name="other" value="/battery" /><span>蓄电池</span>
+                        <input type="radio" name="other" value="/carProfile/trafficViolation/result" /><span>查违章</span>
+                        <input type="radio" name="other" value="/allServices" /><span>服务大全</span>
+                        <input type="radio" name="other" value="/memberMall" /><span>会员商城</span>
+                        <input type="radio" name="other" value="/coupons" /><span>我的优惠券</span>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</div>
+<input type="hidden" id="txtParameter" name="txtParameter" />
+<script type="text/javascript">
+    var baoyangform = $('#baoyang form');
+    var faxian = $('#faxian form');
+    var tire = $('#tire form');
+    var h5 = $('#h5 form');
+    var other = $('#others form');
+
+    $(function () {
+
+        $('input[name="baoyanglist"]', baoyangform).on('change', function () {
+            var value = $(this).val();
+            if (value == 1) {
+                $('input[name="baoyangserver"]', baoyangform).attr("disabled", "disabled");
+                $('input[name="activityGuid"]', baoyangform).attr("disabled", "disabled");
+                $('input[name="baoyangserver"]', baoyangform).val("");
+                $('input[name="activityGuid"]', baoyangform).val("");
+            } else {
+                $('input[name="baoyangserver"]', baoyangform).removeAttr("disabled");
+                $('input[name="activityGuid"]', baoyangform).removeAttr("disabled");
+            }
+        });
+
+        $('input[name="rbtire"]', tire).on('change', function () {
+            var value = $(this).val();
+            if (value == 4 || value == 5 || value == 6) {
+                $('#txtPID', tire).val("");
+                $('#txtVID', tire).val("");
+                $('#txtActivityID', tire).val("");
+                $('#txtPID', tire).attr("disabled", "disabled");
+                $('#txtVID', tire).attr("disabled", "disabled");
+                $('#txtActivityID', tire).attr("disabled", "disabled");
+            } else {
+                $('#txtPID', tire).removeAttr("disabled");
+                $('#txtVID', tire).removeAttr("disabled");
+                $('#txtActivityID', tire).removeAttr("disabled");
+            }
+        });
+
+        $.ajax({
+            url: '@(System.Configuration.ConfigurationManager.AppSettings["ApiDomain"].ToString())/Tires/GetTiresBrand',
+            type: 'post',
+            dataType: 'json'
+        }).done(function (result) {
+            if (result.TiresBrand) {
+                $("#Brand").bindSelect({
+                    data: result.TiresBrand,
+                    id: "BrandName",
+                    text: "BrandName"
+                });
+                $("#Brand").multipleSelect();
+            }
+        });
+
+        $('#baoyangserver').bindSelect({
+            url: "/Activity/ActivityUnity/GetBaoyangProdcutJson"
+        });
+
+    });
+
+
+    function Parameter() {
+        var url = "";
+        var obj = $('.tab-pane.active');
+        if (obj.attr("id") == "baoyang") {
+            //保养
+            var isbaoyanglist = $('input[name="baoyanglist"]:checked', baoyangform).val();
+            var baoyangserver = $('#baoyangserver', baoyangform).val();
+            var istuhutuijian = $('input[name="tuhutuijian"]:checked', baoyangform).val();
+            var activityGuid = $('input[name="activityGuid"]', baoyangform).val();
+            var islogin = $('input[name="login"]:checked', baoyangform).val();
+
+            if (isbaoyanglist == 1) {
+                //是
+                $('input[name="txtParameter"]', baoyangform).val("/maintenance/selectService");
+                url = "/maintenance/selectService";
+            } else {
+
+                url = "/maintenance?";
+                if (!baoyangserver) {
+                    alert("请填写保养服务");
+                    return;
+                }
+                url += "type=" + baoyangserver;
+                if (islogin) {
+                    url += "&requireUser=1";
+                }
+
+                if (istuhutuijian == 1) {
+                    url += "&IsTuhuRecommend=1";
+                } else {
+                    url += "&IsTuhuRecommend=0";
+                }
+
+                //productIds productActivityId
+                if (activityGuid) {
+                    url += "&aid=" + activityGuid;
+                }
+
+
+                $('input[name="txtParameter"]', baoyangform).val(url);
+            }
+        }
+
+        if (obj.attr("id") == "faxian") {
+            var pageID = $('#pageID').val();
+            if (!pageID) {
+                alert("请填写Url");
+                return false;
+            }
+            ///explore/webView?url=xxx
+            url = "/explore/webView?url=" + encodeURIComponent(pageID);
+            $('input[name="txtParameter"]', faxian).val(url);
+        }
+
+        if (obj.attr("id") == "tire") {
+
+            var pid = $('#txtPID', tire).val();
+            var vid = $('#txtVID', tire).val();
+            var activityid = $('#txtActivityID', tire).val();
+            var value = $('input[name="rbtire"]:checked', tire).val();
+            if (value == 6) {
+                url = "/accessory";
+            }
+            if (value == 5) {
+                url = "/wheelRim?requireCarLevel2=1&requireWheelRimSize=1";
+            }
+            if (value == 4) {//轮胎列表
+
+                if ($('#Brand').multipleSelect("getSelects").toString() != "") {
+                    var brand = [];
+                    var temp = $('#Brand').multipleSelect("getSelects");
+                    for (var i = 0; i < temp.length; i++) {
+                        if (temp[i])
+                            brand.push(temp[i]);
+                    }
+                    url += "/tire?brand=" + encodeURIComponent(brand.toString()) + "&requireCarLevel2=1&requireTireSpec=1";
+                } else {
+                    url = "/tire?requireCarLevel2=1&requireTireSpec=1";
+                }
+            }
+            if (value == 3) {
+                url = "/accessory/item?pid=" + pid + "&vid=" + vid + "&aid=" + activityid;
+            }
+            if (value == 2) {
+                url = "/wheelRim/item?pid=" + pid + "&vid=" + vid + "&aid=" + activityid;
+            }
+            if (value == 1) {
+                url = "/tire/item?pid=" + pid + "&vid=" + vid + "&aid=" + activityid;
+            }
+            $('input[name="txtParameter"]', tire).val(url);
+        }
+
+        if (obj.attr("id") == "h5") {
+
+            var appurl = $('#appurl', h5).val();
+            var title = $('#title', h5).val();
+            var tireType = $('#tireType', h5).val();
+            var spec = $('#spec', h5).val();
+            var islogin = $('input[name="login1"]:checked', h5).val();
+
+            url = "/webView?url=" + encodeURIComponent(appurl);
+            if (title) {
+                url += "&title=" + encodeURIComponent(title);
+            }
+            if (islogin) {
+                url += "&requireUser=1";
+            }
+            if (tireType == 1) {
+                url += "&requireCarLevel2=1";
+            }
+            if (tireType == 2) {
+                url += "&requireCarLevel4=1";
+            }
+            if (tireType == 3) {
+                url += "&requireCarLevel5=1";
+            }
+            if (spec == 1) {
+                url += "&requireTireSpec=1";
+            }
+            if (spec == 2) {
+                url += "&requireWheelRimSize=1";
+            }
+
+            $('input[name="txtParameter"]', h5).val(url);
+        }
+
+        if (obj.attr("id") == "others") {//其它
+            var value = $('input[name="other"]:checked', other).val();
+            url = value;
+            $('input[name="txtParameter"]', other).val(value);
+        }
+        return url;
+        //if (url) {
+          
+        //    //$('#LinkUrl').val(url);
+        //    //$('#toobal').modal("hide");
+        //    //$('#NoLinkUrl').val(decodeURIComponent(url));
+        //}
+
+    }
+
+
+    function getFormParameter() {
+        $.modalClose();
+      return  Parameter();
+    }
+</script>

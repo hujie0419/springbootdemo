@@ -1,0 +1,304 @@
+﻿html {
+  width: 100%;
+}
+body {
+  font-family: "微软雅黑";
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  -webkit-appearance: none;
+  background: url(../img/bg.png) no-repeat;
+  background-size: contain;
+  background-color: #42a8fd;
+  padding-bottom: 1.8rem;
+}
+body .errorMsg {
+  margin: 0.115rem auto;
+  width: 3.906rem;
+  height: 0.200rem;
+  line-height: 0.300rem;
+  color: #ffffff;
+  text-align: center;
+}
+body .input {
+  width: 5.469rem;
+  height: 0.781rem;
+  margin: 0 auto;
+  box-shadow: 0 0.064rem 0 #d1d1c9 inset;
+  background-color: #ffffff;
+  border-radius: 0.150rem;
+}
+body .input input {
+  border: none;
+  outline: none;
+  margin-left: 0.313rem;
+  margin-top: 0.094rem;
+  height: 80%;
+  text-align: left;
+  width: 90%;
+}
+body .input input::-webkit-input-placeholder {
+  color: #a8a8a6;
+}
+body .input:first-of-type {
+  margin-top: 9.99rem;
+}
+body .input:nth-of-type(2) {
+  margin-top: 0.266rem;
+}
+body .input:nth-of-type(2) input {
+  width: 40%;
+}
+body .input .getCode {
+  display: inline-block;
+  margin-top: 0.074rem;
+  margin-right: 0.078rem;
+  float: right;
+  width: 2.1rem;
+  height: 0.625rem;
+  line-height: 0.625rem;
+  text-align: center;
+  background-color: #fede29;
+  color: #ff952b;
+  border-radius: 0.1rem;
+  box-shadow: 0 0.047rem 0 #f7b113;
+}
+body .input .getCode.disabled {
+  color: #ffffff;
+  background-color: #cccccc;
+  box-shadow: 0 0.047rem 0 rgba(87, 84, 78, 0.67);
+}
+body .submit {
+  margin: 0.219rem auto 0;
+  width: 3.906rem;
+  height: 0.859rem;
+  line-height: 0.859rem;
+  text-align: center;
+  background-color: #fee13d;
+  color: #dd155d;
+  border-radius: 0.1rem;
+  box-shadow: 0 0.09rem 0 #f6a90f;
+  font-weight: bold;
+}
+body .submit.disabled {
+  color: #ffffff;
+  background-color: #cccccc;
+  box-shadow: 0 0.09rem 0 rgba(98, 96, 92, 0.69);
+}
+body .rule-div {
+  width: 7.594rem;
+  margin: 1.328rem auto 0;
+}
+body .rule {
+  display: inline-block;
+  width: 2rem;
+  line-height: 0.6rem;
+  padding-left: 0.188rem;
+  margin-bottom: 0.250rem;
+  color: #ffffff;
+  background: url(../img/ruleBg.png) no-repeat;
+  background-size: contain;
+  font-weight: bold;
+}
+body ul {
+  margin: 0 0 0 0.5rem;
+  padding: 0;
+}
+body ul li {
+  list-style: decimal;
+  color: #ffffff;
+  line-height: 0.469rem;
+}
+body .downApp {
+  display: block;
+  width: 100%;
+  line-height: 1.5rem;
+  text-align: center;
+  background: rgba(98, 88, 48, 0.9);
+  font-size: 14px;
+  text-decoration: none;
+  color: #ffffff;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  text-align: left;
+}
+body .downApp > span {
+  display: inline-block;
+  vertical-align: middle;
+}
+body .downApp > span:nth-of-type(1) {
+  width: 1rem;
+  height: 1rem;
+  background: url(../img/tiger.png) no-repeat;
+  background-size: contain;
+  margin: 0 0.133rem;
+}
+body .downApp > span:nth-of-type(2) {
+  line-height: 0.5rem;
+  text-align: left;
+}
+body .downApp > span:nth-of-type(3) {
+  margin-left: 8px;
+  border: 1px solid #FFFFFF;
+  line-height: normal;
+  height: auto;
+  padding: 3px 8px;
+  border-radius: 3px;
+}
+body .downApp > label {
+  display: inline-block;
+  padding: 2px 10px;
+  position: absolute;
+  right: 5px;
+  top: 0px;
+  color: #FFFFFF;
+  line-height: normal;
+  border-radius: 8px;
+}
+body .layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  background-color: black;
+  opacity: 0.3;
+  display: none;
+}
+body .layer + .success {
+  position: absolute;
+  width: 4.844rem;
+  height: 5.781rem;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  background: url(../img/success.png) no-repeat center;
+  background-size: contain;
+  display: none;
+}
+body .layer + .success > p {
+  text-align: center;
+  color: #47ab10;
+  margin: 0.1rem 0 0 0;
+  font-family: "微软雅黑";
+}
+body .layer + .success > p:first-child {
+  margin-top: 4rem;
+  color: #eaffdc;
+}
+.got {
+  position: absolute;
+  width: 4.844rem;
+  height: 5.781rem;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  background: url(../img/got.png) no-repeat center;
+  background-size: contain;
+  text-align: center;
+  display: none;
+}
+.got .ok {
+  width: 1.375rem;
+  line-height: 0.563rem;
+  margin: 4rem auto 0;
+  text-align: center;
+  background-color: #42A8FD;
+  color: #ffffff;
+  border-radius: 5px;
+}
+[data-dpr="3"] .errorMsg {
+  font-size: 36px;
+}
+[data-dpr="3"] .success > p {
+  font-size: 36px;
+}
+[data-dpr="3"] input,
+[data-dpr="3"] .getCode {
+  font-size: 40px;
+}
+[data-dpr="3"] .submit {
+  font-size: 60px;
+}
+[data-dpr="3"] body .downApp > span:nth-of-type(2) {
+  font-size: 40px;
+  margin: 0 20px;
+}
+[data-dpr="3"] body .downApp > span:nth-of-type(3) {
+  font-size: 60px;
+}
+[data-dpr="3"] .downApp > label {
+  font-size: 60px;
+}
+[data-dpr="2"] .errorMsg {
+  font-size: 22px;
+}
+[data-dpr="2"] .success > p {
+  font-size: 22px;
+}
+[data-dpr="2"] input,
+[data-dpr="2"] .getCode {
+  font-size: 26px;
+}
+[data-dpr="2"] .submit {
+  font-size: 44px;
+}
+[data-dpr="2"] body .downApp > span:nth-of-type(2) {
+  font-size: 26px;
+  margin: 0 20px;
+}
+[data-dpr="2"] body .downApp > span:nth-of-type(3) {
+  font-size: 30px;
+}
+[data-dpr="2"] .downApp > label {
+  font-size: 40px;
+}
+@media only screen and (max-width: 640px) {
+  .errorMsg {
+    font-size: 14px;
+  }
+  [data-dpr="2"] .success > p {
+    font-size: 18px;
+  }
+  [data-dpr="2"] input,
+  [data-dpr="2"] .getCode {
+    font-size: 22px;
+  }
+  [data-dpr="2"] .submit {
+    font-size: 38px;
+  }
+  [data-dpr="2"] body .downApp > span:nth-of-type(2) {
+    font-size: 20px;
+    margin: 0 20px;
+  }
+  [data-dpr="2"] body .downApp > span:nth-of-type(3) {
+    font-size: 26px;
+  }
+  [data-dpr="2"] .downApp > label {
+    font-size: 30px;
+  }
+}
+[data-dpr="1"] .errorMsg {
+  font-size: 10px;
+}
+[data-dpr="1"] .layer + .success > p:first-child {
+  font-size: 10px;
+  margin-top: 4.05rem;
+}
+[data-dpr="1"] input,
+[data-dpr="1"] .getCode {
+  font-size: 14px;
+}
+[data-dpr="1"] .submit {
+  font-size: 18px;
+}
+[data-dpr="1"] .downApp > label {
+  font-size: 20px;
+}
+/*# sourceMappingURL=hlyh.css.map */

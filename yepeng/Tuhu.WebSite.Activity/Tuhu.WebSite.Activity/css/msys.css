@@ -1,0 +1,543 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-size: 62.5%;
+  font-family: "微软雅黑";
+  background-color: #f9e58f;
+}
+html .title,
+body .title {
+  background-color: #000000;
+  text-align: center;
+}
+html .title p,
+body .title p {
+  margin: 0;
+  color: #fcc601;
+  font-size: 1.4rem;
+}
+html .title > div,
+body .title > div {
+  color: #fffffd;
+  font-size: 12px;
+}
+html .title > div span,
+body .title > div span {
+  display: inline-block;
+}
+html .bg,
+body .bg {
+  position: relative;
+  /*background: url(../img/ljmsBg.png) no-repeat;*/
+  /*background-size: contain;*/
+}
+html .bg > div,
+body .bg > div {
+  position: absolute;
+}
+html .bg div.ljms,
+body .bg div.ljms {
+  background: url(../img/ljms.png) no-repeat;
+  background-size: contain;
+}
+html .bg div.ljmshs,
+body .bg div.ljmshs {
+  background: url(../img/ljsmhs.png) no-repeat;
+  background-size: contain;
+}
+html .bg div.kqtz,
+body .bg div.kqtz {
+  background: url(../img/kqtz.png) no-repeat;
+  background-size: contain;
+}
+html .bg div.ljmscx,
+body .bg div.ljmscx {
+  background: url(../img/ljmscx.png) no-repeat;
+  background-size: contain;
+}
+html .bg > span,
+body .bg > span {
+  display: none;
+  background-color: #fffea4;
+  color: #ff3300;
+  text-align: center;
+  padding: 6px 0;
+  font-size: 1.4rem;
+}
+html .container,
+body .container {
+  display: inline-block;
+}
+html .container > div,
+body .container > div {
+  float: left;
+  background: url(../img/ljmsys.png) no-repeat;
+  background-size: contain;
+  border: 2px solid #eaeaea;
+}
+html .container > ul,
+body .container > ul {
+  font-size: 1.2rem;
+  float: left;
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0 10px;
+}
+html .container > ul li,
+body .container > ul li {
+  display: table;
+  width: 100%;
+}
+html .container > ul li > span,
+body .container > ul li > span {
+  display: table-cell;
+}
+html .container > ul li > span:first-child,
+body .container > ul li > span:first-child {
+  vertical-align: top;
+  padding-right: 5px;
+}
+html .container > ul li > span:first-child span,
+body .container > ul li > span:first-child span {
+  padding: 5px;
+  color: #fffeff;
+  background-color: #fe9e4a;
+}
+html .container > ul li > span:last-child,
+body .container > ul li > span:last-child {
+  overflow: hidden;
+}
+html .container > a,
+body .container > a {
+  display: block;
+  width: 98%;
+  margin: 10px 1% 0;
+  background-color: #ff5c25;
+  float: left;
+  text-align: center;
+  color: #fefefc;
+  border-radius: 10px;
+  text-decoration: none;
+}
+html .rule,
+body .rule {
+  background-color: #fad852;
+}
+html .rule .ruleTitle > div,
+body .rule .ruleTitle > div {
+  text-align: center;
+  color: #ffffff;
+}
+html .rule .ruleTitle > div span,
+body .rule .ruleTitle > div span {
+  position: relative;
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+  background-color: #e47f0b;
+}
+html .rule .ruleTitle ol,
+body .rule .ruleTitle ol {
+  padding: 0;
+  width: 85%;
+  color: #e37f0f;
+}
+@media only screen and (min-width: 414px) and (max-width: 640px) {
+  .title {
+    padding: 10px;
+  }
+  .title > div {
+    padding: 5px 0;
+  }
+  .title > div span {
+    width: 20px;
+    height: 30px;
+    line-height: 30px;
+    color: #fea901;
+    background-color: #ffffff;
+    font-weight: bold;
+    font-size: 20px;
+  }
+  .title > div span:nth-of-type(odd) {
+    margin-left: 10px;
+    margin-right: 4px;
+  }
+  .title > div span:nth-of-type(even) {
+    margin-right: 10px;
+  }
+  .bg {
+    /*height: 340px;*/
+  }
+  .bg > div {
+    width: 31%;
+    height: 50px;
+    left: 37%;
+    bottom: 13%;
+  }
+  .container {
+    border: 5px solid #f9e58f;
+    padding: 5px 5px 10px 5px;
+    background-color: #ffffff;
+  }
+  .container > div {
+    width: 200px;
+    height: 200px;
+  }
+  .container > ul {
+    margin-left: 10px;
+    width: 180px;
+  }
+  .container > ul li > span:last-child {
+    display: inline-block;
+    width: 120px;
+    height: 50px;
+    position: relative;
+    top: -5px;
+  }
+  .container > ul li:nth-of-type(3) {
+    font-size: 32px;
+  }
+  .container > ul li:nth-of-type(3) > label {
+    color: #fb2b0f;
+  }
+  .container > ul li:nth-of-type(4) {
+    color: #999999;
+    margin-top: 8px;
+  }
+  .container > ul li:nth-of-type(4) label {
+    text-decoration: line-through;
+  }
+  .container > ul li:nth-of-type(5) {
+    text-align: right;
+  }
+  .container > ul li:nth-of-type(5) a {
+    text-decoration: none;
+    color: #666666;
+  }
+  .container > a {
+    height: 35px;
+    font: bold 16px "微软雅黑";
+    line-height: 35px;
+  }
+  .rule {
+    padding-bottom: 10px;
+  }
+  .rule .ruleTitle > div {
+    font: bold 16px "微软雅黑";
+    padding-top: 10px;
+  }
+  .rule .ruleTitle > div span {
+    margin: 0 10px;
+    top: -3px;
+  }
+  .rule .ruleTitle > div span:last-child {
+    margin-left: 5px;
+  }
+  .rule .ruleTitle > ol {
+    line-height: 20px;
+    margin: 10px 10px 0 40px;
+  }
+}
+@media only screen and (min-width: 375px) and (max-width: 413px) {
+  .title {
+    padding: 10px;
+  }
+  .title > div {
+    padding: 5px 0;
+  }
+  .title > div span {
+    width: 18px;
+    height: 28px;
+    line-height: 28px;
+    color: #fea901;
+    background-color: #ffffff;
+    font-weight: bold;
+    font-size: 18px;
+  }
+  .title > div span:nth-of-type(odd) {
+    margin-left: 10px;
+    margin-right: 4px;
+  }
+  .title > div span:nth-of-type(even) {
+    margin-right: 10px;
+  }
+  .bg {
+    height: 300px;
+  }
+  .bg > div {
+    width: 150px;
+    height: 45px;
+    left: 50%;
+    margin-left: -70px;
+    bottom: 38px;
+  }
+  .container {
+    border: 5px solid #f9e58f;
+    padding: 5px 5px 10px 5px;
+    background-color: #ffffff;
+  }
+  .container > div {
+    width: 160px;
+    height: 200px;
+  }
+  .container > ul {
+    margin-left: 10px;
+    width: 180px;
+  }
+  .container > ul li > span:last-child {
+    display: inline-block;
+    width: 120px;
+    height: 50px;
+    position: relative;
+    top: -5px;
+  }
+  .container > ul li:nth-of-type(3) {
+    font-size: 32px;
+  }
+  .container > ul li:nth-of-type(3) > label {
+    color: #fb2b0f;
+  }
+  .container > ul li:nth-of-type(4) {
+    color: #999999;
+    margin-top: 8px;
+  }
+  .container > ul li:nth-of-type(4) label {
+    text-decoration: line-through;
+  }
+  .container > ul li:nth-of-type(5) {
+    text-align: right;
+  }
+  .container > ul li:nth-of-type(5) a {
+    text-decoration: none;
+    color: #666666;
+  }
+  .container > a {
+    height: 35px;
+    font: bold 16px "微软雅黑";
+    line-height: 35px;
+  }
+  .rule {
+    padding-bottom: 10px;
+  }
+  .rule .ruleTitle > div {
+    font: bold 16px "微软雅黑";
+    padding-top: 10px;
+  }
+  .rule .ruleTitle > div span {
+    margin: 0 10px;
+    top: -3px;
+  }
+  .rule .ruleTitle > div span:last-child {
+    margin-left: 5px;
+  }
+  .rule .ruleTitle > ol {
+    line-height: 20px;
+    margin: 10px 10px 0 40px;
+  }
+}
+@media only screen and (min-width: 330px) and (max-width: 374px) {
+  .title {
+    padding: 10px;
+  }
+  .title > div {
+    padding: 5px 0;
+  }
+  .title > div span {
+    width: 20px;
+    height: 30px;
+    line-height: 30px;
+    color: #fea901;
+    background-color: #ffffff;
+    font-weight: bold;
+    font-size: 20px;
+  }
+  .title > div span:nth-of-type(odd) {
+    margin-left: 10px;
+    margin-right: 4px;
+  }
+  .title > div span:nth-of-type(even) {
+    margin-right: 10px;
+  }
+  .bg {
+    height: 295px;
+  }
+  .bg > div {
+    width: 160px;
+    height: 40px;
+    left: 50%;
+    margin-left: -60px;
+    bottom: 38px;
+  }
+  .container {
+    border: 5px solid #f9e58f;
+    padding: 5px 5px 10px 5px;
+    background-color: #ffffff;
+  }
+  .container > div {
+    width: 150px;
+    height: 180px;
+  }
+  .container > ul {
+    margin-left: 10px;
+    width: 175px;
+  }
+  .container > ul li > span:last-child {
+    display: inline-block;
+    width: 114px;
+    height: 50px;
+    position: relative;
+    top: -5px;
+  }
+  .container > ul li:nth-of-type(3) {
+    font-size: 32px;
+  }
+  .container > ul li:nth-of-type(3) > label {
+    color: #fb2b0f;
+  }
+  .container > ul li:nth-of-type(4) {
+    color: #999999;
+  }
+  .container > ul li:nth-of-type(4) label {
+    text-decoration: line-through;
+  }
+  .container > ul li:nth-of-type(5) {
+    text-align: right;
+  }
+  .container > ul li:nth-of-type(5) a {
+    text-decoration: none;
+    color: #666666;
+  }
+  .container > a {
+    height: 35px;
+    font: bold 16px "微软雅黑";
+    line-height: 35px;
+  }
+  .rule {
+    padding-bottom: 10px;
+    font-size: 12px;
+  }
+  .rule .ruleTitle > div {
+    font: bold 16px "微软雅黑";
+    padding-top: 10px;
+  }
+  .rule .ruleTitle > div span {
+    margin: 0 10px;
+    top: -3px;
+  }
+  .rule .ruleTitle > div span:last-child {
+    margin-left: 5px;
+  }
+  .rule .ruleTitle > ol {
+    line-height: 20px;
+    margin: 10px 10px 0 40px;
+  }
+}
+@media only screen and (min-width: 320px) and (max-width: 329px) {
+  body .title {
+    padding: 8px;
+  }
+  body .title > p {
+    font-size: 12px;
+  }
+  body .title > div {
+    padding: 5px 0;
+  }
+  body .title > div span {
+    width: 16px;
+    height: 24px;
+    line-height: 24px;
+    color: #fea901;
+    background-color: #ffffff;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  body .title > div span:nth-of-type(odd) {
+    margin-left: 6px;
+    margin-right: 4px;
+  }
+  body .title > div span:nth-of-type(even) {
+    margin-right: 6px;
+  }
+  body .bg {
+    height: 260px;
+  }
+  body .bg > div {
+    width: 31%;
+    height: 40px;
+    left: 53%;
+    margin-left: -55px;
+    bottom: 28px;
+  }
+  body .container {
+    border: 5px solid #f9e58f;
+    padding: 5px 5px 10px 5px;
+    background-color: #ffffff;
+  }
+  body .container > div {
+    width: 130px;
+    height: 160px;
+  }
+  body .container > ul {
+    margin-left: 10px;
+    width: 155px;
+  }
+  body .container > ul li > span:last-child {
+    display: inline-block;
+    width: 100px;
+    height: 50px;
+    position: relative;
+    top: -5px;
+  }
+  body .container > ul li:nth-of-type(3) {
+    font-size: 16px;
+    position: relative;
+    top: -6px;
+  }
+  body .container > ul li:nth-of-type(3) > label {
+    color: #fb2b0f;
+  }
+  body .container > ul li:nth-of-type(4) {
+    color: #999999;
+    position: relative;
+    top: -6px;
+  }
+  body .container > ul li:nth-of-type(4) label {
+    text-decoration: line-through;
+  }
+  body .container > ul li:nth-of-type(5) {
+    text-align: right;
+    position: relative;
+    top: -6px;
+  }
+  body .container > ul li:nth-of-type(5) a {
+    text-decoration: none;
+    color: #666666;
+  }
+  body .container > a {
+    height: 32px;
+    font: bold 14px "微软雅黑";
+    line-height: 32px;
+  }
+  body .rule {
+    padding-bottom: 10px;
+  }
+  body .rule .ruleTitle > div {
+    font: bold 16px "微软雅黑";
+    padding-top: 10px;
+  }
+  body .rule .ruleTitle > div span {
+    margin: 0 10px;
+    top: -3px;
+  }
+  body .rule .ruleTitle > div span:last-child {
+    margin-left: 5px;
+  }
+  body .rule .ruleTitle > ol {
+    line-height: 18px;
+    margin: 10px 10px 0 30px;
+  }
+}
+/*# sourceMappingURL=msys.css.map */

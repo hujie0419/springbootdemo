@@ -1,0 +1,144 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.BaoYangActivitySettingItem
+@{
+    Layout = "";
+}
+
+<style>
+    textarea {
+        width: 250px;
+    }
+</style>
+<style>
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+</style>
+<table>
+    <thead>
+
+    </thead>
+    <tbody>
+        <tr>
+            <td> 品牌：</td>
+            <td>
+                @Html.DropDownListFor(x => x.Brands, ViewBag.BrandList as IEnumerable<SelectListItem>, new { @class = "Brands", @style = "width:250px" })
+                @*<textarea class="Brands">@Model.Brands</textarea>
+                    <a href="javascript:;" onclick="updateItem.AddBand(this,'@Model.ServiceCatalog')" style="color: cornflowerblue;">选择</a>*@
+            </td>
+        </tr>
+        <tr>
+            <td>系列：</td>
+            <td>
+                @Html.DropDownListFor(x => x.Series, ViewBag.SerieList as IEnumerable<SelectListItem>, new { @class = "Series", @style = "width:250px" })
+                @*<textarea class="Series">@Model.Series</textarea>
+                    <a href="javascript:;" onclick="updateItem.AddSerie(this,'@Model.ServiceCatalog')" style="color: cornflowerblue;">选择</a>*@
+            </td>
+        </tr>
+        <tr>
+            <td>产品：</td>
+            <td>
+                <input type="text" class="Products" value="@Model.Products" style="width:250px" />
+                @*<textarea class="Products">@Model.Products</textarea>*@
+            </td>
+        </tr>
+        <tr>
+            <td>缺货信息：</td>
+            <td>
+                <input type="text" class="InAdapteTipPrefix" value="@Model.InAdapteTipPrefix" style="width:250px" />
+                @*<textarea class="Products">@Model.Products</textarea>*@
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><input type="button" value="保存" onclick="updateItem.Save()" class="btn" /></td>
+        </tr>
+    </tbody>
+</table>
+<div id="aBand"></div>
+<div id="aSerie"></div>
+<script>
+
+
+    var updateItem = {
+        "Save": function () {
+            var result = true;
+            var brand = $(".Brands option:selected").val();
+            var serie = $(".Series option:selected").val();
+            var product = $(".Products").val();
+            var id=@Model.Id;
+            var actId=@Model.BaoYangActivityId;
+            if ((brand && serie && product) || (product && serie) || (product && brand) || (serie && brand)) {
+                result = false;
+                alert("品牌，系列，产品只能选一个！");
+            }
+            if (result) {
+                $.ajax({
+                    type: "POST",
+                    url: "/BaoYangActivitySetting/UpdateBaoYangActivitySettingItem",
+                    data: {
+                        "Id":id,
+                        "Brands": brand,
+                        "Series": serie,
+                        "Products": product,
+                        "BaoYangActivityId":actId,
+                        "InAdapteTipPrefix":$(".InAdapteTipPrefix").val()
+                    },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/BaoYangActivitySetting/ItemList?id=" + updateItem.GetQueryString("id");
+                        }
+                    },
+                    error: function (result) {
+
+                    }
+                })
+            }
+        },
+        "AddBand": function (i, e) {
+            $("#aBand").load('/BaoYangActivitySetting/Brand?catalogNames=' + e + "&brands=" + $(i).parent().find(".Brands").val());
+            $("#aBand").dialog({
+                title: "根据服务类型关联品牌",
+                width: 450,
+                height: 680,
+                modal: true,
+                buttons: {
+                    "保存": function () {
+                        var model = BrandChecked();
+                        $(i).parent().find(".Brands").val(model);
+                        $("#aBand").dialog('close');
+                    }
+                }
+            });
+        },
+        "AddSerie": function (i, e) {
+            $("#aSerie").load('/BaoYangActivitySetting/Serie?catalogNames=' + e + "&Series=" + $(i).parent().find(".Series").val());
+            $("#aSerie").dialog({
+                title: "根据品牌添加系列",
+                width: 450,
+                height: 680,
+                modal: true,
+                buttons: {
+                    "保存": function () {
+                        var model = BrandChecked();
+                        $(i).parent().find(".Series").val(model);
+                        $("#aSerie").dialog('close');
+                    }
+                }
+            });
+        },
+        "GetQueryString": function (name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURIComponent(r[2]); return null;
+        }
+    }
+</script>

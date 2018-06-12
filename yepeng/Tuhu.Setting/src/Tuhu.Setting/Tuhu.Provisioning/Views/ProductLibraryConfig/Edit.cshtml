@@ -1,0 +1,314 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@model QueryProductsListModel
+@{
+    Layout = null;
+}
+@helper PagesHtml()
+{
+if (Model.QueryProducts != null && Model.QueryProducts.Count() > 0)
+{
+    System.Text.StringBuilder sb = new System.Text.StringBuilder();
+    var pageCount = Model.QueryProducts.ToList()[0].PageCount;
+    for (int i = 0; i < pageCount; i++)
+    {
+        sb.AppendFormat("<a class='pageStyle' href='javascript:;' onclick='ProductLibraryConfig.PageEvent(this,{0})' data-page={0} >{0}</a>", i + 1);
+    }
+    sb.Append("<span style='clear:none;'></span>");
+        <tr><td colspan="8" style="text-align:center;">@Html.Raw(sb.ToString())</td></tr>
+    }
+}
+<style>
+    #rizhi {
+        background: #0088cc none repeat scroll 0 0;
+        border: medium none #0088cc;
+        border-radius: 5px;
+        color: #f0f0f0;
+        cursor: pointer;
+        font-family: "Microsoft Yahei";
+        font-size: 12px;
+        outline: medium none;
+        padding: 5px 25px;
+    }
+</style>
+@{
+    if (Model != null)
+    {
+        <form id="ParamsListForm">
+            <input type="button" value="收起 / 展开" data-value="1" onclick="ProductLibraryConfig.DownOrUp(this);" /><span style="font-size:smaller;margin-left:10px;color:red">*品牌、标签、尺寸筛选条件不要超过二十个</span>
+            <table>
+                <tr>
+                    <td width="60px;">
+                        <label><input type="checkbox" onclick="ProductLibraryConfig.CheckBoxManage(this, 'ParamsListForm', 'data-brand');" />品牌：</label>
+                    </td>
+                    <td id="ParamsList_Brand">
+                        @{
+                            foreach (var item in Model.CP_BrandList)
+                            {
+                                if (!string.IsNullOrWhiteSpace(item.Name))
+                                {
+                                    <text>
+                                        <span><input data-brand="@item.Name" type="checkbox" name="CP_Brand" value="@item.Name" />@(item.Name)</span>
+                                    </text>
+                                }
+                            }
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label><input type="checkbox" onclick="ProductLibraryConfig.CheckBoxManage(this, 'ParamsListForm', 'data-tab');" />标签:</label>
+                    </td>
+                    <td id="ParamsList_Tab">
+                        @{
+                            foreach (var item in Model.CP_tabList)
+                            {
+                                if (!string.IsNullOrWhiteSpace(item))
+                                {
+                                    <text>
+                                        <span><input data-tab="@item" type="checkbox" name="CP_Tab" value="@item" />@(item)</span>
+                                    </text>
+                                }
+                            }
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label><input type="checkbox" onclick="ProductLibraryConfig.CheckBoxManage(this, 'ParamsListForm', 'data-rim');" />尺寸:</label>
+                    </td>
+                    <td id="ParamsList_Rim">
+                        @{
+                            foreach (var item in Model.CP_Tire_RimList)
+                            {
+                                if (!string.IsNullOrWhiteSpace(item.Name))
+                                {
+                                    <text>
+                                        <span><input data-rim="@item.Name" type="checkbox" name="CP_Tire_Rim" value="@item.Name" />@(item.Name)寸</span>
+                                    </text>
+                                }
+                            }
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" colspan="2">
+                        <input type="button" value="搜索" onclick="ProductLibraryConfig.SearchProuds();" />
+                        &nbsp;&nbsp;&nbsp;
+                        <input type="button" value="重置" onclick="ProductLibraryConfig.RemoveSearchAllCookie(true);" />
+
+                    </td>
+                </tr>
+            </table>
+        </form>
+
+        <table id="ProductList" style="margin:30px 0 0 0;">
+            <thead>
+                <tr>
+                    <td colspan="8">
+                        <input type="button" value="默认" onclick="ProductLibraryConfig.SecondSearchProuds('',true)" />
+                        @*<input type="button" value="价格从底到高" onclick="ProductLibraryConfig.SecondSearchProuds('ASC',true)" />
+                    <input type="button" value="价格从高到底" onclick="ProductLibraryConfig.SecondSearchProuds('DESC',true)" />*@
+                        <input type="button" onclick="ProductLibraryConfig.ShowCouponUseMoneyConfigDialog();" value="添加优惠券" />
+                        <input type="button" onclick="ProductLibraryConfig.BatchDeleteCouponOpen();" value="删除优惠券" />
+                    </td>
+                </tr>
+                @*<tr>
+                    @{
+                        var figure = Model.QueryProducts.GroupBy(x => x.CP_Tire_Pattern).Distinct();
+                    }
+                    <td colspan="10">
+                        价格:
+                        <input type="text" data-id="S_Price_Begin" data-bind="SecondSearch" />
+                        -
+                        <input type="text" data-id="S_Price_End" data-bind="SecondSearch" />
+
+                        产品ID：
+                        <input type="text" data-id="S_PID" data-bind="SecondSearch" />
+                        优惠券ID：
+                        <input type="text" data-id="S_Coupon" data-bind="SecondSearch" />
+
+                </tr>*@
+                <tr>
+                    <td colspan="10">
+                        商品展示： <select id="S_IsShow" class="select_s">
+                            <option value="-1">全部</option>
+                            <option value="1">显示</option>
+                            <option value="0">隐藏</option>
+                        </select>
+                        商品状态：
+                        <select id="onsale" class="select_s">
+                            <option value="请选择">请选择</option>
+                            <option value="上架">上架</option>
+                            <option value="下架">下架</option>
+                        </select>
+                        筛选:
+                        <select id="filtrateType" class="select_s">
+                            <option value="GrossMarginAfter">券后毛利</option>
+                            <option value="CostPrice">成本价</option>
+                            <option value="SalePrice">销售价</option>
+                            <option value="SalePriceAfter">券后销售价</option>
+                        </select>
+                        <select id="maoli" class="select_s">
+                            <option value="请选择">请选择</option>
+                            <option value="asc">升序</option>
+                            <option value="desc">降序</option>
+                        </select>
+                        <input type="text" data-id="S_Price_Begin" data-bind="SecondSearch" />
+                        -
+                        <input type="text" data-id="S_Price_End" data-bind="SecondSearch" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="10">
+                        产品ID：
+                        <input type="text" data-id="S_PID" data-bind="SecondSearch" />
+                        优惠券ID：
+                        <input type="text" data-id="S_Coupon" data-bind="SecondSearch" />
+                        花纹:
+                        @*<input type="text" data-id="S_Figure" data-bind="SecondSearch" />*@
+                        <select id="S_Figure" class="select_s">
+                            <option value="请选择">请选择</option>
+                            @foreach (var item in ViewBag.Pattern)
+                            {
+                                if (!string.IsNullOrWhiteSpace(item))
+                                {
+                                    <option value="@item">@item</option>
+                                    <option value="@item">@item</option>
+                                }
+                            }
+                        </select>
+                        @*毛利排序：
+                    <select id="maoli" class="select_s">
+                        <option value="请选择">请选择</option>
+                        <option value="升序">升序</option>
+                        <option value="降序">降序</option>
+                    </select>
+                    价格排序： <select id="S_price" class="select_s">
+                        <option value="请选择">请选择</option>
+                        <option value="asc">升序</option>
+                        <option value="desc">降序</option>
+                    </select>*@
+                        每页显示数量：
+                    <select id="pageSize" class="select_s">
+                        <option value="请选择">请选择</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                        <option value="500">500</option>
+                        <option value="1000">1000</option>
+                        <option value="2000">2000</option>
+                        <option value="5000">5000</option>
+                    </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="10">
+                        <input type="button" value="搜索" onclick="ProductLibraryConfig.SecondSearchProuds();" />&nbsp;&nbsp;&nbsp;
+                        <input type="button" value="重置" onclick="ProductLibraryConfig.RestForm(2);" />&nbsp;&nbsp;&nbsp;
+                        <a href="/ProductLibraryConfig/LogList?obj=PLC" target="_blank" id="rizhi">日  志</a>
+                    </td>
+                </tr>
+
+                @PagesHtml()
+                <tr>
+                    <td>
+                        <label><input id="ProductListCheck" type="checkbox" onclick="ProductLibraryConfig.CheckALLOrOut(this);" /></label>
+                    </td>
+                    <td>品牌</td>
+                    <td>名称</td>
+                    <td>PID</td>
+                    <td>成本价</td>
+                    <td>优惠券数量</td>
+                    @*<td>优惠券ID</td>*@
+                    <td>销售价</td>
+                    <td>券后最低售价</td>
+                    <td>券后最低毛利</td>
+                    <td>状态</td>
+                    <td>管理</td>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var products = Model.QueryProducts as IEnumerable<QueryProductsModel>;
+                    var num = 0;
+                    foreach (var item in products)
+                    {
+                        int couponNum = 0;
+                        decimal? minPriceAfterCoupon = 0;
+                        decimal? minGrossProfit = 0;
+                        if (item.UseCouponEffects != null)
+                        {
+                            couponNum = item.UseCouponEffects.Count();
+                            minPriceAfterCoupon = item.UseCouponEffects.Min(t => t.PriceAfterCoupon);
+                            minGrossProfit = item.UseCouponEffects.Min(t => t.GrossProfit);
+                        }
+                        <tr>
+                            <td><input name="BodyCheckBox" type="checkbox" value="@item.Oid" />@(++num + ((ViewBag.pageIndex - 1) * ViewBag.pageSize))</td>
+                            <td>@item.CP_Brand</td>
+                            <td>@item.DisplayName</td>
+                            <td>@item.PID</td>
+                            <td>@item.cy_cost</td>
+                            <td>@couponNum</td>
+                            @*<td>@item.CouponIds</td>*@
+                            <td>@item.cy_list_price</td>
+                            <td>@minPriceAfterCoupon</td>
+                            <td>@minGrossProfit</td>
+                            <td>@(item.OnSale == "True" ? "上架" : "下架")</td>                        
+                            <td><a href="javascript:;" onclick="ProductLibraryConfig.EditProductDetails(this,@item.Oid,'@item.CouponIds')">编辑</a></td>
+                       </tr>
+                    }
+                    @PagesHtml()
+                }
+            </tbody>
+        </table>
+
+                    }
+}
+
+<script>
+    $(function () {
+        $("#S_Figure").filtrateSelect({ height: 200 });
+        //初始化分页状态
+        var _dataPage = CookieTools.GetCookie("data-page") || 1;
+        $(".pageStyle[data-page='" + _dataPage + "']").css("background", "#0088cc").siblings().css("background", "#cccccc");
+        CookieTools.SetCookie("data-page", _dataPage);
+        console.log("brand=" + CookieTools.GetCookie("data-brand"));
+        //初始化 品牌，标签，尺寸 状态
+        var _searchCookies = ["data-brand", "data-tab", "data-rim"];
+        for (var i = 0; i < _searchCookies.length; i++) {
+            var _dataCookie = CookieTools.GetCookie(_searchCookies[i]);
+
+            if (_dataCookie != null) {
+                _dataCookie.split(",").forEach(function (e) {
+                    $("input[" + _searchCookies[i] + "='" + e + "']").attr("checked", true);
+                });
+            }
+        }
+
+        //初始化二级搜索状态
+        var _SecondSearchProudsModel = JSON.parse(CookieTools.GetCookie("SecondSearchProuds") || "");
+        console.log("初始化二级搜索状态=" + JSON.stringify(_SecondSearchProudsModel));
+        if (_SecondSearchProudsModel != "") {
+            $("#ProductList input[data-id='S_Price_Begin']").val(_SecondSearchProudsModel.S_Price_Begin);
+            $("#ProductList input[data-id='S_Price_End']").val(_SecondSearchProudsModel.S_Price_End);
+            $("#ProductList input[data-id='S_PID']").val(_SecondSearchProudsModel.S_PID);
+            $("#ProductList input[data-id='S_Coupon']").val(_SecondSearchProudsModel.S_Coupon);
+            //$("#ProductList input[data-id='filtrateType']").val(_SecondSearchProudsModel.FiltrateType);
+            $("#ProductList input[data-id='S_ML_Begin']").val(_SecondSearchProudsModel.S_ML_Begin);
+            $("#ProductList input[data-id='S_ML_End']").val(_SecondSearchProudsModel.S_ML_End);
+            $("#S_Figure").val(_SecondSearchProudsModel.S_Figure);
+            $("#pageSize").val(_SecondSearchProudsModel.pageSize);
+            $("#onsale").val(_SecondSearchProudsModel.onsale);
+            $("#maoli").val(_SecondSearchProudsModel.maoliSort);
+            //$("#S_price").val(_SecondSearchProudsModel.S_price);
+            $("#S_IsShow").val(_SecondSearchProudsModel.S_IsShow)
+            $("#filtrateType").val(_SecondSearchProudsModel.FiltrateType)
+        }
+
+        //初始化搜索类型
+        if (CookieTools.GetCookie("SearchType") || 0 > 0)
+            CookieTools.SetCookie("SearchType", CookieTools.GetCookie("SearchType"));
+        else
+            CookieTools.SetCookie("SearchType", 1);
+    })
+</script>

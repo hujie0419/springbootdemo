@@ -1,0 +1,123 @@
+﻿<script src="http://resource.tuhu.cn/Js/WebViewJavascriptBridge.js"></script>
+<script type="text/javascript">
+	var userAgentInfo = navigator.userAgent;
+	var Agents = new Array("iPhone", "iPad", "iPod");
+	var flag = true;
+	for (var v = 0; v < Agents.length; v++)
+	{
+		if (userAgentInfo.indexOf(Agents[v]) > 0) { flag = false; break; }
+	}
+	function connectWebViewJavascriptBridge(callback)
+	{
+		//alert('connectWebViewJavascriptBridge entry');
+		if (window.WebViewJavascriptBridge)
+		{
+			//alert('connectWebViewJavascriptBridge invoke');
+			callback(WebViewJavascriptBridge)
+		} else
+		{
+			//alert('connectWebViewJavascriptBridge add listener');
+			document.addEventListener(
+				'WebViewJavascriptBridgeReady'
+				, function ()
+				{
+					//alert('connectWebViewJavascriptBridge listener callback');
+					callback(WebViewJavascriptBridge)
+				},
+				false
+			);
+		}
+	}
+	connectWebViewJavascriptBridge(function (bridge)
+	{
+		//alert('bridge callback ' + bridge);
+		bridge.init(function (message, responseCallback)
+		{
+			//alert('bridge init ' + message);
+			var data = {
+				'Javascript Responds': 'Wee!'
+			};
+			responseCallback(data);
+		});
+		bridge.registerHandler("functionInJs", function (data, responseCallback)
+		{
+			//alert(data);
+			var responseData = "Javascript Says Right back aka!";
+			responseCallback(responseData);
+		});
+	})
+	function torder(par, isNew)
+	{
+		par = encodeURIComponent(par);
+		if (userAgentInfo.indexOf("Android") >= 0)
+		{
+			try
+			{
+				//alert('atoOrder');
+				window.WebViewJavascriptBridge.callHandler(
+					'toOrder'
+					, encodeURIComponent(par)
+					);
+			} catch (e)
+			{
+				alert(e);
+			}
+		} else
+		{
+			isNew === true ? iosendNew('customSegue', par) : iosend('toOrder', par);
+		}
+	}
+	function iosendNew(cmd, arg)
+	{
+		var h = '#testapp#' + cmd + '#TNCreateMaintainOrderViewController#' + arg;
+		location.href = h;
+	}
+	function iosend(cmd, arg)
+	{
+		var h = '#testapp#' + cmd + '#' + arg;
+		location.href = h;
+	}
+
+	function verifylogin(cb)
+	{
+		//toBaoYang
+		if (window.debug)
+		{
+			alert('debug enabled');
+			window.setTimeout(function ()
+			{
+				window[cb]({ phone: 15221306857 });
+			}, 1000);
+		} else
+		{
+			if (cb && window[cb])
+			{
+				if (userAgentInfo.indexOf("Android") >= 0)
+				{
+					try
+					{
+						window.WebViewJavascriptBridge.callHandler(
+							'actityBridge'
+							, { 'param': "" }
+							, function (responseData)
+							{
+								//alert(responseData);
+								if (responseData != null)
+								{
+									var da = JSON.parse(responseData);
+									window[cb](da);
+								}
+							});
+					} catch (e)
+					{
+						alert(e);
+					}
+				} else
+				{
+					iosend("Userinfo", cb);
+				}
+			}
+		}
+	}
+</script>
+

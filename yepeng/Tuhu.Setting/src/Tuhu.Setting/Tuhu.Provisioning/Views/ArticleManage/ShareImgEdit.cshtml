@@ -1,0 +1,149 @@
+﻿@{
+    ViewBag.Title = "晒图编辑";
+}
+@using Tuhu.Provisioning.DataAccess.Entity.Discovery;
+@model ShareImage
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>晒图修改</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="@Url.Action("Index", "Home")">首页</a>
+            </li>
+            <li>
+                <a href="@Url.Action("ShareImgManage", "ArticleManage")">晒图管理</a>
+            </li>
+            <li class="active">
+                <strong>编辑</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-2">
+
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>All form elements <small>With custom checbox and radion elements.</small></h5>
+                </div>
+                <div class="ibox-content">
+                    <!----表单-->
+                    <form method="post" class="form-horizontal" id="formAddArticle">
+                        <input type="hidden" id="_hdReferrer" name="ReferrerUrl" value="" />
+                        <input type="hidden" name="PKID" value="@Model.PKID" />
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">图片</label>
+                            <div class="col-sm-10" id="PicList">
+                                @if (Model.images.Count > 0)
+                                {
+                                    foreach (var item in Model.images)
+                                    {
+                                        <div style="float:left;margin-right:10px">
+                                            <div class="pic"><a href="@item.imageUrl" target="_blank"><img src="@item.imageUrl" width="100" height="100" /></a></div>
+                                            <div class="opera" style="margin: 15px 30px">
+                                                <input type="hidden" class="isdel" id="_hdImgId_@item.PKID" pic-id="@item.PKID" value="false" />
+                                                <a href="javascript:void(0)" class="delShareImg" pic-id="@item.PKID">删除</a>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                <input type="hidden" id="_hdImageInfos" name="imgsInfo" value="" />
+                            </div>
+                        </div>
+                        <div class="hr-line-dashed"></div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">内容</label>
+                            <div class="col-sm-10"><textarea name="content" class="form-control" id="formContent" style="width:100%;resize:vertical;height:100px">@Model.content</textarea></div>
+                        </div>
+                        <div class="hr-line-dashed"></div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">状态</label>
+                            <div class="col-sm-10">
+                                <select class="form-control m-b" name="isActive" style="width:15%">
+                                    @if (Model.isActive)
+                                    {
+                                        <option value="true" selected="selected">通过</option>
+                                        <option value="false">不通过</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="true">通过</option>
+                                        <option value="false" selected="selected">不通过</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="hr-line-dashed"></div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">用户</label>
+                            <div class="col-sm-10"><p class="form-control-static">昵称：@Model.User.NickName  |  手机号：@Model.User.UserPhone</p></div>
+                        </div>
+                        <div class="hr-line-dashed"></div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">发布时间</label>
+                            <div class="col-sm-10">
+                                <p class="form-control-static">@Model.createTime.ToString()</p>
+                                @*<input type="text" class="form-control" name="CoverTag" id="formCoverTag" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")" placeholder="" style="width:200px">*@
+                            </div>
+                        </div>
+                        <div class="hr-line-dashed"><span id="spanTempForm"></span></div>
+                        <div class="form-group">
+                            <div class="col-sm-4 col-sm-offset-2">
+                                <input class="btn btn-primary" type="submit" value="保存" onclick="return checkForm()" />
+                                <button class="btn btn-white" type="button" onclick="location.href = '/ArticleManage/ShareImgManage'">返 回</button>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script type="text/javascript">        
+
+        $(document).ready(function () {
+            $("#_hdReferrer").val(document.referrer);
+
+            //删除图片
+            $(".delShareImg").click(function () {
+                var obj = $(this);
+                var imgId = obj.attr("pic-id");
+                if (confirm("确定要删除此图片吗？")) {
+                    var dd = obj.prev();
+                    dd.val(true);
+                    obj.parent().parent().hide();
+                }
+            });
+
+        });
+
+        function checkForm() {
+            var str = "";
+            $("#PicList").find(".isdel").each(function () {
+                var thisObj = $(this);
+                var id = thisObj.attr("pic-id");
+                var isDel = thisObj.val();
+                str += id + "-" + isDel+"|";
+            });
+            if (str.indexOf("false") < 0) {
+                    alert("晒图图片不能为空");
+                    return false;
+            }
+            $("#_hdImageInfos").val(str);
+            //var content = $("#formContent").val();
+            //if (content == "") {
+            //    alert("内容不能为空");
+            //    return false;
+            //}
+            return true;
+        }
+
+    </script>
+}

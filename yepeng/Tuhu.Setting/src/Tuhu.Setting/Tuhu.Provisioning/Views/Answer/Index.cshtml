@@ -1,0 +1,174 @@
+﻿
+@{
+    ViewBag.Title = "问答题库";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<style>
+    /*复选框样式*/
+    .cbox {
+        height: 30px;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+</style>
+<div class="topPanel">
+    <div class="toolbar">
+        <div class="btn-group">
+            <a class="btn btn-primary" style="margin-right: 10px;" onclick="enabled()"><span class="fa fa-eye">启 用</span></a>
+            <a class="btn btn-primary" style="margin-right: 10px;" onclick="disabled()"><span class="fa fa-remove">禁 用</span></a>
+
+            <a class="btn btn-primary" style="margin-right: 10px;" onclick="Export()"><span class="fa fa-pencil-square-o">导入数据</span></a>
+            <input type="file" id="uploadFile" name="uploadFile" style="display: none;" onchange="uploadFile(this)" />
+
+            <a class="btn btn-primary" style="margin-right: 10px;" onclick="reload()"><span class="fa fa-refresh">刷新缓存</span></a>
+        </div>
+    </div>
+    <div class="search">
+        <table>
+            <tr>
+                <td>
+                    <div class="input-group">
+                        <select id="txt_showEnabledType" class="form-control" style="width: 200px;">
+                            <option value="-1">全部显示</option>
+                            <option value="1">启用</option>
+                            <option value="0">禁用</option>
+                        </select>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+    <div class="gridPanel">
+        <table id="gridList"></table>
+        <div id="gridPager"></div>
+    </div>
+<script src="/Scripts/ajaxfileupload.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        function gridList() {
+            var $gridList = $('#gridList');
+            
+            $gridList.dataGrid({
+                height: $(window).height() - 118,
+                url: '/Answer/GetGridJson',
+                colModel: [
+                    { label: "PKID", name: "PKID", width: 120, align: "center",hidden:true },
+                    { label: "标 题", name: "Tip", width: 120, align: 'left' },
+                    { label: "题 目", name: "Answer", width: 200, align: "left" },
+                    { label: "选项A", name: "OptionsA", width: 200, align: "left" },
+                    { label: "选项B", name: "OptionsB", width: 100, align: "left" },
+                    { label: "选项C", name: "OptionsC", width: 100, align: "left" },
+                    { label: "选项D", name: "OptionsD", width: 100, align: "left" },
+                    { label: "正确选项", name: "OptionsReal", width: 60, align: "left" },
+                    {
+                        label: "是否启用", name: "IsEnabled", width: 50, align: "center",
+                        formatter: function (cellvalue) {
+                            return cellvalue ? "<i class=\"fa fa-toggle-on\"></i>" : "<i class=\"fa fa-toggle-off\"></i>";
+                        }
+                    },
+
+                ],
+                viewrecords: true,
+                multiselect: true,
+                pager: "#gridPager",
+                sortname: "PKID desc",
+                rowNum: 20,
+                rowList: [10, 20, 30],
+            });
+        }
+        function enabled() {
+            var ids = $('#gridList').jqGrid("getGridParam", "selarrrow");
+            var pkids = [];
+            $(ids).each(function(index, id) {
+                //由id获得对应数据行 
+                var row = $("#gridList").jqGrid('getRowData', id);
+                pkids.push(row.PKID);
+                console.log(row.PKID);
+            });
+            $.post("/Answer/UpdateIsEnabled",
+                { ids: pkids.join(","), enabled: true },
+                function(data) {
+                    if (data.code == 1) {
+                        location.reload();
+                    }
+                });
+        }
+        function disabled() {
+            var ids = $('#gridList').jqGrid("getGridParam", "selarrrow");
+            var pkids = [];
+            $(ids).each(function (index, id) {
+                //由id获得对应数据行 
+                var row = $("#gridList").jqGrid('getRowData', id);
+                pkids.push(row.PKID);
+                console.log(row.PKID);
+            });
+            $.post("/Answer/UpdateIsEnabled",
+                { ids: pkids.join(","), enabled: false },
+                function (data) {
+                    if (data.code == 1) {
+                        location.reload();
+                    }
+                });
+        }
+
+        function uploadFile(obj) {
+            var fileElId = $(obj).attr("id");
+            var rd = Math.ceil(Math.random() * 9999) + 1;
+            $.ajaxFileUpload({
+                url: '/Answer/AddExport?rd=' + rd,
+                secureuri: false,
+                fileElementId: fileElId,
+                dataType: 'json',
+                async: false,
+                success: function (result) {
+                    console.log(result);
+                    if (result.Status == 1) {
+                        alert(result.Error);
+                        location.reload();
+                    } else {
+                       alert(result.Error);
+                    }
+                },
+                error: function (data, status, e)//服务器响应失败处理函数
+                {
+                    alert(e);
+                }
+            });
+        }
+
+        $(function () {
+            gridList();
+            $("#txt_showEnabledType").on("change",
+                function() {
+                    var showEnabledType = $(this).val();
+                    $('#gridList').jqGrid('setGridParam',
+                        {
+                            postData:
+                            {
+                                showEnabledType: showEnabledType
+                            },
+                            page: 1
+                        }).trigger('reloadGrid');
+                });
+        });
+
+        function Export() {
+            $('#uploadFile').trigger('click');
+        }
+
+        function reload() {
+            $.ajax({
+                url: "/Answer/Reload",
+                dataType: 'json',
+                success: function (res) {
+                    if (res.Code == 1) {
+                        alert(res.Msg);
+                    } else {
+                        alert(res.Msg);
+                    }
+                }
+         
+            })
+        }
+    </script>
+

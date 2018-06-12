@@ -1,0 +1,140 @@
+﻿
+@model List<Tuhu.Provisioning.DataAccess.Entity.BaoYangActivitySettingItem>
+
+@{
+    ViewBag.Title = "保养活动关联配置";
+    var BaoYangActivityId = (int)ViewData["BaoYangActivityId"];
+    var ActivityNum = ViewData["ActivityNum"];
+}
+
+<h2>保养活动关联配置</h2>
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    textarea {
+        width: 100px;
+        height: 100px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+</style>
+<input type="button" class="btn" onclick="AddServiceType()" value="添加" />
+<div style="margin-top:20px">
+    <table style="width:100%">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>保养活动Id</th>
+            
+                <th>ServicePackagesName</th>
+                <th>ServiceCatalogName</th>
+                <th>关联品牌</th>
+                <th>关联系列</th>
+                <th>关联产品</th>
+                <th>创建时间</th>
+                <th>更新时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.BaoYangActivityId</td>
+                
+                    <td>@item.ServicePackagesName</td>
+                  
+                    <td>@item.ServiceCatalogName</td>
+                    <td>@item.Brands</td>
+                    <td>@item.Series</td>
+                    <td>@item.Products</td>
+                    <td>@item.CreateTime</td>
+                    <td>@item.UpdateTime</td>
+                    <td>
+                        <a href="javascript:;" onclick="BaoYangActivitySetting.Update(@item.Id)">编辑</a>&nbsp;&nbsp;
+                        <a href="javascript:;" onclick="BaoYangActivitySetting.Delete(@item.Id,'@item.BaoYangActivityId')">删除</a>
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+
+<div id="AddServiceType"></div>
+<div id="AddItem"></div>
+<div id="UpdateItem"></div>
+<script>
+
+    function AddServiceType() {
+
+        $("#AddServiceType").load('/BaoYangActivitySetting/ServiceType?id=@(BaoYangActivityId)&ActivityNum=@(ActivityNum)');
+        $("#AddServiceType").dialog({
+            title: "添加服务类型",
+            width: 450,
+            height: 600,
+            modal: true
+        });
+    }
+
+
+    var BaoYangActivitySetting = {
+
+        "Update": function (e) {
+            $("#UpdateItem").load('/BaoYangActivitySetting/UpdateItem?id=' + e);
+            $("#UpdateItem").dialog({
+                title: "修改",
+                width: 400,
+                height: 300,
+                modal: true
+            });
+        },
+        "Delete": function (e, a) {
+            if (window.confirm("确定要删除吗？")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/BaoYangActivitySetting/DeleteBaoYangActivitySettingItem",
+                    data: {
+                        "id": e,
+                        "baoYangActivityId": a
+                    },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/BaoYangActivitySetting/ItemList?id=" + BaoYangActivitySetting.GetQueryString("id");
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+
+        },
+        "GetQueryString": function (name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURIComponent(r[2]); return null;
+        }
+    }
+</script>

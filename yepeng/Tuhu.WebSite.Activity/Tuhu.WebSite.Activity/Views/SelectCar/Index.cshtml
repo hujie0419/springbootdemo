@@ -1,0 +1,1012 @@
+﻿@model  Tuhu.WebSite.Web.Activity.Controllers.SelectCarController.TempCarShow
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, width=device-width,minimal-ui" />
+    <meta name="description" content="途虎养车网" />
+    <meta content="telephone=no" name="format-detection" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>选车型</title>
+    <link rel="stylesheet" href="@DomainConfig.ResourceSite/Css/jquery.mobile-1.4.2.min.css" />
+    <link rel="stylesheet" href="@DomainConfig.ResourceSite/CSS/wxcommon.css" />
+    @*<link rel="stylesheet" href="@DomainConfig.ResourceSite/CSS/wxdefault.css" />*@
+    <link rel="stylesheet" href="@DomainConfig.ResourceSite/CSS/baoyang.css" />
+    <script src="@DomainConfig.ResourceSite/Scripts/jquery-2.1.0.js"></script>
+    <script src="@DomainConfig.ResourceSite/Scripts/jquery.mobile-1.4.2.min.js"></script>
+    @*<script src="@DomainConfig.ResourceSite/Js/toastr.js"></script>*@
+    <style>
+        body {
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div data-role="page" data-theme="e" class="iscroll">
+        <script>
+            var userAgentInfo = navigator.userAgent;
+            var Agents = new Array("Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod");
+            var flag = true;
+            for (var v = 0; v < Agents.length; v++) {
+                if (userAgentInfo.indexOf(Agents[v]) > 0) { flag = false; break; }
+            }
+
+            if (flag) {
+                //window.location = "http://www.tuhu.cn";
+            }
+            $.mobile.hoverDelay = 1;
+            $.mobile.hideUrlBar = true;
+            $.mobile.loader.prototype.options.html = '<div class="spinner"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>';
+            $.mobile.loader.prototype.options.textVisible = true;
+            $.mobile.degradeInputs.date = true;
+            $.mobile.pageLoadErrorMessage = "页面加载错误";
+            $.mobile.defaultPageTransition = "slide";
+            $.mobile.ajaxEnabled = false;
+            $(document).bind("pageloadfailed", function () {
+                alert("页面加载错误");
+            });
+            $(function () {
+                //为按钮添加 active 状态
+                $(document).on("touchstart", ".need_active_btn", function () {
+                    console.log("add");
+                    $(this).addClass("rb");
+                }).on("touchend", ".need_active_btn", function () {
+                    console.log("remove");
+                    $(this).removeClass("rb");
+                });
+                //滚动到顶部
+                $(".scrolltoTop").on("tap", function () {
+                    $.mobile.activePage.scrollTop(0);
+                    $.mobile.silentScroll(0);
+                });
+            });
+            (function () {
+                if (!window.console) {
+                    var console = {
+                        log: function () { },
+                        dir: function () { },
+                        debug: function () { },
+                        table: function () { }
+                    };
+                    window.console = console;
+                }
+            }());
+        </script>
+        <input type="hidden" id="brand" value="@Model.Brand" />
+        <input type="hidden" id="vehicle" value="@Model.VehicleName" />
+        <input type="hidden" id="productID" value="@Model.VehicleID" />
+        <input type="hidden" id="pailiang" value="@Model.PaiLiang" />
+        <input type="hidden" id="nian" value="@Model.Nian" />
+        <input type="hidden" id="lyID" value="@Model.liYangID" />
+        <input type="hidden" id="lyName" value="@Model.liYangName" />
+        <input type="hidden" id="UserId" value="@Model.UserId" />
+        <input type="hidden" id="Step" value="@Model.Step" />
+        @*<div class="top">
+                <a class="back" data-rel="back" href="#"></a>
+                选择您的车型
+                <a class="home" data-direction="reverse" href="/">
+                    <div class="homeline1"></div>
+                    <div class="homeline2"></div>
+                    <div class="homeline1"></div>
+                    <div class="homeline2"></div>
+                    <div class="homeline3"></div>
+                    <div class="homeline4"></div>
+                    <div class="homeline5"></div>
+                </a>
+            </div>*@
+        <div class="car_select" style="top:3px;">
+            <div class="ts_input">
+                <div class="tit">品牌</div>
+                <div class="input_div">
+                    <a href="#select_brand" id="panelCarBrand" data-transition="slide">
+                        <input value="" data-role="none" id="CarBrand" readonly="readonly" />
+                        <span class="arrow-down"></span>
+                    </a>
+                </div>
+            </div>
+            <div class="ts_input">
+                <div class="tit">车系</div>
+                <div class="input_div">
+                    <a href="#select_vehcile" id="panelCarVehicle" data-transition="slide">
+                        <input value="" data-role="none" id="CarVehicle" readonly="readonly" />
+                        <span class="arrow-down"></span>
+                    </a>
+                </div>
+            </div>
+            <div class="ts_input carPailiang" style="display:none">
+                <div class="tit">排量</div>
+                <div class="input_div">
+                    <select id="PaiLiang" data-shadow="false" data-icon="false" data-corners="false" style="text-align: left;
+padding-left: 0.6rem;">
+                        @*<option value="">请选择排量</option>*@
+                    </select>
+                    <span class="arrow-down"></span>
+                </div>
+            </div>
+            <div class="ts_input carNian" style="display:none">
+                <div class="tit">生产年份</div>
+                <div class="input_div">
+                    <select id="Nian" data-shadow="false" data-icon="false" data-corners="false" style="text-align: left;
+padding-left: 0.6rem;">
+                        @*<option value="">请选择生产年份</option>*@
+                    </select>
+                    <span class="arrow-down"></span>
+                </div>
+            </div>
+            <div class="car-type carSales" style="display:none">
+                <p class=" text">
+                    该生产年份存在多款车型，您的是？
+                </p>
+                <div class="list" id="SalesName">
+                    @*<a href="" class="lySalesID bdbtn active">2005豪华款xxxx <span class="arrow-r"></span></a>
+                        <a href="" class="lySalesID bdbtn">2005经典款xxxx<span class="arrow-r"></span></a>
+                        <a href="" class="lySalesID bdbtn">2005普通款xxxx<span class="arrow-r"></span></a>*@
+                </div>
+            </div>
+            @*<div class="ts_input carSales" style="display:none">
+                        <div class="tit">年款</div>
+                        <div class="input_div">
+                            <select id="SalesName" data-shadow="false" data-icon="false" data-corners="false" style="text-align: left;
+                padding-left: 0.6rem;">
+                                @*<option value="">请选择年款</option>
+                            </select>
+                            <span class="arrow-down"></span>
+                        </div>
+                    </div>*@
+            <p class="reminder" style="display:none">
+                <span>温馨提示：</span>“生产年份” 与 “年款”可能不一致。您可以在爱车的<a href="http://faxian.tuhu.cn/ActivityHtml/CarNameplate.html">“铭牌”</a>中查找到准确的信息
+            </p>
+
+            @*<a style="display:block;color:#666;font-size:14px;text-align:right;padding-right:10px;">还没找到车型？请点击此处</a>*@
+        </div>
+        <div class="footer-btn">
+            <input type="button" data-role="none" class="button rb p1rem" value="确认" id="confirm" />
+            <input type="button" data-role="none" class="button rb p1rem" value="确认" id="Fconfirm" style="display: none; background: gray;" />
+        </div>
+        <!--It's select-brand panel-->
+        <div class="wx_panel slide iscroll" id="select_brand" style="height: 100%; overflow:auto;-webkit-overflow-scrolling: touch;">
+            @*<div class="top">
+                    请选择汽车品牌
+                    <a href="#" data-rel="close" class="top_close">
+                        <div class="top_close1"></div>
+                        <div class="top_close2"></div>
+                    </a>
+                </div>*@
+            <ul data-role="listview" id="ul_GetCarBrand" data-filter="true" data-filter-placeholder="搜索汽车品牌" data-icon="tuhu" data-mini="true"></ul>
+        </div>
+        <!--It's select-vehicle panel-->
+        <div class="wx_panel slide iscroll" id="select_vehcile" style="height: 100%; overflow:auto;-webkit-overflow-scrolling: touch;">
+            @*<div class="top">
+                    选择您的车型
+                    <a href="#" data-rel="close" class="top_close">
+                        <div class="top_close1"></div>
+                        <div class="top_close2"></div>
+                    </a>
+                </div>*@
+            <ul data-role="listview" id="ul_GetCarVehicle" data-filter="true" data-filter-placeholder="搜索车型" data-icon="tuhu" data-mini="true"></ul>
+        </div>
+        <!--弹出提示框-->
+        <div class="custom-popup" id="popTips">
+            <p id="tipsContent"></p>
+        </div>
+        <script>
+            //cookies设置
+            //写cookies
+
+            //function setCookie(name, value) {
+            //    var Minute = 365 * 24 * 60;
+            //    var exp = new Date();
+            //    exp.setTime(exp.getTime() + Minute * 60 * 1000);
+            //    var path = "/";
+            //    document.cookie = name + "=" + escape(value) + ";expires=" + exp.toGMTString() + "; path = " + path;
+            //}
+
+            ////读取cookies
+            //function getCookie(name) {
+            //    var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+
+            //    if (arr = document.cookie.match(reg))
+
+            //        return unescape(arr[2]);
+            //    else
+            //        return null;
+            //}
+
+            ////删除cookies
+            //function delCookie(name) {
+            //    var exp = new Date();
+            //    exp.setTime(exp.getTime() - 1);
+            //    var cval = getCookie(name);
+            //    var path = "/";
+            //    if (cval != null)
+            //        document.cookie = name + "=" + cval + ";expires=" + exp.toGMTString() + "; path = " + path;
+            //}
+        </script>
+
+        <script>
+            function openTip(msg) {
+                var $tips = $("#tipsContent");
+                var $popTips = $("#popTips");
+                $tips.text(msg);
+                $popTips.show();
+                setTimeout(function () {
+                    $popTips.hide();
+                }, 1500);
+            }
+
+            var pl = false, nian = false, sales = false;
+            var timeDeffer = 400;
+            var DomainWX = "http://wx.tuhu.cn";
+            //var BaoYangType = getQueryString("BaoYangType");
+            var BaoYangVehicle = (function () {
+                function BYV() {
+                    this.vehicle = null;
+                    this.brand = null;
+                    this.paiLiang = null;
+                    this.nian = null;
+                    this.SalesName = null;
+                    this.SalesId = null;
+                }
+                BYV.prototype = {
+                    update: function (o) {
+                        var _ = this;
+                        facade[o] && (function () {
+                            facade[o].val(_[o] || '');
+                        }())
+                    }
+                }
+                var facade = {
+                    brand: $("#CarBrand"),
+                    vehicle: $("#CarVehicle")
+                }
+                return new BYV();
+            }());
+            var CarInfo = {
+                brand: $("#brand").val(),//品牌
+                vehicle: $("#vehicle").val(),//型号
+                productID: $("#productID").val(),//productID
+                pailiang: $("#pailiang").val(),//排量
+                nian: $("#nian").val(),//生产年份
+                lyID: $("#lyID").val(),//LYID
+                lyName: $("#lyName").val()//第五级Name
+            }
+            getBaoYangVehicleCar();//获取Hidden中的车型数据
+            function getBaoYangVehicleCar() {
+                // var CarInfo = JSON.parse(getCookie("BaoYangVehicle"));
+                if (CarInfo.brand != "" && CarInfo.vehicle != "")//cookie中有车型数据,将数据显示到页面
+                {
+                    $("#panelCarBrand input").val(CarInfo.brand);
+                    BaoYangVehicle.brand = CarInfo.brand
+                    $("#panelCarVehicle input").val(CarInfo.vehicle);
+                    BaoYangVehicle.vehicle = CarInfo.vehicle;
+                    BaoYangVehicle.productID = CarInfo.productID;
+
+                    if (CarInfo.pailiang != null && CarInfo.pailiang != "") {
+                        $(".carPailiang").show();
+                        $("#PaiLiang").html("<option value='" + CarInfo.pailiang + "' selected='selected'>" + CarInfo.pailiang + "</option>");
+                        BaoYangVehicle.paiLiang = CarInfo.pailiang;
+                        SelCarOnePaiLiang(BaoYangVehicle.productID);
+                        if (CarInfo.nian != null && CarInfo.nian != "") {
+                            $(".carNian").show();
+                            $("#Nian").html("<option value='" + CarInfo.nian + "' selected='selected'>" + CarInfo.nian + "</option>");
+                            BaoYangVehicle.nian = CarInfo.nian;
+                            SelCarOneNian(BaoYangVehicle.productID, BaoYangVehicle.paiLiang);
+                            if (CarInfo.lyID != null && CarInfo.lyID != "") {//&& CarInfo.lyName != null && CarInfo.lyName != ""
+                                $(".carSales").show();
+                                // $("#SalesName").html("<option value='" + CarInfo.lyID + "' selected='selected'>" + CarInfo.lyName + "</option>");
+                                $("#SalesName").html('<a href="" class="lySalesID bdbtn active" data-lyID="' + CarInfo.lyID + '">' + CarInfo.lyName + '<span class="arrow-r"></span></a>');
+                                BaoYangVehicle.SalesId = CarInfo.lyID;
+                                BaoYangVehicle.SalesName = CarInfo.lyName;
+                                SelCarOneSalesName(BaoYangVehicle.productID, BaoYangVehicle.paiLiang, BaoYangVehicle.nian)
+                            }
+                        }
+                    }
+                    else {
+                        $(".carPailiang").show();
+                        $("#PaiLiang").html("<option value='' selected='selected'></option>");
+                        SelCarOnePaiLiang(BaoYangVehicle.productID);
+                    }
+                }
+            }
+            //获取地址栏中的参数
+            function getQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null) return unescape(r[2]); return null;
+            }
+            //选择汽车品牌
+            (function () {
+                var data = null,
+                    select_brand = $("#select_brand"),
+                    panelCarBrand = $("#panelCarBrand"),
+                    ulBrandList = $("#ul_GetCarBrand"),
+                    searchinput,
+                    listDividers;
+                //tap选择汽车品牌
+                function bind() {
+                    ulBrandList.on("tap", ".ui-li-static", function () {
+                        BaoYangVehicle.brand = $(this).text();
+                        BaoYangVehicle.update("brand");
+                        close();
+                        $(".car_name").html(BaoYangVehicle.brand);
+
+                        $("#panelCarVehicle input").val("");//清空汽车车型
+                        BaoYangVehicle.vehicle = null;
+
+                        BaoYangVehicle.productID = null;
+
+                        $(".carPailiang").hide();
+                        $("#PaiLiang").html("");//清空排量
+                        $("#PaiLiang").parent().find("span").html("&nbsp;");
+                        BaoYangVehicle.paiLiang = null;
+
+                        $(".carNian").hide();
+                        $("#Nian").html("");//清空生产年份
+                        $("#Nian").parent().find("span").html("&nbsp;");
+                        BaoYangVehicle.nian = null;
+
+                        $(".carSales").hide();
+                        $("#SalesName").html("");//清空型号
+                        $(".reminder").hide();
+                        // $("#SalesName").parent().find("span").html("&nbsp;");
+                        BaoYangVehicle.SalesId = null;
+                        BaoYangVehicle.SalesName = null;
+
+                    });
+                }
+                //绑定返回按钮
+                var back = {
+                    bind: function () {
+                        $(window).bind("hashchange", function () {
+                            close();
+                        });
+                    },
+                    unbind: function () {
+                        $(window).unbind("hashchange");
+                        window.history.back();
+                    }
+                };
+                function close() {
+                    setTimeout(function () {
+                        //toTop
+                        $.mobile.activePage.scrollTop(0);
+                        $.mobile.silentScroll(0);
+                        //close animate
+                        select_brand.addClass("out reverse");
+                        setTimeout(function () {
+                            //unbind back-event
+                            back.unbind();
+                            ulBrandList.unbind("tap");
+                            select_brand.removeClass("out reverse").hide();
+                        }, 500);
+                    }, timeDeffer);
+                }
+                function show() {
+                    !searchinput && (searchinput = select_brand.find("input"));
+                    $.mobile.navigate("#selectbrand");
+                    searchinput.attr("disabled", true);
+                    setTimeout(function () {
+                        select_brand.show().addClass("in");
+                        back.bind();
+                        setTimeout(function () {
+                            searchinput.attr("disabled", false);
+                            bind();
+                            select_brand.removeClass("in");
+                            $("[data-type='search']").css({ "margin": "0" });//嵌入手机app需要把多余空白清楚
+                        }, 350);
+                    }, 50);
+                }
+                //关闭按钮
+                select_brand.find(".top_close").on("tap", function () {
+                    close();
+                });
+                select_brand.bind("swiperight", function () {
+                    close();
+                });
+                panelCarBrand.on("tap", function () {
+
+                    if (data == null) {
+                        $(".ui-loader").loader("show");
+                        $.ajax({
+                            url: DomainWX + "/BaoYangActivity/GetCarBrands",
+                            dataType: "json",
+                            type: "get",
+                            success: function (da) {
+                                $(".ui-loader").loader("hide");
+                                data = da;
+                                var str = "";
+                                for (var item in data) {
+                                    if (item) {
+                                        str += '<li data-role="list-divider" role="heading" data-tag="' + item + '">' + item + '</li>';
+                                        if (data[item].length > 0)
+                                            str += "<li>" + data[item].join("</li><li>") + "</li>";
+                                    }
+                                }
+                                ulBrandList.append(str).listview("refresh");
+                            },
+                            error: function () {
+                                $(".ui-loader").loader("hide");
+                                close();
+                            }
+                        });
+                    }
+                    show();
+                });
+            }());
+            //选择汽车车型
+            (function () {
+                var data = null,
+                    select_vehcile = $("#select_vehcile"),
+                    panelCarVehicle = $("#panelCarVehicle"),
+                    ulVehicleList = $("#ul_GetCarVehicle");
+                var back = {
+                    bind: function () {
+                        $(window).bind("hashchange", function () {
+                            close();
+                        });
+                    },
+                    unbind: function () {
+                        $(window).unbind("hashchange");
+                        window.history.back();
+                    }
+                };
+                //tap 选择车型
+                function bind() {
+                    ulVehicleList.on("tap", "li", function (e) {
+                        var target = $(this);
+                        BaoYangVehicle.vehicle = target.text();
+                        BaoYangVehicle.productID = target.attr("data-value").replace(/(^\s+)|(\s+$)/g, "");
+                        BaoYangVehicle.update("vehicle");
+                        close();
+                        var baoyang = target.attr("data-baoyang");
+                        $(".car_name").html(BaoYangVehicle.brand + " - " + BaoYangVehicle.vehicle);
+                        $("#confirm").attr("data-baoYang", target.attr("data-baoyang"));
+                        if (BaoYangVehicle.productID == null) {
+                            return;
+                        }
+                        $(".ui-loader").loader("show");
+                        $("#PaiLiang[value!='']").empty();
+                        SelCarOnePaiLiang(BaoYangVehicle.productID);
+
+                        $(".carPailiang").hide();
+                        $("#PaiLiang").html("");//清空排量
+                        $("#PaiLiang").parent().find("span").html("&nbsp;");
+                        BaoYangVehicle.paiLiang = null;
+
+                        $(".carNian").hide();
+                        $("#Nian").html("");//清空生产年份
+                        $("#Nian").parent().find("span").html("&nbsp;");
+                        BaoYangVehicle.nian = null;
+
+                        $(".carSales").hide();
+                        $("#SalesName").html("");//清空年款
+                        $(".reminder").hide();
+                        // $("#SalesName").parent().find("span").html("&nbsp;");
+                        BaoYangVehicle.SalesId = null;
+                        BaoYangVehicle.SalesName = null;
+                    });
+                }
+
+                function close() {
+                    setTimeout(function () {
+                        $.mobile.activePage.scrollTop(0);
+                        $.mobile.silentScroll(0);
+                        //select_brand.hide();
+                        select_vehcile.addClass("out reverse");
+                        setTimeout(function () {
+                            back.unbind();
+                            ulVehicleList.unbind("tap");
+                            select_vehcile.removeClass("out reverse").hide();
+                        }, 500);
+                    }, timeDeffer);
+                }
+
+                function show() {
+                    $.mobile.navigate("#selectvehicle");
+                    setTimeout(function () {
+                        back.bind();
+                        select_vehcile.show().addClass("in");
+                        setTimeout(function () {
+                            bind();
+                            select_vehcile.removeClass("in");
+                        }, 350);
+                    }, 50);
+                }
+
+                //关闭按钮
+                select_vehcile.find(".top_close").on("tap", function () {
+                    close();
+                });
+                //加载车型 并显示
+                panelCarVehicle.on("tap", function () {
+                    if (BaoYangVehicle.brand == null) {
+                        openTip("请选择汽车品牌");
+                        return false;
+                    }
+                    $(".ui-loader").loader("show");
+                    ulVehicleList.empty();
+                    $.ajax({
+                        url: DomainWX + "/BaoYangActivity/SelOneBrand2",
+                        dataType: "json",
+                        type: "get",
+                        data: { brand: BaoYangVehicle.brand },
+                        success: function (da) {
+                            $(".ui-loader").loader("hide");
+                            data = da.OneBrand;
+                            var str = "";
+                            for (var item, len = data.length, i = 0; item = data[i]; i++) {
+                                str += "<li data-value='" + item.ProductID + "' data-baoyang='" + item.IsBaoYang + "'>" + item.Vehicle + "</li>";
+                            }
+                            ulVehicleList.append(str).listview("refresh");
+
+                        },
+                        error: function () {
+                            $(".ui-loader").loader("hide");
+                            close();
+                        }
+                    });
+                    show();
+                });
+            }
+            ());
+            function openTip(msg, fun) {
+                var $tips = $("#tipsContent");
+                var $popTips = $("#popTips");
+                $tips.text(msg);
+                $popTips.show();
+                setTimeout(function () {
+                    $popTips.hide();
+                    setTimeout(function () { fun && fun(); }, 300);
+
+                }, 1200);
+            }
+            //选择排量
+            $("#PaiLiang").on("change", function () {
+                BaoYangVehicle.paiLiang = $(this).find('option:selected').val().replace(/(^\s+)|(\s+$)/g, "");
+                if (BaoYangVehicle.productID == null) {
+                    return false;
+                }
+                if (BaoYangVehicle.paiLiang == null) {
+                    return;
+                }
+                $(".ui-loader").loader("show");
+                $("#Nian[value!='']").empty();
+                SelCarOneNian(BaoYangVehicle.productID, BaoYangVehicle.paiLiang);
+
+                //$("#Nian").html("<option value='' select='select'>请选择生产年份</option>");//清空生产年份
+                $("#Nian").parent().find("span").html("&nbsp;");
+                BaoYangVehicle.nian = null;
+                //$(".carNian").hide();
+                $(".carSales").hide();
+            })
+            //选择生产年份
+            $("#Nian").on("change", function () {
+                BaoYangVehicle.nian = $(this).find('option:selected').val().replace(/(^\s+)|(\s+$)/g, "");
+                if (BaoYangVehicle.productID == null) {
+                    return false;
+                }
+                if (BaoYangVehicle.paiLiang == null) {
+                    return;
+                } if (BaoYangVehicle.nian == null) {
+                    return;
+                }
+                $(".ui-loader").loader("show");
+                // $("#SalesName[value!='']").empty();
+                $("#SalesName").html("");//清空生产年份
+                // $("#SalesName").parent().find("span").html("&nbsp;");
+                $(".reminder").hide();
+                BaoYangVehicle.SalesId = null;
+                BaoYangVehicle.SalesName = null;
+
+                SelCarOneSalesName(BaoYangVehicle.productID, BaoYangVehicle.paiLiang, BaoYangVehicle.nian);
+            })
+            //选择第五级
+            $("#SalesName").on("tap", ".lySalesID", function () {
+                BaoYangVehicle.SalesId = $(this).attr("data-lyID").replace(/(^\s+)|(\s+$)/g, "");
+                BaoYangVehicle.SalesName = $(this).text();
+                if (BaoYangVehicle.productID == null) {
+                    return false;
+                }
+                if (BaoYangVehicle.paiLiang == null) {
+                    return;
+                } if (BaoYangVehicle.nian == null) {
+                    return;
+                }
+                if (BaoYangVehicle.SalesId == null) {
+                    return;
+                }
+                $(this).parent().find(".active").removeClass("active");
+                $(this).addClass("active");
+                //$(".ui-loader").loader("show");
+                //$("#SalesName[value!='']").empty();
+                //SelCarOneSalesName(BaoYangVehicle.productID, BaoYangVehicle.paiLiang, BaoYangVehicle.nian);
+                //$("#Nian").html("<option value='' select='select'>请选择生产年份</option>");//清空生产年份
+                //$("#SalesName").parent().find("span").html("请选择详细的车辆信息");
+            })
+            //获得车型排量
+            function SelCarOnePaiLiang(productID) {
+                $.ajax({
+                    url: DomainWX + "/BaoYangActivity/SelOneCar",
+                    dataType: "json",
+                    type: "get",
+                    data: { ProductID: productID },
+                    success: function (da) {
+                        $(".ui-loader").loader("hide");
+                        data = da;
+                        var str = "<option value=''>请选择排量</option>";
+                        $("#PaiLiang").html("");
+                        //var str = "";
+                        $.each(data, function (index, PaiL) {
+                            if (index == "PaiLiang") {
+                                $.each(PaiL, function (key, value) {
+                                    if (value.Value != null && value.Value != "") {
+                                        var byPL = (BaoYangVehicle.paiLiang == null || BaoYangVehicle.paiLiang.toString() == "") ? "" : BaoYangVehicle.paiLiang;
+                                        var val = (value.Value == null || value.Value.toString() == "") ? "" : value.Value;
+                                        if (byPL.replace(/(^\s+)|(\s+$)/g, "") == val.replace(/(^\s+)|(\s+$)/g, "")) {
+                                            str += "<option value='" + value.Value + "'  selected='selected'>" + value.Value + "</option>";
+                                        }
+                                        else if (byPL.replace(/(^\s+)|(\s+$)/g, "") != val.replace(/(^\s+)|(\s+$)/g, "")) {
+                                            if (PaiL.length <= 1) {
+                                                if (value.Value != null && value.Value != "") {
+                                                    str = "<option value='" + value.Value + "' selected='selected'>" + value.Value + "</option>";
+                                                    BaoYangVehicle.paiLiang = value.Value;
+                                                    SelCarOneNian(productID, value.Value);
+                                                }
+                                            }
+                                            else if (PaiL.length > 1) {
+                                                str += "<option value='" + value.Value + "'>" + value.Value + "</option>";
+                                            }
+                                        }
+                                    }
+                                })
+                            }
+                        })
+                        $("#PaiLiang").append(str);
+                        if (data["Code"].toString() != "0") {
+                            pl = true;
+                            $(".carPailiang").show();
+                            $("#PaiLiang").selectmenu('refresh', true);
+                        }
+                        else {
+                            pl = false;
+                            nian = false;
+                            sales = false;
+                            $(".carPailiang").hide();
+                        }
+                    },
+                    error: function () {
+                        $(".ui-loader").loader("hide");
+                    }
+                });
+                $(".ui-loader").loader("hide");
+            }
+            //获得车型生产年份
+            function SelCarOneNian(productID, paiLiang) {
+                $(".reminder").show();
+                $.ajax({
+                    url: DomainWX + "/BaoYangActivity/SelOneCar",
+                    dataType: "json",
+                    type: "get",
+                    data: { ProductID: productID, PaiLiang: paiLiang },
+                    success: function (da) {
+                        $(".ui-loader").loader("hide");
+                        data = da;
+
+                        var str = "<option value=''>请选择生产年份</option>";
+                        $("#Nian").html("");
+                        //var str="";
+                        $.each(data, function (index, Nian) {
+                            if (index == "Nian") {
+                                $.each(Nian, function (key, value) {
+                                    var byN = (BaoYangVehicle.nian == null || BaoYangVehicle.nian.toString() == "") ? "" : BaoYangVehicle.nian;
+                                    var val = (value.Value == null || value.Value.toString() == "") ? "" : value.Value;
+                                    if (byN.replace(/(^\s+)|(\s+$)/g, "") == val.replace(/(^\s+)|(\s+$)/g, "")) {
+                                        str += "<option value='" + value.Value + "'  selected='selected'>" + value.Value + "</option>";
+                                    }
+                                    else if (byN.replace(/(^\s+)|(\s+$)/g, "") != val.replace(/(^\s+)|(\s+$)/g, "")) {
+                                        if (Nian.length <= 1) {
+                                            if (value.Value != null && value.Value != "") {
+                                                str = "<option value='" + value.Value + "' selected='selected'>" + value.Value + "</option>";
+                                                BaoYangVehicle.nian = value.Value;
+                                                SelCarOneSalesName(productID, paiLiang, value.Value)
+                                            }
+                                        }
+                                        else if (Nian.length > 1) {
+                                            str += "<option value='" + value.Value + "'>" + value.Value + "</option>";
+                                        }
+                                    }
+                                })
+                            }
+                        })
+                        $("#Nian").append(str);
+
+                        if (data["Code"].toString() != "0") {
+                            nian = true;
+                            $(".carNian").show();
+                            $("#Nian").selectmenu('refresh', true);
+                        } else {
+                            nian = false;
+                            sales = false;
+                            $(".carNian").hide();
+                        }
+                    },
+                    error: function () {
+                        $(".ui-loader").loader("hide");
+                    }
+                });
+                $(".ui-loader").loader("hide");
+            }
+            //------------------------写cookie
+            function SetCookie(name, value) {
+                var Days = 3600;
+                var exp = new Date();
+                domain ="tuhu.cn";
+                exp.setTime(exp.getTime() + Days * 24 * 60 * 60 * 1000);
+                document.cookie = name + "=" + escape(value) + ";path=/;expires=" + exp.toGMTString();
+            }
+
+            //---------------------------------------获取cookie
+            function getCookie(name) {
+                var arr = document.cookie.match(new RegExp("(^| )" + name + "=([^;]*)(;|$)"));
+                if (arr != null) return unescape(arr[2]); return null;
+            }
+            //车型选择第五级年款
+            function SelCarOneSalesName(productID, paiLiang, nian) {
+                $.ajax({
+                    url: DomainWX + "/BaoYangActivity/SelOneCar",
+                    dataType: "json",
+                    type: "get",
+                    data: { ProductID: productID, PaiLiang: paiLiang, Nian: nian },
+                    success: function (da) {
+                        $(".ui-loader").loader("hide");
+                        data = da;
+                        //alert(da.SalesName);
+                        if (data["Code"].toString() != "0") {
+                            // var str = "<option value=''>请选择年款</option>";
+                            $(".reminder").hide();
+                            var str = "";
+                            $("#SalesName").html("");
+                            //var str = "";
+                            //显示数据
+                            //  alert(data.SalesName.length);
+                            var _salesName = {};
+                            data.SalesName = data.SalesName.filter(function (v) {
+                                //  alert(v.name);
+                                if (v.name in _salesName)
+                                    return false;
+                                _salesName[v.name] = !0;
+                                return true
+                            });
+                            $.each(data.SalesName, function (key, value) {
+                                //  alert(value.id);BaoYangVehicle.SalesId
+                                if (BaoYangVehicle.SalesId == this.id) {
+                                    $("#SalesName").html('<a href="" class="lySalesID bdbtn active" data-lyID="' + this.id + '">' + this.name + '<span class="arrow-r"></span></a>');
+                                }
+                                else {
+                                    str += "<a href='' class='lySalesID bdbtn' data-lyID='" + this.id + "'>" + this.name + "<span class='arrow-r'></span></a>";
+                                }
+                                //if (value.name != null && value.name != "") {
+                                //    var bySN = (BaoYangVehicle.SalesName == null || BaoYangVehicle.SalesName.toString() == "") ? "" : BaoYangVehicle.SalesName;
+                                //    var val = (value.name == null || value.name.toString() == "") ? "" : value.name;
+                                //    if (bySN.replace(/(^\s+)|(\s+$)/g, "") == val.replace(/(^\s+)|(\s+$)/g, "")) {
+                                //        //str += "<option value='" + value.id + "' selected='selected'>" + value.name + "</option>";
+                                //        str = "<a href='' class='lySalesID bdbtn active' data-lyID='" + value.id + "'>" + value.name + "<span class='arrow-r'></span></a>" + str;
+                                //    } else if (bySN.replace(/(^\s+)|(\s+$)/g, "") != val.replace(/(^\s+)|(\s+$)/g, "")) {
+                                //        if (data.SalesName.length <= 1) {
+                                //            if (value.name != null && value.name != "") {
+                                //                // str = "<option value='" + value.id + "' selected='selected'>" + value.name + "</option>";
+                                //                str = "<a href='' class='lySalesID bdbtn active' data-lyID='" + value.id + "'>" + value.name + "<span class='arrow-r'></span></a>";
+                                //                //SelCarOneSalesName(productID, paiLiang, value.Value)
+                                //                BaoYangVehicle.SalesName = value.name;
+                                //                BaoYangVehicle.SalesId = value.id;
+                                //            }
+                                //        }
+                                //        else if (data.SalesName.length > 1) {
+                                //            if (key == 0 && (bySN == null || bySN == "")) {
+                                //                // str += "<option value='" + value.id + "'>" + value.name + "</option>";
+                                //                str += "<a href='' class='lySalesID bdbtn active' data-lyID='" + value.id + "'>" + value.name + "<span class='arrow-r'></span></a>";
+                                //                BaoYangVehicle.SalesName = value.name;
+                                //                BaoYangVehicle.SalesId = value.id;
+                                //            }
+                                //            else {
+                                //                // str += "<option value='" + value.id + "'>" + value.name + "</option>";
+                                //                str += "<a href='' class='lySalesID bdbtn' data-lyID='" + value.id + "'>" + value.name + "<span class='arrow-r'></span></a>";
+                                //            }
+
+                                //        }
+                                //    }
+                                //}
+                            })
+                            $("#SalesName").append(str);
+                            // $("#SalesName").selectmenu('refresh', true);
+                            sales = true;
+                            $(".carSales").show();
+                        }
+                        else {
+                            sales = false;
+                            $(".carSales").hide();
+                            if ("result" in data && data.result == 0 && "OneLyID" in data) {
+                                BaoYangVehicle.SalesName = data["OneLyID"];
+                                BaoYangVehicle.SalesId = data["OneLyID"];
+                            }
+                            $(".reminder").show();
+                        }
+                    },
+                    error: function () {
+                        $(".ui-loader").loader("hide");
+                    }
+                });
+                $(".ui-loader").loader("hide");
+            }
+            //确定，下一步
+            $("#confirm").on("tap", function () {
+                $("#confirm").hide();
+                $("#Fconfirm").show();
+
+                BaoYangVehicle.nian = $("#Nian[value!='']").find('option:selected').val();
+
+                if (BaoYangVehicle.brand == null) {
+                    $("#confirm").show();
+                    $("#Fconfirm").hide();
+                    openTip("请选择汽车品牌");
+                    return;
+                }
+                if (BaoYangVehicle.vehicle == null) {
+                    $("#confirm").show();
+                    $("#Fconfirm").hide();
+                    openTip("请选择汽车型号");
+                    return;
+                }
+                //if ($(this).attr("data-baoYang") == "False")
+                //{
+                //	openTip("此车型暂时不能保养");
+                //	return;
+                //}
+                //if (BaoYangVehicle.paiLiang == null)
+                //{
+                //	openTip("请选择排量");
+                //	return;
+                //}
+                //if (BaoYangVehicle.nian == null || BaoYangVehicle.nian == "")
+                //{
+                //	openTip("请选择生产年份");
+                //	return;
+                //}
+                //if (BaoYangVehicle.productID == null)
+                //{
+                //	openTip("请选择汽车车型");
+                //	return;
+                //}
+                if (pl && (BaoYangVehicle.paiLiang == null || BaoYangVehicle.paiLiang == "")) {
+                    $("#confirm").show();
+                    $("#Fconfirm").hide();
+                    openTip("请选择排量");
+                    return;
+                }
+                if (nian && (BaoYangVehicle.nian == null || BaoYangVehicle.nian == "")) {
+                    $("#confirm").show();
+                    $("#Fconfirm").hide();
+                    openTip("请选择生产年份");
+                    return;
+                }
+                if (sales && (BaoYangVehicle.SalesId == null || BaoYangVehicle.SalesId == "")) {
+                    $("#confirm").show();
+                    $("#Fconfirm").hide();
+                    openTip("请选择年款");
+                    return;
+                }
+
+                //var BaoYangVehicleCar = {
+                //    brand: BaoYangVehicle.brand,//品牌
+                //    vehicle: BaoYangVehicle.vehicle,//型号
+                //    productID: BaoYangVehicle.productID,//productID
+                //    pailiang: BaoYangVehicle.paiLiang,//排量
+                //    nian: BaoYangVehicle.nian,//生产年份
+                //    lyID: BaoYangVehicle.SalesId,//LYID
+                //    lyName: BaoYangVehicle.SalesName//第五级Name
+                //}
+                //var CarInfo = {
+                //    brand: BaoYangVehicle.brand,//品牌
+                //    vehicle: BaoYangVehicle.vehicle,//型号
+                //    productID: BaoYangVehicle.productID,//productID
+                //    pailiang: BaoYangVehicle.paiLiang,//排量
+                //    nian: BaoYangVehicle.nian,//生产年份
+                //    lyID: BaoYangVehicle.SalesId,//LYID
+                //    lyName: BaoYangVehicle.SalesName//第五级Name
+                //}
+                //   setCookie("BaoYangVehicle", JSON.stringify(BaoYangVehicleCar));
+                //  delCookie("suggestInventory");
+                // console.log(getCookie("BaoYangVehicle"));
+
+                CarInfo.vehicle = BaoYangVehicle.vehicle;//型号
+                CarInfo.productID = BaoYangVehicle.productID;//productID
+                CarInfo.pailiang = BaoYangVehicle.paiLiang;//排量
+                CarInfo.nian = BaoYangVehicle.nian;//生产年份
+                CarInfo.lyID = BaoYangVehicle.SalesId;//LYID
+                //   }
+
+                setTimeout(function () {
+                    // var CarInfo = JSON.parse(getCookie("BaoYangVehicle"));
+                    //alert($("#UserId").val());
+                    //alert($("#UserId").val().length);
+                    //return false;
+                    if (CarInfo.vehicle != "" && CarInfo.productID != "" && $("#UserId").val() != "")//cookie中有车型数据,将数据显示到页面
+                    {
+                        //public string VehicleID { get; set; }
+                        //public string PaiLiang { get; set; }
+                        //public string Nian { get; set; }
+                        //public string liYangID { get; set; }
+                        //public string UserId { get; set; }
+                        $.ajax({
+                            url: DomainWX + "/BaoYangActivity/AddOrUpdateCarHistory",
+                            dataType: "json",
+                            type: "post",
+                            // jsonpCallback: "__HasProductList__",
+                            data: { VehicleID: CarInfo.productID, PaiLiang: CarInfo.pailiang, Nian: CarInfo.nian, liYangID: CarInfo.lyID, UserId: $("#UserId").val() },
+                            async: false,//取消异步请求
+                            success: function (data) {
+                                //console.log(data);
+                                //  var url = "";
+                                //if (data["code"].toString() == "0") {
+                                //    url = "/BaoYang/BaoYangMenus?ProductID=" + CarInfo.productID + "&PaiLiang=" + CarInfo.pailiang + "&Nian=" + CarInfo.nian + "&ly=" + CarInfo.lyID;
+                                //}
+                                //else {
+                                //    url = "/BaoYang/Inventory";
+                                //}
+                                if (data.IsSuccess) {
+                                    // window.location.href = "";//TODO回跳到mark页面
+                                    // alert("车型添加成功TODO回跳到mark页面");
+                                    //var carmodel = new Object();
+                                    //carmodel.VehicleID = BaoYangVehicle.productID;
+                                    //carmodel.VehicleName = BaoYangVehicle.vehicle;
+                                    //carmodel.PaiLiang = BaoYangVehicle.paiLiang;
+                                    //carmodel.Nian = BaoYangVehicle.nian;
+                                    //carmodel.liYangID = BaoYangVehicle.SalesId;
+                                    //carmodel.Brand = BaoYangVehicle.brand
+                                 //   SetCookie($("#UserId").val()+"caremodel", JSON.stringify(carmodel));//设置这个userid所对应的车型
+                                    var ToUrl = "";
+                                    if ($("#Step").val() == "1") ToUrl = "http://faxian.tuhu.cn/by/details.html";
+                                    else ToUrl = "http://resource.tuhu.cn/ActivityHtml/SecondKillApp/SecondKillAppIndex.html";//TODO 一元秒杀页
+                                    window.location.href = ToUrl;
+                                }
+                                else {
+                                    openTip(data.Msg);
+                                }
+                                //  sessionStorage.removeItem("baoyangTypes");
+
+                                //  window.location.href = url;
+                            },
+                            error: function (e) {
+                                $("#confirm").show();
+                                $("#Fconfirm").hide();
+                                console.log(e);
+                            }
+                        });
+                    }
+                    else {
+                        //window.location.href = "/BaoYang/CarSelect";\u8f66\u578b\u6dfb\u52a0\u6210\u529fTODO\u56de\u8df3\u5230mark\u9875\u9762
+                        openTip("参数错误请重试");
+                    }
+                }, 200);
+            })
+        </script>
+        <script type="text/javascript">
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-24728550-1']);
+            _gaq.push(['_setDomainName', 'tuhu.cn']);
+            _gaq.push(['_trackPageview']);
+            (function () {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+        </script>
+    </div>
+</body>
+</html>

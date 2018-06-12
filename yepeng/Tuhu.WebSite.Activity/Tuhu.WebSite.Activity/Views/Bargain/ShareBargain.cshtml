@@ -1,0 +1,147 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, width=device-width,minimal-ui" />
+    <meta name="description" content="途虎养车网" />
+    <meta content="telephone=no" name="format-detection" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>0.99元抢迷你便携式车载吸尘器</title>
+    @Html.Partial("~/Views/Shared/ShareHeadClean.cshtml")
+    @Html.Partial("BargainShare")
+    @Html.Partial("~/Views/Shared/WxJsSDK.cshtml")
+    <script type="text/javascript">
+        var bag = {
+            soid: "@ViewBag.soid"
+            , simg: "@ViewBag.simg"
+            , nick: "@ViewBag.nick"
+            , sdetail: '@ViewBag.detail'
+            , detail: {}
+        }
+        var orderurl = 'http://a.app.qq.com/o/simple.jsp?pkgname=cn.TuHu.android';
+        function verifyready(d) {
+            if (d.isexpired) {
+                location.href = '/bargain/end.html';
+            } else if (d.isready) {
+                $('#pop').hide().fadeIn(100);
+                $('#bshare').addClass('hidden');
+                $('#border').removeClass('hidden');
+            }
+        }
+        function showmsgs(detail) {
+            $('#pregion').addClass('hidden');
+            $('#kregion').removeClass('hidden');
+            $('#klist')[0].innerHTML = '';
+            for (var i = 0; i < detail.players.length; i++) {
+                var pl = detail.players[i];
+                var h = cutitem(pl);
+                $('#klist')[0].innerHTML += h;
+            }
+        }
+        function init(c) {
+            var s = Base64.decode(bag.sdetail);
+            bag.detail = JSON.parse(s);
+            window.pgbar = $('[control=pgbarcs]').inject({ min: 10, max: 90, cmin: bag.detail.dprice })[0];
+            pgbar.setData(bag.detail.cprice, bag.detail.tprice);
+            verifyready(bag.detail);
+            if (bag.detail.players) {
+                showmsgs(bag.detail);
+            }
+            var ourl = '/bargain/preorder.html?aid=' + c.aid + '&soid=' + bag.soid;
+            $('#border').click(function () {
+                $.ajax({ url: ourl }).done(function (wxdata) {
+                    var d = JSON.parse(wxdata);
+                    if (d.complete) {
+                        var cb = escape('http://wx.tuhu.cn/bargain/order?aid=' + c.aid + '&soid=' + bag.soid + '&cburl=' + escape(orderurl));
+                        var wxurl = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx21f3300bbe61dc90&redirect_uri=' + cb + '&response_type=code&scope=snsapi_base&state=myturn#wechat_redirect';
+                        //alert(wxurl);
+                        location.href = wxurl;
+                    } else {
+                        if (d.already || d.act==1) {
+                            $('#phave').removeClass('hidden');
+                            $('#pend').addClass('hidden');
+                        } else {
+                            location.href = '/bargain/end.html';
+                        }
+                    }
+                });
+            });
+        }
+        function cfgready(c) {
+            $('#nick').html(bag.nick);
+            $('#avatar').attr('src', bag.simg);
+            $('#bshare').click(function () {
+                toastr.info('点击右上角分享到朋友圈');
+            });
+            ubc(c, 'bgname');
+            var shurl = 'http://faxian.tuhu.cn/bargain/helpcut.html?aid=' + c.aid + '&nick=target&foid=' + bag.soid;
+            window.wxbag = {
+                gtitle: c.wxgtitle 
+                , ftitle: c.wxftitle
+                , gdesc: c.gdesc 
+                , fdesc: c.fdesc 
+                , link: shurl
+                , gimg: c.wxshareimg
+                , fimg: c.wxshareimg
+            };
+            init(c);
+            wxready();
+        }
+    </script>
+    <link rel="stylesheet" href="http://resource.tuhu.cn/css/wx/active/bargain.min.css">
+</head>
+<body>
+<div debug="no" class="hidden" style="color:yellow;">@ViewBag.wxinfo</div>
+<div class="sponsor icon clearfix">
+    <img id="avatar" src="" alt="" class="img" />
+    <p class="word">
+        <span id="nick">亲</span><br /> 
+        <span><font bgname="hoover">迷你便携式车载吸尘器</font>，想要很久了，
+        大家来帮我砍价！</span>
+    </p>
+    <img src="http://resource.tuhu.cn/Css/images/Activities/p_img.png" width="30%" class="fr" />
+</div>
+<div class="content">
+    <div control="pgbarcs" class="progress-bar">
+        <div alias="cursor" class="num" style="left:70%;"><span alias="indicator" class="curtprice"></span> <span class="arrow-d"></span></div>
+        <div alias="bar" class="progress icon">
+            <div alias="remain" class="inset icon" style="width:70%;border-radius:18px 0 0 18px"></div>
+        </div>
+    </div>
+    <p class="text">
+        点击右上角，发送到朋友圈，让朋友帮忙来砍价！
+    </p>
+    <p style="color:red; text-align:center; font-weight:bold;">再追加5000只吸尘器，名额有限，抢完即止</p>
+    <a id="bshare" href="#" class="btn btn-yellow">让朋友来砍价</a>
+    <a id="border" href="#" class="btn btn-yellow hidden">去途虎App，下单购买</a>
+    <div id="pregion" class="box">
+        <div class="title icon" bgname="hoover">迷你便携式车载吸尘器</div>
+        <center>
+            @*<img src="" alt="" class="p-img">*@
+        <img src="http://resource.tuhu.cn/Css/images/Activities/p_img.png" width="80%" />
+    </center>
+</div>
+    <div id="kregion" class="box hidden">
+        <div class="title icon">砍价榜</div>
+        <div id="klist" class="list">
+            @*<div class="list-item clearfix"><div class="fl filed"><img src="" alt="" class="img fl" /><p>朱炎<br />手起刀落，砍掉8元</p></div><div class="fr num">-8.00</div></div>*@
+        </div>
+    </div>
+    
+    
+</div>
+<!--弹出层-->
+<div id="pop" class="pop" style="margin-top:-50px;">
+    <span id="phave" class="icon have hidden"></span>
+    <span id="pend" class="icon end"></span>
+</div>
+    <div class="adv" id="downApp">
+        <a href="http://a.app.qq.com/o/simple.jsp?pkgname=cn.TuHu.android"><img src="http://resource.tuhu.cn/Css/images/Activities/tuhu-adv.png" width="100%" /></a>
+    </div>
+
+</body>
+</html>

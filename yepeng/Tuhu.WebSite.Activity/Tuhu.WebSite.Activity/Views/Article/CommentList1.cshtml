@@ -1,0 +1,662 @@
+﻿@using Tuhu.WebSite.Web.Activity.Models;
+@model CommentViewModel
+@{ 
+var pagerModel = ViewData["PagerModel"] as PagerModel;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;">
+    <title>评论列表</title>
+    <link href="~/Content/detailCss/common.css" rel="stylesheet" />
+    <link href="~/Content/detailCss/comment-list.css" rel="stylesheet" />
+</head>
+<body>
+    <div style="margin:0 auto" class="maxwidth">
+        <div class="body">
+            @if (Model.hots.Count > 0)
+            {
+                    <h6 class="de-title">
+                        <a href="#" class="de-active" id="hot-com">热门评论<span>(@Model.hots.Count)</span></a>
+                    </h6>
+                    foreach (var hot in Model.hots)
+                    {
+                    <div class="comment" comId="@hot.CommentId">
+                        <div class="avatar toUserCenter" >
+                            <img src="@hot.HeadImage" alt="avatar">
+                        </div>
+                        <div class="content">
+                            <div class="info">
+                                <div class="title">
+                                    <p class="name toUserCenter">@hot.NickName</p>
+                                    <p class="time">@hot.CommentDatetime.ToString("MM-dd HH:mm")</p>
+                                </div>
+                                <div class="good" cid="@hot.CommentId">
+                                    <span class="count">@(hot.AgreeCount == 0 ? "" : hot.AgreeCount.ToString())</span>
+                                    <span class="fist @(hot.IsLike?"up":"")"></span>
+                                    <span class="plusOne">+1</span>
+                                </div>
+                            </div>
+                            <div class="detail"  code="@hot.UserId">
+                                @if (hot.ReplyComment != null)
+                                {
+                                    @(hot.CommentContent+ " || ")<a style="color:#527db0">@(hot.ReplyComment.NickName + "：")</a>@(hot.ReplyComment.CommentContent)
+                                }
+                                else
+                                {
+                                    @(hot.CommentContent)
+                                }
+                            </div>
+                        </div>
+                        <span class="showAll">
+                            全文
+                        </span>
+                        <div class="menu">
+                            <span class="fakeRep" cid="@hot.CommentId">回复</span><!--<span class="fakeCopy">复制</span>-->
+                            <div class="trangle"></div>
+                        </div>
+                    </div>
+                    }
+            }          
+            <h6 class="de-title">
+                <a href="#" class="de-active">最新评论<span>(@Model.news.Count)</span></a>
+            </h6>
+            @if (Model.news.Count > 0)
+            {
+                foreach (var comment in Model.news)
+                {
+                    <div class="comment" comId="@comment.CommentId">
+                        <div class="avatar toUserCenter">
+                            <img src="@comment.HeadImage" alt="avatar">
+                        </div>
+                        <div class="content">
+                            <div class="info">
+                                <div class="title">
+                                    <p class="name toUserCenter">@comment.NickName</p>
+                                    <p class="time">@comment.CommentDatetime.ToString("MM-dd HH:mm")</p>
+                                </div>
+                                <div class="good" cid="@comment.CommentId">
+                                    <span class="count">@(comment.AgreeCount==0?"": comment.AgreeCount.ToString())</span>
+                                    <span class="fist @(comment.IsLike?"up":"")"></span>
+                                    <span class="plusOne">+1</span>
+                                </div>
+                            </div>
+                            <div class="detail" code="@comment.UserId">
+                                @if (comment.ReplyComment != null)
+                                {
+                                    @(comment.CommentContent+ " || ")<a style="color:#527db0">@(comment.ReplyComment.NickName + "：")</a>@(comment.ReplyComment.CommentContent)
+                                }
+                                else
+                                {
+                                    @(comment.CommentContent)
+                                }
+                            </div>
+                        </div>
+                        <span class="showAll">
+                            全文
+                        </span>
+                        <div class="menu">
+                            <span class="fakeRep" cid="@comment.CommentId">回复</span><span class="fakeDel" style="margin-right:-4px">删除</span>
+                            <div class="trangle"></div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="comment">抢沙发~~</div>
+            }
+            <div class="loadingBar" id="loading">正在加载...</div>
+        </div>
+        <div class="footer foot maxwidth">
+            <input class="argu-con" type="text" placeholder='写评论...' onclick="CheckIsLogin()" readonly="readonly" />
+            <a href="javascript:void(0)" class="backArticle">
+                <img src="/Content/images/returnArticle@2x.png" alt="airticle">
+            </a>
+            <span class="collect" id="favoriate"></span>
+            <span class="share" id="shareImage"></span>
+        </div>
+    </div>
+    <!--收藏成功-->
+    <div class="collected" style="display:none">
+        <img src="/Content/images/success.png" alt="" />
+        <p>收藏成功</p>
+    </div>
+    <!--删除确认-->
+    <div class="mask"></div>
+    <div class="delWrapper">
+        <div class="confirm">
+            <div class="info">
+                是否确认删除该评论？
+            </div>
+            <div class="btn">
+                确认删除
+            </div>
+        </div>
+        <div class="cancel">
+            取消
+        </div>
+    </div>
+    <input type="hidden" id="_hdArticleId" value="@Model.article.Id" />
+    <input type="hidden" id="_hdArticleTitle" value="@Model.article.Title" />
+    <input type="hidden" id="_hdArticleCoverImage" value="@(!string.IsNullOrEmpty(Model.article.CoverImage)?Model.article.CoverImage.Split(new Char[] { ';'},StringSplitOptions.RemoveEmptyEntries)[0]:"")" />
+    <input type="hidden" id="_hdUserId" value="@ViewData["UserID"]" />
+    <input type="hidden" id="_hdRelatedArticleId" value="@ViewData["RelatedArticleId"]" />
+    <input type="hidden" id="_hdTotalPage" value="@pagerModel.TotalPage" />
+    <input type="hidden" id="_hdCurrentPage" value="1" />
+    <script src="http://resource.tuhu.cn/Scripts/jquery-2.1.0.min.js" type="text/javascript"></script>
+    <script src="http://resource.tuhu.cn/Js/WebViewJavascriptBridge.js" type="text/javascript"></script>
+    @*<script src="http://file.tuhu.cn/activity/scripts/jsonSerialization.js" type="text/javascript"></script>*@
+    @*<script src="http://file.tuhu.cn/activity/scripts/zepto.min.js" type="text/javascript"></script>*@
+    <script src="~/Scripts/CommentFile/common.js"></script>
+    <script type="text/javascript">
+        var user = null;
+        var isFirstEnter = true;
+        var userAgentInfo = navigator.userAgent;
+        var clipData = '';
+        var detailHeight = 120;
+        var goodObj, repObj;
+        var delNode;
+        $(document).ready(function () {
+            //getSize();
+            //判断用户是否登录
+            if (userAgentInfo.indexOf("Android") >= 0) {
+                getAndroidUserInfo('loginBridge', userInfoForAndroid);
+
+            }
+            else if (userAgentInfo.indexOf("iPhone") > 0) {
+                getIOSUserInfo(0, 'userInfoCallback');
+            }
+            //$('.comment .detail').forEach(function (i, j) {
+            //    if (parseInt(window.getComputedStyle(i, null).height) > detailHeight) {
+            //        i.parentNode.parentNode.getElementsByClassName('showAll')[0].style.display = 'inline';
+            //        i.setAttribute('class', i.getAttribute('class') + ' hidden')
+            //    }
+            //});           
+
+            $('.comment .detail').each(function () {
+                if (parseInt(window.getComputedStyle(this, null).height) > detailHeight) {
+                    $(this).parent().next().css("display", "inline");
+                    $(this).addClass("hidden");
+                }
+            });
+
+            //点击显示删除、复制、回复
+            $('.detail').click(function () {
+                var userId = user && user.userid || "";
+                var code = '{' + $(this).attr("code") + '}';
+                var menu=$(this).parent().parent().children('.menu');
+                if (userId == code) {
+                    if(!menu.children().first().hasClass("fakeDel")){
+                        menu.prepend('<span class="fakeDel" style="margin-right:-4px">删除</span>');
+                    }                    
+                }
+                hiddenFake($(this))
+                menu.toggle();
+                $(this).toggleClass('addBg');
+            });
+            //复制（已废弃）
+            $('.fakeCopy').click(function () {
+                clipData = $(this).parent().parent().children('.content').children('.detail').text();
+                hiddenFake();
+                $('.collected').css('display', 'block');
+                $(".collected p").text("复制成功");
+                setTimeout(function () {
+                    $('.collected').css('display', 'none');
+                }, 2000)
+            });
+            //点击头像&昵称
+            $(".toUserCenter").click(function () {
+                var thisObj = $(this);
+                var userid = thisObj.parents(".comment").find(".detail").attr("code");
+                var uid = userid != "" ? "{" + userid + "}" : "";
+                if (userAgentInfo.indexOf("Android") >= 0) {
+                    var android = {};
+                    android.androidValue = [{ "userId": uid }];
+                    android.androidKey = "cn.TuHu.Activity.Found.PersonalPage.OnePageActivity";
+                    console.log(android);
+                    window.WebViewJavascriptBridge.callHandler('jumpActivityBridge', encodeURIComponent(encodeURIComponent(JSON.stringify(android))));                    
+                }
+                else if (userAgentInfo.indexOf("iPhone") > 0) {
+                    window.location.href = 'tuhuaction://segue#Tuhu.THDiscoverPersonVC#{"userId": ' + uid + '}';
+                }
+
+            });
+            //删除
+            $('.menu').on('click', '.fakeDel', function () {
+                var thisObj = $(this);
+                delNode = thisObj;
+                $('.mask').css('display', 'block');
+                $('.delWrapper').addClass('slideUp');              
+            });
+            //删除确认
+            $('.delWrapper .btn').click(function () {
+                if (delNode) {
+                    var commentNode = delNode.parent().parent();
+                    var commentId = commentNode.attr("comId");
+                    if (commentId != '') {
+                        $.ajax({
+                            type: "post",
+                            url: "/Article/RemoveComment",
+                            data: { commentId: commentId, userId: user.userid },
+                            success: function (result) {
+                                if (result.success) {
+                                    commentNode.remove();
+                                    closeDelWrapper();
+                                    $('.collected').css('display', 'block');
+                                    $(".collected p").text("删除成功");
+                                    setTimeout(function () {
+                                        $('.collected').css('display', 'none');
+                                    }, 2000)
+                                } else {
+                                    alert('删除失败');
+                                }
+                            }
+                        });
+                    }             
+                } else {
+                    alert('请点击要删除的评论')
+                }
+            })
+            // 点击关闭删除框
+            $('.mask , .delWrapper .cancel').click(function () {
+                closeDelWrapper();
+            });
+
+            //全文
+            $('.showAll').click(function () {
+                $(this).css('display', 'none');
+                $(this).parent().children('.content').children('.detail').removeClass('hidden')
+            });
+            //回复(需用户登录)
+            $(".fakeRep").click(function () {
+                repObj = $(this);
+                if (userAgentInfo.indexOf("Android") >= 0) {
+                    getAndroidUserInfo('actityBridge', ReplyComment);
+                }
+                else if (userAgentInfo.indexOf("iPhone") > 0) {
+                    getIOSUserInfo(1, 'ReplyComment');
+                }           
+            });
+            //点赞(需用户登录)
+            $('.good').click(function () {
+                goodObj = $(this);
+                if (userAgentInfo.indexOf("Android") >= 0) {
+                    getAndroidUserInfo('actityBridge', AddZan);
+                }
+                else if (userAgentInfo.indexOf("iPhone") > 0) {
+                    getIOSUserInfo(1, 'AddZan');
+                }
+            });
+            //收藏（需用户登录）
+            $("#favoriate").click(function () {
+                if (userAgentInfo.indexOf("Android") >= 0) {
+                    getAndroidUserInfo('actityBridge', AddFavorite);
+                }
+                else if (userAgentInfo.indexOf("iPhone") > 0) {
+                    getIOSUserInfo(1, 'AddFavorite');
+                }
+            });
+            //点击分享
+            $("#shareImage").click(function () {                
+                var _articleId = $("#_hdArticleId").val();
+                var _articleTitle = $("#_hdArticleTitle").val();
+                CollectShareTimes();
+                if (userAgentInfo.indexOf("Android") >= 0) {
+                    window.WebViewJavascriptBridge.callHandler('toShared');
+                }
+                else if (userAgentInfo.indexOf("iPhone") > 0) {
+                    var url = "http://" + window.location.host + "/Article/Detail?id=" + _articleId;
+                    var title = _articleTitle;
+                    var content = _articleTitle;
+                    var defaultImg = "http://" + window.location.host + '/Content/imgs/detail/drawable-hdpi/hu-2x.png';
+                    var image = $("#_hdArticleCoverImage").val();
+                    window.location.href = 'tuhuaction://share#63#{"url": "' + url + '","title":"' + title + '","content":"' + content + '","image":"' + (image || defaultImg) + '"}';
+                }
+                ga('send', 'event', 'toutiao_detail', 'click_share');
+            });
+            //点击回到原文
+            $(".backArticle").click(function () {
+                if (userAgentInfo.indexOf("tuhuAndroid") >= 0) {
+                    var android = {};
+                    window.WebViewJavascriptBridge.callHandler('Close', encodeURIComponent(encodeURIComponent(JSON.stringify(android))));
+                } else if (userAgentInfo.indexOf("tuhuIOS") > 0) {
+                    window.location.href = 'tuhuaction://back';
+                } else {
+                    location.href = "/Article/Detail?id=" + $("#_hdArticleId").val();
+                }               
+            });
+            //滑动分页
+            $(window).scroll(function () {
+                if (document.body.scrollTop + window.innerHeight === document.body.clientHeight) {
+                    var articieId = $("#_hdArticleId").val();
+                    var currentPage = $("#_hdCurrentPage").val();
+                    var totalPage = $("#_hdTotalPage").val();
+                    var count = parseInt($("#_hdCurrentPage").val()) + 1;
+                    if (count > totalPage) {
+                        $("#loading").hide();
+                    } else {
+                        $("#loading").show();
+                        $("#_hdCurrentPage").val(count);
+                        //加载数据
+                        LoadCommentList(articieId,count);
+                    }                   
+                }
+
+            });
+
+        });/*document--end*/
+        function LoadCommentList(aid,pageIndex) {
+            $.ajax({
+                type: "get",
+                url: "/Article/GetCommentList",
+                data: { ArticleId: aid, PageIndex: pageIndex, userId: (user && user.userid || "") },
+                success: function (result) {
+                    if (result.success) {
+                        if (result.news.length > 0) {
+                            var htmlList = builderComments(result.news);
+                            $("#loading").hide();
+                            $("#loading").before(htmlList);//填充数据
+                        }
+                    }
+                }
+            });
+        }
+        function builderComments(list) {
+            var html = "";
+            var userid = user && user.userid || "";
+            for (var i = 0; i < list.length; i++) {
+                var com = list[i];
+                html += '<div class="comment" comid="' + com.CommentId + '">';
+                html += '<div class="avatar toUserCenter">';
+                html += '<img src="' + com.HeadImage + '" alt="avatar">';
+                html += '</div>';
+                html += '<div class="content">';
+                html += '<div class="info">';
+                html += '<div class="title"><p class="name toUserCenter">' + com.NickName + '</p><p class="time">' + new Date(com.CommentDatetime).toLocaleString() + '</p>';
+                html += '</div>';
+                html += '<div class="good" cid="' + com.CommentId + '">';
+                html += '<span class="count">' + (com.AgreeCount == 0 ? "" : com.AgreeCount)+ '</span>';
+                html += '<span class="fist ' + (com.IsLike?"up":"") + '"></span>';
+                html += '<span class="plusOne">+1</span>';
+                html += '</div></div>';
+                var content = "";
+                if (com.ReplyComment != null) {
+                    content = com.CommentContent + ' || <a style="color:#527db0">' + com.ReplyComment.NickName + ' :</a>' + com.ReplyComment.CommentContent;
+                } else {
+                    content = com.CommentContent;
+                }
+                html += '<div class="detail" code="' + com.UserId + '">' + content + '</div>';
+                html += '</div>';
+                html += '<span class="showAll">全文</span>';
+                html += '<div class="menu">';
+                html += '<span class="fakeRep" cid="' + com.CommentId + '">回复</span>'+(com.UserId==userid?'<span class="fakeDel" style="margin-right:-4px">删除</span>':'');
+                html += '<div class="trangle"></div>';
+                html += '</div>';
+                html += '</div>';
+            }
+            return html;
+        }
+
+        //回复
+        function ReplyComment(userInfo) {
+            if (typeof (userInfo) == 'string') {
+                user = JSON.parse(userInfo);
+            } else {
+                user = userInfo;
+            }
+            var commentId = repObj.attr("cid");
+            var nickName = repObj.parents(".comment").find(".name").text();
+            var articleId = $("#_hdArticleId").val();
+            location.href = "/Article/Comment?Aid=" + articleId + "&ReplyId=" + commentId + "&NickName=" + nickName;
+        }
+        //点赞||取消赞
+        function AddZan(userInfo) {
+            if (typeof (userInfo) == 'string') {
+                user = JSON.parse(userInfo);
+            } else {
+                user = userInfo;
+            }
+            var fist = goodObj.children('.fist');
+            var plusOne = goodObj.children('.plusOne');
+            var commentId = goodObj.attr("cid");
+            var count = goodObj.children('.count');
+            if (fist.hasClass("up")) {//取消赞
+                $.ajax({
+                    type: "post",
+                    url: "/Article/LikeOrNot",
+                    data: { commentId: commentId,userId:user.userid, isLike: "NotLike" },
+                    success: function (result) {
+                        if (result.success) {
+                            fist.toggleClass('up');
+                            plusOne.removeClass('plusActive');
+                            if (parseInt(count.text()) - 1 == 0) {
+                                count.text("");
+                            } else {
+                                count.text(parseInt(count.text()) - 1);
+                            }
+                        }
+                    }
+                });
+            } else {//点赞
+                $.ajax({
+                    type: "post",
+                    url: "/Article/LikeOrNot",
+                    data: { commentId: commentId, userId: user.userid, isLike: "Like" },
+                    success: function (result) {
+                        if (result.success) {
+                            fist.toggleClass('up');
+                            plusOne.addClass('plusActive');
+                            if ($.trim(count.text()) == "") {
+                                count.text(1);
+                            } else {
+                                count.text(parseInt(count.text()) + 1);
+                            }
+                        }
+                    }
+                });
+            }
+
+        }
+        //收藏
+        function AddFavorite(userInfo) {
+            if (typeof (userInfo) == 'string') {
+                user = JSON.parse(userInfo);
+            } else {
+                user = userInfo;
+            }
+            $.ajax({
+                type: 'post',
+                url: "/Article/AddFavoriate",
+                dataType: 'json',
+                data: { Id: $("#_hdArticleId").val(), userId: user.userid, DeviceId: user.uuid },
+                success: function (response) {
+                    if (response.success == true) {
+                        if ($("#favoriate").hasClass("czbg")) {//取消收藏
+                            setTimeout(function () {
+                                $(".collected").fadeOut("slow");
+                            }, 1000);//等待1秒执行
+                            $(".collected").show();
+                            $(".collected p").text("取消成功");
+                            $("#favoriate").removeClass("czbg").removeClass("shake");
+                            ga('send', 'event', 'toutiao_detail', 'click_cancel_favorite');
+                            AddFavoriteForOld(false);
+                        } else {//点击收藏
+                            setTimeout(function () {
+                                $(".collected").fadeOut("slow");
+                            }, 1000);//等待1秒执行
+                            $(".collected").show();
+                            $(".collected p").text("收藏成功");
+                            $("#favoriate").addClass("czbg").addClass("shake");
+                            ga('send', 'event', 'toutiao_detail', 'click_favorite');
+                            AddFavoriteForOld(true);
+                        }
+                    }
+                }
+            });
+        }
+        function CollectShareTimes() {
+            $.ajax({
+                type: 'post',
+                url: "/Article/CollectShareTimes",
+                dataType: 'json',
+                data: { Id: $("#_hdArticleId").val(), userId: (user && user.userid || ""), DeviceId: (user && user.uuid || "") },
+                success: function (response) {
+                }
+            });
+        }
+        function AddFavoriteForOld(flag,userid) {
+            var hdSite = "http://huodong.tuhu.test";
+            var url = !!!flag ? hdSite + '/Discovery/RemoveFavoriteArticle' : hdSite + '/Discovery/InsertFavoriteArticle';
+            var artId = $("#_hdRelatedArticleId").val();
+            if (artId > 0) {
+                $.ajax({
+                    type: 'post',
+                    url: url,
+                    dataType: 'json',
+                    data: { articleId: artId, userId: "{" + user.userid + "}" },
+                    success: function (response) {
+                    }
+                });
+            }
+        }
+        function CheckIsLogin() {
+            if (userAgentInfo.indexOf("Android") >= 0) {
+                getAndroidUserInfo('actityBridge', GoComment);
+            }
+            else if (userAgentInfo.indexOf("iPhone") > 0) {
+                getIOSUserInfo(1, 'GoComment');
+            }
+        }
+        function getIsFavoriate() {
+            $.ajax({
+                type: 'get',
+                url: "/Article/IsFavoriate",
+                dataType: 'json',
+                data: { Id: $("#_hdArticleId").val(), userId: (user && user.userid || ""), DeviceId: (user && user.uuid || "") },
+                success: function (response) {
+                    if (response.success == true) {
+                        if (response.IsFavoriate == true) {
+                            $("#favoriate").addClass("czbg");
+                        }
+                    }
+                }
+            });
+        }
+        function getAndroidUserInfo(type, callback) {
+            var android = {};
+            window.WebViewJavascriptBridge.callHandler(type, encodeURIComponent(encodeURIComponent(JSON.stringify(android))), callback);
+        }
+        function getIOSUserInfo(type, callback) {
+            window.location.href = 'tuhuaction://getuserinfo#' + type + '#' + callback;
+        }
+        function userInfoCallback(userInfo) {
+            user = userInfo;
+            if (isFirstEnter) {
+                getIsFavoriate();
+                isFirstEnter = false;
+            }
+        }
+        function userInfoForAndroid(responseData) {
+            var userInfo = $.parseJSON(responseData);
+            user = userInfo;
+            if (isFirstEnter) {
+                getIsFavoriate();
+                isFirstEnter = false;
+            }
+        }
+        //评论页
+        function GoComment() {
+            //跳转到评论页
+            var url = "http://faxian.tuhu.test/Article/Comment?Aid=" + $("#_hdArticleId").val() + "&UserId=" + user.userid;
+            if (userAgentInfo.indexOf("Android") >= 0) {
+                var android = {};
+                android.androidValue = [{ "Url": url }];
+                android.isShowShareIcon = false;
+                android.androidKey = "cn.TuHu.Activity.AutomotiveProducts.AutomotiveProductsWebViewUI";
+                console.log(android);
+                window.WebViewJavascriptBridge.callHandler('jumpActivityBridge', encodeURIComponent(encodeURIComponent(JSON.stringify(android))));
+            }
+            else if (userAgentInfo.indexOf("iPhone") > 0) {
+                window.location.href = 'tuhuaction://segue#TNHBH5VViewController#{"url": "' + url + '"}';
+            }
+        }
+        function hiddenFake(thisNode) {
+            if (thisNode) {
+                $('.menu').not(thisNode.parent().parent().children('.menu')).css('display', 'none');
+                $('.detail').not(thisNode).removeClass('addBg');
+            } else {
+                $('.menu').css('display', 'none');
+                $('.detail').removeClass('addBg');
+            }
+        }
+        // 关闭删除框事件
+        function closeDelWrapper() {
+            $('.mask').css('display', 'none');
+            $('.delWrapper').removeClass('slideUp');
+        }
+        function getSize() {
+            var oHtml = document.documentElement;
+            var screenWidth = oHtml.clientWidth;
+            if (screenWidth > 630) {
+                oHtml.style.fontSize = '78.75px';
+            } else if (screenWidth <= 320) {
+                oHtml.style.fontSize = '40px';
+            } else {
+                oHtml.style.fontSize = screenWidth / 320 * 40 + 'px';
+            }
+        }
+        function connectWebViewJavascriptBridge(callback) {
+            if (window.WebViewJavascriptBridge) {
+                callback(WebViewJavascriptBridge)
+            } else {
+                document.addEventListener(
+                    'WebViewJavascriptBridgeReady'
+                    , function () {
+                        callback(WebViewJavascriptBridge)
+                    },
+                    false
+                );
+            }
+        }
+        connectWebViewJavascriptBridge(function (bridge) {
+            bridge.init(function (message, responseCallback) {
+                var data = {
+                    'Javascript Responds': 'Wee!'
+                };
+                responseCallback(data);
+            });
+            bridge.registerHandler("functionInJs", function (data, responseCallback) {
+                var responseData = "Javascript Says Right back aka!";
+                responseCallback(responseData);
+            });
+        });
+        var interval = setInterval(monitorFunc,1000);
+        function monitorFunc() {
+            if (TuhuCookie.Get("CommentTag") && TuhuCookie.Get("CommentTag") == "true") {
+                location.reload();
+                var domain = ".tuhu.cn";
+                if (/\.tuhu\.(\w+)$/.test(location.host))
+                    domain = ".tuhu." + RegExp.$1;
+                TuhuCookie.Unset("CommentTag", domain, "/", false);
+                clearInterval(interval);
+            }
+        }
+        window.onresize = function () {
+            //getSize();
+        }
+    </script>
+
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+        ga('create', 'UA-24728550-3', 'auto');
+        ga('send', 'pageview');
+    </script>
+</body>
+</html>

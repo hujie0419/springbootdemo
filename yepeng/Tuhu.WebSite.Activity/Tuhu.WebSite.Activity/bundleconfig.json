@@ -1,0 +1,38 @@
+[
+  {
+    "outputFileName": "Content/detailCss/detail.min.css",
+    "inputFiles": [
+      "Content/detailCss/detail.css"
+    ]
+  },
+  {
+    "outputFileName": "Scripts/CommentFile/detail.min.js",
+    "inputFiles": [
+      "Scripts/CommentFile/detail.js"
+    ]
+  },
+  {
+    "outputFileName": "Scripts/CommentFile/ArticleProductRedirect.min.js",
+    "inputFiles": [
+      "Scripts/CommentFile/ArticleProductRedirect.js"
+    ]
+  },
+  {
+    "outputFileName": "Scripts/CommentFile/ta.min.js",
+    "inputFiles": [
+      "Scripts/CommentFile/ta.js"
+    ]
+  },
+  {
+    "outputFileName": "Scripts/CommentFile/DeepShare.min.js",
+    "inputFiles": [
+      "Scripts/CommentFile/DeepShare.js"
+    ]
+  },
+  {
+    "outputFileName": "Content/detailCss/list.min.css",
+    "inputFiles": [
+      "Content/detailCss/list.css"
+    ]
+  }
+]

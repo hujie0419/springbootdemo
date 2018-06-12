@@ -1,0 +1,118 @@
+﻿
+<title>APP后台</title>
+<link href="/CSS/APP_DEFAULT.css" rel="stylesheet" type="text/css" />
+<link href="/css/app.css" rel="stylesheet" />
+
+<div class="top">
+    <div class="top_content">
+        <img src="/images/logo.png" width="285" height="80" />
+    </div>
+</div>
+<section>
+    <nav class="nav">
+        <ul class="navUL">
+            <li>
+                <p>版本更新</p>
+                <div class="navUL2">
+                    <div data-url="/app/upload">版本发布</div>
+                    <div data-url="/app/historyVersion">发布记录</div>
+                </div>
+            </li>
+            @*<li>
+                    <p>APP问题反馈</p>
+                    <div class="navUL2">
+                        <div data-url="/app/FeedBackRecord">反馈记录</div>
+                    </div>
+                </li>*@
+        </ul>
+    </nav>
+    <div class="container">
+        <iframe src="/app/historyVersion" id="frameView"></iframe>
+    </div>
+
+</section>
+<script type="text/javascript">
+    $(function (win) {
+        function AlertMsg() {
+            var div_container = {
+                top: $("<div>").addClass("topContainer"),
+                left: $("<div>").addClass("leftContainer"),
+                right: $("<div>").addClass("rightContainer"),
+                bottom: $("<div>").addClass("bottomContainer"),
+                center: $("<div>").addClass("centerContainer")
+            }, body = $(document.body);
+            function createAlertMsg(msg, conf) {
+                if (typeof msg !== "string") return;
+                var $am = $("<p>")
+                    .addClass(conf.className)
+                    .css(conf.css)
+                    .text(msg)
+                    .appendTo(conf.container)
+                    .addClass("in reverse");
+                setTimeout(function () {
+                    //$am.removeClass().addClass("slide out");
+                }, conf.Ap);
+                return $am;
+            }
+
+            return function (msg, options) {
+                var config = {
+                    className: "slide",
+                    direction: "top",
+                    css: {},
+                    Ap: 4000
+                };
+                config = $.extend(config, options);
+                switch (config.direction) {
+                    case "top":
+                        config.container = div_container.top;
+                        break;
+                    case "left":
+                        config.container = div_container.left;
+                        break;
+                    case "right":
+                        config.container = div_container.right;
+                        break;
+                    case "bottom":
+                        config.container = div_container.bottom;
+                        break;
+                    case "center":
+                    default:
+                        config.container = div_container.center;
+                        break;
+                }
+                body.append(config.container);
+                config.container.on("click", "p", function () {
+                    $(this).removeClass().addClass("slide out");
+                });
+                var _msg = [].concat(msg);
+                for (var m, i = 0, len = _msg.length; m = _msg[i]; i++) {
+                    (function (_m) {
+                        setTimeout(function () {
+                            createAlertMsg(_m, config);
+                        }, 200 * i);
+
+                    }(m));
+
+                }
+                setTimeout(function () { config.container.empty().remove() }, 5 * _msg.length * config.Ap);
+
+            }
+        }
+
+        win.AlertMsg = AlertMsg();
+
+        var frameView = $("#frameView");
+        $(".navUL").on("click", "p", function () {
+            $(this).parent().find(".navUL2").toggle();
+        });
+        $(".navUL2").on("click", "div", function () {
+            var url = $(this).attr("data-url");
+
+            if (url) {
+                win.location.hash = url.replace("/app/", "");
+                frameView.attr("src", url);
+            }
+        });
+    }(window));
+</script>

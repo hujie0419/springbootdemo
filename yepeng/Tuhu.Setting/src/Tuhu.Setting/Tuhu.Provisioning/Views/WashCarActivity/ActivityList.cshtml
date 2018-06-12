@@ -1,0 +1,333 @@
+﻿
+@{
+    ViewBag.Title = "活动列表";
+}
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+<style>
+    .page-bar {
+        float: right;
+    }
+
+        .page-bar ul, li {
+            display: inline-block;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .page-bar li {
+            list-style: none
+        }
+
+            .page-bar li:first-child > a {
+                margin-left: 0px
+            }
+
+        .page-bar a {
+            border: 1px solid #ddd;
+            text-decoration: none;
+            position: relative;
+            float: left;
+            padding: 6px 12px;
+            margin-left: -1px;
+            line-height: 1.42857143;
+            color: #337ab7;
+            cursor: pointer
+        }
+
+            .page-bar a:hover {
+                background-color: #eee;
+            }
+
+            .page-bar a.banclick {
+                cursor: not-allowed;
+            }
+
+        .page-bar .active a {
+            color: #fff;
+            cursor: default;
+            background-color: #337ab7;
+            border-color: #337ab7;
+        }
+
+        .page-bar i {
+            font-style: normal;
+            color: #d44950;
+            margin: 0px 4px;
+            font-size: 14px;
+        }
+</style>
+<div id="app" class="container" v-cloak>
+    <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#layer" v-on:click="modelTest='创建'">创建</button>
+    <!--活动列表-->
+    <table class="table table-bordered table-hover">
+        <caption class="h3 text-center">活动列表</caption>
+        <th class="text-center">序号</th>
+        <th class="text-center">活动名称</th>
+        <th class="text-center">开始时间</th>
+        <th class="text-center">结束时间</th>
+        <th class="text-center">活动类型</th>
+        <th class="text-center">活动链接</th>
+        <th class="text-center">限购数量</th>
+        <th class="text-center">已报名人数</th>
+        <th class="text-center">审核通过人数</th>
+        <th class="text-center">创建者</th>
+        <th class="text-center">创建时间</th>
+        <th class="text-center">操作</th>
+        <tr class="text-center" v-for="(value,index) in activityList">
+            <td>{{index+1}}</td>
+            <td>{{value.name}}</td>
+            <td>{{value.startTime}}</td>
+            <td>{{value.endTime}}</td>
+            <td>{{value.activityType}}</td>
+            <td><a v-bind:href="value.activityUrl" target="_blank">{{value.activityUrl}}</a></td>
+            <td>{{value.quota}}</td>
+            <td>{{value.applyUserCount}}</td>
+            <td>{{value.auditPassUserCount}}</td>
+            <td>{{value.createUser}}</td>
+            <td>{{value.createdDateTime}}</td>
+            <td>
+                <button class="btn btn-primary btn-xs" v-on:click="jumpUserActivityList(value.activityId)">查看</button>
+                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#layer" v-on:click="modelTest='编辑';activity=value;">编辑</button>
+                <button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#delLayer" v-on:click="activity.pkid=value.pkid;activity.activityId=value.activityId">删除</button>
+            </td>
+        </tr>
+        <tr v-if="activityList.length==0">
+            <td colspan="12" class="text-center text-muted">暂无数据...</td>
+        </tr>
+    </table>
+    <!--分页-->
+    <div class="page-bar">
+        <ul>
+            <li v-if="pager.cur>1">
+                <a v-on:click="pager.cur--,pageClick()">上一页</a>
+            </li>
+            <li v-if="pager.cur==1">
+                <a class="banclick">上一页</a>
+            </li>
+            <li v-for="index in indexs" v-bind:class="{ 'active': pager.cur == index}">
+                <a v-on:click="btnClick(index)">{{ index }}</a>
+            </li>
+            <li v-if="pager.cur!=pager.all">
+                <a v-on:click="pager.cur++,pageClick()">下一页</a>
+            </li>
+            <li v-if="pager.cur == pager.all">
+                <a class="banclick">下一页</a>
+            </li>
+            <li>
+                <a>
+                    共
+                    <i>{{pager.all}}</i>
+                    页
+                </a>
+            </li>
+        </ul>
+    </div>
+    <!-- 模态框 -->
+    <div class="modal fade bs-example-modal-sm" id="layer" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">{{modelTest}}</h4>
+                </div>
+                <div class="modal-body">
+                    <form role="form">
+                        <div class="form-group">
+                            <label for="name">活动名称</label><span style="color: red;float: right">{{errorText}}</span>
+                            <input type="text" id="name" class="form-control" placeholder="请输入活动名称" v-model="activity.name">
+                        </div>
+                        <div class="form-group">
+                            <label for="startTime">活动开始时间</label>
+                            <input type="date" id="startTime" class="form-control" placeholder="请选择活动开始时间" v-model="activity.startTime">
+                        </div>
+                        <div class="form-group">
+                            <label for="endTime">活动结束时间</label>
+                            <input type="date" id="endTime" class="form-control" placeholder="请选择活动结束" v-model="activity.endTime">
+                        </div>
+                        <div class="form-group">
+                            <label for="activityType">活动类型</label>
+                            @*<input type="text" id="activityType" class="form-control" placeholder="请选择活动结束" v-model="activity.activityType">*@
+                            <select id="activityType" v-model="activity.activityType" class="btn btn-default dropdown-toggle">
+                                <option v-for="value in activityType" v-bind:value="value.value">{{value.name}}</option>
+                            </select>
+                        </div>
+                        @*<div class="form-group">
+                                <label for="activityUrl">活动链接</label>
+                                <input type="text" id="activityUrl" class="form-control" placeholder="请输入活动链接" v-model="activity.activityUrl">
+                            </div>*@
+                        <div class="form-group">
+                            <label for="quota">限购数量</label>
+                            <input type="number" id="quota" class="form-control" placeholder="请输入限购数量" v-model="activity.quota">
+                        </div>
+                    </form>
+                    <div class="text-right">
+                        <button data-dismiss="modal" class="btn btn-info btn-sm" v-on:click="errorText='';activity.activityUrl=oldActivityUrl">取消</button>
+                        <button class="btn btn-primary btn-sm" v-on:click="createOrUpdateActivity(activity.pkid)">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 删除提示模态框 -->
+    <div class="modal fade bs-example-modal-sm" id="delLayer" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">确认删除吗？</h4>
+                </div>
+                <div class="modal-body text-right">
+                    <button data-dismiss="modal" class="btn btn-primary btn-sm">取消</button>
+                    <button data-dismiss="modal" class="btn btn-danger btn-sm" v-on:click="deleteActivity(activity.activityId)">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-2.1.1.min.js"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>
+<script src="~/Scripts/vue.min.js"></script>
+<script>
+    var vm = new Vue({
+        el: "#app",
+        data: {
+            activityList: [],
+            modelTest: "",
+            errorText: "",
+            oldActivityUrl: "",
+            activity: {
+                pkid: 0,
+                name: "",
+                activityId: "",
+                startTime: "",
+                endTime: "",
+                activityType: 0,
+                quota: 0
+            },
+            activityType: [{ name: "免费洗车", value: 1 }],
+            pager: {
+                total: 0,//总数据条数
+                size: 5,
+                all: 1,//总页数
+                cur: 1 //当前页码
+            }
+        },
+        created: function () {
+            this.getActivityList();
+        },
+        computed: {
+            indexs: function () {
+                var left = 1;
+                var right = this.pager.all;
+                var ar = [];
+                if (this.pager.all >= 5) {
+                    if (this.pager.cur > 3 && this.pager.cur < this.pager.all - 2) {
+                        left = this.pager.cur - 2;
+                        right = this.pager.cur + 2;
+                    } else {
+                        if (this.pager.cur <= 3) {
+                            left = 1;
+                            right = 5;
+                        } else {
+                            right = this.pager.all;
+                            left = this.pager.all - 4;
+                        }
+                    }
+                }
+                while (left <= right) {
+                    ar.push(left);
+                    left++;
+                }
+                return ar;
+            }
+
+        },
+        methods: {
+            btnClick: function (data) {//页码点击事件
+                if (data != this.pager.cur) {
+                    this.pager.cur = data;
+                    this.getActivityList();
+                }
+            },
+            pageClick: function () {
+                console.log('现在在' + this.pager.cur + '页');
+                this.getActivityList();
+            },
+            getActivityList: function () {
+                var _this = this;
+                $.ajax({
+                    url: "/WashCarActivity/GetActivityModels",
+                    type: "get",
+                    data: { pageIndex: _this.pager.cur, pageSize: _this.pager.size },
+                    success: function (data) {
+                        if (data.statusCode == 200) {
+                            _this.activityList = data.data.item1;
+                            _this.pager.total = data.data.item2;
+                            _this.pager.all = Math.ceil(_this.pager.total / _this.pager.size);
+                        } else {
+                            alert(data.msg);
+                        }
+                    },
+                    error: function (data) {
+                        alert("请求出错");
+                    }
+                });
+            },
+            createOrUpdateActivity: function (pkid) {
+                var _this = this;
+                if (!_this.activity.name.trim()) {
+                    _this.errorText = "活动名称不能为空";
+                    return;
+                }
+                _this.activity.pkid = pkid;
+                //_this.activity.activityUrl = _this.activity.activityUrl + pkid;
+                $.ajax({
+                    url: "/WashCarActivity/CreateOrUpdateActivity",
+                    type: "post",
+                    data: { activityModel: _this.activity },
+                    success: function (data) {
+                        if (data.statusCode == 200) {
+                            _this.errorText = "";
+                            window.location.reload();
+                        } else {
+                            alert(data.msg);
+                        }
+                    },
+                    error: function (data) {
+                        alert("请求出错");
+                    }
+                });
+            },
+            deleteActivity: function (activityId) {
+                $.ajax({
+                    url: "/WashCarActivity/DeleteActivityByActivityId",
+                    type: "post",
+                    data: {activityId: activityId },
+                    success: function (data) {
+                        if (data.statusCode == 200) {
+                            window.location.reload();
+                        } else {
+                            alert(data.msg);
+                        }
+                    },
+                    error: function (data) {
+                        alert("请求出错");
+                    }
+                });
+            },
+            jumpUserActivityList: function (activityId) {
+                if (activityId) {
+                    window.open("UserActivityList?activityId=" + activityId);
+                } else {
+                    alert("参数为空");
+                    return;
+                }
+            }
+        }
+    });
+</script>
+

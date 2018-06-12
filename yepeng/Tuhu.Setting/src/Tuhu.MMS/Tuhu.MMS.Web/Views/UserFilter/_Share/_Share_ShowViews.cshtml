@@ -1,0 +1,92 @@
+﻿@using System.Collections
+@using Tuhu.MMS.Web.Domain.UserFilter
+@{
+    var configs = ViewData["config"] as IEnumerable<UserFilterValueConfig>;
+    Func<string, IEnumerable<SelectListItem>> getselectlist = colname =>
+    {
+        var selectlists = configs.Where(x => x.ColName == colname).Select(x => new SelectListItem()
+        {
+            Text = x.Name,
+            Value = x.Value
+        }).ToList();
+        selectlists.Insert(0, new SelectListItem() { Text = "请选择", Value = "" });
+        return selectlists;
+    };
+}
+<div class="col-sm-2">
+    <div class="form-group">
+        <label for="exampleInputName2">浏览日期</label>
+    </div>
+</div>
+<div class="col-sm-4">
+    <div class="form-group">
+
+        <div class="input-group">
+            <span class="input-group-addon">
+                <input type="radio" name="loaddate_selecttype" id="optionsRadios2" value="start">
+            </span>
+            <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input name="loaddate_start_date" type="text" class="form-control date" placeholder="选择开始日期">
+        </div>
+        <div class="input-group" style="margin-top: 15px;">
+            <span class="input-group-addon">
+                <input type="radio" name="loaddate_selecttype" id="optionsRadios1" value="from">
+            </span>
+            <input type="text" name="loaddate_from_date" placeholder="距今天天数(不含今天)" class="form-control">
+
+        </div>
+
+    </div>
+</div>
+<div class="col-sm-2"></div>
+<div class="col-sm-4">
+    <div class="form-group">
+        <div class="input-group">
+            <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input name="loaddate_end_date" type="text" class="form-control date" placeholder="选择结束日期">
+        </div>
+
+    </div>
+</div>
+
+<div class="col-sm-2" style="clear: both">
+    <div class="form-group">
+        <label for="exampleInputName2">页面浏览次数</label>
+    </div>
+</div>
+<div class="col-sm-4">
+    <div class="form-group">
+        <input type="text" name="pv_start" placeholder="填写起始数字" class="form-control" />
+    </div>
+</div>
+<div class="col-sm-4">
+    <div class="form-group">
+        <input type="text" name="pv_end" placeholder="填写结束数字" class="form-control" />
+    </div>
+</div>
+
+<div class="col-sm-2" style="clear: both">
+    <div class="form-group">
+        <label for="exampleInputName2">
+            页面统计来源
+        </label>
+    </div>
+</div>
+<div class="col-sm-4">
+    <div class="form-group">
+        @*@Html.DropDownList("channel", getselectlist("channel"), new { @class = "form-control" })*@
+        @*<select class="form-control" name="channel">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+            </select>*@
+        <select class="form-control" name="channel" v-on:change="selectchange('channel')">
+            @{
+                foreach (var selectListItem in getselectlist("channel"))
+                {
+                    <option value="@selectListItem.Value">@selectListItem.Text</option>
+                }
+            }
+        </select>
+    </div>
+</div>

@@ -1,0 +1,38 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity.Tire;
+@using Tuhu.Provisioning;
+@model List<TireModifyConfigLog>
+@{
+
+}
+
+<table class="table" width="100%">
+    <tr>
+
+        <th>PID</th>
+        <th>修改人</th>
+        <th>修改前</th>
+        <th>修改后</th>
+        <th>操作时间</th>
+
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @item.Pid
+            </td>
+            <td>
+                @item.UserId
+            </td>
+            <td>
+                @item.Before
+            </td>
+            <td>
+                @item.After
+            </td>
+            <td>
+                @item.CreateDateTime
+            </td>
+        </tr>
+    }
+</table>

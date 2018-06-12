@@ -1,0 +1,90 @@
+﻿@using Tuhu.Provisioning.Business;
+@{
+    ViewBag.Title = "特价板块";
+}
+<link type="text/css" href="http://hive.gitcafe.io/mr/css/toastr.css" rel="stylesheet" />
+<link rel="stylesheet" href="/css/yewu.css" />
+<link rel="stylesheet" href="/Scripts/controls/controls.css" />
+<link rel="stylesheet" href="/css/sector.css" />
+<script type="text/javascript" src="http://hive.gitcafe.io/mr/js/toastr.js"></script>
+<script src="http://hive.gitcafe.io/joy/js/Common.js"></script>
+<script src="http://hive.gitcafe.io/joy/js/joy.js"></script>
+<script src="http://hive.gitcafe.io/joy/js/joy.dom.js"></script>
+<script src="http://cdn.mindexpress.cn/joy/js/angular/ag.js"></script>
+<script src="/Scripts/controls/common.js"></script>
+<script src="/Scripts/controls/formeditor.js"></script>
+<script src="/Scripts/controls/grid.js"></script>
+<style>
+</style>
+<script>
+    function badd() {
+        var c = this;
+        var el = overlay();
+
+        //debugger;
+    }
+    function bedit(sector) {
+
+    }
+    function bdel(sector) {
+
+    }
+    function blist(sector) {
+
+    }
+    var ag = {};
+    function view() {
+        var http = ag.$http;
+        http({ url: '/sale/sectors', params: { pid: '@ViewBag.pid' } }).success(function (data) {
+            ag.$scope.data.push({ name: '分类一', data: data });
+        });
+    }
+    var app = angular.module('sale', []);
+    app.controller('sector', function ($scope, $http) {
+        $scope.data = [];
+        $scope.badd = badd;
+        $scope.bedit = bedit;
+        $scope.bdel = bdel;
+        $scope.blist = blist;
+        ag.$scope = $scope;
+        ag.$http = $http;
+        view();
+    });
+</script>
+<div style="clear:both;"></div>
+<div class="total" ng-app="sale">
+    <div class="title">@ViewBag.Title</div>
+    <div class="ModuleList" ng-controller="sector">
+        <div ng-repeat="d in data">
+            <h2>{{d.name}}</h2>
+            <ul>
+                <li ng-repeat="s in d.data">
+                    <div class="box">
+                        <div class="picbox">
+                            <div class="line1">
+                                <div style="float:left;padding-left:10px;"><font ng-class="s.mstatus == 1?'capenable':'capdisable'">{{ s.mstatus == 1?'已启用':'已停用' }}</font></div>
+                                <div style="float:right;padding-right:10px;"></div>
+                            </div>
+                            <div class="line2" title="{{s.mname}}">{{s.mname}}</div>
+                            <div class="line3">
+                                <div style="float:left;padding-left:10px;"><a href="#" ng-click="bedit(s)">编辑</a></div>
+                                <div style="float:right;padding-right:10px;"><a href="#" ng-click="bdel(s)">删除</a></div>
+                            </div>
+                            <div class="line4">
+                                <a href="#" ng-click="blist(s)">普通商品设置</a>
+                                <a href="#" ng-click="blist(s)">专享商品设置</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="box">
+                        <div class="addnew">
+                            <a href="#" ng-click="badd(s)">+ 新增模块</a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

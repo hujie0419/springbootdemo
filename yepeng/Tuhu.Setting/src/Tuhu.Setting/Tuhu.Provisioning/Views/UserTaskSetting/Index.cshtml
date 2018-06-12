@@ -1,0 +1,109 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@model List<UserTaskSettingModel>
+
+    @{
+        ViewBag.Title = "任务系统";
+    }
+    <h2>任务列表</h2>
+    <a href="#" onclick="AddOrEditUserTaskSetting(0,'ADD')">新增</a>
+    @section head{
+        <link href="~/Styles/zTreeStyle.css" type="text/css" rel="stylesheet" />
+        <link href="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.css" rel="stylesheet" />
+        <style>
+            table {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+
+                table th {
+                    text-align: center;
+                }
+
+                table .tableTit th {
+                    background-color: #435D77;
+                }
+
+            .tip {
+                color: red;
+                font-size: 14px;
+                font-weight: bolder;
+            }
+
+            .button {
+                width: 50px;
+                height: 25px;
+                text-align: center;
+                line-height: 25px;
+                margin-top: 20px;
+                background: rgb(135, 182, 217);
+                cursor: pointer;
+            }
+
+            td div {
+                margin-bottom: 10px;
+            }
+        </style>
+    }
+    <body>
+        <table>
+            <tr>
+                <th width="5%">任务Id</th>
+                <th width="6%">任务名称</th>
+                <th width="16%">任务描述</th>
+                <th width="13%">任务跳转地址</th>
+                <th width="5%">任务图片</th>
+                <th width="5%">任务标签</th>
+                <th width="5%">状态</th>
+                <th width="10%">开始时间</th>
+                <th width="10%">结束时间</th>
+                <th width="10%">创建时间</th>
+                <th width="10%">操作</th>
+            </tr>
+            @if (Model != null)
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.PKID</td>
+                        <td>@item.TaskName</td>
+                        <td>@item.TaskDescription</td>
+                        <td>@item.TargetButtonUrl</td>
+                        <td><img width="200" height="100" src="@item.ImageUrl" /></td>
+                        <td>@item.Tag_1,@item.Tag_2</td>
+                        <td>@(item.Status == "enable" ? "启用" : "停用")</td>
+                        <td>@item.StartTime</td>
+                        <td>@item.EndTime</td>
+                        <td>@item.CreateTime</td>
+                        <td>
+                            <a href="#" onclick="AddOrEditUserTaskSetting(@item.PKID,'Update')">编辑</a>
+                        </td>
+                    </tr>
+                }
+            }
+        </table>
+    </body>
+    <div id="AddGetRule"></div>
+    @section scripts{
+        <script src="~/Scripts/jquery.ztree.all-3.5.min.js"></script>
+        <script src="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.js"></script>
+        <script src="~/Scripts/ajaxfileupload.js"></script>
+        <script>
+            function AddOrEditUserTaskSetting(pkid, type) {
+                $("#AddGetRule").load('/UserTaskSetting/AddOrEditUserTaskSetting?PKID=' + pkid + '&Type=' + type);
+                $("#AddGetRule").dialog({
+                    title: "任务编辑",
+                    width: 1000,
+                    height: 'auto',
+                    modal: true,
+                    buttons: {
+                        "保存": function () {
+                            $(".button").click();
+                        },
+                        "关闭": function () {
+                            $(this).dialog("close"); //当点击取消按钮时，关闭窗口
+                        }
+                    }
+                });
+            }
+        </script>
+    }

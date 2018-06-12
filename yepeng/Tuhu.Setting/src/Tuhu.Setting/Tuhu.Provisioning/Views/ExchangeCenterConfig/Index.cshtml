@@ -1,0 +1,147 @@
+﻿
+@{
+    ViewBag.Title = "积分兑换配置";
+    Layout = "~/Views/Shared/_PersonalCenterLeft.cshtml";
+    List<Tuhu.Provisioning.DataAccess.Entity.ExchangeCenterConfig> exchanges = ViewBag.exchanges;
+}
+
+<h2>积分兑换配置</h2>
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    textarea {
+        width: 100px;
+        height: 100px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+</style>
+
+<div class="toolar">
+    <a href="javascript:void(0)" class="btn" onclick="ExchangeCenterConfig.Add()">添加</a>
+    <input style="width:200px; margin-left:20px;" id="searchword" name="searchword" />
+    <a href="javascript:void(0)" class="btn" onclick="ExchangeCenterConfig.Search()">查询</a>
+    <a href="javascript:void(0)" class="btn" onclick="ExchangeCenterConfig.RefreshCache()">刷新缓存</a>
+    <label>支持查询优惠券名称\用户等级\兑换类型之一</label>
+</div>
+
+<div class="listdata"></div>
+<div id="AddItem"></div>
+
+<script>
+    $(function () {
+
+        $(".listdata").load("/ExchangeCenterConfig/List");
+
+        $(".listdata").on("click", ".pager>a", function (event) {
+            event.preventDefault();
+            debugger;
+            $.ajax({
+                type: "POST",
+                url: this.href,
+                data: { "SearchWord": $("#searchword").val() },
+                success: function (result) {
+                    $(".listdata").html(result);
+                },
+                error: function (result) {
+                    alert("失败!")
+                }
+            });
+        });
+    })
+
+    var ExchangeCenterConfig = {
+        "Search": function () {
+            $.ajax({
+                type: "POST",
+                url: "/ExchangeCenterConfig/List",
+                data: { "SearchWord": $("#searchword").val() },
+                success: function (result) {
+                    $(".listdata").html(result);
+                },
+                error: function (result) {
+                    alert("失败!")
+                }
+            });
+        },
+        "RefreshCache":function() {
+            $.ajax({
+                type: "POST",
+                url: "/ExchangeCenterConfig/RefreshCache",
+                success: function (result) {
+                    alert("刷新成功");
+                },
+                error: function (result) {
+                    alert("失败!")
+                }
+            });
+        },
+        "Add": function () {
+            $("#AddItem").load('/ExchangeCenterConfig/Edit?id=0');
+            $("#AddItem").dialog({
+                title: "添加",
+                width: 700,
+                height: 800,
+                modal: true
+            });
+        },
+        "Update": function (id) {
+            $("#AddItem").load('/ExchangeCenterConfig/Edit?id=' + id);
+            $("#AddItem").dialog({
+                title: "修改",
+                width: 700,
+                height: 800,
+                modal: true
+            });
+        },
+        "Copy": function (id) {
+            $("#AddItem").load('/ExchangeCenterConfig/Edit?id=' + id);
+            $("#AddItem").dialog({
+                title: "复制重建",
+                width: 700,
+                height: 800,
+                modal: true
+            });
+        },
+        "Delete": function (id) {
+            if (window.confirm("您确定要删除吗？")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/ExchangeCenterConfig/Delete",
+                    data: { "id": id },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/ExchangeCenterConfig/Index";
+                        }
+                        else {
+                            alert("删除失败！");
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        }
+    }
+</script>  

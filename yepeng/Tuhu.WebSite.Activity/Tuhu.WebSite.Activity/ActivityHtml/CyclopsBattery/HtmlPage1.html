@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no" name="format-detection">
+    <meta content="email=no" name="format-detection">
+    <link rel="stylesheet" href="css/battery.css" />
+    <title>订单确认</title>
+</head>
+<body style="background-color: #f3f3f3;">
+    <div class="header">
+        <div class="step-warp">
+            <div class="steps">
+                <img src="img/step1.png" alt="" /> <div>根据车型和地区选择电瓶</div>
+                <img src="img/step2-1.png" alt="" /> <div>完善联系方式后下单</div>
+                <img src="img/step3.png" alt="" /> <div>免费上门安装</div>
+            </div>
+        </div>
+    </div>
+    <div class="container" style="position: absolute;top: 48px;left: 0;right: 0;bottom: 150px;">
+        <div class="warpper">
+            <div class="user-info">
+                <div> <label>所 在 地 区：</span></label><span>上海闵行</span> </div>
+                <div> <label>详 细 地 址：</label><span>788号788号788号788号788号788号788号</span></div>
+                <div>
+                    <label>收  货  人：</label><span class="receiver">马云</span> <label class="tel">联 系 方 式：</label><span>137811791100</span>
+                </div>
+            </div>
+            <div class="kf order"> <div><span class="icon"></span> <span>更换电瓶，免费上门安装</span></div></div>
+            <div class="order-info">
+                <img src="img/action.png" alt="" />
+                <div class="prod-name">电瓶电瓶电瓶电瓶电瓶电瓶电瓶电瓶（配合车型达到最佳效果）</div>
+                <div class="price">&yen; <span>888</span></div>
+            </div>
+            <div class="zeng">
+                <div>
+                    <img src="img/zeng.png" alt="" /> <label>小米电源</label> <label>小米电视</label>
+                </div>
+            </div>
+            <div class="yhq clear">
+                <div>优惠券</div>
+                <div>30元 优惠券</div>
+                <div class="quan-list" style="padding-bottom: 40px;">
+                    <div class="quan"><span>30</span>优惠券 </div>
+                    <div class="quan active"><span>30</span>优惠券 </div>
+                    <div class="quan active"><span>30</span>优惠券 </div>
+                    <div class="quan"><span>30</span>优惠券 </div>
+                    <div class="quan active"><span>30</span>优惠券 </div>
+                    <div class="quan active"><span>30</span>优惠券 </div>
+                    <div class="quan"><span>30</span>优惠券 </div>
+                    <div class="quan active"><span>30</span>优惠券 </div>
+                    <div class="quan active"><span>30</span>优惠券 </div>
+                    <div class="quan"><span>30</span>优惠券 </div>
+                    <div class="quan active"><span>30</span>优惠券 </div>
+                    <div class="quan active"><span>30</span>优惠券 </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="service-info">《安装服务说明》</div>
+    <div class="foot">
+        <div class="price">&yen;<span>888.00</span><span>(免费上门)</span></div>
+        <a href="#" class="pay">去结算</a>
+    </div>
+
+    <div class="notice order">
+        <div class="content">
+            <img src="img/tip.png" alt="" />
+        </div>
+        <div class="btn">
+            我已仔细阅读服务说明
+        </div>
+    </div>
+    <div class="notice-bg"></div>
+</body>
+<script type="text/javascript" src="js/iscroll.js"></script>
+<script type="text/javascript" src="js/pageResponse.min.js"></script>
+<script type="text/javascript" src="js/zepto.min.js"></script>
+<script type="text/javascript" src="js/battery.js"></script>
+<script type="text/javascript">
+document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+window.onload = window.onresize = function(){
+	var winWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth,
+		winHei = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
+		initWidRes = 720,
+		scale = winWidth/initWidRes;
+
+	var pRheight = winHei*initWidRes/winWidth;
+    pageResponse({
+        selectors : 'html',     //模块选择器，使用querySelectorAll的方法
+        mode : 'auto',     // auto || contain || cover ，默认模式为auto
+        width : '720',      //输入页面的宽度
+        height : pRheight   //输入页面的高度
+    })
+
+    var myScroll = new IScroll('.container', { mouseWheel: true });
+}
+</script>
+</html>

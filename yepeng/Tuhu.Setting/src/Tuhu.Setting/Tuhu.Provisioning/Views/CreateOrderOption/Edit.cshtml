@@ -1,0 +1,107 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.TireCreateOrderOptionsConfigModel
+    @{
+        ViewBag.Title = "Edit";
+        Layout = null;
+    }
+<table id="diaglog">
+    <tr>
+        <th width="100%" style="text-align: left;" colspan="2">优惠券配置</th>
+    </tr>
+    <tr>
+        <td>
+            <table>
+                <tr>
+                    <td>类型:</td>
+                    <td >
+                        @(Model.Type==0?"四轮定位":@Model.Type==1?"胎压监测": @Model.Type == 2 ? "铝合金气门嘴" : "小保养套餐")
+                        @*<select id="Type" name="Type">
+                            <option value="0" @(Model.Type==0 ? "selected" : "")>四轮定位</option>
+                            <option value="1" @(Model.Type==1 ? "selected" : "")>胎压监测</option>
+                            <option value="2" @(Model.Type==2 ? "selected" : "")>铝合金气门嘴</option>
+                        </select>*@
+                    </td>                          
+                </tr>
+                <tr>
+                    <td>是否启用:</td>
+                    <td>
+                        <select id="Status" name="Status">
+                            <option value="1" @(Model.Status==1 ? "selected" : "")>是</option>
+                            <option value="0" @(Model.Status==0 ? "selected" : "")>否</option>
+                        </select>
+                    </td>                         
+                </tr>
+
+                <tr>
+                    <td>产品pid:</td>
+                    <td><input type="text" name="Pid" placeholder="" value="@Model.Pid" style="width: 300px;" /></td>
+                </tr>
+                <tr>
+                    <td>产品名称:</td>
+                    <td><input type="text" name="ProductName" placeholder="" value="@Model.ProductName" style="width: 300px;" /></td>
+                </tr>
+                <tr>
+                    <td>产品价格:</td>
+                    <td><input type="text" name="ProductPrice" placeholder="" value="@Model.ProductPrice" style="width: 300px;" /></td>
+                </tr>
+                <tr>
+                    <td>是否需要自动读取上下架状态:</td>
+                    <td>
+                        <select id="IsAuto" name="IsAuto">
+                            <option value="1" @(Model.IsAuto == 1 ? "selected" : "")>是</option>
+                            <option value="0" @(Model.IsAuto == 0 ? "selected" : "")>否</option>
+                        </select>
+                    </td>                       
+                </tr>
+                <tr>
+                    <td>服务pid:</td>
+                    <td><input type="text" name="ServicePid" placeholder="" value="@Model.ServicePid" style="width: 300px;" /></td>
+                </tr>
+                <tr>
+                    <td>服务价格:</td>
+                    <td><input type="text" name="ServicePrice" placeholder="" value="@Model.ServicePrice" style="width: 300px;" /></td>
+                </tr>
+                <tr>
+                    <td>是否自动计算运费:</td>
+                    <td>
+                        <select id="HasFreight" name="HasFreight">
+                            <option value="1" @(Model.HasFreight == 1 ? "selected" : "")>是</option>
+                            <option value="0" @(Model.HasFreight == 0 ? "selected" : "")>否</option>
+                        </select>
+                    </td>                       
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+@*<input type="button" name="name" class="mybutton" onclick="ClickSave()" style="display: none;" value="" />*@
+
+
+<script>
+            function ClickSave() {
+                $.ajax({
+                    url: "/CreateOrderOption/Save",
+                    type: "post",
+                    dataType: "json",
+                    data: {
+                        Id: "@Model.Id",
+                        type: "@Model.Type",
+                        status: $("#diaglog [name=Status]").val(),
+                        pid: $("#diaglog [name=Pid]").val(),
+                        productName: $("#diaglog [name=ProductName]").val(),
+                        productPrice: $("#diaglog [name=ProductPrice]").val(),
+                        isAuto: $("#diaglog [name=IsAuto]").val(),
+                        servicePid: $("#diaglog [name=ServicePid]").val(),
+                        servicePrice: $("#diaglog [name=ServicePrice]").val(),
+                        hasFreight: $("#diaglog [name=HasFreight]").val()
+                    },
+                    success: function(result) {
+                        if (result.Status > 0) {
+                            alert("保存成功！");
+                            window.location.reload();
+                        } else {
+                            alert("保存失败！");
+                        }
+                    }
+                });
+            }
+</script>

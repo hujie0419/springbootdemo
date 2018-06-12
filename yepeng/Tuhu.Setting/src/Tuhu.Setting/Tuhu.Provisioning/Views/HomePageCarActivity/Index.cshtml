@@ -1,0 +1,147 @@
+﻿@{
+    ViewBag.Title = "车型配置";
+    Layout = "~/Views/Shared/_LayoutPage_HomePageConfig.cshtml";
+}
+
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Mapping.HomePageCarActivityEntity>
+
+    <div class="row ibox-content">
+        <div class="col-lg-12 ibox-content">
+            <div class="row" style="text-align:right;margin-bottom:5px;">
+                <a href="javascript:void(0)" class="btn btn-danger btn-small " id="btnAdd" style="width: 150px;" data-toggle="modal" data-target="#edit">新 增</a>
+                <a href="javascript:void(0)" class="btn btn-danger btn-small " id="btnReload" style="width: 100px; margin-left:10px; margin-right:30px;" >刷新缓存</a>
+            </div>
+            <div class="row">
+                <table class="table table-bordered" style="text-align:center;">
+                    <thead>
+                        <tr>
+                            <th>名 称</th>
+                            <th>状 态</th>
+                            <th>开始时间</th>
+                            <th>结束时间</th>
+                            <th>主标题</th>
+                            <th>副标题</th>
+                            <th>位 置</th>
+                            <th>排 序</th>
+                            <th>操 作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null)
+                        {
+                            foreach (var item in Model)
+                            {
+                            <tr>
+                                <td>@item.Name</td>
+                                <td>@(item.Status == true?"启用":"禁用")</td>
+                                <td>@item.StartDateTime</td>
+                                <td>@item.EndDateTime</td>
+                                <td>@item.MainTitle</td>
+                                <td>@item.SubTitle</td>
+                                <td>@(item.Position==1?"车型活动":"负一楼活动")</td>
+                                <td>@item.OrderBy</td>
+                                <td>
+                                    <a href="javascript:void(0)" class="btn btn-primary btn-small " name="btnEdit" data-id="@(item.PKID)" style="width: 60px;" data-toggle="modal" data-target="#edit">编 辑</a>
+                                    <a href="javascript:void(0)" class="btn btn-default btn-small " name="btnDel" data-id="@(item.PKID)" style="width: 60px;" >删 除</a>
+                                </td>
+                            </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="edit" class="modal fade" aria-hidden="true" role="dialog" tabindex="-1">
+
+    </div>
+
+@section scripts{
+    
+<script type="text/javascript" src="~/Scripts/layer/layer.js"></script>
+<script type="text/javascript" src="~/Scripts/Router/Router.js"></script>
+<script type="text/javascript">
+    $('#btnAdd').on('click', function () {
+        var url = "/HomePageCarActivity/Edit?pkid=0";
+        // dialogOpen("新增首页", url, "edit");
+        var dialog = $('#edit');
+        dialog.empty();
+        dialog.html(dialog.load(url));
+    });
+
+    $('a[name="btnEdit"]').on('click', function () {
+
+        var pkid = $(this).data("id");
+        if (pkid) {
+            var url = "/HomePageCarActivity/GetEntity?pkid=" + pkid;
+            // dialogOpen("新增首页", url, "edit");
+            var dialog = $('#edit');
+            dialog.empty();
+            dialog.html(dialog.load(url));
+        }
+    });
+
+    $('a[name="btnDel"]').on('click', function () {
+        var r = confirm("您确定删除?");
+        if (r) {
+            var id = $(this).data("id");
+            $.ajax({
+                url: '/HomePageCarActivity/Delete',
+                data: { pkid: id },
+                type: 'post'
+            }).done(function (result) {
+                if (result == 1) {
+                    location.reload();
+                } else {
+                    alert("删除失败");
+                }
+            });
+        }
+    });
+
+    $('#btnReload').on('click', function () {
+        $.ajax({
+            url: '/HomePageCarActivity/Reload',
+            type: 'post'
+        }).done(function (result) {
+            if (result == 1) {
+                alert("刷新成功");
+            } else {
+                alert("刷新失败");
+            }
+        });
+    });
+
+    function UploadBgImg(obj, showImg, showUrl) {
+
+        var pobj = $(obj);
+        var fileSize = pobj[0].files[0].size / 1024 * 1.0;
+        if (fileSize > 1024) {
+            alert("不能上传大于1024KB的图片");
+            return false;
+        }
+        var rd = Math.ceil(Math.random() * 9999) + 1;
+        var fileElId = $(obj).attr("id");
+        console.log(fileElId);
+        $.ajaxFileUpload({
+            url: '/Article/ImageUploadToAli?rd=' + rd,
+            secureuri: false,
+            fileElementId: fileElId,
+            dataType: 'json',
+            async: false,
+            success: function (result) {
+                if (result.BImage != "" && result.SImage != "") {
+                    $("#" + showImg).attr("src", result.SImage).show();
+                    $("#" + showUrl).val(result.BImage);
+                } else {
+                    alert("上传失败！");
+                }
+            },
+            error: function (data, status, e)//服务器响应失败处理函数
+            {
+                alert(e);
+            }
+        });
+    }
+</script>
+}

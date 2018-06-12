@@ -1,0 +1,26 @@
+﻿@*<script type="text/javascript" src="http://resource.tuhu.cn/configs/guess/g3.js"></script>*@
+<script type="text/javascript" src="@Model" charset="gb2312"></script>
+
+<script type="text/javascript">
+    function ubc(c, name) {
+        var list = $('[' + name + ']');
+        for (var i = 0; i < list.length; i++) {
+            var el = list[i];
+            var cname = $(el).attr(name);
+            $(el)[0].innerHTML = c[cname];
+        }
+    }
+
+    $(function () {
+        if (window.jsconfig) {
+            if (window.jsconfig.title) {
+                document.title = window.jsconfig.title;
+            }
+            if (window.cfgready && typeof(window.cfgready) == 'function') {
+                window.cfgready(window.jsconfig);
+            }
+        }
+    });
+
+
+</script>

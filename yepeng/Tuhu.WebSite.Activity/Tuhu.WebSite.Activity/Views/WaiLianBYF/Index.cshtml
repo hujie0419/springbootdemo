@@ -1,0 +1,61 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section head
+{
+    <link href="@DomainConfig.ResourceSite/Css/Activity/ActiveGlobal.min.css" rel="stylesheet" />
+}
+<div class="Free">
+    <div class="New_Free_dan1">
+        <div class="New_dan1_con">
+                <span class="wailian_button"></span>
+            
+        </div>
+    </div>
+    <div class="wailian_Free_dan5"></div>
+    <div class="Free_dan3">
+        <a class="luntai" target="_blank" href="@DomainConfig.ProductSite/List/Tires/1/CP_Tire_AspectRatio=80&CP_Tire_Rim=14&CP_Tire_Width=185&d_Vech=VE-AUDF96AE.html"></a>
+        <a class="chepin" target="_blank" href="@DomainConfig.ProductSite/List/Oil.html"></a>
+        <a class="baoyang" target="_blank" href="@DomainConfig.BaoYangSite/baoyang/Index.html"></a>
+    </div>
+    <div class="Free_dan4">
+        <p>1.免单券与其他优惠劵不可同时使用。</p>
+        <p>2.使用免单劵的订单安装或签收后，即可获得现金劵，您将收到短信通知。</p>
+        <p>3.现金劵面值与实际支付金额相等，最高返现1000元。</p>
+        <p>4.现金劵可用于购买轮胎、保养、车品，无使用金额限制。现金劵为优惠劵形式，不可提现。</p>
+        <p>5.免单劵目前仅支持电脑网站下单时使用，手机下单无效。</p>
+        <p>6.商品退货需收回已发放的现金劵，否则不予退货。</p>
+        <p style="color:#f35044;">7.免单券有效期为2天，请在有效期内使用免单券，逾期作废。</p>
+        <p>8.同一账号只能领取并使用一张免单券。</p>
+    </div>
+</div>
+
+@*获得免单卷*@
+<div class="get_dan">
+    <span class="close"></span>
+    <div class="get_info">
+        <input class="get_input" type="text" placeholder="输入手机号立即领取" />
+        <input class="get_button" type="button" value="领取" />
+    </div>
+    <span class="message_tips">*输入有误</span>
+</div>
+@*领取成功*@
+<div class="get_succes">
+    <span class="close"></span>
+    <a class="go_baoyang" href="http://by.tuhu.cn/baoyang/Index.html?pid=VE-AUDF96AE&n=1995&pl=1.8L&type=dby" target="_blank"></a>
+</div>
+@*已领取提示*@
+<div class="got_after">
+    <span class="close"></span>
+    <a class="got_by" href="http://by.tuhu.cn/baoyang/Index.html?pid=VE-AUDF96AE&n=1995&pl=1.8L&type=dby" target="_blank"></a>
+</div>
+
+@section scripts
+{
+    <script>
+        $(".wailian_button").click(function () {
+            Tuhu.Dialog.Popup(".get_dan", { opacity: 0.2, closeHandle: ".close", draggable: false });
+        })
+    </script>
+}

@@ -1,0 +1,67 @@
+﻿
+@{
+    ViewBag.Title = "Coupon";
+    Layout = null;
+}
+@model System.Collections.Generic.List<Tuhu.WebSite.Component.Activity.BusinessData.tbl_UserPromotionCodeModel>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name=viewport content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, width=device-width,minimal-ui">
+    <meta name="description" content="途虎养车">
+    <meta content="telephone=no" name=format-detection>
+    <meta name="mobile-web-app-capable" content=yes>
+    <meta name="apple-mobile-web-app-capable" content=yes>
+    <title>升级奖励</title>
+    <link href="@DomainConfig.ResourceSite/Css/Activity/css/tequan.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+    <div class="wrapper">
+        <div class="scroll">
+            <div class="banner">
+                <img src="@DomainConfig.ResourceSite/Image/Activity/userbanner.png" width="100%" />
+            </div>
+            <div class="saleslist">
+                <ul class="clearfix" id="coupons">
+                    @if (Model != null)
+                    {
+                        foreach (var item in Model)
+                        {
+                            <li>
+                                <div class="detail" couponid="@item.RuleID">
+                                    <div class="title">
+                                        <span>@item.CouponName</span>
+                                        <span>@item.CouponDescription.Split(',')[0]<em> @item.CouponDescription.Split(',')[1].ToString().Split('.')[0]</em>@item.CouponDescription.Split(',')[2]<em>@item.CouponDescription.Split(',')[3].ToString().Split('.')[0]</em></span>
+                                    </div>
+                                    <div class="content">
+                                        <img src="@item.BImage" />
+                                    </div>
+                                    <span class="choose"></span>
+                                </div>
+                            </li>
+                        }
+                    }
+                   
+                </ul>
+            </div>
+        </div>
+
+
+        <div class="settle">
+            确认领取
+        </div>
+        <div class="lingqu">
+            <img src="@DomainConfig.ResourceSite/Css/Activity/images/chenggong.png" width="100%" />
+            <span>领取成功</span>
+        </div>
+        <div class="tishi">
+            <span>6选3哦~</span>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/javascript" src="http://resource.tuhu.cn/Scripts/wx/zepto.min.js"></script>
+<script type="text/javascript" src="http://resource.tuhu.cn/Js/WebViewJavascriptBridge.js"></script>
+<script type="text/javascript" src="@DomainConfig.ResourceSite/Scripts/Activity/tequan.js?v=1.1121211"></script>

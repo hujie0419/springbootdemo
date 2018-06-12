@@ -1,0 +1,357 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity.Tire;
+@model TireSpecParamsModel
+@{
+    Layout = null;
+    var query = ViewBag.query as TireSpecParamsConfigQuery;
+}
+
+<form id="FrmTireSpecParamsConfigEdit" action="" method="post">
+    @Html.HiddenFor(m => m.PKID, new { id = "ConfigPKID", @name = "ConfigPKID" })
+    @Html.HiddenFor(m => m.PId, new { id = "Pid", @name = "Pid" })
+    <table id="TabSharesConfig" style="font-size:12px;width:100%;" border="0">
+        <tr>
+            <td style="width:100px;">PID：</td>
+            <td style="width:100px;">
+                <span id="ProductID">@(Model.ProductID)</span>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:100px;">产品名称：</td>
+            <td id="DisplayName" style="width:100px;">@(Model.DisplayName)</td>
+        </tr>
+        <tr>
+            <td>质检名称：</td>
+            <td>
+                @Html.TextBoxFor(m => m.QualityInspectionName, new { id = "QualityInspectionName", @name = "QualityInspectionName", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>产地：</td>
+            <td>
+                @Html.TextBoxFor(m => m.OriginPlace, new { id = "OriginPlace", @name = "OriginPlace", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>轮辋保护：</td>
+            <td>
+                <select id="RimProtection" style="width:40%">
+                    <option value="-1" @(Model.RimProtection == null ? "selected" : "")>--</option>
+                    <option value="0" @(Model.RimProtection == false ? "selected" : "")>否</option>
+                    <option value="1" @(Model.RimProtection == true ? "selected" : "")>是</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>载重：</td>
+            <td>
+                @Html.TextBoxFor(m => m.TireLoad, new { id = "TireLoad", @name = "TireLoad", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>M+S：</td>
+            <td>
+                <select id="MuddyAndSnow" style="width:40%">
+                    <option value="-1" @(Model.MuddyAndSnow == null ? "selected" : "")>--</option>
+                    <option value="0" @(Model.MuddyAndSnow == false ? "selected" : "")>否</option>
+                    <option value="1" @(Model.MuddyAndSnow == true ? "selected" : "")>是</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>3T耐磨指数：</td>
+            <td>
+                @Html.TextBoxFor(m => m.ThreeT_Treadwear, new { id = "ThreeT_Treadwear", @name = "ThreeT_Treadwear", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>3T抓地指数：</td>
+            <td>
+                @Html.TextBoxFor(m => m.ThreeT_Traction, new { id = "ThreeT_Traction", @name = "ThreeT_Traction", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>3T温度指数：</td>
+            <td>
+                @Html.TextBoxFor(m => m.ThreeT_Temperature, new { id = "ThreeT_Temperature", @name = "ThreeT_Temperature", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>胎冠聚酯层数(数字)：</td>
+            <td>
+                @Html.TextBoxFor(m => m.TireCrown_Polyester, new { id = "TireCrown_Polyester", @name = "TireCrown_Polyester", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>胎冠钢丝层数(数字)：</td>
+            <td>
+                @Html.TextBoxFor(m => m.TireCrown_Steel, new { id = "TireCrown_Steel", @name = "TireCrown_Steel", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>胎冠尼龙层数(数字)：</td>
+            <td>
+                @Html.TextBoxFor(m => m.TireCrown_Nylon, new { id = "TireCrown_Nylon", @name = "TireCrown_Nylon", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>胎侧聚酯层数(数字)：</td>
+            <td>
+                @Html.TextBoxFor(m => m.TireSideWall_Polyester, new { id = "TireSideWall_Polyester", @name = "TireSideWall_Polyester", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>标签滚动阻力：</td>
+            <td>
+                @Html.TextBoxFor(m => m.TireLable_RollResistance, new { id = "TireLable_RollResistance", @name = "TireLable_RollResistance", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>标签湿滑抓地性：</td>
+            <td>
+                @Html.TextBoxFor(m => m.TireLable_WetGrip, new { id = "TireLable_WetGrip", @name = "TireLable_WetGrip", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>标签噪音：</td>
+            <td>
+                @Html.TextBoxFor(m => m.TireLable_Noise, new { id = "TireLable_Noise", @name = "TireLable_Noise", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>花纹对称：</td>
+            <td>
+                <select id="PatternSymmetry" style="width:40%">
+                    <option value="-1" @(Model.PatternSymmetry == null ? "selected" : "")>--</option>
+                    <option value="0" @(Model.PatternSymmetry == "非对称" ? "selected" : "")>非对称</option>
+                    <option value="1" @(Model.PatternSymmetry == "对称" ? "selected" : "")>对称</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>导向：</td>
+            <td>
+                <select id="TireGuideRotation" style="width:40%">
+                    <option value="-1" @(Model.TireGuideRotation == null ? "selected" : "")>--</option>
+                    <option value="0" @(Model.TireGuideRotation == "非单导向" ? "selected" : "")>非单导向</option>
+                    <option value="1" @(Model.TireGuideRotation == "单导向" ? "selected" : "")>单导向</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+</form>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var pkid = $("#ConfigPKID").val();
+        if (pkid == "0") {
+            $("#QualityInspectionName").val("");
+            $("#OriginPlace").val("");
+            $("#TireLoad").val("");
+            $("#ThreeT_Treadwear").val("");
+            $("#ThreeT_Traction").val("");
+            $("#ThreeT_Temperature").val("");
+            $("#TireCrown_Polyester").val("");
+            $("#TireCrown_Steel").val("");
+            $("#TireCrown_Nylon").val("");
+            $("#TireSideWall_Polyester").val("");
+            $("#TireLable_RollResistance").val("");
+            $("#TireLable_WetGrip").val("");
+            $("#TireLable_Noise").val("");
+        }
+    })
+    function SaveTireSpecParamsConfig(target) {
+        var configPKID = $("#ConfigPKID").val();
+        var productId = $("#ProductID").text();
+        var pid = $("#ProductID").text();
+
+        debugger
+
+        var qualityInspectionName = $("#QualityInspectionName").val();
+        if (qualityInspectionName == "") {
+            //alert("质检名称不能为空！");
+            //return;
+        }
+
+        var originPlace = $("#OriginPlace").val();
+        if (originPlace == "") {
+            //alert("产地不能为空！");
+            //return;
+        }
+
+        var rimProtection = $("#RimProtection").val();
+        var rimProtectionValue;
+        if (rimProtection == "-1") {
+            //alert("轮辋保护必须选是或否！");
+            //return;
+            rimProtectionValue = null;
+        }
+        else
+            rimProtectionValue = rimProtection == 0 ? false : true;
+
+        var tireLoad = $("#TireLoad").val();
+        if (tireLoad == "") {
+            //alert("载重不能为空！");
+            //return;
+        }
+
+        var muddyAndSnow = $("#MuddyAndSnow").val();
+        var muddyAndSnowValue;
+        if (muddyAndSnow == "-1") {
+            //alert("M+S必须选是或否！");
+            //return;
+            muddyAndSnowValue = null;
+        }
+        else
+            muddyAndSnowValue = muddyAndSnow == 0 ? false : true;
+
+        var threeT_Treadwear = $("#ThreeT_Treadwear").val();
+        if (threeT_Treadwear == "") {
+            //alert("3T耐磨指数不能为空！");
+            //return;
+        }
+
+        var threeT_Traction = $("#ThreeT_Traction").val();
+        if (threeT_Traction == "") {
+            //alert("3T抓地指数不能为空！");
+            //return;
+        }
+
+        var threeT_Temperature = $("#ThreeT_Temperature").val();
+        if (threeT_Temperature == "") {
+            //alert("3T温度指数不能为空！");
+            //return;
+        }
+
+        var tireCrown_Polyester = $("#TireCrown_Polyester").val();
+        if (tireCrown_Polyester == "") {
+            //alert("胎冠聚酯层数不能为空！");
+            //return;
+            tireCrown_Polyester = null;
+        }
+        if (tireCrown_Polyester != null && !CheckNumber(tireCrown_Polyester)) {
+            alert("胎冠聚酯层数只能为数字！");
+            return;
+        }
+
+        var tireCrown_Steel = $("#TireCrown_Steel").val();
+        if (tireCrown_Steel == "") {
+            //alert("胎冠钢丝层数不能为空！");
+            //return;
+            tireCrown_Steel = null;
+        }
+        if (tireCrown_Steel != null && !CheckNumber(tireCrown_Steel)) {
+            alert("胎冠钢丝层数只能为数字！");
+            return;
+        }
+
+        var tireCrown_Nylon = $("#TireCrown_Nylon").val();
+        if (tireCrown_Nylon == "") {
+            //alert("胎冠尼龙层数不能为空！");
+            //return;
+            tireCrown_Nylon = null;
+        }
+        if (tireCrown_Nylon != null && !CheckNumber(tireCrown_Nylon)) {
+            alert("胎冠尼龙层数只能为数字！");
+            return;
+        }
+
+        var tireSideWall_Polyester = $("#TireSideWall_Polyester").val();
+        if (tireSideWall_Polyester == "") {
+            //alert("胎侧聚酯层数不能为空！");
+            //return;
+            tireSideWall_Polyester = null;
+        }
+        if (tireSideWall_Polyester != null && !CheckNumber(tireSideWall_Polyester)) {
+            alert("胎侧聚酯层数只能为数字！");
+            return;
+        }
+
+        var tireLable_RollResistance = $("#TireLable_RollResistance").val();
+        if (tireLable_RollResistance == "") {
+            //alert("标签滚动阻力不能为空！");
+            //return;
+        }
+
+        var tireLable_WetGrip = $("#TireLable_WetGrip").val();
+        if (tireLable_WetGrip == "") {
+            //alert("标签湿滑抓地性不能为空！");
+            //return;
+        }
+
+        var tireLable_Noise = $("#TireLable_Noise").val();
+        if (tireLable_Noise == "") {
+            //alert("标签噪音不能为空！");
+            //return;
+        }
+
+        var patternSymmetry = $("#PatternSymmetry").val();
+        var patternSymmetryValue;
+        if (patternSymmetry == "-1") {
+            //alert("花纹对称必须选对称或非对称！");
+            //return;
+            patternSymmetryValue = "";
+        }
+        else
+            patternSymmetryValue = patternSymmetry == 0 ? "非对称" : "对称";
+
+        var tireGuideRotation = $("#TireGuideRotation").val();
+        var tireGuideRotationValue;
+        if (tireGuideRotation == "-1") {
+            //alert("导向必须选对称或非对称！");
+            //return;
+            tireGuideRotationValue = "";
+        }
+        else
+            tireGuideRotationValue = tireGuideRotation == 0 ? "非单导向" : "单导向";
+
+        $.ajax({
+            url: "/Tire/SaveTireSpecParamsConfig",
+            type: "POST",
+            data: {
+                PKID: configPKID,
+                PId: pid,
+                QualityInspectionName: qualityInspectionName,
+                OriginPlace: originPlace,
+                RimProtection: rimProtectionValue,
+                TireLoad: tireLoad,
+                MuddyAndSnow: muddyAndSnowValue,
+                ThreeT_Treadwear: threeT_Treadwear,
+                ThreeT_Traction: threeT_Traction,
+                ThreeT_Temperature: threeT_Temperature,
+                TireCrown_Polyester: tireCrown_Polyester,
+                TireCrown_Steel: tireCrown_Steel,
+                TireCrown_Nylon: tireCrown_Nylon,
+                TireSideWall_Polyester: tireSideWall_Polyester,
+                TireLable_RollResistance: tireLable_RollResistance,
+                TireLable_WetGrip: tireLable_WetGrip,
+                TireLable_Noise: tireLable_Noise,
+                PatternSymmetry: patternSymmetryValue,
+                TireGuideRotation: tireGuideRotationValue,
+            },
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                if (data == true) {
+                    alert('保存成功！');
+                    $(target).dialog("close");
+                    CheckToSubmit(GetPageIndex());
+                }
+                else {
+                    alert('保存失败！');
+                }
+            },
+            error: function () {
+                alert('提交失败！');
+            },
+        })
+    }
+
+    //判断字符串是否为数字
+    function CheckNumber(input) {
+        var re = /^-?[0-9]+.?[0-9]*$/;
+        if (!re.test(input)) {
+            return false;
+        }
+        return true;
+    }
+</script>

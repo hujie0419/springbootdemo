@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>83男人节</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        img {
+            border: 0;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .content {
+            max-width: 1080px;
+            margin: 0 auto;
+        }
+
+            .content img {
+                float: left;
+            }
+
+        @media screen and (max-width:1080px) {
+            img {
+                width: 100%;
+            }
+
+            .content img {
+                width: 50%;
+            }
+        }
+    </style>
+    <script src="http://resource.tuhu.cn/Scripts/Activity/jquery-1.10.2.js"></script>
+    <script src="http://resource.tuhu.cn/Js/WebViewJavascriptBridge.js"></script>
+</head>
+<body>
+    <img src="images/banner.jpg" alt="" />
+    <a href="javascript:void(0);" pid="TR-ME-ENERGY-XM2-D" vid=""><img src="images/p01.jpg" alt="" /></a>
+    <div class="content">
+        <a href="javascript:void(0);" pid="TR-ME-PRIMACY-3-ST" vid="3"><img src="images/p02.jpg" alt="" /></a>
+        <a href="javascript:void(0);" pid="TR-ME-PRIMACY-3-ST" vid="8"><img src="images/p03.jpg" alt="" /></a>
+        <a href="javascript:void(0);" pid="TR-CT-CPC2" vid="8"><img src="images/p08.jpg" alt="" /></a> 
+        <a href="javascript:void(0);" pid="TR-HK-K407" vid="10"><img src="images/p07.jpg" alt="" /></a>
+      
+    </div>
+    <img src="images/footer.jpg" alt="" />
+
+    <script>
+        var userAgentInfo = navigator.userAgent;
+        function connectWebViewJavascriptBridge(callback) {
+            if (window.WebViewJavascriptBridge) {
+                callback(WebViewJavascriptBridge)
+            } else {
+                document.addEventListener(
+                    'WebViewJavascriptBridgeReady'
+                    , function () {
+                        callback(WebViewJavascriptBridge)
+                    },
+                    false
+                );
+            }
+        }
+        connectWebViewJavascriptBridge(function (bridge) {
+            bridge.init(function (message, responseCallback) {
+                var data = {
+                    'Javascript Responds': 'Wee!'
+                };
+                responseCallback(data);
+            });
+            bridge.registerHandler("functionInJs", function (data, responseCallback) {
+                var responseData = "Javascript Says Right back aka!";
+                responseCallback(responseData);
+            });
+        })
+        $("a").click(function () {
+            var Parameters = {
+                "ProductID": $(this).attr("pid"),
+                "VariantID": $(this).attr("vid"),
+                "ChePingTyPe": "4",
+                "FunctionID": "cn.TuHu.Activity.TireInfoUI"
+            };
+
+            var Parameters_ios = {
+                "ProductID": $(this).attr("pid"),
+                "VariantID": $(this).attr("vid")
+            };
+
+
+            if (userAgentInfo.indexOf("Android") >= 0) {
+                window.WebViewJavascriptBridge.callHandler('toActityBridge',
+                    encodeURIComponent(encodeURIComponent(JSON.stringify(Parameters))));
+            }
+            else {
+                location.href = '#testapp#customSegue#TNTireInfoVC#' + encodeURIComponent(JSON.stringify(Parameters_ios));
+            }
+        });
+    </script>
+
+</body>
+</html>

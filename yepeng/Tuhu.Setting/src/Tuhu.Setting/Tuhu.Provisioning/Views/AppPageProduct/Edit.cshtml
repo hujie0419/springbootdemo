@@ -1,0 +1,155 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.TblAdProductV2
+
+@{
+    Layout = "../Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>编辑产品</title>
+    <style type="text/css">
+
+        #trDisplayName {
+            display:none;
+             }
+    </style>
+</head>
+<body>
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+        @ViewBag.Result
+
+        <input type="hidden" value="1" id="hasProduct"/>
+    <table>
+        <tr>
+            <td>
+                @Html.LabelFor(model => model.PId)
+            </td>
+            <td>
+                @Html.EditorFor(model => model.PId)
+                @Html.ValidationMessageFor(model => model.PId)
+            </td>
+        </tr>
+
+        <tr id="trDisplayName">
+            <td>
+                名称
+            </td>
+
+            <td>
+                <span id="pdisplayname">-- 无产品 --</span>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                @Html.LabelFor(model => model.Position)
+            </td>
+            <td>
+                @Html.EditorFor(model => model.Position)
+                @Html.ValidationMessageFor(model => model.Position)
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                @Html.LabelFor(model => model.State)
+            </td>
+            <td>
+                @Html.RadioButtonFor(model => model.State, 1, new { @id = "radio2", @name = "rdolstState" })启用
+                @Html.RadioButtonFor(model => model.State, 0, new { @id = "radio1", @name = "rdolstState" })禁用
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                @Html.LabelFor(model => model.PromotionPrice)
+            </td>
+            <td>
+                @Html.TextBoxFor(model => model.PromotionPrice, new { @readonly = "readonly" })
+                @Html.ValidationMessageFor(model => model.PromotionPrice)
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                @Html.LabelFor(model => model.PromotionNum)
+            </td>
+            <td>
+                @Html.EditorFor(model => model.PromotionNum)
+                @Html.ValidationMessageFor(model => model.PromotionNum)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                @Html.LabelFor(model => model.ActivityId)
+            </td>
+            <td>
+                @Html.TextBoxFor(model => model.ActivityId)
+
+            </td>
+        </tr>
+
+        @Html.HiddenFor(model => model.NewAppSetDataId)
+    </table>
+            @Html.HiddenFor(model => model.Id)
+    
+            <p>
+                <input type="submit" id="btnUpdate" value="更新" />
+            </p>
+    }
+    
+</body>
+</html>
+
+<script src="/Scripts/jquery-1.11.2.min.js"></script>
+<script type="text/javascript">
+
+    $(function () {
+
+        $("#PId").blur(function () {
+
+            $("#hasProduct").val("0");
+            $("#PromotionPrice").val("");
+            $("#pdisplayname").html(" -- 无产品 --");
+            if ($(this).val().length <= 0)
+                return;
+
+            $.ajax({
+                type: "post",
+                url: "/AppPageProduct/GetProductById/?pid=" + $("#PId").val(),
+                success: function (data) {
+                    if (data == -1) {
+                        alert('您输入的产品Id不存在，请重新输入.');
+                        $("#hasProduct").val("0");
+                        return;
+                    }
+                    var jsonObj = $.parseJSON(data);
+                    //alert(jsonObj[0].displayname);
+                    $("#PromotionPrice").val(jsonObj[0].cy_list_price);
+                    $("#pdisplayname").html(jsonObj[0].displayname);
+                    $("#trDisplayName").show();
+                    $("#hasProduct").val("1");
+                }
+            });
+        });
+
+
+        function HasProduct()
+        {
+
+        }
+
+        //客户端检查产品是否输入正常
+        $("#btnUpdate").click(function () {
+            if ($("#hasProduct").val() == "0") {
+                alert('您输入的产品Id不存在，请重新输入.');
+                return false;
+            }
+        });
+    });
+</script>

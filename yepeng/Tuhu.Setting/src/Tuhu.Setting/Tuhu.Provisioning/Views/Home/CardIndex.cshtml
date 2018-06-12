@@ -1,0 +1,54 @@
+﻿@{
+    ViewBag.Title = "首 页";
+    ViewBag.PageTitle = "首 页";
+    Layout = "../Shared/_LayoutIndexPage.cshtml";
+}
+@using HomeController = Tuhu.Provisioning.Controllers.HomeController
+@using IndexModuleConfig = Tuhu.Provisioning.DataAccess.Entity.IndexModuleConfig;
+<style>
+    ol.modules {
+        position: relative;
+        width: 100%;
+        margin: 0 auto;
+        overflow: hidden;
+        margin-top: 20px;
+    }
+        ol.modules li {
+            color: #fff;
+            width: 200px;
+            height: 130px;
+            float: left;
+            margin: 20px;
+            background-color: #5c87b2;
+            line-height: 130px;
+            text-align: center;
+            display: inline;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+        }
+            ol.modules li div {
+                position: relative;
+            }
+</style>
+<ol class='modules'>
+    @{ 
+        List<IndexModuleConfig> moduleList = HomeController.GetAvaliableIndexModule(User.Identity.Name);
+        foreach(var module in moduleList)
+        {
+            var url = "/Home/Module?moduleId=" + module.PKID;
+            <li>
+                <div onclick="JmoduleItems('@url')">
+                    @module.ModuleName
+                </div>
+            </li>
+        }
+    }
+</ol>
+
+<script>
+
+    function JmoduleItems(url) {
+        window.location.href = url;
+    }
+</script>

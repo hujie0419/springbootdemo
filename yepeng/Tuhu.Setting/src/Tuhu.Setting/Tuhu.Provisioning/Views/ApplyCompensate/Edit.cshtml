@@ -1,0 +1,104 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.ApplyCompensate
+@{
+    Layout = null;
+}
+
+<style>
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    a {
+        color: cornflowerblue;
+    }
+</style>
+<script src="../../Scripts/ajaxfileupload.js" type="text/javascript"></script>
+
+<form action="/ApplyCompensate/Edit" method="post" onsubmit="return check();">
+    <input type="hidden" value="@Model.Id" name="Id" />
+    <div>
+        <table>
+            <tr>
+                <td>申诉人姓名</td>
+                <td>
+                    <input type="text" value="@Model.UserName" id="UserName" name="UserName" />
+                </td>
+                <td>申诉人手机号码</td>
+                <td>
+                    <input type="text" value="@Model.PhoneNumber" id="UserName" name="UserName" />
+                </td>
+            </tr>
+
+            <tr>
+                <td>申诉订单号</td>
+                <td>
+                    <input type="text" value="@Model.OrderId" id="OrderId" name="OrderId" />
+                </td>
+                <td>申诉商品名称</td>
+                <td>
+                    <input type="text" value="@Model.ProductName" id="ProductName" name="ProductName" />
+                </td>
+            </tr>
+
+            <tr>
+                <td>差价</td>
+                <td>
+                    <input type="text" value="@Model.DifferencePrice" id="DifferencePrice" name="DifferencePrice" />
+                </td>
+                <td>状态</td>
+                @if (Model.Status == 0)
+                {
+                    <td style="color:green">待审核</td>
+                }
+                else if (Model.Status == 1)
+                {
+                    <td style="color:red">已驳回</td>
+                }
+                else if (Model.Status == 2)
+                {
+                    <td style="color:blue">已通过</td>
+                }
+            </tr>
+            <tr>
+
+                <td>申诉时间</td>
+                <td>
+                    <input type="text" value="@Model.ApplyTime" id="ApplyTime" name="ApplyTime" />
+                </td>
+                <td>审核时间</td>
+                <td>
+                    <input type="text" value="@Model.AuditTime" id="AuditTime" name="AuditTime" />
+                </td>
+            </tr>
+
+            <tr>
+                <td>比价</td>
+                <td>
+                    <a href="@Model.Link" style="color:blue">途虎自营商品链接</a>
+                </td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+        <div style="width:500px;height:500px;">
+            @if (!string.IsNullOrWhiteSpace(Model.Images))
+            {
+                foreach (var item in Model.Images.Split(';'))
+                {
+                    if (!string.IsNullOrWhiteSpace(item))
+                    {
+                        <a href="@item" target="_blank"><img src="@item" /></a><br />
+                    }
+                }
+            }
+        </div>
+    </div>
+</form>

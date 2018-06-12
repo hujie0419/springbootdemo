@@ -1,0 +1,386 @@
+﻿@{
+    ViewBag.Title = "首 页";
+    ViewBag.PageTitle = "首 页";
+    Layout = "../Shared/_Layout.cshtml";
+}
+<style type="text/css">
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: #0088cc;
+        border: solid 1px #0088cc;
+    }
+
+    .table {
+        width: 100%;
+        margin-top: 20px;
+    }
+
+        .table td {
+            vertical-align: top;
+            border: 0;
+            padding: 0;
+            border-right: 1px solid #e8eef4;
+        }
+
+            .table td a {
+                display: block;
+                border-bottom: 1px solid #e8eef4;
+                padding: 5px;
+                margin-right: -1px;
+                margin-bottom: -1px;
+            }
+
+            .table td .ta {
+                border-bottom: 1px solid #e8eef4;
+                padding: 5px;
+                margin-bottom: -1px;
+            }
+
+                .table td .ta a {
+                    display: inline;
+                    border: 0;
+                    padding: 0;
+                    margin: 0;
+                }
+</style>
+<div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>首页配置</th>
+                <th>运营工具</th>
+                <th>轮胎</th>
+                <th>活动页</th>
+                <th>发现</th>
+                <th>系统配置</th>
+                <th>门店团购配置</th>
+                <th>其他</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <a target="_blank" href="/HomePageConfig/Index">APP首页配置</a>
+                    <a target="_blank" href="/HomePageConfigV2/Index">APP首页配置V2</a>
+                    <a target="_blank" href="/WechatHome/Index">小程序首页配置</a>
+                    <a target="_blank" href="/WebSiteHomeAd/WebSiteHomeIndex">官网首页广告位配置</a>
+                    <a target="_blank" href="/ChePin/Index">车品页面配置</a>
+
+                    <a target="_blank" href="/FriendLink/Index">官网友链配置</a>
+                    <a target="_blank" href="/HomePagePopup/Index">弹窗管理后台</a>
+                    <a target="_blank" href="/HomePageConfigV2/LoveCar">爱车档案</a>
+                    <a target="_blank" href="/ServiceAll/Index">服务大全</a>
+                    <a target="_blank" href="/RouterConfig/Index?linkKind=0">配置工具</a>
+                    <a target="_blank" href="/pages/pageconfiguration">个人中心页面配置</a>
+                </td>
+                <td>
+                    <div class="ta">
+                        限时抢购：
+                        <a target="_blank" href="/QiangGou/Index">配置</a> /
+                        <a target="_blank" href="/QiangGou/ExamIndex "> 审核</a> /
+                        <a target="_blank" href="/FlashSaleProductsExtend/index">管理</a>/
+                        <a target="_blank" href="/FlashSalesTwo/FlashSalesV1">列表页</a>/
+                        <a target="_blank" href="/QiangGou/FlashSaleProductDetail">查看</a>
+                    </div>
+                    <div class="ta">
+                        消息推送：
+                        @*<a target="_blank" href="/Push/PushMessage">推送配置</a> /*@
+                        <a target="_blank" href="/PushManager">广播推送后台</a> /
+                        <a target="_blank" href="/PushManager/SinglePush">模版推送后台</a> /
+                        <a target="_blank" href="/PushManager/SelectUserAuthInfoByMobileNumberAsync">查询openid</a> /
+                        <a target="_blank" href="/PushManager/SelectFormIdByOpenId">查询formid</a> /
+                        <a target="_blank" href="/PushManager/MessageNavigationConfig">消息盒子导航配置</a> /
+                    </div>
+
+                    <div class="ta">
+                        0元购：
+                        <a target="_blank" href="/ZeroActivity/ZAConfigure">配置</a> /
+                        <a target="_blank" href="/ZeroActivity/ZeroActivity">审核</a>
+                    </div>
+
+                    <div class="ta">
+                        保养：
+                        <a target="_blank" href="/BaoYangActivitySetting/Index">活动配置</a>/
+                        <a target="_blank" href="/BaoYangRecommendServiceConfig/Index">推荐服务配置</a>/
+                        <a target="_blank" href="/baoyangyearcard/baoyangyearcard">保养年卡适配</a>/
+                        <a target="_blank" href="/baoyangyearcard/BaoYangYearCardConfig">年卡推荐机油配置</a>/
+                        <a target="_blank" href="/baoyangyearcard/BaoYangYearCardPromotion">保养年卡优惠券修改机油PID</a>/
+                        <a target="_blank" href="/BaoYangProductLevelUpConfig">保养升级购配置</a>/
+                        <a target="_blank" href="/OilBrandPriority/OilBrandPhonePriority">机油品牌推荐优先级配置</a>/
+                        <a target="_blank" href="/PackageActivity/PackageActivity">保养定价活动配置</a>/
+                        <a target="_blank" href="/BaoYangActivitySetting/BaoYangActivityVehicle">活动分车型分地区配置</a>/
+                        <a target="_blank" href="/InstallFeeConfig/InstallFeeConfig">保养项目加价配置</a>/
+                        <a target="_blank" href="/OilViscosityConfig/OilViscosityPriorityConfig">保养粘度优先级配置</a>/
+                        <a target="_blank" href="/PackageTypeRelation/PackageTypeRelation">保养关联项目配置</a>
+                    </div>
+                    <div class="ta">
+                        小保养套餐：
+                        <a target="_blank" href="/BaoYangPackageImageConfig/Index">图片配置</a>/
+                        <a target="_blank" href="/BaoYangPackageActivityConfig/Index">活动配置</a>/
+                        <a target="_blank" href="/BaoYangPackageBrandPriorityConfig/index">品牌优先级配置</a>
+                    </div>
+                    <div class="ta">
+                        蓄电池:
+                        <a target="_blank" href="/CouponActivityConfig/Index?type=1">蓄电池活动配置</a>/
+                        <a target="_blank" href="@Tuhu.Provisioning.DomainConfig.GetSiteByName("Parts")/ByOpen/BatteryCoverArea">蓄电池覆盖区域配置</a>/
+                        <a target="_blank" href="@Tuhu.Provisioning.DomainConfig.GetSiteByName("Parts")/ByOpen/BatteryCoverAreaBrandPriority">蓄电池品牌地区排序配置</a>/
+                        <a target="_blank" href="@Tuhu.Provisioning.DomainConfig.GetSiteByName("Parts")/ByOpen/BatteryVehicleTypeBrandPriority">蓄电池品牌车型排序配置</a>/
+                        <a target="_blank" href="@Tuhu.Provisioning.DomainConfig.GetSiteByName("Parts")/BaoYang/SelectBaterryBlackList">蓄电池缺货登记</a>/
+                        <a target="_blank" href="/BatteryFastDelivery/BatteryFastDelivery">蓄电池极速达</a>/
+                        <a target="_blank" href="/BatteryFastDelivery/BatteryFastDeliveryPriority">蓄电池服务类地区排序配置</a>/
+                        <a target="_blank" href="@Tuhu.Provisioning.DomainConfig.GetSiteByName("Parts")/ByOpen/BatteryOriginal">蓄电池原装替换</a>
+                    </div>
+                    <div class="ta">
+                        赠品优惠：
+                        <a target="_blank" href="/SE_GiftManageConfig/Index">赠品活动配置</a>/
+                        <a target="_blank" href="/SE_GiftManageConfig/GiftDetailsIndex">赠品查看</a>/
+                        <a target="_blank" href="/SE_GiftManageConfig/GiftStockIndex">赠品库存查看</a>/
+                        <a target="_blank" href="/DiscountManageConfig/Index">打折配置</a>
+                    </div>
+                    <a target="_blank" href="/TaskConfig/TaskConfig">会员任务配置</a>
+                    <div class="ta">
+                        优惠券：
+                        <a target="_blank" href="/Promotion/Index">优惠券类型配置</a>/
+                        <a target="_blank" href="/Promotion/SearchPromotion">优惠2.0=>优惠券任务</a>/
+                        <a target="_blank" href="/pages/promotion/#/shoppromotion/index">门店优惠券</a>
+                    </div>
+                    <a target="_blank" href="/DownloadApp/Index">App下载页列表</a>
+                    <a target="_blank" href="/OperationCategory/Index">车品运营工具</a>
+                    <a target="_blank" href="/ProductModuleConfig/Index">商品详情配置</a>
+                    <a target="_blank" href="/OrderArea/Index">订单区域配置</a>
+                    <a target="_blank" href="/DefaultSearchConfig/Search">搜索配置</a>
+
+                    <a target="_blank" href="/ProductVehicleType/Index">产品关联车型配置</a>
+                    <a target="_blank" href="/AnnouncementConfig/Index">保养公告配置</a>
+                    <a target="_blank" href="/ConfigCategory/ChangeCategoryList">改装类目配置</a>
+                    <a target="_blank" href="/VehicleMountedCouponConfig/Index">车载优惠券配置</a>
+                    <a target="_blank" href="/CityPaint/MultiCityPaintList">多城多价油漆配置</a>
+                    <a target="_blank" href="/Promotion/SelectGiftBag">礼包配置</a>
+                    <div class="ta">
+                        拼团：
+                        <a target="_blank" href="/GroupBuyingV2/Lottery">拼团抽奖配置</a>/
+                        <a target="_blank" href="/GroupBuyingV2/VirtualProductIndex">拼团虚拟商品优惠券配置</a>/
+                        <a target="_blank" href="/GroupBuyingV2/CategoryIndex">拼团商品类目配置</a>/
+                        <a target="_blank" href="/pages/pintuan#/ProductConfig">（新）拼团配置</a>/
+                        <a target="_blank" href="/pages/chepin">车品价格管理</a>
+                    </div>
+                    <a target="_blank" href="/usertasksetting/index">推荐有礼任务配置</a>
+                    <a target="_blank" href="/SprayPaintVehicle/SprayPaintVehicle">喷漆车型档次分类</a>
+                    <a target="_blank" href="/PaintDiscountConfig/PaintDiscountConfig">喷漆打折配置</a>
+                    <div class="ta">
+                        喷漆大客户：
+                        <a target="_blank" href="/VipPaintPackage/PackageConfig">喷漆套餐配置</a> /
+                        <a target="_blank" href="/VipPaintPackage/PromotionOperation">给用户塞券</a>
+                    </div>
+                    <a target="_blank" href="/SprayPaintVehicle/VinSprayPaint">查询VIN码对应的喷漆等级</a>
+                    <a target="_blank" href="/UserIntergal/index">用户积分查询配置</a>
+                    <div class="ta">
+                        保养价格管理：
+                        <a target="_blank" href="/BaoYangPriceGuide/BaoYangPriceReport">查看价格</a> /
+                        <a target="_blank" href="/BaoYangPriceGuide/BaoYangPriceCostReport">查看成本</a> /
+                        <a target="_blank" href="/BaoYangPriceGuide/BaoYangPriceGuide">改价</a> /
+                        <a target="_blank" href="/BaoYangPriceGuide/AuditPrice">改系数和审批</a>
+                    </div>
+                    <div class="ta">
+                        车品价格管理：
+                        <a target="_blank" href="/BaoYangPriceGuide/CarPriceReport">查看价格</a> /
+                        <a target="_blank" href="/BaoYangPriceGuide/CarPriceCostReport">查看成本</a> /
+                        <a target="_blank" href="/BaoYangPriceGuide/CarPriceGuide">改价</a>
+                    </div>
+                    <a target="_blank" href="/CompanyClient/CompanyClientConfig">企业客户券码配置</a>
+                    <a target="_blank" href="/FuelCard/Index">加油卡面额/公告配置</a>
+                    <a target="_blank" href="/PeccancyQuery/ProvinceConfig">违章查询城市后台配置</a>
+                    <a target="_blank" href="/VehicleAnnualInspectionAgent/VehicleAnnualInspectionAgent">年检代办城市配置</a>
+                    <a target="_blank" href="/ActivityBoard/CycleCountActivity">活动看板</a>
+                    <div class="ta">
+                        @*<a target="_blank" href="/RegionMarketing/RegionMarketing">区域营销活动配置</a> /*@
+                        <a target="_blank" href="/TiresActivity/TiresActivity">轮胎楼层活动（新）</a>
+                    </div>
+                    <a target="_blank" href="/AllSort/Index">全品类分类栏目配置</a>
+                    <div class="ta">
+                        车型认证审核
+                        <a target="_blank" href="/VehicleAuthAudit/index">六周年</a> /
+                        <a target="_blank" href="/VehicleAuthAudit/indexnew">最新版</a>
+                    </div>
+                    <div class="ta">
+                        <a target="_blank" href="/TipBannerConfig/TipBannerConfig">提示条配置</a>
+                    </div>
+                    <div class="ta">
+                        大客户：
+                        <a target="_blank" href="/VipBaoYangPackage/VipBaoYangPackage">配置保养套餐</a> /
+                        <a target="_blank" href="/VipBaoYangPackage/VipPromotionOperation">给用户塞券</a> /
+                        <a target="_blank" href="/VipBaoYangPackage/RedemptionCode">兑换码生成工具</a>
+                    </div>
+                    <div class="ta">
+                        <a target="_blank" href="/ShopDistribution/Index">门店铺货配置</a>
+                    </div>
+                    <div class="ta">
+                        <a target="_blank" href="/RewardApplication/Index">途虎轮胎节审核工具</a>
+                    </div>
+                </td>
+                <td>
+                    <div class="ta">
+                        轮胎价格管理：
+                        <a target="_blank" href="/Tire/TirePriceReport">查看价格</a> /
+                        <a target="_blank" href="/Tire/TirePriceCostReport">查看成本</a> /
+                        <a target="_blank" href="/Tire/Price">改价</a> /
+                        <a target="_blank" href="/Tire/ExamPrice">改系数和审批</a>
+                    </div>
+                    <a target="_blank" href="/ThirdShop/Index">轮胎券后价格管理</a>
+                    <a href="/Tire/ListActivity" target="_blank">轮胎列表页活动配置</a>
+                    <a target="_blank" href="/Tire/RecommendByVehicle">轮胎人工推荐配置</a>
+                    <a target="_blank" href="/Tire/QZTJIndex">轮胎强制推荐配置</a>
+                    <a target="_blank" href="/Tire/PatternComment">轮胎花纹评测平台</a>
+                    <a target="_blank" href="/Tire/TireBlackList">轮胎限购黑名单</a>
+                    <div class="ta">
+                        品牌旗舰店:
+                        <a target="_blank" href="/BrandFlagship/Index">配置</a>/
+                        <a target="_blank" href="/SimpleActivity/ActivityList">活动</a>/
+                        <a target="_blank" href="/DecorativePattern/Index"> 花纹</a>/
+                        <a target="_blank" href="/FlagshipStoreConfig/Index">管理</a>
+                    </div>
+                    <a target="_blank" href="/Tire/InstallNowIndex">可立即安装轮胎配置</a>
+                    <a target="_blank" href="/Tire/InstallFee">轮胎安装费加价</a>
+                    <a target="_blank" href="/Tire/TireStockout">轮胎缺货状态查询</a>
+                    <a target="_blank" href="/Tire/TireStockoutWhite">轮胎缺货&白名单管理</a>
+                    <a target="_blank" href="/Tire/CouponBlackList">天降神券黑名单管理</a>
+                    <a href="/Cache/TireCacheRefresh" target="_blank">更新缓存</a>
+                    <a href="/Tire/SelectRegionStock" target="_blank">区域库存查询</a>
+                    <a href="/Tire/TireCountManage" target="_blank">轮胎限购数量管理后台</a>
+                    <div class="ta">
+                        分期购配置
+                        <a href="/InstalmentConfig" target="_blank">轮胎</a>/
+                        <a href="/InstalmentConfig/IndexHub" target="_blank">轮毂</a>/
+                        <a href="/InstalmentConfig/IndexAutoProduct" target="_blank">车品</a>/
+                        <a href="/InstalmentConfig/IndexMR1" target="_blank">美容</a>/
+                    </div>
+                    <a href="http://pm.tuhu.cn/videoupload" target="_blank">视频上传</a>
+                    <a href="/WheelAdapterConfig/index" target="_blank">五级车型轮毂数据管理</a>
+                    <a href="/Tire/ActPageOnTireChange" target="_blank">换轮胎入口跳转活动页配置</a>
+                    <a href="/Tire/TireRecall" target="_blank">普利司通轮胎审核</a>
+                    <a href="/ProductsMonitor/Price" target="_blank">竞品价格监控</a>
+                    <a href="/CreateOrderOption/Index" target="_blank">轮胎下单可选项配置</a>
+                    <div class="ta">
+                        限制地区销售
+                        <a href="/LimitAreaSale/LimitAreaSalePid" target="_blank">产品配置</a>/
+                        <a href="/LimitAreaSale/LimitAreaSaleCity" target="_blank">城市配置</a>
+                    </div>
+                    <div class="ta">
+                        <a href="/Tire/TireSpecParamsConfig" target="_blank">轮胎规格参数配置</a>/
+                        <a href="/InputTireSpecParamsConfig/index" target="_blank">数据导入</a>
+                    </div>
+                    <div class="ta">
+                        车品旗舰店:
+                        <a target="_blank" href="/CarProductFlagshipStoreConfig/Index">配置</a>
+                    </div>
+                    <div class="ta">
+                        轮胎防伪码:
+                        <a target="_blank" href="/TireSecurityCode/Search">查询</a>/
+                        <a target="_blank" href="/TireSecurityCode/UploadSecurityCodeLog">上传防伪码</a>/
+                        <a target="_blank" href="/TireSecurityCode/UploadBarCodeLog">上传条形码</a>
+                    </div>
+                </td>
+                <td>
+                    <a target="_blank" href="/Activity/ActivityUnity/index">H5（新）活动页</a>
+                    <a target="_blank" href="/ActivityV2/activitylist" style="color:gray">H5（老）活动页</a>
+                    <a target="_blank" href="/LuckyWheel/List ">大翻盘</a>
+                    <a target="_blank" href="/promotionactivity/PromotionActivityList" title="手机号领取优惠券活动配置">优惠券领取配置</a>
+                    <a target="_blank" href="/EveryDaySeckill/index">天天秒杀配置</a>
+                    <a target="_blank" href="/CarTag/Index">车型优惠券配置</a>
+                    @*<a target="_blank" href="/groupbuying/list">拼团产品列表配置</a>*@
+                    <a target="_blank" href="/ShareBargain/ShareBargain">分享砍价活动配置</a>
+                    <a target="_blank" href="/CityActivityDisplay/Index">分城市分地区活动配置</a>
+                    <a target="_blank" href="/NewCoupon/NewCouponConfig">分享红包配置</a>
+                </td>
+                <td>
+                    <a target="_blank" href="/CategoryTag/Index">APP标签配置</a>
+                    <a target="_blank" href="/Article/ArticleManage">APP发现配置</a>
+                    <a target="_blank" href="/ArticleComment">APP发现评论审核</a>
+                    <a target="_blank" href="/Comment/CommentList">产品评论审核</a>
+                    <a target="_blank" href="/BlackListConfig/Index">黑名单列表</a>
+                    <a target="_blank" href="/ArticleManage/Index">(新)APP发现配置</a>
+                    <a target="_blank" href="/RebateConfig/RebateConfig">返现申请管理</a>
+                    <a target="_blank" href="/ArticleManage/ShareImgManage">App晒图管理</a>
+                </td>
+                <td>
+                    <a target="_blank" href="/Coupon/CouponCategory">红包配置</a>
+                    <a target="_blank" href="/Airlines/AirlinesIndex">客服配置</a>
+                    <a target="_blank" href="/Airlines/PaySeting">支付方式配置</a>
+                    <a target="_blank" href="/Shipping/Index">运费配置</a>
+                    <a target="_blank" href="/ServiceTag/Index">服务标签配置</a>
+                    <a target="_blank" href="/Baoyang/BaoYangRecommendProductsSetIndex">保养推荐产品配置</a>
+                    <a target="_blank" href="/ConfigNews/Index">途虎新闻配置</a>
+                    <a target="_blank" href="/ConfigCoupon/Index">红包样式全局配置</a>
+                    <a target="_blank" href="/ConfigApi/Index">Api开关</a>
+                    <a target="_blank" href="/MessagePush/MessagePushManage">个性化推送</a>
+                    <a target="_blank" href="/PersonalCenterFunctionConfig/Index">用户个人中心</a>
+                    <a target="_blank" href="/JobCouponConfig/Index">Job返券配置</a>
+                    <a target="_blank" href="/DictionaryConfig/List">数据字典</a>
+                    <a target="_blank" href="/QRCodeManageConfig/Index">微信二维码配置</a>
+                    <a target="_blank" href="/ProductLibraryConfig/Index">产品库优惠券配置</a>
+                    <a target="_blank" href="/PersonalCenterConfigV2/Index">会员商城配置</a>
+                    <a target="_blank" href="/VehicleMountedCouponConfig/JiaYouCard">加油卡漏单列表（旧）</a>
+                    <a target="_blank" href="/ThirdSubmitOrder/ThirdSubmitOrder">加油卡/违章代缴补单（新）</a>
+                    @*<a target="_blank" href="/RegionActivityPageConfig/Index">分地区活动页配置</a>*@
+                    <a target="_blank" href="/APP/Index">app发布记录</a>
+                    <a target="_blank" href="/MagicWindow/Index">魔窗配置</a>
+                    <a target="_blank" href="/BannerConfig/index">个人中心Banner管理后台</a>
+                    <a target="_blank" href="/ShareConfig/Index">APP分享管理后台</a>
+                    <a target="_blank" href="/ProductFaqManage/Index">常见问题配置</a>
+                    <a target="_blank" href="/PaymentPageConfig/Index">下单完成页配置</a>
+                    <a href="@string.Format("http://pm.tuhu."+Request.Url.Host.Split('.').Last()+"/ProductButtonConfig")">车品按钮配置</a>
+                    <a target="_blank" href="/DeviceBrand/Index">Android机型配置工具</a>
+                    <a target="_blank" href="/ABTestPlatform/Index">AB测试配置平台</a>
+                </td>
+                <td>
+                    <a target="_blank" href="/SE_MDBeautyCategoryConfig/Index">门店美容商品类目配置</a>
+                    <a target="_blank" href="/SE_MDBeautyPartConfig/Index">门店美容栏目&自营产品推荐</a>
+                    <a target="_blank" href="/BeautyHomePageConfig/Index?type=1">团购美容项目配置</a>
+                    <a target="_blank" href="/BeautyHomePageConfig/Index?type=2">团购美容活动配置</a>
+                    <a target="_blank" href="/MeiRongAcitivityConfig/Index">门店美容活动</a>
+                    <a target="_blank" href="/BeautyHomePageConfig/BannerConfig">美容【首页Banner】配置</a>
+                    <a target="_blank" href="/BeautyYearCardConfig/index">美容【年卡】配置</a>
+                    <a target="_blank" href="/BeautyHomePageConfig/PopUpWindowsConfig">美容【弹窗】配置</a>
+                    <a target="_blank" href="/BeautyHomePageConfig/ShopMapConfig">门店地图配置</a>
+                    <a target="_blank" href="/MDBeautyApplyConfig/Index">门店美容活动申请审核</a>
+                    <a target="_blank" href="/MDBeautyExitConfig/Index">门店美容活动退出审核</a>
+                    <a target="_blank" href="/SE_MDBeautyCategoryProductConfig/ShopSaleItemForGrouponPageNew">门店商品列表</a>
+                    <a target="_blank" href="/NuomiService/NuomiServicesConfig">糯米团购订单服务配置</a>
+                    <a target="_blank" href="/pages/thirdparty/#/dianping/gpconfig">大众点评美容团购配置</a>
+                    <a target="_blank" href="/BeautyServicePackage/PackageCode">集团客户发码配置</a>
+                    <a target="_blank" href="/BeautyServicePackage/SearchCode">大客户美容服务码查询</a>
+                </td>
+                <td>
+                    <a target="_blank" href="/MGMTools/GetShortUrl">生成短链</a>
+                    <a target="_blank" href="/MessagePush/AppMessagePush">商户App推送</a>
+                    <a target="_blank" href="/Sale/SaleProIndex">特价产品配置</a>
+                    <a target="_blank" href="/Vin/VinEdit">Vin码录入</a>
+                    @*<a target="_blank" href="/FlashSales/Index">限时抢购配置</a>*@
+                    <a target="_blank" href="/Advertise/SuppliesModule">首页资源</a>
+                    <a target="_blank" href="/Idx/Edit">新首页资源</a>
+                    <a target="_blank" href="/ThirdPartyCouponConfig/Index">第三方优惠券配置</a>
+                    <a target="_blank" href="/ThirdPartyExchangeCode/Index">第三方兑换码管理后台</a>
+                    <a target="_blank" href="/ThirdMall/Index">第三方商城管理后台</a>
+                    <a target="_blank" href="/Shop/Index">门店排序</a>
+                    <a target="_blank" href="/ServiceUtTest/Index">服务测试</a>
+                    <a target="_blank" href="/PriceMonitor/PriceMonitorConfig">竞品关联管理</a>
+                    <a target="_blank" href="/WeixinCard/supplier">微信卡券</a>
+                    <a target="_blank" href="/AlipayBaoyangManage/AlipayBaoyangItems">支付宝保养套餐关键字设置</a>
+                    <a target="_blank" href="/TousuConfig/LastLevelTousuEdit">订单关联投诉编辑</a>
+                </td>
+            </tr>
+            @*<td><a target="_blank" href="/ProductVehicleType/Index">车品关联车型配置</a></td>*@
+        </tbody>
+    </table>
+</div>
+
+
+@*
+    <script type="text/javascript">
+            $("#oldtable tbody tr").each(function (i, j) {
+                var $html = $(j);
+                console.log($html.find("td:eq(0)").html());
+            });
+    </script>*@

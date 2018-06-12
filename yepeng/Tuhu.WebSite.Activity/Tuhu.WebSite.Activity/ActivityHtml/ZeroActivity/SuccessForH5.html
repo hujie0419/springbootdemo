@@ -1,0 +1,256 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<title>0元购 - 申请成功</title>
+	<meta name="keywords" content="轮胎,保养服务,雨刷,滤清器,机油,电瓶,刹车片,途虎养车网,卡帕养车网" />
+	<meta name="description" content="中国领先轮胎、汽车保养在线商城，在线预约就近安装，网点遍布全国" />
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<link href="http://resource.tuhu.cn/Css/wx/active/0buy.css" rel="stylesheet" />
+	<script src="http://resource.tuhu.cn/Scripts/Activity/jquery-1.10.2.js"></script>
+	<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+	<script type="text/javascript" src="http://resource.tuhu.cn/Scripts/Activity/ZeroPublic.js"></script>
+	<script type="text/javascript">    window.delayready = true;    </script>
+	<script type="text/javascript" src="http://resource.tuhu.cn/js/hd/wxjsapi.js"></script>
+	<script type="text/javascript">
+		//调试: "menuItem:jsDebug"
+		function wxready(hidemenu)
+		{
+			wx.ready(function ()
+			{
+				wx.hideMenuItems({
+					menuList: [
+                        'menuItem:readMode', // 阅读模式
+                        'menuItem:copyUrl', // 复制链接
+                        "menuItem:share:qq",
+                        "menuItem:share:weiboApp",
+                        "menuItem:favorite",
+                        "menuItem:share:facebook",
+                        "menuItem:share:QZone",
+                        "menuItem:share:brand",
+                        "menuItem:share:email",
+                        "menuItem:openWithSafari",
+                        "menuItem:openWithQQBrowser",
+                        "menuItem:originPage",
+                        "menuItem:delete",
+                        "menuItem:editTag"
+					],
+					success: function (res)
+					{
+						//alert('已隐藏“阅读模式”，“分享到朋友圈”，“复制链接”等按钮');
+					},
+					fail: function (res)
+					{
+						//alert(JSON.stringify(res));
+					}
+				});
+				if (hidemenu)
+				{
+					wx.hideOptionMenu();
+				} else if (window.wxbag)
+				{
+					var title = wxbag.gtitle;
+					var ftitle = wxbag.ftitle;
+					var desc = wxbag.gdesc;
+					var fdesc = wxbag.fdesc;
+					var link = wxbag.link;
+					var imgurl = wxbag.fimg;
+					var imgurlShare = wxbag.gimg;
+
+					// 1 判断当前版本是否支持指定 JS 接口，支持批量判断
+					//document.querySelector('#checkJsApi').onclick = function () {
+					wx.checkJsApi({
+						jsApiList: [
+                            'onMenuShareTimeline',
+                            'onMenuShareAppMessage'
+						],
+						success: function (res)
+						{
+							//alert(JSON.stringify(res));
+						}
+					});
+					wx.showOptionMenu();
+					//alert("showOptionMenu之后");
+					//alert(desc);
+					//alert(link);
+					//alert(imgurlShare);
+					wx.onMenuShareTimeline({
+						title: desc,// 分享标题
+						link: link, // 分享链接
+						imgUrl: imgurlShare, // 分享图标
+						success: function ()
+						{
+						},
+						cancel: function ()
+						{
+							// 用户取消分享后执行的回调函数
+						}
+					});
+					//alert("onMenuShareTimeline之后");
+					//alert(ftitle);
+					//alert(fdesc);
+					//alert(link);
+					//alert(imgurl);
+					wx.onMenuShareAppMessage({
+						title: ftitle, // 分享标题
+						desc: fdesc, // 分享描述
+						link: link, // 分享链接
+						imgUrl: imgurl, // 分享图标
+						type: '', // 分享类型,music、video或link，不填默认为link
+						dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+						success: function ()
+						{
+						},
+						cancel: function ()
+						{
+							// 用户取消分享后执行的回调函数
+						}
+					});
+				}
+			});
+		}
+		wxready(true);
+	</script>
+	<script type="text/javascript">
+        var shurl = 'http://wx.tuhu.cn/active/ZeroActive',
+            title = "途虎轮胎0元购  名额抢不够",
+            desc = "汽车轮胎、汽车保养、汽车用品，0元试用，免费申请！周周有奖，等你来拿！";
+            imgurl = ImgDomain + "/Image/Activity/smallzero.png";
+		window.wxbag = {
+			gtitle: title
+            , ftitle: title
+            , gdesc: desc
+            , fdesc: desc
+            , link: shurl
+            , gimg: imgurl
+            , fimg: imgurl
+		};
+		wxready();
+	</script>
+	<script src="http://resource.tuhu.cn/Js/WebViewJavascriptBridge.js"></script>
+</head>
+<body class="bg-img">
+	<div class="success">
+		<div class="title"><i class="icon-right"></i>申请成功</div>
+		<p class="desc">如果您获奖，客服将在活动结束后电话联系您。请耐心等待！</p>
+		<a href="javascript:clickLink();" class="btn">分享给好友 获奖几率更高哦</a>
+		<p class="tip">如有任何疑问，请咨询途虎客服400-111-8868或登录途虎官方网站www.tuhu.cn查看详细说明</p>
+	</div>
+	<div class="pop">
+		<img src="http://resource.tuhu.cn/Image/Activity/0buy-shareTip.png" alt="" width="163">
+	</div>
+	<script>
+		//alert(imgurl);
+		//alert(imgurl.replace(/\//g, "|"));
+		//var shurl = 'http://faxian.tuhu.cn/ActivityHtml/ZeroActivity/Index.html', title = "途虎轮胎0元购  名额抢不够", desc = "路迈LUXXAN ASPIRER C3 轮胎 每周3个试用名额 每人4条", imgurl = ImgDomain + "/Image/Activity/0元购小图.png";
+		var browser = {
+			versions: function ()
+			{
+				var u = navigator.userAgent, app = navigator.appVersion;
+				return {         //�ƶ��ն�������汾��Ϣ
+					trident: u.indexOf('Trident') > -1, //IE�ں�
+					presto: u.indexOf('Presto') > -1, //opera�ں�
+					webKit: u.indexOf('AppleWebKit') > -1, //ƻ�����ȸ��ں�
+					gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //����ں�
+					mobile: !!u.match(/AppleWebKit.*Mobile.*/), //�Ƿ�Ϊ�ƶ��ն�
+					ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios�ն�
+					android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android�ն˻�uc�����
+					iPhone: u.indexOf('iPhone') > -1, //�Ƿ�ΪiPhone����QQHD�����
+					iPad: u.indexOf('iPad') > -1, //�Ƿ�iPad
+					webApp: u.indexOf('Safari') == -1,//�Ƿ�webӦ�ó���û��ͷ����ײ�
+					IsWeiXin: u.toLowerCase().indexOf('micromessenger') > -1
+				};
+			}(),
+			language: (navigator.browserLanguage || navigator.language).toLowerCase()
+		}
+		//if (!browser.versions.IsWeiXin) {
+		//    $(".btn").hide();
+		//}
+
+		function connectWebViewJavascriptBridge(callback)
+		{
+			if (window.WebViewJavascriptBridge)
+			{
+				callback(WebViewJavascriptBridge)
+			} else
+			{
+				document.addEventListener(
+					'WebViewJavascriptBridgeReady'
+					, function ()
+					{
+						callback(WebViewJavascriptBridge)
+					},
+					false
+				);
+			}
+		}
+		connectWebViewJavascriptBridge(function (bridge)
+		{
+			bridge.init(function (message, responseCallback)
+			{
+				console.log('JS got a message', message);
+				var data = {
+					'Javascript Responds': 'Wee!'
+				};
+				console.log('JS responding with', data);
+				responseCallback(data);
+			});
+
+			bridge.registerHandler("functionInJs", function (data, responseCallback)
+			{
+				document.getElementById("show").innerHTML = ("data from Java: = " + data);
+				var responseData = "Javascript Says Right back aka!";
+				responseCallback(responseData);
+			});
+		})
+		$(function ()
+		{
+		
+		})
+
+		function sendCommand(cmd, param)
+		{
+			var url = "#testapp#" + cmd + "#" + param;
+			document.location = url;
+		}
+		function clickLink()
+		{
+			// alert(navigator.userAgent);
+			if (browser.versions.IsWeiXin)
+			{
+				// alert("weixin");
+				$(".pop").show();
+			}
+			else if (browser.versions.android)
+			{
+				//  alert("进入安卓");
+				// alert(imgurl.replace(/\//g, "|"));
+				window.WebViewJavascriptBridge.callHandler('toShareBridge', {
+					'key': 2, 'Name': '' + title + '', 'Description': '' + desc + '',
+					'Title': '' + title + '', 'Picture': '' + imgurl.replace(/\//g, "|") + '',
+					'Text': '' + title + '',
+					'Url': '' + shurl.replace(/\//g, "|") + ''
+				}
+				, function (responseData)
+				{
+				})
+			}
+			else
+			{
+				// alert("进入IOS");
+				//  alert(imgurl.replace(/\//g, "|"));
+				var dt = {
+					'key': 1, 'Name': '' + title + '', 'Description': '' + desc + '',
+					'Title': '' + title + '', 'Picture': '' + imgurl.replace(/\//g, "|") + '',
+					'Text': '' + title + '',
+					'Url': '' + shurl.replace(/\//g, "|") + ''
+				}
+				sendCommand("shareToPYQ", JSON.stringify(dt));
+			}
+
+		}
+
+	</script>
+</body>
+</html>

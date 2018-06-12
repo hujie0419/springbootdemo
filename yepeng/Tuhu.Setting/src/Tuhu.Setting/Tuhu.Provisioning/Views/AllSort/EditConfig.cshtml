@@ -1,0 +1,142 @@
+﻿@{
+    ViewBag.Title = "编辑分类配置";
+    Layout = null;
+}
+@model Tuhu.Provisioning.DataAccess.Entity.AllSort.AllSortConfig
+<link href="http://setting.tuhu.work/Scripts/My97DatePicker/skin/WdatePicker.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="/Scripts/My97DatePicker/WdatePicker.js"></script>
+<div class="modal-dialog">
+    <div class="modal-content" style="width:800px;">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                &times;
+            </button>
+            <h4 class="modal-title">
+                编辑分类配置
+            </h4>
+        </div>
+        <div class="modal-body">
+            <form id="form1" class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-2 form-label">导航栏名称：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="Maintitle" name="Maintitle" value="@Model.Maintitle" />
+                    </div>
+                    <br/>
+                    <br />
+                    <label class="col-sm-2 form-label">导航栏色值:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="MaintitleColor" name="MaintitleColor" value="@Model.MaintitleColor" />
+                    </div>
+                    <br />
+                    <br />
+                    <label class="col-sm-2 form-label">状态:</label>
+                    <div class="col-sm-4">
+                        <input type="radio" name="State" value="1" @(Model.State == 1?"checked=\"checked\"":"") /><span>启用</span>
+                        <input type="radio" name="State" value="0" @(Model.State == 0?"checked=\"checked\"":"") /><span>禁用</span>
+                    </div>
+                    <br />
+                    <br />
+                    <label class="col-sm-2 form-label">优先级：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="Priority" name="Priority" value="@Model.Priority" />
+                    </div>
+                    <br />
+                    <br />
+                    <label class="col-sm-2 form-label">开始版本：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="StartVersion" name="StartVersion" value="@Model.StartVersion" />
+                    </div>
+                    <br />
+                    <br />
+                    <label class="col-sm-2 form-label">结束版本：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="EndVersion" name="EndVersion" value="@Model.EndVersion" />
+                    </div>
+                    <br />
+                    <br />
+                    <label class="col-sm-2 form-label">统计：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="Statistics" name="Statistics" value="@Model.Statistics" />
+                    </div>
+                    <br />
+                    <br />
+                    <label class="col-sm-2 form-label">开始时间：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" name="StartTime" id="StartTime" value="@Model.StartTime">
+                    </div>
+                    <br />
+                    <br />
+                    <label class="col-sm-2 form-label">结束时间：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" name="EndTime" id="EndTime" value="@Model.EndTime">
+                    </div>
+                    <input type="hidden" id="ID" name="ID" value="@Model.PKID" />
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            
+            <button type="button" id="btnSave" name="btnSave" class="btn btn-primary">
+                保 存
+            </button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                取 消
+            </button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+  
+
+    $(function () {
+
+        $('#btnSave').on('click', function () {
+
+            if ($("#Maintitle").val() === "") {
+                alert("请填写主标题");
+                return;
+            }
+
+            if ($("#Statistics").val() === "") {
+                $("#Statistics").val($('#Maintitle').val());
+               
+            }
+
+            var data = {};
+            data.PKID = $('#ID').val();
+            data.Maintitle = $('#Maintitle').val().replace(/(^\s*)|(\s*$)/g, "");
+            data.MaintitleColor = $('#MaintitleColor').val().replace(/(^\s*)|(\s*$)/g, "");
+            data.State = $('input[name="State"]:checked').val();
+            data.Priority = $('#Priority').val().replace(/(^\s*)|(\s*$)/g, "");
+            data.StartVersion = $('#StartVersion').val().replace(/(^\s*)|(\s*$)/g, "");
+            data.EndVersion = $('#EndVersion').val().replace(/(^\s*)|(\s*$)/g, "");
+            data.Statistics = $('#Statistics').val().replace(/(^\s*)|(\s*$)/g, "");
+            data.StartTime = $('#StartTime').val().replace(/(^\s*)|(\s*$)/g, "");
+            data.EndTime = $('#EndTime').val().replace(/(^\s*)|(\s*$)/g, "");
+
+           
+            
+
+            $(this).attr("disabled", "disabled");
+            $.ajax({
+                url: '/AllSort/ConfigSave',
+                type: 'post',
+                data: data,
+                dataType:'json'
+            }).done(function (result) {
+                if (result == 1) {
+                    alert('保存成功');
+                    $('#edit').modal("hide");
+                    location.reload();
+                } else {
+                    alert("保存失败");
+                }
+            });
+        });
+
+        if ($('#NoLinkUrl').val()) {
+            $('#NoLinkUrl').val(decodeURIComponent($('#NoLinkUrl').val()));
+        }
+    });
+</script>

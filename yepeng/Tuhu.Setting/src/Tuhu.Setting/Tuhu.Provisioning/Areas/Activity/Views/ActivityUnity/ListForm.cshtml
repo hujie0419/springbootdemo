@@ -1,0 +1,240 @@
+﻿
+@{
+    ViewBag.Title = "ListForm";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+
+<form id="form1">
+    <div style="padding-top:20px;margin-right:20px;">
+        <table class="form">
+            <tr>
+                <th class="formTitle">标 题:</th>
+                <td class="formValue">
+                    <input type="text" class="form-control required" id="Title" name="Title"  />
+                </td>
+                <th class="formTitle">选 项:</th>
+                <td class="formValue">
+                    <div class="ckbox">
+                        <input id="IsEnabled" name="IsEnabled" type="checkbox" checked="checked"><label for="IsEnabled">有 效</label>
+                    </div>
+                    <div class="ckbox">
+                        <input id="IsShowDate" name="IsShowDate" type="checkbox"><label for="IsShowDate">显示倒计时</label>
+                    </div>
+                    <div class="ckbox">
+                        <input id="IsNeedLogIn" name="IsNeedLogIn" type="checkbox"><label for="IsNeedLogIn">需要先登录</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">背景图片:</th>
+                <td class="formValue">
+                    <input type="hidden" id="BgImageUrl" name="BgImageUrl"/>
+                    <img id="bgImage" width="30" height="30" />
+                    <input type="file" id="fileImage" name="fileImage" style="display: inline;" />
+                </td>
+                <th class="formTitle">背景颜色:</th>
+                <td class="formValue">
+                    <input type="text" id="BgColor" name="BgColor" class="form-control" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">上线时间：</th>
+                <td class="formValue">
+                    <input id="StartDate" name="StartDate" type="text" class="form-control input-wdatepicker required" onfocus="WdatePicker()" />
+                </td>
+                <th class="formTitle">结束时间:</th>
+                <td class="formValue">
+                    <input id="EndDate" name="EndDate" type="text" class="form-control input-wdatepicker required" onfocus="WdatePicker()" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">活动类型:</th>
+                <td class="formValue">
+                    <select class="form-control required" id="ActivityType" name="ActivityType">
+                        <option value="">===请选择===</option>
+                        <option value="0">综 合</option>
+                        <option value="1">车 品</option>
+                        <option value="2">保 养</option>
+                        <option value="3">轮 胎</option>
+                        <option value="4">美容改装</option>
+                        <option value="5">外部投放活动</option>
+                    </select>
+                </td>
+                <th class="formTitle">负责人:</th>
+                <td class="formValue">
+                    <input type="text" class="form-control required" id="PersonCharge" value="@(ViewBag.UserName)" name="PersonCharge" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">关键词图片:</th>
+                <td class="formValue">
+                    <img id="keyImage" width="30" height="30" />
+                    <input type="hidden" id="SelKeyImage" name="SelKeyImage"/>
+                    <input type="file" id="fileKeyImage" name="fileKeyImage" style="display:inline;"  />
+                </td>
+                <th class="formTitle">关键词:</th>
+                <td class="formValue">
+                    <input type="text" class="form-control" id="SelKeyName" name="SelKeyName"/>
+                </td>
+            </tr>
+            <tr>
+                
+                <th class="formTitle">活动规则：</th>
+                <td class="formValue" colspan="3">
+                    <textarea id="RuleDesc" name="RuleDesc" style="height:100px;" class="form-control required"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">分享参数:</th>
+                <td class="formValue" colspan="3">
+                    <div class="input-group" style="width:100%">
+                        <input type="text" id="DataParames" name="DataParames" disabled="disabled" class="form-control" />
+                        <span class="input-group-btn" onclick="setShareParameter()">
+                            <a class="btn  btn-primary"><i class="fa fa-ellipsis-h"></i></a>
+                        </span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">客 服：</th>
+                <td class="formValue">
+                    <select class="form-control" id="CustomerService" name="CustomerService">
+                        <option value="0">请选择</option>
+                        <option value="1">喷 漆</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </div>
+</form>
+<link rel="stylesheet" href="~/Scripts/multiple/multiple-select.css" type="text/css" />
+<script type="text/javascript" src="~/Scripts/multiple/multiple-select.js"></script>
+<script type="text/javascript">
+
+    var keyValue = $.request("keyValue");
+
+    function fileImage() {
+        $.uploadFile({
+            id: $("#fileImage").attr("id"),
+            preBack: function () {
+                var size = $("#fileImage")[0].files[0].size / 1024 * 1.0;
+                var fileObject = $("#fileImage")[0].files[0];
+                if (fileObject.type != "image/gif") {
+                    if (size > 500) {
+                        $.modalMsg("上传的图片过大", "warning");
+                        return false;
+                    } else {
+                        return true;
+                    }
+                } else {
+                    if (size > 2048) {
+                        $.modalMsg("该图片尺寸为" + size.toFixed(2) + "KB,不要上传大于2M的图片", "warning");
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            callBack: function (res) {
+                console.log(res);
+                $('#bgImage').attr("src", res.BImage);
+                $("#BgImageUrl").val(res.BImage);
+            },
+            complete: function () {
+                $("#fileImage").on("change", fileImage);
+            }
+        });
+    }
+
+    function fileKeyImage() {
+        $.uploadFile({
+            id: $("#fileKeyImage").attr("id"),
+            preBack: function () {
+                var size = $("#fileKeyImage")[0].files[0].size / 1024 * 1.0;
+                if (size > 500) {
+                    $.modalMsg("上传的图片过大", "warning");
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            callBack: function (res) {
+                $('#keyImage').attr("src", res.BImage);
+                $("#SelKeyImage").val(res.BImage);
+            },
+            complete: function () {
+                $("#fileKeyImage").on("change", fileKeyImage);
+            }
+        });
+    }
+
+
+    function initControl() {
+        $("#fileImage").on("change", fileImage);
+        $("#fileKeyImage").on("change", fileKeyImage);
+      
+        if (!!keyValue) {
+            $.ajax({
+                url: "/Activity/ActivityUnity/GetListFormJson",
+                data: { keyValue: keyValue },
+                dataType: "json",
+                async: false,
+                success: function (data) {
+                    $("#form1").formSerialize(data);
+                    if (data.BgImageUrl)
+                        $('#bgImage').attr("src", data.BgImageUrl);
+                    if(data.SelKeyImage)
+                        $('#keyImage').attr("src", data.SelKeyImage);
+                }
+            });
+        }
+        
+    }
+
+    function setShareParameter() {
+       var index= $.modalOpen({
+            id: "ShareParameter",
+            url: "/Activity/ActivityUnity/ShareParameterForm?keyValue=" + keyValue,
+            width: "480px",
+            height:"7200px",
+            callBack: function (iframeId) {
+                var iframe = top.frames["ListForm" + keyValue];
+                top.frames[iframeId].submitForm(iframe);
+            }
+        })
+    }
+
+    function submitForm(iframe) {
+        if (!$('#form1').formValid()) {
+            return false;
+        }
+        var formData = $("#form1").formSerialize();
+      
+        var reg = /[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@@tuhu.cn/g;
+        if (!reg.test(formData.PersonCharge)) {
+            $.modalMsg("负责人格式不正确，格式：****@@tuhu.cn","warning")
+            return false;
+        }
+
+        $.submitForm({
+            url: "/Activity/ActivityUnity/SubmitForm?keyValue=" + keyValue,
+            param: formData,
+            success: function (res) {
+                top.$("#loadingPage").css("display", "none");
+                iframe.$("#gridList").trigger("reloadGrid");
+              
+                if (res.state == "success") {
+                    var href = "/Activity/ActivityUnity/ConfigList";
+                    iframe.$("#NF-addClick").data("id", "iframe" + res.data);
+                    iframe.$("#NF-addClick").attr("href", href + "?keyValue=" + res.data);
+                    iframe.$("#NF-addClick").text(res.title);
+                }
+            }
+        });
+    }
+
+    $(function () {
+        initControl();
+       
+    });
+</script>

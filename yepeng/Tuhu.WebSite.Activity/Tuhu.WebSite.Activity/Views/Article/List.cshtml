@@ -1,0 +1,16 @@
+﻿@using Tuhu.WebSite.Component.Discovery.BusinessData;
+@model List<Article>
+@{
+    ViewBag.Title = "首页";
+}
+@foreach (var item in Model)
+{
+    <h4>@item.SmallTitle</h4>
+    <a href="/Article/Detail?id=@item.PKID&utm_source=WEIXIN_CIRCLE" target="_blank">微信朋友圈</a>@(" | ")
+    <a href="/Article/Detail?id=@item.PKID&utm_source=WEIXIN" target="_blank">微信好友</a>@(" | ")
+    <a href="/Article/Detail?id=@item.PKID&utm_source=QQ" target="_blank">QQ</a>@(" | ")
+    <a href="/Article/Detail?id=@item.PKID&utm_source=QZONE" target="_blank">QQ空间</a>@(" | ")
+    <a href="/Article/Detail?id=@item.PKID&utm_source=SINA" target="_blank">新浪微博</a>@(" | ")
+    <a href="/Article/Detail?id=@item.PKID&utm_source=COPY" target="_blank">复制链接</a>
+}
+

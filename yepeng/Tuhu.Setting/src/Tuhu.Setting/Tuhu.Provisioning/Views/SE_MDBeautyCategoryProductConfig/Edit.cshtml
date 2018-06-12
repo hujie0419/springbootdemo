@@ -1,0 +1,417 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.SE_MDBeautyCategoryProductConfigModel
+@{
+    Layout = null;
+}
+
+@using (Html.BeginForm("Save", "SE_MDBeautyCategoryProductConfig", FormMethod.Post, new { @pId = Model.PId }))
+{
+    @Html.HiddenFor(model => model.PId)
+    @Html.HiddenFor(model => model.CreateTime)
+    @Html.HiddenFor(model => model.CategoryIds)
+    @Html.HiddenFor(model => model.Brands)
+    var dev = System.Configuration.ConfigurationManager.AppSettings["env"] == "dev";
+
+    <table id="SE_MDBeautyCategoryProductConfigTable">
+        @if (Model.PId <= 0)
+        {
+            <tr>
+                <td>产品库顶级类目名</td>
+                <td>@Html.TextBoxFor(model => model.DefinitionName, new { maxlength = 50, placeholder = "产品库产品顶级类目名！", @style = "width:300px;" })</td>
+            </tr>
+            <tr>
+                <td>产品库类目名</td>
+                <td>@Html.TextBoxFor(model => model.PrimaryParentCategory, new { maxlength = 50, placeholder = "产品库，父产品，父类目名！", @style = "width:300px;" })</td>
+            </tr>
+            <tr>
+                <td>产品父ID</td>
+                <td>@Html.TextBoxFor(model => model.ProdcutId, new { maxlength = 50, placeholder = "(必填) 产品ID填写规则：FU-MD-XXX-F ！", @style = "width:300px;" })</td>
+            </tr>
+            <tr>
+                <td>产品图片</td>
+                <td>@Html.TextBoxFor(model => model.Image_filename, new { maxlength = 200, placeholder = "(必填) 产品图片，否则产品同步失败！", @style = "width:300px;" })</td>
+            </tr>
+        }
+        <tr>
+            <td>选择类目</td>
+            <td>
+                <label style="color:red;">（只能选子节点，且最多只能选择一项）</label>
+                <ul id="SE_MDBeautyCategoryProductConfig_CategoryTree" class="ztree"></ul>
+                @Html.HiddenFor(model => model.CategoryIds, new { maxlength = 500, @style = "width:300px;" })
+            </td>
+        </tr>
+        <tr>
+            <td>商品名称</td>
+            <td>@Html.TextBoxFor(model => model.ProdcutName, new { maxlength = 50, placeholder = Model.PId <= 0 ? "产品名称自动匹配生成，无需填写！" : "建议名称：品牌+系列+适配车型+最底层类目名", @style="width:300px;" })</td>
+        </tr>
+        <tr>
+            <td>简单描述：</td>
+            <td>@Html.TextBoxFor(model => model.Describe, new { maxlength = 500, placeholder = Model.PId <= 0 ? "例如：品牌通配符 $1，系列通配符 $2" : "描述信息", @style = "width:300px;" })</td>
+        </tr>
+        <tr>
+            <td>佣金：</td>
+            <td>@Html.TextBoxFor(model => model.Commission, new { placeholder = "佣金" }) %</td>
+        </tr>
+        <tr>
+            <td>价格范围：</td>
+            <td>
+                @Html.TextBoxFor(model => model.BeginPrice, new { placeholder = "起始" }) 
+                -
+                @Html.TextBoxFor(model => model.EndPrice, new { placeholder = "结束" })
+            </td>
+        </tr>
+        <tr>
+            <td>促销价格范围：</td>
+            <td>
+                @Html.TextBoxFor(model => model.BeginPromotionPrice, new { placeholder = "起始" })
+                -
+                @Html.TextBoxFor(model => model.EndPromotionPrice, new { placeholder = "结束" })
+            </td>
+        </tr>
+        <tr>
+            <td>每日最大件数：</td>
+            <td>
+                @Html.TextBoxFor(model => model.EveryDayNum, new { placeholder = "每日最大件数" })
+            </td>
+        </tr>
+        <tr>
+            <td>品牌设置：</td>
+            <td>
+                <label style="color:red;"> @(Model.PId > 0 ? "最多只能选择一个品牌，与选中品牌中的一个系列" : "勾选系列时必须勾选品牌，否则该系列不进行操作！" )</label>
+                @if (Model.PId <= 0)
+                {   
+                    <br />
+                    <input type="button" value="全选" onclick="_newBrandTree.checkAllTree(true);" />
+                    <input type="button" value="反选" onclick="_newBrandTree.checkAllTree(false);" />
+                }
+                 <ul id="SE_MDBeautyCategoryProductConfig_BrandTree" class="ztree"></ul>
+                @Html.HiddenFor(model => model.Brands, new { maxlength = 500, @style = "width:300px;" })
+            </td>
+        </tr>
+        <tr>
+            <td>推荐车型级别：</td>
+            <td>
+                @*<label>@Html.RadioButtonFor(model => model.RecommendCar, 1) 低端车（1~12万）</label><br />
+                <label> @Html.RadioButtonFor(model => model.RecommendCar, 2) 中端车（12~23万）</label><br />
+                <label> @Html.RadioButtonFor(model => model.RecommendCar, 3) 高端车（23万以上）</label><br />*@
+                <label> @Html.RadioButtonFor(model => model.RecommendCar, 4) 无推荐车型</label><br />
+                <label> @Html.RadioButtonFor(model => model.RecommendCar, 5) 有推荐车型</label>
+            </td>
+        </tr>
+        <tr>
+            <td>适配车型：</td>
+            <td>
+                @if (Model.PId > 0){
+                    <label>@Html.RadioButtonFor(model => model.AdaptiveCar, 1) 五座轿车</label><br />
+                    <label> @Html.RadioButtonFor(model => model.AdaptiveCar, 2) SUV/MPV</label><br />
+                    <label> @Html.RadioButtonFor(model => model.AdaptiveCar, 3) SUV</label><br />
+                    <label> @Html.RadioButtonFor(model => model.AdaptiveCar, 4) MPV</label><br/>
+                    <label> @Html.RadioButtonFor(model => model.AdaptiveCar, 5) 无车型</label>
+                }
+                else
+                {
+                    <label style="color:red;">( 必须勾选适配车型 )</label><br />
+                    <label><input type="checkbox" name="AdaptiveCar_Check" id="AdaptiveCar_Check" value="1" />五座轿车</label><br />
+                    <label><input type="checkbox" name="AdaptiveCar_Check" id="AdaptiveCar_Check" value="2" />SUV/MPV</label><br />
+                    <label><input type="checkbox" name="AdaptiveCar_Check" id="AdaptiveCar_Check" value="3" />SUV</label><br />
+                    <label><input type="checkbox" name="AdaptiveCar_Check" id="AdaptiveCar_Check" value="4" />MPV</label><br />
+                    <label><input type="checkbox" name="AdaptiveCar_Check" id="AdaptiveCar_Check" value="5" />无车型</label>
+                    @Html.HiddenFor(model => model.AdaptiveCarCheckBox)
+                }
+            </td>
+        </tr>
+        <tr>
+            <td>是否禁用：</td>
+            <td>
+                @Html.CheckBoxFor(model => model.IsDisable, false)
+            </td>
+        </tr>
+        @if (dev)
+        {
+            <tr>
+                <td>是否不展示：</td>
+                <td>
+                    @Html.CheckBoxFor(model => model.IsNotShow, false)
+                </td>
+            </tr>
+        }
+        <tr>
+            <td colspan="2" style="text-align:center;">
+                <input id="Save_Submit" type="button" onclick="SE_MDBeautyCategoryProductConfigEditFuns.Submit();" value="保存" />
+            </td>
+        </tr>
+    </table>
+}
+<script type="text/javascript">
+    var _PId = @(Model.PId),
+        _SelectCategorys,
+        _SelectCategorysName,
+        _SelectBrands,
+        _CategoryData=@Html.Raw(ViewBag.ZTreeJsonForCategory),
+        _BrandData=@Html.Raw(ViewBag.ZTreeJsonForBrand),
+        _BatchInsertOrUpdateModelList,
+        _BatchInsertOrUpdateModel = function(){
+            this.CategorysName = "",
+            this.ParentId = "",
+            this.Name = "",
+            this.Childs = []
+        };
+
+    var SE_MDBeautyCategoryProductConfig = function(jsonData,defaultElement,isCheckParent){
+        var self = this;
+        this.setting={
+            check: !isCheckParent 
+                    ? {enable: true,chkStyle: "radio",radioType: "all"}
+                    : {enable: true,chkboxType:{ "Y" : "", "N" : "" }},
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            },
+            callback:{
+                onCheck:function(){
+                    var ids=[];
+                    if(defaultElement.indexOf("CategoryTree") >=0)
+                    {
+                        _SelectCategorys = self.getItems();
+                        $(_SelectCategorys).each(function(i,item){
+                            ids.push(item.id);
+                            _SelectCategorysName = item.name;
+                        });
+                        $("#CategoryIds").val(ids);
+
+                        SE_MDBeautyCategoryProductConfigEditFuns.LoadBrandTreeJson();
+                    }
+                    else{
+                        _SelectBrands = self.getItems();
+                        if(_PId > 0)
+                        {
+                            $(_SelectBrands).each(function(i,item){
+                                ids.push(item.id);
+                            });
+                            $("#Brands").val(ids.join(","));
+                        }
+                    }
+                },
+                beforeCheck:function zTreeBeforeClick(treeId, treeNode, clickFlag) {
+                    if(isCheckParent == false){
+                        return !treeNode.isParent;
+                    }
+                }
+            }
+        },
+        this.zTreeJson= jsonData || [],
+        this.zTreeInit=function(){
+            $.fn.zTree.init($("#"+defaultElement),this.setting,this.zTreeJson);
+            self.setChkDisabled();
+        },
+        this.getItems=function(){
+            return $.fn.zTree.getZTreeObj(defaultElement).getCheckedNodes(true);
+        },
+        this.expandAll=function(isExpandAll){
+            $.fn.zTree.getZTreeObj(defaultElement).expandAll(isExpandAll || false);
+        },
+        this.checkAllTree=function(ischecks){
+            $.fn.zTree.getZTreeObj(defaultElement).checkAllNodes(ischecks || false);
+            self.setting.callback.onCheck();
+        },
+        this.setChkDisabled=function()
+        {
+            if(_PId > 0)
+            {
+                var treeObj = $.fn.zTree.getZTreeObj(defaultElement);
+                var nodes = treeObj.getNodes();
+                for (var i=0, l=nodes.length; i < l; i++) {
+                    treeObj.setChkDisabled(nodes[i], true);
+                    if(nodes[i].isParent)
+                    {
+                        var childrenNodes = nodes[i].children;
+                        if (childrenNodes) {
+                            for (var j = 0; j < childrenNodes.length; j++) {
+                                treeObj.setChkDisabled(childrenNodes[j], true);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+    var SE_MDBeautyCategoryProductConfigEditFuns = {
+        Submit:function(){
+            var _Message = [],
+            _CategoryIds = ($("#CategoryIds").val() || null) == null ? [] : $("#CategoryIds").val().split(","),
+            _Brands = ($("#Brands").val() || null) == null ? [] : $("#Brands").val().split(","),
+            _PrimaryParentCategory = $("#PrimaryParentCategory").val(),
+            _ProdcutId = $("#ProdcutId").val(),
+            _Image_filename = $("#Image_filename").val(),
+            _DefinitionName = $("#DefinitionName").val(),
+            _Describe = $("#Describe").val();
+
+            console.log("_CategoryIds:" +_CategoryIds);
+            console.log("_Brands:"+_Brands);
+
+            if(_CategoryIds.length != 1)
+                _Message.push(" 类目：选择了" + _CategoryIds.length + "项，必须选择一项！");
+
+            if(_Describe.length <= 0){
+                _Message.push("必须填写，简单描述！");
+            }
+
+            if(_PId <= 0){
+                if(_PrimaryParentCategory.length <= 0)
+                    _Message.push("必须填写，产品库类目名！");
+
+                if(_ProdcutId.length <= 0)
+                    _Message.push("必须填写，父产品ID！");
+                else
+                {
+                    if(_ProdcutId.indexOf("FU-") < 0)
+                        _Message.push("产品ID必须以FU-开头！");
+                }
+
+                if(_Image_filename.length <= 0)
+                    _Message.push("必须填写，产品图片地址！");
+
+                if(_DefinitionName.length <= 0)
+                    _Message.push("必须填写，产品顶级类目名！");
+            }
+
+            if(_PId > 0){
+                if( _Brands.length > 2)
+                {
+                    _Message.push(" 品牌：选择了" + _Brands.length + "项，不符合要求！");
+                }
+                else if(_Brands.length == 2)
+                {
+                    var _BrandTreeObj = $.fn.zTree.getZTreeObj("SE_MDBeautyCategoryProductConfig_BrandTree"),
+                        _node1 = _BrandTreeObj.getNodeByParam("id", _Brands[0], null), 
+                        _node2 = _BrandTreeObj.getNodeByParam("id", _Brands[1], null);
+               
+                    if(_node1.isParent == true && _node2.isParent == true)
+                        _Message.push(" 品牌：选择了2项，只能选择一个品牌");
+                    else if(_node1.isParent != true && _node2.isParent != true)
+                        _Message.push(" 品牌：选择的2项，不能为多个品牌，或多个系列");
+                    else
+                    {
+                        var nodeChildren,isChild = false;
+                        if(_node1.isParent == true)
+                        {
+                            nodeChildren = _node1.children;
+                            for (var i = 0; i < nodeChildren.length; i++) {
+                                if(nodeChildren[i].id == _Brands[1]){
+                                    isChild = true;
+                                    break;
+                                }
+                            }
+                        }
+                        else if(_node2.isParent == true)
+                        {
+                            nodeChildren = _node2.children;
+                            for (var i = 0; i < nodeChildren.length; i++) {
+                                if(nodeChildren[i].id == _Brands[0]){
+                                    isChild = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if(!isChild)
+                            _Message.push("品牌：选中的系列不属于，选中的品牌");
+                    }
+                }
+            }
+            else{
+                console.log("_SelectBrands:" +_SelectBrands);
+
+                var _AdaptiveCarCheckBox = $("input[type='checkbox'][id='AdaptiveCar_Check']:checked").map(function(){
+                    return $(this).val();
+                }).get().join(",");
+
+                if(_AdaptiveCarCheckBox.length <= 0){
+                    alert("必须勾选适配车型！");
+                    return false;
+                }
+
+                $("input[id='AdaptiveCarCheckBox']").val(_AdaptiveCarCheckBox);
+
+                _BatchInsertOrUpdateModelList = [];
+
+                //无品牌系列时做以下判断
+                if(_SelectBrands != "undefined" && _SelectBrands != null){
+                    SE_MDBeautyCategoryProductConfigEditFuns.FilterParents(_SelectBrands).forEach(function(id){
+                        var idname = id.split('|'),
+                            _model = new _BatchInsertOrUpdateModel();
+                        _model.CategorysName = _SelectCategorysName || "";
+                        _model.ParentId = idname[0];
+                        _model.Name = idname[1];
+                        _model.Childs = SE_MDBeautyCategoryProductConfigEditFuns.FilterChilds(_SelectBrands,idname[0]);
+                        _BatchInsertOrUpdateModelList.push(_model);
+                    });
+                }
+                else{
+                    var _model = new _BatchInsertOrUpdateModel();
+                    _model.CategorysName = _SelectCategorysName || "";
+                    _model.ParentId = "";
+                    _model.Name = "";
+                    _model.Childs = "";
+                    _BatchInsertOrUpdateModelList.push(_model);
+                }
+                $("#Brands").val(JSON.stringify(_BatchInsertOrUpdateModelList))
+                console.log("_BatchInsertOrUpdateModelList:"+JSON.stringify(_BatchInsertOrUpdateModelList));
+            }
+
+            if(_Message.length > 0){
+                var _wrongMsg="";
+                for (var i = 0; i < _Message.length; i++) {
+                    _wrongMsg += (i+1) + ". "+ _Message[i] + "\r\n";
+                }
+                alert(_wrongMsg);
+                return false;
+            }
+
+            //return false;
+            $("#Save_Submit").attr("disabled","disabled").val("保存中...");
+            this.Loding();
+            $("form:first").submit();
+        },
+        LoadBrandTreeJson:function(){
+            var _CategoryIdss=$("#CategoryIds").val(),_Brands=$("#Brands").val();
+            $.ajax({
+                type: "POST",
+                url: "/SE_MDBeautyCategoryProductConfig/SE_MDBeautyBrandTreeForCategoryIdJson",
+                data: { categoryId:_CategoryIdss,opens:_Brands,isDisable:true},
+                success: function (json) {
+                    var _json = JSON.parse(json);
+                    new SE_MDBeautyCategoryProductConfig(_json,"SE_MDBeautyCategoryProductConfig_BrandTree",true).zTreeInit();
+                }
+            });
+        },
+        FilterParents:function(obj){
+            var _FilterParents =[];
+            obj.map(function(e){
+                if(e.isParent == true) 
+                    _FilterParents.push(e.id + "|" + e.name);
+            });
+            return _FilterParents;
+        },
+        FilterChilds:function(obj,id){
+            var _FilterChilds = [];
+            obj.map(function(e){
+                if(e.pId == id)
+                    _FilterChilds.push({"id":e.id,"name":e.name});
+            });
+            return _FilterChilds;
+        },
+        Loding:function(){
+            var dialogConfig = { title: "批量处理中，请耐心等候 ......", width: 240, height: 150, modal: true };
+            $("#SE_MDBeautyCategoryProductConfig_Loding").dialog(dialogConfig);
+        }
+    };
+
+    var _newCategoryTree = new SE_MDBeautyCategoryProductConfig(_CategoryData,"SE_MDBeautyCategoryProductConfig_CategoryTree",false);
+    _newCategoryTree.zTreeInit();
+
+    var _newBrandTree = new SE_MDBeautyCategoryProductConfig(_BrandData,"SE_MDBeautyCategoryProductConfig_BrandTree",true);
+    _newBrandTree.zTreeInit();
+
+</script>

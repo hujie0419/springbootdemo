@@ -1,0 +1,195 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@model Tuhu.Provisioning.DataAccess.Entity.BaoYangType
+@{
+    ViewBag.Title = "添加";
+    int BaoYangActivityId = (int)ViewData["BaoYangActivityId"];
+    var ActivityNum = ViewData["ActivityNum"];
+    List<BaoYangType> ModelList = ViewBag.BaoYangTypeList;
+}
+<h2>添加</h2>
+<style>
+    textarea {
+        width: 150px;
+        height: 25px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+</style>
+
+<div style="margin-top:20px;">
+    <table style="width:100%" id="items">
+        <thead>
+            <tr>
+                <th>保养活动Id</th>
+                <th>ServicePackagesName</th>
+                <th>ServiceCatalogName</th>
+                <th>关联品牌</th>
+                <th>关联系列</th>
+                <th>关联产品</th>
+                <th>缺货信息</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in ModelList)
+            {
+                <tr>
+                    <td>@BaoYangActivityId</td>
+                    <td style="display:none">@item.Package.Type</td>
+                    <td style="display:none">@item.Package.Items</td>
+                    <td>@item.Package.Name</td>
+                    <td style="display:none">@item.Type</td>
+                    <td style="display:none">@item.CatalogName</td>
+                    <td>@item.Name</td>
+                    <td>
+
+                        @Html.DropDownListFor(x => x.Brand, item.BrandList as List<SelectListItem>, new { @class = "Brands", })
+
+                        @*<textarea class="Brands"></textarea>
+                            <a href="javascript:;" onclick="Edit.AddBand(this,'@item.CatalogName')" style="color: cornflowerblue;">选择</a>*@
+                    </td>
+
+                    <td>
+                        @Html.DropDownListFor(x => x.Serie, item.SerieList as List<SelectListItem>, new { @class = "Series", })
+                        @*<textarea class="Series"></textarea>
+                            <a href="javascript:;" onclick="Edit.AddSerie(this,'@item.CatalogName')" style="color: cornflowerblue;">选择</a>*@
+                    </td>
+
+                    <td>
+                        @*<textarea class="Products"></textarea>*@
+                        <input type="text" class="Products" />
+                    </td>
+                    <td>
+                        <input type="text" class="InAdapteTipPrefix" />
+                    </td>
+                </tr>
+
+            }
+
+        </tbody>
+    </table>
+
+    <input class="btn" type="button" onclick="Edit.Save()" value="保存" />
+</div>
+<div id="AddServiceType"></div>
+<div id="AddBand"></div>
+<div id="AddSerie"></div>
+<script>
+
+    var Edit = {
+        "Save": function () {
+            var dataArray = new Array();
+            var result = true;
+            if (@BaoYangActivityId<=0) {
+                return false;
+            }
+            $('#items >tbody> tr').each(function (i) {
+                if (i >= 0) {
+
+                    var columns = $(this).children();
+                    var jsonData = {
+                        "BaoYangActivityId": "",
+                        "ServicePackagesType": "",
+                        "ServicePackagesItems": "",
+                        "ServicePackagesName": "",
+                        "ServiceType": "",
+                        "ServiceCatalog": "",
+                        "ServiceCatalogName": "",
+                        "Brands": "",
+                        "Series": "",
+                        "Products": "",
+                        "InAdapteTipPrefix":""
+                    };
+                    jsonData.BaoYangActivityId = columns.eq(0).text();
+                    jsonData.ServicePackagesType = columns.eq(1).text();
+                    jsonData.ServicePackagesItems = columns.eq(2).text();
+                    jsonData.ServicePackagesName = columns.eq(3).text();
+                    jsonData.ServiceType = columns.eq(4).text();
+                    jsonData.ServiceCatalog = columns.eq(5).text();
+                    jsonData.ServiceCatalogName = columns.eq(6).text();
+
+                    jsonData.Brands = columns.eq(7).find(".Brands option:selected").val();
+                    jsonData.Series = columns.eq(8).find(".Series option:selected").val();
+                    jsonData.Products = columns.eq(9).find(".Products").val();
+                    jsonData.InAdapteTipPrefix=columns.eq(10).find(".InAdapteTipPrefix").val();
+                    if ((jsonData.Series && jsonData.Products && jsonData.Brands) || (jsonData.Brands && jsonData.Series) || (jsonData.Brands && jsonData.Products) || (jsonData.Series && jsonData.Products)) {
+                        result = false;
+                        alert("品牌，系列，产品只能选一个！");
+                    }
+                    dataArray[i] = jsonData;
+                }
+            });
+
+            if (result) {
+                $.ajax({
+                    type: "POST",
+                    url: "/BaoYangActivitySetting/EditItem",
+                    data: {
+                        "str": JSON.stringify(dataArray),
+                        "ActivityNum":'@ActivityNum'
+                    },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/BaoYangActivitySetting/ItemList?id=@BaoYangActivityId"+"&ActivityNum=@ActivityNum";
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        },
+        "AddBand": function (i,e) {
+            //window.localStorage.setItem("BaoYangActivitySettingBrand",$(i).parent().find(".Brands").val());
+            $("#AddBand").load('/BaoYangActivitySetting/Brand?catalogNames=' + e+"&brands="+encodeURIComponent($(i).parent().find(".Brands").val()));
+            $("#AddBand").dialog({
+                title: "根据服务类型关联品牌",
+                width: 450,
+                height: 680,
+                modal: true,
+                buttons: {
+                    "保存": function () {
+                        var model=BrandChecked();
+                        $(i).parent().find(".Brands").val(model);
+                        $("#AddBand").dialog('close');
+                    }
+                }
+            });
+        },
+        "AddSerie": function (i,e) {
+            //window.localStorage.setItem("BaoYangActivitySettingSeries",$(i).parent().find(".Series").val());
+            $("#AddSerie").load('/BaoYangActivitySetting/Serie?catalogNames=' + e+"&Series=" +encodeURIComponent($(i).parent().find(".Series").val()));
+            $("#AddSerie").dialog({
+                title: "根据品牌添加系列",
+                width: 450,
+                height: 680,
+                modal: true,
+                buttons: {
+                    "保存": function () {
+                        var model=BrandChecked();
+                        $(i).parent().find(".Series").val(model);
+                        $("#AddSerie").dialog('close');
+                    }
+                }
+            });
+        }
+    }
+
+</script>

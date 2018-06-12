@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no" name="format-detection">
+    <meta content="email=no" name="format-detection">
+
+    <link rel="stylesheet" href="css/battery.css?v=6" />
+    <script src="js/pageResponse.min.js"></script>
+    <script type="text/javascript">
+        document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+        var winWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth,
+            winHei = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
+            initWidRes = 720,
+            scale = winWidth / initWidRes;
+
+        var pRheight = winHei * initWidRes / winWidth;
+        pageResponse({
+            selectors: 'html',     //模块选择器，使用querySelectorAll的方法
+            mode: 'auto',     // auto || contain || cover ，默认模式为auto
+            width: '720',      //输入页面的宽度
+            height: pRheight   //输入页面的高度
+        })
+
+    </script>
+    <title>订单确认</title>
+</head>
+<body style="background-color: #f3f3f3;">
+    <div class="header">
+        <div class="step-warp">
+            <div class="steps">
+                <img src="img/step1.png" alt="" /> <div>根据车型和地区选择电瓶</div>
+                <img src="img/step2-1.png" alt="" /> <div>完善联系方式后下单</div>
+                <img src="img/step3.png" alt="" /> <div>免费上门安装</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="container" style="position: absolute;top: 48px;left: 0;right: 0;bottom: 150px;background-color: #f3f3f3;">
+        <div class="warpper">
+            <div class="user-info">
+                <div> <label>所在地区：</label> <input type="text" value="" readonly="readonly" id="region"> </div>
+                <div> <label>详细地址：</label><input type="text" id="address" placeholder="请输入"></div>
+                <div>
+                    <label>收货人：</label><input type="text" id="name" class="receiver" placeholder="请输入">
+                    <label class="tel">联系方式：</label><input type="text" value="" id="mobile" class="way" placeholder="请输入">
+                </div>
+            </div>
+            <div class="kf order"> <div><span class="icon"></span> <span>更换电瓶，免费上门安装</span></div> </div>
+            <div class="order-info">
+                <img src="" alt="" />
+                <div class="prod-name"></div>
+                <div class="price">&yen; <span></span></div>
+            </div>
+            <div class="zeng">
+                <div style="width: 100%;text-align:center;">
+                    <!--<img src="img/zeng.png" alt="" /> <label>小米电源</label> <label>小米电视</label>-->
+                    <label style="color:#F57C33; font-size:20px;">下单付款后，客服将电话与您预约安装时间，请保持电话畅通，谢谢！</label>
+                </div>
+            </div>
+
+            <div class="yhq clear">
+                <div class="yhqName">优惠券</div>
+                <div id="selectQuan">0元 优惠券</div>
+                <div class="quan-list" style="padding-bottom: 40px;">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="service-info">《安装服务说明》</div>
+    <div class="foot">
+        <div class="price">&yen;<span class="p-price"></span><span>(免费上门)</span></div>
+        <a href="javascript:;" class="pay" onclick="SubmitForm()">去结算</a>
+    </div>
+
+    <div class="notice order" style="display:block;">
+        <div class="content">
+            <img src="img/tip1.png" alt="" />
+        </div>
+        <div class="btn">
+            我已仔细阅读服务说明
+        </div>
+    </div>
+    <div class="notice-bg" style="display:block;"></div>
+
+    <script src="js/jquery.min.js"></script>
+    <script src="http://resource.tuhu.cn/Js/WebViewJavascriptBridge.js"></script>
+    <script src="js/iscroll.js"></script>
+    <script type="text/javascript" src="js/order.min.js?v=1"></script>
+    <script>
+        $(function () {
+            var myScroll = new IScroll('.container', { mouseWheel: true, click: true });
+        })
+    </script>
+</body>
+</html>

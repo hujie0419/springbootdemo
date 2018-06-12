@@ -1,0 +1,79 @@
+﻿@using Tuhu.Provisioning;
+@model  Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.GroupBuyingV2.LotteryGroupInfo>
+    @{
+        Layout = "~/Views/Shared/_Layout.cshtml";
+        ViewBag.Title = "拼团抽奖产品回收站";
+    }
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-2.1.1.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+
+    <div class="title" style="margin-bottom:20px;">
+        <h2>已完成抽奖</h2>
+    </div>
+    <hr />
+    <div>
+        <form class="form-inline" role="form" style="margin-bottom:20px;">
+            <div class="form-group">
+                <div class="col-md-10" style="padding-left:0;">
+                    <input type="text" class="form-control" id="productGroupId" placeholder="请输入ProductGroupId" value=@ViewBag.Filter>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" id="search_btn" class="btn btn-info">搜索</button>
+                </div>
+            </div>
+        </form>
+        @if (Model.Any())
+            {
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>ProductGroupId</th>
+                        <th>团类型</th>
+                        <th>团类别</th>
+                        <th>商品名称</th>
+                        <th>活动价</th>
+                        <th>开始时间</th>
+                        <th>结束时间</th>
+                        <th>抽奖规则</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Source)
+                {
+                        <tr>
+                            <td>@item.ProductGroupId</td>
+                            <td>@(item.GroupType == 0 ? "普通团" : (item.GroupType == 1 ? "新人团" : "团长特价"))</td>
+                            <td>@(item.GroupCategory == 0 ? "一般拼团" : "拼团抽奖")</td>
+                            <td>@item.ProductName</td>
+                            <td>@item.FinalPrice</td>
+                            <td>@item.BeginTime</td>
+                            <td>@item.EndTime</td>
+                            <td>@item.GroupDescription</td>
+                            <td><a class="btn btn-info" href="/GroupBuyingV2/LotteryInfo?productGroupId=@(item.ProductGroupId)" target="_blank">查看详情</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <h1>暂无拼团抽奖类型</h1>
+        }
+    </div>
+    @Html.Pager(Model.Pager, true, id => Url.Action("LotteryRecycleBin", new
+   {
+       productGroupId = ViewBag.Filter,
+       pageIndex = id,
+       pageSize = Model.Pager.PageSize
+   }))
+    <script>
+        $(function () {
+            $("#search_btn").click(function () {
+                var str = $("#productGroupId").val().trim();
+                if (str === '') return;
+                window.location.href = `/GroupBuyingV2/LotteryRecycleBin?productGroupId=${str}`;
+            })
+        })
+    </script>

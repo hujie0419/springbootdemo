@@ -1,0 +1,245 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <link rel="stylesheet" href="css/question.css" />
+    <script type="text/javascript" src="js/zepto.min.js"></script>
+
+</head>
+<body>
+    <div class="wrapper">
+        <div class="qs-top" style="display:none;">
+            <img src="img/tuhu-icon.png" />
+            <span onclick="DeepShare.GetDeepShare();">打开途虎APP</span>
+        </div>
+        <div class="qs-title">
+            <div class="qs-des" id="Content"></div>
+            <div class="carstyle">
+                <img src="img/biaoqian.png" />
+                <span id="CategoryTags"></span>
+            </div>
+        </div>
+        <div class="qs-list">
+            <ul id="commentItems">
+                <!--<li>
+                    <div class="userpart">
+                        <div class="userheadimg">
+                            <img src="http://resource.tuhu.cn/Image/UserCenter/headimg_d.png" />
+                            <span class="level V1"></span>
+                        </div>
+                        <div class="userdetail">
+                            <span class="kile">3.2K</span>
+                            <span class="thank">感谢<span>
+                        </div>
+                    </div>
+                    <div class="username">萌萌哒</div>
+                    <div class="comment clearfix" name="content">
+                        高明的骗术，可以完全不用撒谎，只需要告诉你真相的一部分你说CRV的轮胎是T级别，跟面包车。名爵锐腾是W级，业界良心，比CRV后倒多了。实验室说的好像很有道理啊，但事实真的这么简单？
+                    </div>
+                </li>-->
+            </ul>
+        </div>
+        <div class="qs-btn" style="display:none;">
+            <span onclick="DeepShare.GetDeepShare();">养车有问题，来途虎找答案</span>
+        </div>
+    </div>
+    <div id="commentTemplate" style="display:none;">
+        <li ID="{ID}" PKID="{PKID}">
+            <div class="userpart">
+                <div class="userheadimg">
+                    <img src="{UserHead}" />
+                    <span class="{UserGrade}"></span>
+                </div>
+                <div class="userdetail">
+                    <span class="kile">{Praise}</span>
+                    <span class="thank">感谢<span>
+                </div>
+            </div>
+            <div class="username">{UserName}</div>
+            <div class="comment clearfix" name="content">{CommentContent} {CommentImage}</div>
+        </li>
+    </div>
+</body>
+</html>
+<script src="http://resource.tuhu.cn/Scripts/deepShare.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+    $(function () {
+        $(".qs-list").on("tap", ".open", function () {
+            //将数据存入content中，实际数据要从数据库读出
+            $(this).parent(".comment").html($(this).parent().attr("content") + '<span class="close"></span>');
+        });
+        $(".qs-list").on("tap", ".close", function () {
+            $(this).parent().html($(this).parent().attr("content").substr(0, 94) + '...' + '<span class="open">查看全部</span>');
+        });
+    });
+
+    var FAQListConfigs = {
+        DefaultImage : "http://resource.tuhu.cn/Image/UserCenter/headimg_d.png",
+        InvokePost: function () {
+            var _PKID = (FAQListConfigs.GetQueryString("PKID") || 0),
+                _QueryType = (FAQListConfigs.GetQueryString("QueryType") || 2);
+
+            if (_PKID > 0) {
+                $.ajax({
+                    url: "http://faxian.tuhu.cn/FAQShare/FAQList",
+                    data: {
+                        "PKID": _PKID,
+                        "QueryType": _QueryType
+                    },
+                    dataType: "json",
+                    type: "post",
+                    success: function (data) {
+                        FAQListConfigs.OutPutHtml(data);
+                        try {
+                            DeepShare.GetFAQList(data);
+                        } catch (em) { }
+                    }
+                });
+            }
+        },
+        OutPutHtml: function (data) {
+            var FAQData = data, _title = FAQData.FAQList.Content || "";
+            //标题
+            $(document).find("title").html(_title.length > 10 ? _title.substring(0, 10) + "..." : _title);
+            //问题
+            if (FAQData.FAQList != null) {
+                var _CategoryTagsForStr = "",
+                    _CategoryTags = JSON.parse(FAQData.FAQList.CategoryTags) || null;
+                if (_CategoryTags != null) {
+                    var _Loop = 0;
+                    for (i in _CategoryTags) {
+                        if (parseInt(_CategoryTags[i].isShow || 0) == 1 && _Loop < 3) {
+                            ++_Loop;
+                            _CategoryTagsForStr += _CategoryTags[i].value + "&nbsp;&nbsp;";
+                        }
+                    }
+                }
+
+                $("#Content").html((FAQData.FAQList.Content||"") + (this.ImagesSplitManage(FAQData.FAQList.Image) || ""));
+                $("#CategoryTags").html(_CategoryTagsForStr);
+            }
+
+            //回复
+            if (FAQData.FAQDetail != null) {
+                var _htmlTemplate = "",
+                    _commentTemplate = $("#commentTemplate").html();
+                for (i in FAQData.FAQDetail) {
+                    var _html = _commentTemplate;
+                    var _detail = FAQData.FAQDetail[i];
+                    _htmlTemplate += _html
+                        .replace(/{ID}/ig, _detail.ID)
+                        .replace(/{PKID}/ig, _detail.PKID)
+                        .replace(/{UserHead}/ig, (_detail.UserHead || "").length > 0 ? _detail.UserHead + "@10Q" : FAQListConfigs.DefaultImage)
+                        .replace(/{UserGrade}/ig, FAQListConfigs.UserGradeToClass(_detail.UserGrade))
+                        .replace(/{Praise}/ig, _detail.Praise || 0)
+                        .replace(/{CommentContent}/ig, _detail.CommentContent || "")
+                        .replace(/{UserName}/ig, (_detail.UserName || "") + ((_detail.Vehicle || "").length > 0 ? " | " + _detail.Vehicle : ""))
+                        .replace(/{CommentImage}/ig, this.ImagesSplitManage(_detail.CommentImage || ""));
+                }
+                $("#commentItems").append(_htmlTemplate);
+            }
+            FAQListConfigs.Comment();
+        },
+        GetQueryString: function (name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]); return null;
+        },
+        ConvertJSONDateToJSDateObject: function (JSONDateString) {
+            var date = new Date(parseInt(JSONDateString.replace("/Date(", "").replace(")/", ""), 10));
+            return date;
+        },
+        ToStringDateTime: function (DateIn) {
+            var Year = 0;
+            var Month = 0;
+            var Day = 0;
+            var Hour = 0;
+            var Minute = 0;
+            var CurrentDate = "";
+            //初始化时间
+            Year = DateIn.getYear();
+            Month = DateIn.getMonth();
+            Day = DateIn.getDate();
+            Hour = DateIn.getHours();
+            Minute = DateIn.getMinutes();
+            Year = (Year < 1900 ? (1900 + Year) : Year);
+            CurrentDate = Year + "-";
+            if (Month >= 10) {
+                CurrentDate = CurrentDate + Month + "-";
+            }
+            else {
+                CurrentDate = CurrentDate + "0" + Month + "-";
+            }
+            if (Day >= 10) {
+                CurrentDate = CurrentDate + Day;
+            }
+            else {
+                CurrentDate = CurrentDate + "0" + Day;
+            }
+
+            if (Hour >= 10) {
+                CurrentDate = CurrentDate + " " + Hour;
+            }
+            else {
+                CurrentDate = CurrentDate + " 0" + Hour;
+            }
+            if (Minute >= 10) {
+                CurrentDate = CurrentDate + ":" + Minute;
+            }
+            else {
+                CurrentDate = CurrentDate + ":0" + Minute;
+            }
+            return CurrentDate;
+        },
+        UserGradeToClass: function (userLevel) {
+            if (userLevel == "V0" || userLevel == "普通成员") {
+                return "level V0";
+            }
+            else if (userLevel == "V1" || userLevel == "银卡会员") {
+                return "level V1";
+            }
+            else if (userLevel == "V2" || userLevel == "金卡会员") {
+                return "level V2";
+            }
+            else if (userLevel == "V3" || userLevel == "白金卡会员") {
+                return "level V3";
+            }
+            else if (userLevel == "V4" || userLevel == "黑金卡会员") {
+                return "level V4";
+            }
+            else {
+                return "level V0";
+            }
+        },
+        Comment: function () {
+            for (var i = 0; i < $(".comment").length; i++) {
+                var m = $(".comment").eq(i);
+                if (m.text().length > 94) {
+                    m.attr("content", m.html());
+                    m.html(m.text().substr(0, 94) + '...' + '<span class="open">查看全部</span>');
+                }
+            }
+        },
+        ImagesSplitManage: function (images) {
+            if ((images || "").length > 0) {
+                var _imags = images.split(';'), _imagesHtml = "";
+                for (var i = 0; i < _imags.length; i++) {
+                    if(_imags[i].indexOf(".jpg")>0)
+                        _imagesHtml += "<img width=\"100%\" src=\"" + _imags[i] + "@10Q" + "\" />";
+                    else
+                        _imagesHtml += "<img width=\"100%\" src=\"" + _imags[i] + "\" />";
+                }
+                return _imagesHtml;
+            }
+            return "";
+        }
+    }
+    FAQListConfigs.InvokePost();
+</script>

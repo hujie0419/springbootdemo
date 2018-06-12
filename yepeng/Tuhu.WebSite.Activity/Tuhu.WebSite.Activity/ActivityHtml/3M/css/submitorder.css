@@ -1,0 +1,801 @@
+﻿body {
+  background: #ddd;
+}
+input::-webkit-input-placeholder {
+  color: #999;
+}
+input:-moz-placeholder {
+  color: #999;
+}
+input::-moz-placeholder {
+  color: #999;
+}
+input:-ms-input-placeholder {
+  color: #999;
+}
+.wrapper {
+  width: 100%;
+  max-width: 630px;
+  
+  background: #eee;
+  margin: 0 auto;
+  min-height: 100%;
+  font-size: 14px;
+  padding-bottom: 55px;
+}
+.wrapper .mdinfo {
+  background: #fffff3;
+}
+.wrapper .mdinfo .bgline {
+  background: url('../images/Tires/tireslist.png') no-repeat 10px -576px;
+  width: 100%;
+  height: 10px;
+}
+.wrapper .mdinfo .userinfo {
+  padding: 10px 16px 0 16px;
+  position: relative;
+}
+.wrapper .mdinfo .userinfo::before,
+.wrapper .mdinfo .userinfo::after {
+  position: absolute;
+  content: "";
+  width: 41px;
+  height: 50px;
+  display: block;
+  background: url('../images/Tires/tireslist.png') no-repeat 0 -143px;
+  zoom: 0.65;
+  left: 40px;
+  top: 21px;
+}
+.wrapper .mdinfo .userinfo::after {
+  left: 52.4%;
+  background-position: -60px -143px;
+  clear: both;
+}
+.wrapper .mdinfo .userinfo input {
+  width: 50%;
+  border: 1px solid #d9d9d9;
+  background: #ffffff;
+  color: #333;
+  padding: 10px 0 10px 43px;
+  background-size: 26px;
+  float: left;
+  
+}
+.wrapper .mdinfo .userinfo .username {
+  border-right: 0;
+}
+.wrapper .mdinfo .userinfo .tel {
+  background: #ffffff;
+  background-size: 26px;
+  padding-left: 37px;
+}
+.wrapper .mdinfo .md {
+  padding: 13px 16px 13px 0;
+  border-bottom: 1px solid #e3e3e3;
+  margin-left: 16px;
+}
+.wrapper .mdinfo .md .label {
+  color: #666;
+  float: left;
+}
+.wrapper .mdinfo .md .choose {
+  color: #333;
+  float: right;
+  position: relative;
+}
+.wrapper .mdinfo .md .choose i{margin-left:3px; color:#f57c33;font-style:normal;}
+
+.wrapper .mdinfo .md .choose::after {
+  content: "";
+  position: absolute;
+  /*background: url('Tires/tireslist.png') no-repeat -220px -150px;*/
+  width: 30px;
+  right: -5px;
+  top: 3px;
+  height: 35px;
+  zoom: 0.5;
+}
+.wrapper .mdinfo .md .choose.time {
+  text-align: right;
+  border: 0;
+  line-height:16px;
+  padding-right: 25px;
+  background: #fffff3;
+  font-family: Arial, "微软雅黑";
+}
+.wrapper .mdinfo .md::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.wrapper .mdinfo .address {
+  padding-bottom: 35px;
+  position: relative;
+}
+.wrapper .mdinfo .address::after {
+  position: absolute;
+  content: "";
+  background: url('../images/Tires/tireslist.png') no-repeat -8px -576px;
+  display: block;
+  width: 100%;
+  height: 5px;
+  bottom: 0;
+  left: 0;
+}
+.wrapper .mdinfo .address::before {
+  content: "";
+  position: absolute;
+  background: url('../images/Tires/tireslist.png') no-repeat -220px -150px;
+  width: 30px;
+  right: 25px;
+  top: 27px;
+  height: 35px;
+  zoom: 0.5;
+  z-index: 9;
+}
+.wrapper .payway .title,
+.wrapper .coupons .title {
+  background: #fff;
+  margin-top: 10px;
+  border-top: 1px solid #e3e3e3;
+  border-bottom: 1px solid #e3e3e3;
+  padding: 15px 18px 15px 16px;
+}
+.wrapper .payway .title .label,
+.wrapper .coupons .title .label {
+  float: left;
+  color: #666;
+}
+.wrapper .payway .title .choose,
+.wrapper .coupons .title .choose {
+  color: #333;
+  float: right;
+  padding-right: 25px;
+  position: relative;
+}
+.wrapper .payway .title .choose::after,
+.wrapper .coupons .title .choose::after {
+  content: "";
+  position: absolute;
+  background: url('../images/Tires/tireslist.png') no-repeat -220px -150px;
+  width: 30px;
+  height: 35px;
+  right: 0;
+  top: 5px;
+  zoom: 0.5;
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+.wrapper .payway .title::after,
+.wrapper .coupons .title::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.wrapper .payway .title.selected .choose::after,
+.wrapper .coupons .title.selected .choose::after {
+  -moz-transform: rotate(270deg);
+  -ms-transform: rotate(270deg);
+  -o-transform: rotate(270deg);
+  -webkit-transform: rotate(270deg);
+  transform: rotate(270deg);
+  right: -7px;
+}
+.wrapper .payway ul,
+.wrapper .coupons ul {
+  background: #f8f8f8;
+}
+.wrapper .payway ul li,
+.wrapper .coupons ul li {
+  border-bottom: 1px solid #e3e3e3;
+  padding: 14px 16px 14px 53px;
+  background-size: 25px;
+  color: #999;
+  position: relative;
+}
+.wrapper .payway ul li::before,
+.wrapper .coupons ul li::before {
+  position: absolute;
+  content: "";
+  height: 45px;
+  width: 45px;
+  background: url('../images/Tires/tireslist.png') no-repeat -76px -305px;
+  left: 10px;
+  top: 5px;
+  -moz-transform: scale(0.65);
+  -ms-transform: scale(0.65);
+  -o-transform: scale(0.65);
+  -webkit-transform: scale(0.65);
+  transform: scale(0.65);
+}
+.wrapper .payway ul li::after,
+.wrapper .coupons ul li::after {
+  position: absolute;
+  content: "";
+  height: 45px;
+  width: 45px;
+  background: url('../images/Tires/tireslist.png') no-repeat -108px -145px;
+  right: 0;
+  top: 5px;
+  -moz-transform: scale(0.65);
+  -ms-transform: scale(0.65);
+  -o-transform: scale(0.65);
+  -webkit-transform: scale(0.65);
+  transform: scale(0.65);
+}
+.wrapper .coupons ul li {
+  padding: 15px 16px 16px 16px;
+}
+.wrapper .coupons ul li::before {
+  background: none;
+}
+.wrapper .coupons ul li::after {
+  background: none;
+}
+.wrapper .payway .tip {
+  color: #999;
+  font-size: 14px;
+  text-align: center;
+  padding: 10px 0 0px 0;
+}
+.wrapper .payway .tip div {
+  width: 200px;
+  margin: 0 auto;
+  position: relative;
+}
+.wrapper .payway .tip div i {
+  background: url('../images/Tires/tips.png') no-repeat 0 0;
+  background-size: 18px;
+  width: 25px;
+  height: 25px;
+  display: inline-block;
+  position: absolute;
+  left: -15px;
+}
+.wrapper .payway ul li.online.selected {
+  color: #333;
+}
+.wrapper .payway ul li.online.selected::before {
+  position: absolute;
+  content: "";
+  height: 45px;
+  width: 45px;
+  background: url('../images/Tires/tireslist.png') no-repeat -136px -305px;
+  left: 10px;
+  top: 5px;
+}
+.wrapper .payway ul li.online.selected::after {
+  position: absolute;
+  content: "";
+  height: 45px;
+  width: 45px;
+  background: url('../images/Tires/tireslist.png') no-repeat -160px -145px;
+  right: 0;
+  top: 5px;
+}
+.wrapper .payway ul li.mdpay {
+  position: relative;
+}
+.wrapper .payway ul li.mdpay::before {
+  position: absolute;
+  content: "";
+  height: 45px;
+  width: 45px;
+  background: url('../images/Tires/tireslist.png') no-repeat -377px -305px;
+  left: 10px;
+  top: 5px;
+}
+.wrapper .payway ul li.mdpay.selected {
+  color: #333;
+}
+.wrapper .payway ul li.mdpay.selected::before {
+  position: absolute;
+  content: "";
+  height: 45px;
+  width: 45px;
+  background: url('../images/Tires/tireslist.png') no-repeat -317px -305px;
+  left: 10px;
+  top: 5px;
+}
+.wrapper .payway ul li.mdpay.selected::after {
+  position: absolute;
+  content: "";
+  height: 45px;
+  width: 45px;
+  background: url('../images/Tires/tireslist.png') no-repeat -160px -145px;
+  right: 0;
+  top: 5px;
+}
+.wrapper .coupons .title {
+  border-top: 0;
+}
+.wrapper .coupons .title .fl {
+  float: right;
+}
+.wrapper .coupons .title .fl .red {
+  font-weight: bold;
+  margin-right: 5px;
+}
+.wrapper .coupons .title .red {
+  color: #df3448;
+}
+.wrapper .coupons ul li {
+  position: relative;
+}
+.wrapper .coupons ul li.selected {
+  color: #333;
+}
+.wrapper .coupons ul li .red {
+  color: #df3448;
+  padding-right: 5px;
+}
+.wrapper .coupons ul li::after {
+  position: absolute;
+  height: 45px;
+  width: 45px;
+  background: url('../images/Tires/tireslist.png') no-repeat -108px -145px;
+  right: 0;
+  top: 5px;
+}
+.wrapper .coupons ul li.selected::after {
+  position: absolute;
+  height: 45px;
+  width: 45px;
+  background: url('../images/Tires/tireslist.png') no-repeat -160px -145px;
+  right: 0;
+  top: 5px;
+}
+.wrapper .give {
+  border-top: 1px solid #e3e3e3;
+  border-bottom: 1px solid #e3e3e3;
+  padding: 15px 0 15px 52px;
+  margin: 12px 0;
+  color: #666;
+  background: url('../images/Tires/give.png') no-repeat 16px 50% #fff;
+  background-size: 25px;
+}
+.wrapper .bx p {
+  color: #999;
+  padding: 10px 0 0 16px;
+}
+.wrapper .bx .title {
+  background: #fff;
+  border-top: 1px solid #e3e3e3;
+  border-bottom: 1px solid #e3e3e3;
+  padding: 15px 18px 15px 16px;
+  margin-top: 12px;
+  color: #999;
+}
+.wrapper .bx .title .receive {
+  float: left;
+  position: relative;
+  padding-left: 35px;
+}
+.wrapper .bx .title .receive::after {
+  position: absolute;
+  content: "";
+  height: 45px;
+  width: 45px;
+  background: url('../images/Tires/tireslist.png') no-repeat -108px -145px;
+  left: -10px;
+  top: -10px;
+  -moz-transform: scale(0.65);
+  -ms-transform: scale(0.65);
+  -o-transform: scale(0.65);
+  -webkit-transform: scale(0.65);
+  transform: scale(0.65);
+}
+.wrapper .bx .title.selected {
+  color: #666;
+}
+.wrapper .bx .title.selected .receive::after {
+  background: url('../images/Tires/tireslist.png') no-repeat -160px -145px;
+}
+.wrapper .bx .title .carnum {
+  float: right;
+}
+.wrapper .bx .title .carnum .city {
+  position: relative;
+  padding-right: 25px;
+}
+.wrapper .bx .title .carnum .city::after {
+  content: "";
+  position: absolute;
+  background: url('../images/Tires/tireslist.png') no-repeat -220px -150px;
+  width: 30px;
+  height: 35px;
+  right: 0;
+  top: 5px;
+  zoom: 0.5;
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+.wrapper .bx .title .carnum input {
+  border: 0;
+  width: 95px;
+  text-align: right;
+}
+.wrapper .bx .title::after {
+  display: table;
+  content: "";
+  clear: both;
+}
+.wrapper .location p {
+  color: #999;
+  padding: 10px 0 0 16px;
+}
+.wrapper .location .title {
+  background: #fff;
+  border-top: 1px solid #e3e3e3;
+  border-bottom: 1px solid #e3e3e3;
+  padding: 15px 18px 15px 16px;
+  margin-top: 12px;
+  color: #999;
+}
+.wrapper .location .title .rec {
+  float: left;
+  position: relative;
+  padding-left: 35px;
+}
+.wrapper .location .title .rec::after {
+  position: absolute;
+  content: "";
+  height: 45px;
+  width: 45px;
+  background: url('../images/Tires/tireslist.png') no-repeat -108px -145px;
+  left: -10px;
+  top: -10px;
+  -moz-transform: scale(0.65);
+  -ms-transform: scale(0.65);
+  -o-transform: scale(0.65);
+  -webkit-transform: scale(0.65);
+  transform: scale(0.65);
+}
+.wrapper .location .title.selected {
+  color: #666;
+}
+.wrapper .location .title.selected .rec::after {
+  background: url('../images/Tires/tireslist.png') no-repeat -160px -145px;
+}
+.wrapper .location .title .service {
+  float: right;
+}
+.wrapper .location .title .service .price {
+  position: relative;
+  padding-right: 25px;
+}
+.wrapper .location .title .service .price .red {
+  color: #df3448;
+}
+.wrapper .location .title .service .price .question {
+  position: absolute;
+  background: url('../images/Tires/location.png') no-repeat 0 -130px;
+  width: 30px;
+  height: 35px;
+  right: -34px;
+  top: -8px;
+  -moz-transform: scale(0.6);
+  -ms-transform: scale(0.6);
+  -o-transform: scale(0.6);
+  -webkit-transform: scale(0.6);
+  transform: scale(0.6);
+}
+.wrapper .location .title::after {
+  display: table;
+  content: "";
+  clear: both;
+}
+.wrapper .products > .title {
+  background: #fff;
+  border-top: 1px solid #e3e3e3;
+  border-bottom: 1px solid #e3e3e3;
+  padding: 15px 18px 15px 16px;
+  margin-top: 10px;
+}
+.wrapper .products > .title .label {
+  float: left;
+  color: #666;
+}
+.wrapper .products > .title .choose {
+  color: #333;
+  float: right;
+  padding-right: 25px;
+  position: relative;
+}
+.wrapper .products > .title .choose .red {
+  color: #df3448;
+}
+.wrapper .products > .title .choose::after {
+  content: "";
+  position: absolute;
+  background: url('../images/Tires/tireslist.png') no-repeat -220px -150px;
+  width: 30px;
+  height: 35px;
+  right: 0;
+  top: 5px;
+  zoom: 0.5;
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+.wrapper .products > .title::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.wrapper .products > .title.selected .choose::after {
+  -moz-transform: rotate(270deg);
+  -ms-transform: rotate(270deg);
+  -o-transform: rotate(270deg);
+  -webkit-transform: rotate(270deg);
+  transform: rotate(270deg);
+  right: -7px;
+}
+.wrapper .products ul {
+  border-bottom: 1px solid #d9d9d9;
+  /*height:330px;
+            overflow:auto;*/
+}
+.wrapper .products ul li {
+  background: #fff;
+}
+.wrapper .products ul li a {
+  display: block;
+  padding: 10px 0 0px 16px;
+  position: relative;
+}
+.wrapper .products ul li a .list-img {
+  float: left;
+  margin-right: 8px;
+  width: 64px;
+  height: 64px;
+}
+.wrapper .products ul li a .list-img img {
+  width: 64px;
+  height: 64px;
+}
+.wrapper .products ul li a .list-img .jiyou{
+  width:50px;height:52px;margin:8px auto 0;display:block;
+}
+.wrapper .products ul li a .productinfo {
+  width: 72%;
+  float: left;
+  border-bottom: 1px solid #d9d9d9;
+  padding-bottom: 10px;
+}
+.wrapper .products ul li a .productinfo .title {
+  color: #333;
+  line-height: 25px;
+  float: left;
+  width: 66%;
+  height: 64px;
+  overflow: hidden;
+}
+.wrapper .products ul li a .productinfo .price {
+  width: 29%;
+  text-align: right;
+  color: #999;
+  position: absolute;
+  right: 15px;
+  top:30px;
+  line-height: 25px;
+}
+.wrapper .products ul li a .productinfo::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.wrapper .products ul li a::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.wrapper .products ul li:last-child a .productinfo {
+  border: 0;
+}
+.wrapper .ul_list li {
+    padding: 10px 0 10px 18px;
+    border-top: 1px solid #d9d9d9;
+}
+.wrapper .ul_list li:first-child {
+  border-top: 0;
+}
+.wrapper .ul_list .type {
+  display: inline-block;
+  vertical-align: middle;
+  width:20%;
+}
+.wrapper .ul_list .name {
+  display: inline-block;
+  vertical-align: middle;
+  color: #999;
+  border-left: 1px solid #d9d9d9;
+  padding-left: 10px;
+  width: 80%;
+}
+
+
+
+.wrapper .payinfo {
+  background: #fff;
+  border-top: 1px solid #e3e3e3;
+  border-bottom: 1px solid #e3e3e3;
+  padding: 10px 16px;
+  margin: 10px 0 0 0;
+}
+.wrapper .payinfo p span {
+  line-height: 28px;
+}
+.wrapper .payinfo p .label {
+  color: #999;
+  float: left;
+}
+.wrapper .payinfo p .price {
+  color: #df3448;
+  float: right;
+}
+.wrapper .payinfo p .price.discount {
+  color: #47ab10;
+}
+.wrapper .payinfo p::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.wrapper .submitorder {
+  position: fixed;
+  width: 100%;
+  max-width: 630px;
+  bottom: 0;
+}
+.wrapper .submitorder div {
+  width: 50%;
+  float: left;
+  padding-left: 15px;
+  color: #fff;
+  background: #000;
+  font-size: 14px;
+  height: 44px;
+  line-height: 44px;
+}
+.wrapper .submitorder div span {
+  font-size: 20px;
+}
+.wrapper .submitorder .subbtn {
+  padding-left:0;
+  text-align: center;
+  background: #df3448;
+  font-size:16px;
+}
+.wrapper .submitorder::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.wrapper .province {
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  position: absolute;
+  top: 0;
+  z-index: 9;
+}
+.wrapper .province .prolist {
+  background: #eee;
+  width: 100%;
+  overflow: hidden;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  padding: 10px 0 10px 12px;
+}
+.wrapper .province .prolist div {
+  background: #fff;
+  color: #333;
+  border-radius: 5px;
+  padding: 10px 15px;
+  float: left;
+  margin: 0 7px 10px 0;
+}
+.wrapper .province .prolist div.selected {
+  background: #df3448;
+  color: #fff;
+}
+.wrapper .province .prolist::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.wrapper .locationtip {
+  background: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  max-width: 630px;
+  z-index: 9;
+}
+.wrapper .locationtip .close {
+  position: absolute;
+  background: url('../images/Tires/location.png') no-repeat 0 0;
+  width: 50px;
+  height: 120px;
+  top: -2%;
+  right: 7%;
+  -moz-transform: scale(0.5);
+  -ms-transform: scale(0.5);
+  -o-transform: scale(0.5);
+  -webkit-transform: scale(0.5);
+  transform: scale(0.5);
+}
+.wrapper .locationtip .info {
+  margin: 18% auto 0;
+  background: #fff;
+  width: 80%;
+  border-radius: 6px;
+  padding: 10px 25px;
+  height: 80%;
+  overflow: auto;
+  position: relative;
+}
+.wrapper .locationtip .info h3 {
+  color: #f57c33;
+  padding: 5px 0;
+  position: relative;
+}
+.wrapper .locationtip .info h3::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 15px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f57c33;
+}
+.wrapper .locationtip .info p {
+  color: #666;
+  line-height: 22px;
+  position: relative;
+  padding-left: 10px;
+}
+.wrapper .locationtip .info p::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #bfbfbf;
+}
+.wrapper .locationtip .info p.nostyle {
+  padding: 0;
+}
+.wrapper .locationtip .info p.nostyle::before {
+  background: none;
+  width: 0;
+}
+@media screen and (min-width: 375px) {
+  .wrapper .locationtip .close {
+    top: 0;
+  }
+}
+@media screen and (min-width: 500px) {
+  .wrapper .locationtip .close {
+    top: 4%;
+  }
+}
+#tracker,
+.visadd_trk_img {
+  display: none;
+}

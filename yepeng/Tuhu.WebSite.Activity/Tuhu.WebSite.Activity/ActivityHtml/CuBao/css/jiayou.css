@@ -1,0 +1,514 @@
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: "微软雅黑";
+  font-size: 62.5%;
+}
+html body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    /*background: url('../img/hk_bg.png') no-repeat 0 bottom;*/
+    background-size: contain;
+    background-color: #e21428;
+}
+html body img {
+  width: 100%;
+}
+html body img.bottom {
+  margin-top: -6px;
+}
+html body .middle {
+  position: relative;
+  width: 100%;
+}
+html body .middle .input_container {
+  background-color: #f8d956;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  box-shadow: -2px -2px #cf9f21, 1px 0 #cf9f21, 0 1px #cf9f21;
+  -moz-box-shadow: -2px -2px #cf9f21, 1px 0 #cf9f21, 0 1px #cf9f21;
+  -webkit-box-shadow: -2px -2px #cf9f21, 1px 0 #cf9f21, 0 1px #cf9f21;
+  position: absolute;
+  left: 50%;
+}
+
+.lpq{
+    margin-top:-4px;
+}
+html body .middle .input_container label {
+  display: inline-block;
+  color: #cb7504;
+  position: absolute;
+  left: 12px;
+}
+html body .middle .input_container .input {
+  position: absolute;
+  left: 10px;
+  border: none;
+  background: rgba(0, 0, 0, 0);
+  outline: none;
+  color: #471406;
+}
+html body .middle .input_container .getCode {
+  display: inline-block;
+  border-radius: 5px;
+  box-shadow: 0 4px #a7a7a7;
+  -webkit-box-shadow: 0 4px #a7a7a7;
+  -moz-box-shadow: 0 4px #a7a7a7;
+  position: absolute;
+  right: 3px;
+  background-color: #bfbfbf;
+  color: #FFFFFFF;
+}
+html body .middle .input_container .getCode.disabled {
+  background-color: #bfbfbf;
+  color: #ffffff;
+  box-shadow: 0 4px #a7a7a7;
+  -webkit-box-box-shadow: 0 4px #a7a7a7;
+  -moz-box-shadow: 0 4px #a7a7a7;
+}
+
+.user-info{
+    position:absolute;
+    color:#ffffff;
+    text-align:center;
+    width:200px;
+    left:50%;
+    margin-left:-100px;
+    margin-top:-50px;
+    font-size:16px;
+}
+
+.user-info p:first-child{
+    line-height:14px;
+}
+
+.user-info p:last-child{
+    line-height:6px;
+}  
+
+.tipContainer {
+  width: 100%;
+  text-align: center;
+  visibility:hidden;
+}
+.tipContainer .tip {
+  display: inline-block;
+  border-radius: 8px;
+  background-color: #f4613d;
+  color: #FFFFFF;
+  padding: 3px 10px;
+  margin: 0 auto;
+}
+html body .mslq {
+  /*background: url(http://image.tuhu.cn/activity/001/mslq.png) no-repeat;*/
+  background: url(/ActivityHtml/CuBao/img/mslq.jpg) no-repeat;
+  background-size: contain;
+  color:#ffb401;
+  text-align:center;
+  font-weight:bold;
+  border:none;
+  outline:none;
+}
+
+html body .mslqd {
+  /*position: absolute;*/
+  /*background: url(http://image.tuhu.cn/activity/001/mslqd.png) no-repeat;*/
+  background: url(/ActivityHtml/CuBao/img/mslqd.jpg) no-repeat;
+  background-size: contain;
+  color:#ffffff;
+  text-align:center;
+  font-weight:bold;
+  border:none;
+  outline:none;
+}
+html body .jy_layer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  background: url(http://image.tuhu.cn/activity/001/jy_success.png) no-repeat;
+  background-size: contain;
+  z-index: 10;
+  display: none;
+}
+html body .jy_layer span {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  bottom: 30px;
+  left: 0;
+  color: #989898;
+  font-size: 14px;
+}
+html body .jy_layer + div {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  display: none;
+}
+html body .downBtn {
+  display: block;
+  background: url(http://image.tuhu.cn/activity/001/downBtn.png) no-repeat;
+  background-size: contain;
+  margin: 0 auto 10px;
+  text-align: center;
+  color: #e02f06;
+  text-decoration: none;
+}
+
+.downApp{
+    position:fixed;
+    left:0;
+    bottom:0;
+    display: block;
+    width: 100%;
+    background: rgba(98, 88, 48, 0.9);
+    color: #ffffff;
+    padding:10px 0;
+    text-decoration:none;
+}
+
+.downApp > span {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.downApp > span:nth-of-type(1) {
+    background: url(../img/tiger.png) no-repeat;
+    background-size: contain;
+}
+
+.downApp > span:nth-of-type(2) {
+    text-align: left;
+}
+
+.downApp > span:nth-of-type(3) {
+    margin-left: 8px;
+    border: 1px solid #FFFFFF;
+    line-height: normal;
+    height: auto;
+    padding: 3px 8px;
+    border-radius: 3px;
+    text-align:center
+}
+
+.downApp > label {
+    display: inline-block;
+    padding: 2px 10px;
+    position: absolute;
+    right: 5px;
+    top: 0;
+    color: #FFFFFF;
+    line-height: normal;
+    border-radius: 8px;
+}
+
+@media only screen and (min-width: 414px) and (max-width: 640px) {
+
+    .downApp > span:nth-of-type(1) {
+        margin:0 15px;
+        width:40px;
+        height:40px;
+    }
+
+    .downApp > span:nth-of-type(2) {
+        line-height:18px;
+    }
+
+    .downApp > span:nth-of-type(3) {
+        width:70px;
+        height:20px;
+        line-height:20px;
+    }
+
+    .downApp > label {
+       font-size:18px;
+    }
+
+  .rule {
+    margin-top: -10px;
+  }
+  .middle {
+    height: 134px;
+  }
+  .middle .input_container {
+    width: 60%;
+    margin-left: -30%;
+    height: 40px;
+    position: absolute;
+  }
+  .middle .input_container:nth-child(1) {
+    top: 10px;
+  }
+  .middle .input_container:nth-child(2) {
+    top: 60px;
+  }
+  .middle .input_container label,
+  .middle .input_container .input {
+    height: 40px;
+    font-size: 18px;
+    line-height: 36px;
+  }
+  .middle .input_container .codeInput {
+    width: 120px;
+  }
+  .middle .input_container .getCode {
+    padding: 3px 8px;
+    font-size: 16px;
+    margin-top: 5px;
+  }
+  .tipContainer{
+      margin-top:16px;
+  }
+  .mslq , .mslqd{
+    width: 250px;
+    height: 70px;
+    margin:6px auto 20px;
+    font-size:24px;
+  }
+  .jy_layer {
+    width: 250px;
+    height: 260px;
+  }
+  .downBtn {
+    width: 230px;
+    height: 60px;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 55px;
+  }
+}
+@media only screen and (min-width: 375px) and (max-width: 413px) {
+    .downApp > span:nth-of-type(1) {
+        margin:0 10px;
+        width:40px;
+        height:40px;
+    }
+
+    .downApp > span:nth-of-type(2) {
+        line-height:18px;
+    }
+
+    .downApp > span:nth-of-type(3) {
+        width:60px;
+        height:20px;
+        line-height:20px;
+    }
+
+    .downApp > label {
+       font-size:16px;
+    }
+  .rule {
+    margin-top: -10px;
+  }
+  .middle {
+    height: 134px;
+  }
+  .middle .input_container {
+    width: 60%;
+    margin-left: -30%;
+    height: 40px;
+    position: absolute;
+  }
+  .middle .input_container:nth-child(1) {
+    top: 10px;
+  }
+  .middle .input_container:nth-child(2) {
+    top: 60px;
+  }
+  .middle .input_container label,
+  .middle .input_container .input {
+    height: 35px;
+    font-size: 16px;
+    line-height: 38px;
+  }
+  .middle .input_container .codeInput {
+    width: 120px;
+  }
+  .middle .input_container .getCode {
+    padding: 3px 8px;
+    font-size: 16px;
+    margin-top: 5px;
+  }
+  .tipContainer{
+      margin-top:16px;
+  }
+  .mslq, .mslqd {
+    width: 235px;
+    height: 57px;
+    margin:6px auto 20px;
+    font-size:22px;
+  }
+  .jy_layer {
+    width: 250px;
+    height: 260px;
+  }
+  .downBtn {
+    width: 230px;
+    height: 60px;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 55px;
+  }
+}
+@media only screen and (min-width: 330px) and (max-width: 374px) {
+    .downApp > span:nth-of-type(1) {
+        margin:0 10px;
+        width:40px;
+        height:40px;
+    }
+
+    .downApp > span:nth-of-type(2) {
+        line-height:18px;
+    }
+
+    .downApp > span:nth-of-type(3) {
+        width:60px;
+        height:20px;
+        line-height:20px;
+    }
+
+    .downApp > label {
+       font-size:16px;
+    }
+  .rule {
+    margin-top: -10px;
+  }
+  .middle {
+    height: 132px;
+  }
+  .middle .input_container {
+    width: 60%;
+    margin-left: -30%;
+    height: 40px;
+    position: absolute;
+  }
+  .middle .input_container:nth-child(1) {
+    top: 10px;
+  }
+  .middle .input_container:nth-child(2) {
+    top: 60px;
+  }
+  .middle .input_container label,
+  .middle .input_container .input {
+    height: 35px;
+    font-size: 16px;
+    line-height: 38px;
+  }
+  .middle .input_container .codeInput {
+    width: 120px;
+  }
+  .middle .input_container .getCode {
+    padding: 4px 8px;
+    font-size: 16px;
+    margin-top: 4px;
+  }
+  .tipContainer{
+      margin-top:10px;
+  }
+  .mslq, .mslqd {
+    width: 225px;
+    height: 57px;
+    margin:6px auto 16px;
+    font-size:20px;
+  }
+  .jy_layer {
+    width: 140px;
+    height: 150px;
+  }
+  .downBtn {
+    width: 230px;
+    height: 60px;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 55px;
+  }
+}
+@media only screen and (min-width: 320px) and (max-width: 329px) {
+    .downApp > span:nth-of-type(1) {
+        margin:0 6px;
+        width:35px;
+        height:35px;
+    }
+
+    .downApp > span:nth-of-type(2) {
+        font-size:12px;
+        line-height:16px;
+    }
+
+    .downApp > span:nth-of-type(3) {
+        width:50px;
+        height:16px;
+        line-height:16px;
+    }
+
+    .downApp > label {
+       font-size:16px;
+    }
+  .rule {
+    margin-top: -10px;
+  }
+  .middle {
+    height: 116px;
+  }
+  .middle .input_container {
+    width: 60%;
+    margin-left: -30%;
+    height: 30px;
+    position: absolute;
+  }
+  .middle .input_container:nth-child(1) {
+    top: 10px;
+  }
+  .middle .input_container:nth-child(2) {
+    top: 50px;
+  }
+  .middle .input_container label,
+  .middle .input_container .input {
+    height: 30px;
+    font-size: 14px;
+    line-height: 30px;
+  }
+  .middle .input_container .codeInput {
+    width: 100px;
+  }
+  .middle .input_container .getCode {
+    padding: 2px 6px;
+    font-size: 14px;
+    margin-top: 1px;
+  }
+    .tipContainer{
+      margin-top:10px;
+  }
+  .mslq, .mslqd {
+    width: 200px;
+    height: 50px;
+    margin:6px auto 16px;
+    font-size:18px;
+  }
+  .jy_layer {
+    width: 220px;
+    height: 230px;
+  }
+  .downBtn {
+    width: 190px;
+    height: 50px;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 48px;
+  }
+}
+/*# sourceMappingURL=jiayou.css.map */

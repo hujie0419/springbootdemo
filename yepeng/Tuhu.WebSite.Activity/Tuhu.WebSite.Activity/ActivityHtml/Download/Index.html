@@ -1,0 +1,298 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>途虎App下载页</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta content="telephone=no" name="format-detection" />
+    <script src="zepto.js"></script>
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+
+        html, body {
+            width: 100%;
+            font-size: 10px;
+            font-family: "微软雅黑";
+        }
+
+        img, a img {
+            display: block;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+
+        body {
+            position: relative;
+        }
+
+        .bottom_banner {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+        }
+
+        .close {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            right: 14px;
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="imgContent">
+        <!--<img src="image/img_01.jpg" />
+        <img src="image/img_02.jpg" />
+        <img src="image/img_03.jpg" />
+        <img src="image/img_04.jpg" />
+        <img src="image/img_05.jpg" />
+        <img src="image/img_06.jpg" />
+        <img src="image/img_07.jpg" />
+        <img src="image/img_08.jpg" />-->
+    </div>
+
+    <div class="bottom_banner">
+        <a><img src="image/banner.png" /></a>
+        <span class="close"></span>
+    </div>
+
+    <script type="text/javascript">
+        var params = {
+            "did": GetQueryString("did"),
+            "delivery_id": GetQueryString("delivery_id"),
+            "app": GetQueryString("app"),
+            "channel": GetQueryString("channel"),
+            "slot_id": GetQueryString("slot_id"),
+        };
+
+        $(function () {
+            //dsp对接
+            if (params.did || GetQueryString("muid")) {
+                var srcStr = "https://inout.tuhu.cn/Dsp.aspx" + location.search;
+                var e = new Image;
+                e.id = "DownloadAppNew";
+                e.src = srcStr;
+                console.log(srcStr);
+            }
+           
+            $(".close").on('click', function () {
+                $(".bottom_banner").hide();
+            });
+
+            $("img").on("click", function () {
+                countLog.init(AutoGoToPage($(this).attr("IOSLink"), $(this).attr("AndroidLink"), $(this).attr("PCLink"), $(this).attr("WeiXinLink")));
+            });
+
+            $("#imgContent").on("click", "img", function () {
+                countLog.init(AutoGoToPage($(this).attr("IOSLink"), $(this).attr("AndroidLink"), $(this).attr("PCLink"), $(this).attr("WeiXinLink")));
+            });
+
+            var id = GetQueryString("Id");
+
+            if (id) {
+                $.ajax({
+
+                    url: "/Activity/GeDownloadAppById",
+
+                    type: 'GET',
+
+                    data: { "id": id },
+
+                    async: false,
+
+                    success: function (data) {
+
+                        var datajson = JSON.parse(data);
+
+                        if (datajson.Title) {
+                            document.title = datajson.Title;
+                        }
+
+                        if (datajson.TimerStatus) {
+                            timerContent = JSON.parse(datajson.TimerContent)
+                            setTimeout(AutoGoToPage(timerContent.IOSLink, timerContent.AndroidLink, timerContent.PCLink, timerContent.WeiXinLink), 2000);
+                        }
+
+                        if (datajson.BottomStatus) {
+                            $(".bottom_banner").show();
+                            var bottomContent = JSON.parse(datajson.BottomContent);
+                            $(".bottom_banner a img").attr("src", bottomContent.Image);
+                            $(".bottom_banner a img").attr("IOSLink", bottomContent.IOSLink);
+                            $(".bottom_banner a img").attr("AndroidLink", bottomContent.AndroidLink);
+                            $(".bottom_banner a img").attr("PCLink", bottomContent.PCLink);
+                            $(".bottom_banner a img").attr("WeiXinLink", bottomContent.WeiXinLink);
+                        }
+
+                        if (datajson.ImageContent) {
+                            var iamgeContent = JSON.parse(datajson.ImageContent);
+                            for (var item in iamgeContent) {
+
+                                $("#imgContent").append('<img src="' + iamgeContent[item].Image + '" ioslink="' + iamgeContent[item].IOSLink + '" androidlink="' + iamgeContent[item].AndroidLink + '" pclink="' + iamgeContent[item].PCLink + '" weixinlink="' + iamgeContent[item].WeiXinLink + '" />')
+                            }
+                        }
+                    }
+                })
+            }
+
+            BICountData('', 'app_download', '');
+        })
+
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]); return null;
+        }
+
+        function IsPC() {
+            var userAgentInfo = navigator.userAgent;
+            var Agents = new Array("Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod");
+            var flag = true;
+            for (var v = 0; v < Agents.length; v++) {
+                if (userAgentInfo.indexOf(Agents[v]) > 0) {
+                    flag = false;
+                    break;
+                }
+            }
+            return flag;
+        }
+
+        var browser = {
+            versions: function () {
+                var u = navigator.userAgent, app = navigator.appVersion;
+                return {         //移动终端浏览器版本信息
+                    trident: u.indexOf('Trident') > -1, //IE内核
+                    presto: u.indexOf('Presto') > -1, //opera内核
+                    webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+                    gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+                    mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+                    ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+                    android: u.toLowerCase().indexOf('android') > -1, //android终端或uc浏览器
+                    iPhone: u.indexOf('iPhone') > -1, //是否为iPhone或者QQHD浏览器
+                    iPad: u.indexOf('iPad') > -1, //是否iPad
+                    webApp: u.indexOf('Safari') == -1 //是否web应该程序，没有头部与底部
+                };
+            }(),
+            language: (navigator.browserLanguage || navigator.language).toLowerCase()
+        }
+
+        function IsWeiXin() {
+            var ua = navigator.userAgent.toLowerCase();
+            if (ua.match(/MicroMessenger/i) == "micromessenger") {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        function AutoGoToPage(ios, android, pc, wx) {
+            BICountData('', 'app_download_click', '');
+            if (IsWeiXin() && wx) {
+                window.location.href = wx;
+            }
+            else if (browser.versions.android && android) {
+                if(window.navigator.userAgent.match(/huaweieva-al10; wv/i)){
+                    var k = Date.now();
+                    window.location.href = "tmast://download?downl_biz_id=myapp_touch&downl_url=" + encodeURIComponent(android) + "&via=ANDROIDH5.YYB.STORE&r=";       
+                    window.event.returnValue = false ;
+                    return false;
+                }
+
+                window.location.href = android;
+            }
+            else if ((browser.versions.ios || browser.versions.iPad || browser.versions.iPhone || browser.versions.webKit) && ios) {
+                window.location.href = ios;
+            }
+            else if (IsPC() && pc) {
+                window.location.href = pc;
+            }
+        }
+
+
+
+        function BICountData(Uuid, EventID, PID) {
+            var uuidstr = "";
+            var cookieId = "";
+            var GetDateTime = new Date().Format("yyyy-MM-dd hh:mm:ss");
+            var GetDateTime1 = new Date().Format("yyyyMMddhhmmss");
+            if (!GetCookie("loadCookie")) {
+                SetCookie("loadCookie", GetDateTime1 + CreateNum())
+            }
+            cookieId = GetCookie("loadCookie");
+
+            var userAgent = navigator.userAgent;
+
+            if (userAgent.indexOf("Android") >= 0) {
+                uuidstr = "Android|" + cookieId + "|" + Uuid;
+            } else if (IsWeiXin()) {
+                uuidstr = "WeChat|" + cookieId + "|" + Uuid;
+            } else if (browser.versions.ios || browser.versions.iPad || browser.versions.iPhone || browser.versions.webKit) {           
+                uuidstr = "IOS|" + cookieId + "|" + Uuid;
+            } else {
+
+                uuidstr = "非WeChat|" + cookieId + "|" + Uuid;
+            }
+            console.log(GetDateTime);
+            console.log(uuidstr);
+            try {
+                var e = new Image;
+                e.id = "ShareActivityProduct";
+                e.src = "http://t.tuhu.cn/red?REFFER=&current_page=" + encodeURIComponent(window.location.href) +
+                                                "&stamp=" + encodeURIComponent(GetDateTime) +
+                                                "&EventID=" + EventID +
+                                                "&useridentity=" + encodeURIComponent(uuidstr) +
+                                                "&Data1=" + encodeURIComponent(PID);
+            } catch (e) {
+            }
+        }
+
+        function CreateNum() {
+            var Num = "";
+            for (var i = 0; i < 8; i++) {
+                Num += Math.floor(Math.random() * 10);
+            }
+            return Num;
+        }
+        //写cookie
+        function SetCookie(name, value) {
+            var OneDayTimes = 60 * 60 * 24 * 1000;
+            var exp = new Date();
+            exp.setTime(exp.getTime() + OneDayTimes * 30);
+            document.cookie = name + "=" + escape(value) + ";path=/;expires=" + exp.toGMTString();
+        }
+        //获取cookie
+        function GetCookie(name) {
+            var arr = document.cookie.match(new RegExp("(^| )" + name + "=([^;]*)(;|$)"));
+            if (arr != null) return unescape(arr[2]); return null;
+        }
+
+        Date.prototype.Format = function (fmt) {
+            var o = {
+                "M+": this.getMonth() + 1, //月份
+                "d+": this.getDate(), //日
+                "h+": this.getHours(), //小时
+                "m+": this.getMinutes(), //分
+                "s+": this.getSeconds(), //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds() //毫秒
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        }
+
+
+    </script>
+    <script type="text/javascript" src="https://yun.tuisnake.com/h5-mami/log.js" id="send_log"></script>
+</body>
+</html>

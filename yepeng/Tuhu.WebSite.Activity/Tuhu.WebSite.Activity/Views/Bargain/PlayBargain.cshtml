@@ -1,0 +1,93 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, width=device-width,minimal-ui" />
+    <meta name="description" content="途虎养车网" />
+    <meta content="telephone=no" name="format-detection" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>0.99元抢迷你便携式车载吸尘器</title>
+    @Html.Partial("~/Views/Shared/ShareHeadClean.cshtml")
+    @Html.Partial("BargainShare")
+    @Html.Partial("~/Views/Shared/WxJsSDK.cshtml")
+    <style type="text/css">
+        .toast-middle-center{
+            position:fixed;
+            bottom:50%;
+            left:10%;
+            right:10%;
+            font:20px arial;
+            line-height:18px;
+        }
+        .toast-middle-center div.toast.toast-info{
+            width:100% !important;
+        }
+        .toast-middle-center div.toast.toast-info div.toast-message{
+            line-height:24px;
+        }
+    </style>
+    <script type="text/javascript">
+        toastr.options.positionClass = 'toast-middle-center';
+        toastr.options.timeOut = 3000;
+        function verifyready(d) {
+            //alert(d.isready);
+            if (!d || d.isexpired) {
+                location.href = '/bargain/end.html';
+            }
+        }
+        function cfgready(c) {
+            var pu = parseurl('play.html', []);
+            var cuturl = "http://faxian.tuhu.cn/bargain/cut.html?aid=" + c.aid + "&foid=" + pu.foid;
+            ubc(c, 'bgname');
+            $('#url').html(cuturl);
+            $('[debug]').html(JSON.stringify(c));
+            $('.acut').click(function () {
+                var typ = $(this).attr('type');
+                var weapon = c.weapons[typ] || c.weapons['knife'];
+                var n = parseInt(Math.random() * 100) % weapon.length;
+                var msg = weapon[n];
+                cuturl = cuturl + '&msg=' + msg;
+                //alert(msg);
+                $.ajax({
+                    url: cuturl
+                    , async: true
+                }).done(function (data) {
+                    var d = JSON.parse(data);
+                    verifyready(d);
+                    if (d.already) {
+                        toastr.info('您已经帮砍了，不能重复砍哦');
+                    } else if (d.Code > 0 || d.cprice <= 0) {
+                        toastr.info('哎呀，砍偏了...');
+                    } else {
+                        toastr.info(d.info + ' <span style="color:red;">' + d.cprice + '</span>元');
+                    }
+                    window.setTimeout(function () {
+                        location.href = 'http://faxian.tuhu.cn/bargain/helpcut.html?aid=' + c.aid + '&foid=' + pu.foid;
+                    }, 3000);
+                });
+            });
+        }
+    </script>
+    <link rel="stylesheet" href="http://resource.tuhu.cn/css/wx/active/bargain.min.css">
+    
+</head>
+<body>
+    <div debug="no" class="hidden" style="color:yellow;"></div>
+    <div class="lead"></div>
+    <div class="tools">
+        <a href="#" class="acut" type="knife"><span class="icon-d"></span>(刀)</a>
+        <a href="#" class="acut" type="gun"><span class="icon-q"></span>(枪)</a>
+        <a href="#" class="acut" type="stick"><span class="icon-g"></span>(棍)</a>
+        <a href="#" class="acut" type="cannon" style="width:50%"><span class="icon-p"></span>(炮)</a>
+        <a href="#" class="acut" type="special" style="width:50%"><span class="icon-qp"></span>(奇葩武器)</a>
+    </div>
+    <div class="adv bottom" id="downApp">
+        <a href="http://a.app.qq.com/o/simple.jsp?pkgname=cn.TuHu.android"><img src="http://resource.tuhu.cn/Css/images/Activities/tuhu-adv.png" width="100%" /></a>
+    </div>
+
+</body>
+</html>

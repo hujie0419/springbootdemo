@@ -1,0 +1,250 @@
+﻿
+@{
+    ViewBag.Title = "List";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+
+<div class="topPanel">
+    <div class="toolbar">
+        <div class="btn-group">
+            <a class="btn btn-primary" onclick="$.reload()"><span class="glyphicon glyphicon-refresh"></span></a>
+        </div>
+        <div class="btn-group">
+            <a class="btn btn-primary" onclick="betn_searchlog()">
+                <span class="fa fa-search">查看日志</span>
+            </a>
+        </div>
+
+        <div class="btn-group">
+            <a id="NF-add" class="btn btn-primary dropdown-text"  onclick="btn_add()" ><i class="fa fa-plus"></i>新增活动页配置</a>
+            <a id="NF-addClick" class="btn btn-primary" style="display:none;" href="" data-id="dsgfdgsafds"><i class="fa fa-plus"></i>新增活动页配置</a>
+        </div>
+        <div class="operate">
+            <ul class="nav nav-pills">
+                <li class="first">已选中<span>1</span>项</li>
+                <li><a id="NF-copy" onclick="btn_copy()"><i class="fa fa-pencil-square-o"></i>复 制</a></li>
+                <li><a id="NF-edit" onclick="btn_update()"><i class="fa fa-pencil-square-o"></i>修 改</a></li>
+                <li><a id="NF-delete" onclick="btn_delete()"><i class="fa fa-trash-o"></i>删 除</a></li>
+                <li><a id="NF-deatil" onclick="btn_deatil()"><i class="fa fa-dedent"></i>查看详情</a></li>
+                <li><a id="NF-reload" onclick="btn_reload()"><i class="fa fa-refresh"></i>刷新缓存</a></li>
+            </ul>
+            <a href="javascript:;" class="close"></a>
+        </div>
+    </div>
+    <div class="search">
+        <table>
+            <tr>
+                <td>
+                    <div class="input-group">  
+                        <input id="txt_keyword" type="text" class="form-control" placeholder="HashKey/标题" style="width: 200px;">
+                        <span class="input-group-btn">
+                            <button id="btn_search" type="button" class="btn  btn-primary"><i class="fa fa-search"></i></button>
+                        </span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="gridPanel">
+    <table id="gridList"></table>
+    <div id="gridPager"></div>
+</div>
+
+<script type="text/javascript">
+    function gridList() {
+        var $gridList = $('#gridList');
+        $gridList.dataGrid({
+            height: $(window).height() - 118,
+            url: "/Activity/ActivityUnity/GetGridJson",
+            colModel: [
+                { label: "PKID", name: "PKID", width: 120, align: "center", key: true, hidden: true  },
+                { label: "Hash值", name: "HashKey", width: 90, align: "center" },
+                { label: "活动ID", name: "PKGuid", width: 260, align: 'left', hidden: true },
+                 { label: "标 题", name: "Title", width: 120, align: "center" },
+                {
+                    label: "有效性", name: "IsEnabled", width: 80, align: "center",
+                    formatter: function (cellvalue) {
+                        return cellvalue == 1 ? "<i class=\"fa fa-toggle-on\"></i>" : "<i class=\"fa fa-toggle-off\"></i>";
+                    }
+                },
+               {
+                   label: "活动类型", name: "ActivityType", width: 120, align: "center",
+                   formatter: function (cellValue) {
+                       if (cellValue == 0) {
+                           return "综 合"
+                       } else if (cellValue == 1) {
+                           return "车 品";
+                       } else if (cellValue == 2) {
+                           return "保 养";
+                       } else if (cellValue == 3)
+                           return "轮 胎";
+                       else if (cellValue == 4) {
+                           return "美容改装";
+                       } else if (cellValue == 5) {
+                           return "外部投放活动";
+                       } else
+                           return "";
+
+                   }
+               },
+                {
+                    label: "上线时间", name: "StartDate", width: 120, align: "center",
+                    formatter: "date", formatoptions: { srcformat: 'Y-m-d H:i:s', newformat: 'Y-m-d H:i:s'}
+                },
+                {
+                    label: "结束时间", name: "EndDate", width: 120, align: "center",
+                    formatter: "date", formatoptions: { srcformat: 'Y-m-d H:i:s', newformat: 'Y-m-d H:i:s' }
+                },
+                {
+                    label: "H5链接地址", name: "H5Uri", width: 420, align: "center",
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (rowObject.HashKey) {
+                            var domain = "wx.tuhu." + location.host.split('.')[2];
+                            if (location.host.split('.')[2] == "cn")
+                                domain = "https://" + domain;
+                            else
+                                domain = "http://" + domain;
+                            return `<a style="color: blue;" href="${domain}/staticpage/promotion/activity/?id=${rowObject.HashKey}&tuhu">${domain}/staticpage/promotion/activity/?id=${rowObject.HashKey}&tuhu </a> `;
+                        }
+                        else
+                            return "";
+
+                    }
+                },
+                {
+                    label: "官网链接地址", name: "WWWUri", width: 400, align: "center",
+                    formatter: function (cellvalue, options, rowObject) {
+                       // https://item.tuhu.cn/promotion/activity/62FF739A.html
+                        if (rowObject.HashKey) {
+                            var domain = "item.tuhu." + location.host.split('.')[2];
+                            if (location.host.split('.')[2] == "cn")
+                                domain = "https://" + domain;
+                            else
+                                domain = "http://" + domain;
+                            return `<a style="color: blue;" href="${domain}/promotion/activity/${rowObject.HashKey}.html"> ${domain}/promotion/activity/${rowObject.HashKey}.html </a> `;
+                        }
+                        else
+                            return "";
+                    }
+                }
+
+
+            ],
+            viewrecords: true,
+            pager: "#gridPager",
+            sortname: "PKID desc",
+            rowNum: 20,
+            rowList: [10, 20, 30],
+        });
+
+        $("#btn_search").click(function () {
+            $gridList.jqGrid('setGridParam', {
+                postData: { keyword: $("#txt_keyword").val() },
+            }).trigger('reloadGrid');
+        });
+    }
+
+    function btn_add() {
+        $.modalOpen({
+            id: 'ListForm',
+            url: "/Activity/ActivityUnity/ListForm?keyValue=",
+            title: "新增活动页配置",
+            width: "800px",
+            height: "520px",
+            callBack: function (iframeId) {
+                var iframe = $.currentWindow();
+                top.frames[iframeId].submitForm(iframe);
+                setTimeout(function () {
+                    $("#NF-addClick").trigger("click");
+                }, 1000);
+            }
+        });
+    }
+
+    function btn_update() {
+        var keyValue = $('#gridList').jqGridRowValue().PKID;
+        if (keyValue) {
+            $.modalOpen({
+                id: 'ListForm'+keyValue,
+                url: "/Activity/ActivityUnity/ListForm?keyValue="+keyValue,
+                title: "编辑活动页配置",
+                width: "800px",
+                height: "520px",
+                callBack: function (iframeId) {
+                    var iframe = $.currentWindow();
+                    top.frames[iframeId].submitForm(iframe);
+                }
+            });
+        }
+    }
+
+    function btn_delete() {
+        var keyValue = $('#gridList').jqGridRowValue().PKID;
+        if (keyValue) {
+            $.deleteForm({
+                url: "/Activity/ActivityUnity/DeleteForm",
+                param: { pkid:keyValue},
+                success: function () {
+                    $("#btn_search").trigger("click");
+                }
+            })
+        }
+    }
+
+    function btn_copy() {
+        var keyValue = $('#gridList').jqGridRowValue().PKID;
+        if (keyValue) {
+            $.confirmForm({
+                prompt: "您确定复制选择的活动吗？",
+                loading:"正在复制活动请稍后......",
+                url: "/Activity/ActivityUnity/CreateCopy",
+                param: { pkid: keyValue },
+                success: function () {
+                    $("#btn_search").trigger("click");
+                }
+            })
+        }
+    }
+
+    function btn_deatil() {
+        var keyValue = $('#gridList').jqGridRowValue().PKID;
+        var title = $('#gridList').jqGridRowValue().Title;
+        if (keyValue) {
+            var href = "/Activity/ActivityUnity/ConfigList";
+            $("#NF-addClick").data("id", "iframe" + keyValue);
+            $("#NF-addClick").attr("href", href + "?keyValue=" + keyValue);
+            $("#NF-addClick").text(title);
+            $("#NF-addClick").trigger("click");
+        }
+    }
+
+    function betn_searchlog() {
+        $.modalOpen({
+            id: "Form",
+            title: "查看日志",
+            url: "/Logger/ListLoger?objectType=AUActivity",
+            width: "1500px",
+            height: "600px",
+            btn: null
+        });
+    }
+
+    function btn_reload() {
+        var keyValue = $('#gridList').jqGridRowValue().PKID;
+        if (keyValue) {
+            $.getJSON("/Activity/ActivityUnity/RefreshSource?keyValue=" + keyValue, function (res) {
+                if (res.Code == 1) {
+                    $.modalMsg(res.Msg, "warning");
+                } else {
+                    $.modalMsg(res.Msg, "error");
+                }
+            });
+        }
+    }
+
+    $(function () {
+        gridList();
+        $('#NF-addClick').on('click', top.$.nfinetab.addTab);
+    });
+</script>

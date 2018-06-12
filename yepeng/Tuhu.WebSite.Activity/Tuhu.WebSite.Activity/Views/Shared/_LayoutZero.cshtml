@@ -1,0 +1,31 @@
+﻿@using Tuhu.WebSite.Web.Activity.Helper;
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>@(ViewBag.Title ?? "途虎养车网-轮胎，轮胎在线销售-中国领先轮胎、保养在线商城") - 途虎养车网-Tuhu.cn</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="keywords" content="@(ViewBag.MetaKeywords ?? "轮胎,保养服务,雨刷,滤清器,机油,电瓶,刹车片,途虎养车网,卡帕养车网")" />
+    <meta name="description" content="@(ViewBag.MetaDescription ?? "中国领先轮胎、汽车保养在线商城，在线预约就近安装，网点遍布全国。")" />
+	<link rel="shortcut icon" href="http://image.tuhu.cn/images/favicon.ico" type="image/x-icon" />
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, width=device-width,minimal-ui" />
+    <meta name="verify-v1" content="ds3k/twmV2E/JG5e29nW9LF+JnDvqJmslCWJQYBSRZM=" />
+    <meta property="qc:admins" content="555137717764505636" />
+    <meta property="wb:webmaster" content="adde67608b3d5b4a" />
+    <link href="@HelpMethod.TempSite/Css/wx/active/0buy.css" rel="stylesheet" />
+    <script src="@HelpMethod.TempSite/Scripts/Activity/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="@HelpMethod.TempSite/Scripts/Activity/ZeroPublic.js"></script>
+    @RenderSection("headstyle", false)
+    @RenderSection("headscript", false)
+</head>
+<body>
+        @RenderBody()
+        <!--弹出提示框-->
+        <div class="custom-popup" id="popTips">
+            <p id="tipsContent"></p>
+        </div>
+    @RenderSection("scripts", false)
+</body>
+</html>

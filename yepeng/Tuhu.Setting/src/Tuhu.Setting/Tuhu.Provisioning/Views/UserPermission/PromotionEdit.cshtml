@@ -1,0 +1,198 @@
+﻿@{
+    ViewBag.Title = "PromotionEdit";
+    Layout = null;
+}
+@model Tuhu.Provisioning.DataAccess.Entity.tbl_UserPromotionCode
+<style>
+    table {
+        width: 100%;
+    }
+</style>
+<input type="hidden" value="@Model.ID" name="ID" id="ID" />
+<form id="form1">
+    <table>
+        <tr>
+            <td>
+                用户等级:
+            </td>
+            <td>
+                <select id="UserRank">
+                    @if (Model.UserRank.Trim().ToLower() == "LV1".ToLower())
+                    {
+                        <option value="LV1" selected="selected">LV1</option>
+                    }
+                    else
+                    {
+                        <option value="LV1">LV1</option>
+                    }
+
+                    @if (Model.UserRank.Trim().ToLower() == "LV2".ToLower())
+                    {
+                        <option value="LV2" selected="selected">LV2</option>
+                    }
+                    else
+                    {
+                        <option value="LV2">LV2</option>
+                    }
+
+                    @if (Model.UserRank.Trim().ToLower() == "LV3".ToLower())
+                    {
+                        <option value="LV3" selected="selected">LV3</option>
+                    }
+                    else
+                    {
+                        <option value="LV3">LV3</option>
+                    }
+
+
+                    @if(Model.UserRank.Trim().ToLower() == "LV4".ToLower())
+                    {
+                       
+                        <option value="LV4" selected="selected">LV4</option>
+                    }
+                    else
+                    {
+                        <option value="LV4">LV4</option>
+                    }
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                优惠券规则ID:
+            </td>
+            <td>
+                <input type="text" value="@(!string.IsNullOrWhiteSpace(Model.RuleGuid)?Model.RuleGuid.ToString():"")" onchange="BindCoupon()" name="RuleID" id="RuleID" />
+            </td>
+        </tr>
+        <tr>
+            <td>图片:</td>
+            <td>
+                <img style="width:30px;height:30px;" id="SImage" @(!string.IsNullOrEmpty(Model.SImage) ? "src=" + Model.SImage + "" : "") />
+                <input type="file" id="uploadImage" name="uploadImage" style="width:60px;" onchange="UploadImg(this)" />
+                <input type="hidden" id="BImage" name="BImage" value="@Model.BImage" />
+            </td>
+        </tr>
+
+
+
+    </table>
+    <input type="hidden" id="hidCouponDescription" />
+    <input type="hidden" id="hidCouponName" />
+</form>
+
+<script type="text/javascript">
+    function GetForm() {
+        var data = {};
+        data.ID = $('#ID').val();
+        data.UserRank = $('#UserRank').val();
+        data.BImage = $('#BImage').val();
+        data.SImage = $('#SImage').attr("src");
+        // data.RuleID = $('#RuleID').val();
+        data.RuleGuid = $('#RuleID').val();
+        data.CouponName = $('#hidCouponName').val();
+        data.CouponDescription = $('#hidCouponDescription').val();
+        return data;
+    }
+
+
+    function UploadImg(obj) {
+
+        var pobj = $(obj);
+
+        var fileSize = pobj[0].files[0].size / 1024 * 1.0;
+        if (fileSize.toFixed(2) > 400) {
+            $.messager.alert("提示", "上传图片失败！图片不能超过50K");
+            return;
+        }
+
+
+        var rd = Math.ceil(Math.random() * 9999) + 1;
+        var fileElId = $(obj).attr("id");
+        console.log(fileElId);
+        $.ajaxFileUpload({
+            url: '/Article/ImageUploadToAli?rd=' + rd,
+            secureuri: false,
+            fileElementId: fileElId,
+            dataType: 'json',
+            async: false,
+            success: function (result) {
+                console.log(result);
+                if (result.BImage != "" && result.SImage != "") {
+                    $("#SImage").attr("src", result.SImage);
+                    $("#BImage").val(result.BImage);
+                } else {
+                    alert("上传失败！");
+                }
+            },
+            error: function (data, status, e)//服务器响应失败处理函数
+            {
+                alert(e);
+            }
+        });
+    }
+
+
+
+    function BindCoupon() {
+      
+        var activityID = $('#RuleID').val();
+        if (activityID != "") {
+            $.ajax({
+                type: 'post',
+                url: '/ActivityV2/CouponVlidate',
+                dataType: 'json',
+                data: { "couponRulePKID": activityID },
+                success: function (result) {
+                    console.log(result);
+                    if (result.Name != "") {
+                        if ($('#RuleID').next().next().length > 0) {
+                            $('#RuleID').next().next().empty();
+                            $('#hidCouponDescription').val('');
+                            $('#hidCouponName').val('');
+                        }
+                        $('#RuleID').after("<br/><sapn>名称:" + result.Name + " <br/> 描述:" + result.Description + "</sapn>");
+                        var description = '满,' + result.Minmoney + ',减,' + result.Discount;
+                        $('#hidCouponDescription').val(description);
+                        $('#hidCouponName').val(result.Name);
+                    } else {
+                        $('#RuleID').val("")
+                        alert("优惠券不存在,请重新输入");
+                        if ($('#RuleID').next().next().length > 0) {
+                            console.log("清空");
+                            $('#RuleID').next().next().empty();
+                        }
+
+                    }
+
+                }
+            });
+        } else {
+            $('#RuleID').val('');
+        }
+    }
+
+
+    var Vlidate = {
+        rules: {
+            RuleID: {
+                required: true
+            },
+            BImage: {
+                required: true
+            }
+        },
+        messages: {
+            RuleID: {
+                required: '请输入优惠券ID'
+            },
+            BImage: {
+                required: '请上传图片'
+            }
+        }
+    };
+
+    $('#form1').validate(Vlidate);
+
+</script>
+

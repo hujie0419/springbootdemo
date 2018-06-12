@@ -1,0 +1,678 @@
+﻿
+@{
+    ViewBag.Title = "批量导入美容服务码";
+    Layout = "~/Views/Shared/_LayoutNew.cshtml";
+}
+
+@section css{
+<link href="~/css/beautyPackage.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+        .smallModal .modal-container {
+            width:28%
+        }
+	  .left {
+        float: left
+    }
+    .vertical-group label {
+        margin-top: 16px
+    }
+    .date-panel {
+        width: 283px
+    }
+    .content .modal-container {
+        width: 55%
+    }
+    .textCenter {
+        text-align: center;          
+    }
+     #sendSmsDialog .modal-container {
+            width: 80%
+    }
+    </style>
+}
+<div id="div" v-cloak>
+    <div>
+        <label>选择公司:</label>
+        <select v-model="filterCondition.cooperateId" style="min-width:200px;">
+            <option value="0">请选择</option>
+            <option v-for="item in allMrCooperateUserConfigs" :value="item.PKID">{{item.CooperateName}}</option>
+        </select>
+        <button style="display:none;" type="button">导出礼包详情</button>
+        <label>选择服务:</label>
+        <select v-model="filterCondition.packageDetailId" style="min-width:200px;">
+            <option value="0">请选择</option>
+            <option v-for="item in beautyServicePackageDetails" :value="item.PKID">{{item.Name}}</option>
+        </select>
+        <label>结算类型:</label>
+        <select v-model="filterCondition.settleMentMethod">
+            <option value="">请选择</option>
+            <option value="ByPeriod">据实</option>
+            <option value="PreSettled">买断</option>
+        </select>
+    </div>
+    <div>
+        <button type="button" v-on:click="exportBeautyCodeTemplate">下载模板文件</button>&nbsp;&nbsp;
+        <span style="color:red;">起始时间默认为所填日期00:00:00,截止时间默认为所填日期23:59:59</span>
+        <input type="file" id="file" value="上传文件" v-on:change="uploadFileChange" />
+        <button type="button" v-on:click="uploadExcelFile" v-bind:disabled="lock">提交</button>
+        <span v-if="lock"><img src="~/Images/loading.gif" />正在上传中,请稍后...</span>
+    </div>
+    <div v-if="(statistics || []).length > 0" style="margin-top:10px;">
+        <table v-if=" !loading" class="table table-striped table-bordered table-hover dataTables-example">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>批次号</th>
+                    <th>客户名</th>
+                    <th>服务名</th>
+                    <th>结算价</th>
+                    <th>结算类型</th>
+                    <th>创建人</th>
+                    <th>已上传总数量</th>
+                    <th>已导入数量</th>
+                    <th>进度</th>
+                    <th>描述</th>
+                    <th>是否作废</th>
+                    <th>编辑</th>
+                    <th>发短信</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(it, index) in statistics">
+                    <td>{{index + 1+pager.size*(pager.currentPage-1)}}</td>
+                    <td>{{it.BatchCode}}</td>
+                    <td>{{it.CooperateName}}</td>
+                    <td>{{it.ServiceName}}</td>
+                    <td>{{it.VipSettlementPrice}}</td>
+                    <td v-if="it.SettlementMethod=='PreSettled'">买断</td>
+                    <td v-else-if="it.SettlementMethod=='ByPeriod'">据实</td>
+                    <td>{{it.CreateUser}}</td>
+                    <td>{{it.TotalCount}}</td>
+                    <td>{{it.Count}}</td>
+                    <td>{{((it.Count/it.TotalCount) * 100).toFixed(2)}}%</td>
+                    <td><div v-if="it.BuyoutOrderId>0">买断订单号：{{it.BuyoutOrderId}}</div></td>
+                    <td v-if="it.Status=='Reverted'">是</td>
+                    <td v-else>否</td>
+                    <td>
+                        <input type="button" v-on:click="editCodeTime(it)" value="编辑" />
+                        <input type="button" v-on:click="RevertServiceCode(it)" value="作废" />
+                    </td>
+		     <td>
+                        <input type="button" v-on:click="showSendSmsDia(it)" value="发短信" />
+                        <input type="button" v-on:click="showSmsRecordDia(it)" value="短信记录" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <span v-if="loading"><img style="margin-left:400px" src="~/Images/loading.gif" />加载中,请稍后...</span>
+        <div style="margin-top:20px;">
+            <span>
+                每页显示:
+                <select v-model="pager.size">
+                    <option v-for="size in sizes" v-bind:value="size">{{size}}</option>
+                </select>
+                条
+            </span>
+            <span>
+                <button type="button" v-on:click="pager.currentPage=1" v-bind:disabled="pager.currentPage==1">首页</button>
+                <button type="button" v-on:click="pager.currentPage-=1" v-bind:disabled="pager.currentPage==1">上一页</button>
+                <button type="button" v-on:click="pager.currentPage+=1" v-bind:disabled="pager.currentPage==pager.pages">下一页</button>
+                <button type="button" v-on:click="pager.currentPage=pager.pages" v-bind:disabled="pager.currentPage==pager.pages">尾页</button>
+            </span>
+            <span style="float:right">
+                <span>当前第{{pager.currentPage}}页/共{{pager.pages}}页&nbsp;&nbsp;转到<input style="width:30px" type="text" v-model="pager.inputPage">页</span>
+                <button type="button" v-on:click="pager.currentPage=pager.inputPage" v-bind:disabled="pager.inputPage<=0 || pager.inputPage>pager.pages">确定</button>
+            </span>
+        </div>
+    </div>
+    <div id="editDialog">
+        <div class="content">
+            <modal v-if="showEditCode" v-on:close="showEditCode">
+                <h3 slot="header">编辑当前批次服务码</h3>
+                <div slot="body" class="vertical-group">
+                    <div>
+                        <label>批次号</label>
+                        <input type="text" readonly="readonly" v-model="editCode.batchCode" />
+                    </div>
+                    <div>
+                        <label>公司名</label>
+                        <input type="text" readonly="readonly" v-model="editCode.cooperateName" />
+                    </div>
+                    <div>
+                        <label>服务</label>
+                        <input type="text" readonly="readonly" v-model="editCode.serviceName" />
+                    </div>
+                    <div>
+                        <label>大客户结算价</label>
+                        <input type="text" readonly="readonly" v-model="editCode.vipSettlementPrice" />
+                    </div>
+                    <div>
+                        <label>结算方式</label>
+                        <input v-if="editCode.settlementMethod=='ByPeriod'" type="text" readonly="readonly" value="据实" />
+                        <input v-else-if="editCode.settlementMethod=='PreSettled'" type="text" readonly="readonly" value="买断" />
+                    </div>
+                    <div>
+                        <label>开始时间</label>
+                        <datepicker v-model="editCode.startTime"></datepicker>
+                    </div>
+                    <div>
+                        <label>结束时间</label>
+                        <datepicker v-model="editCode.endTime"></datepicker>
+                    </div>
+                </div>
+                <div slot="footer">
+                    <button class="modal-default-button" v-on:click="updateCodeTimeByBatchCode" v-bind:disabled="disableConfirmButton">确认</button>
+                    <button class="modal-default-button" v-on:click="closeShowEditCode">取消</button>
+                </div>
+            </modal>
+            <modal v-if="Saving" v-on:close="Saving=false">
+                <h3 slot="header">保存中</h3>
+                <div slot="body" class="vertical-group">
+                    <div>
+                        <label>请稍后...(修改服务码时间，修改速度约为1万个/分钟)</label>
+                    </div>
+                </div>
+                <div slot="footer">
+                    <button class="modal-default-button" v-on:click="closeSavingDialog()">确认</button>
+                </div>
+            </modal>    
+        </div>
+        <div class="content smallModal">
+            <modal v-if="Reverting" v-on:close="Reverting=false" >
+                <h3 slot="header">删除中</h3>
+                <div slot="body" class="vertical-group">
+                    <div>
+                        <label style="color:cornflowerblue">{{tipMsg}}</label>
+                        <br />
+                        <label style="color:red">{{errorMsg}}</label>
+                    </div>
+                </div>
+                <div slot="footer">
+                    <button class="modal-default-button" v-on:click="closeRevertingDialog()">确认</button>
+                </div>
+            </modal>
+        </div>
+    </div>  
+    <div id="sendSmsDialog">
+        <div class="content">
+            <modal v-if="sendSmsDialog.show" v-on:close="sendSmsDialog.show=false">
+                <h3 slot="header">发送短信</h3>
+                <div slot="body" class="vertical-group">
+                    <div v-for="item in smsTemplates">
+                        <input type="radio" name="smsTemplate" :value="item.Key" v-model="smsTemplateId" />
+                        <template>
+                            {{item.Value}}
+                        </template>
+                    </div>
+                    <div style="display:inline">                                                     
+                        <div class="left" style="width:30%">
+                            <label class="left">发送时间:</label>
+                            <datepicker v-model="sendDate" class="left" ></datepicker>
+                        </div>                       
+                            <div class="left" style="width:10%">
+                                <select v-model="sendHour">
+                                    <option v-for="item in sendHours" :value="item">
+                                        {{item}}
+                                    </option>
+                                </select>
+                                <label>点</label>
+                            </div>
+                            <div class="left" style="width:10%">
+                                <select v-model="sendMin">
+                                    <option v-for="item in sendMinutes" :value="item">
+                                        {{item}}
+                                    </option>
+                                </select>
+                                <label>分</label>
+                            </div>                                                         
+                    </div>
+                </div>
+                <div slot="footer">
+                    <button class="modal-default-button" v-on:click="sendSms()" v-bind:disabled="sendSmsLock">确认</button>
+                    <button class="modal-default-button" v-on:click="closeSendSmsDia()">取消</button>
+                </div>
+            </modal>
+        </div>
+    </div>
+    <div id="smsRecordDialog">
+        <div class="content">
+            <modal v-if="smsRecordDialog.show" v-on:close="smsRecordDialog.show=false">
+                <h3 slot="header">短信记录</h3>
+                <div slot="body" class="vertical-group">
+                    <table border="1" style="width:100%">
+                        <thead>
+                            <tr>
+                                @*<th>PKID</th>*@
+                                <th class="textCenter" style="width:3%">编号</th>
+                                <th class="textCenter" style="width:40%">内容</th>
+                                <th class="textCenter" style="width:12%">发送时间</th>
+                                <th class="textCenter" style="width:5%">短信接口调用状态</th>
+                                <th class="textCenter" style="width:10%">操作人</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(it, index) in SmsRecords">
+                                <td>{{it.SmsTemplateId}}</td>
+                                <td>{{it.SmsMsg}}</td>
+                                <td>{{it.SentTime | formatDate}}</td>
+                                <td>
+                                    <template v-if="it.Status=='Success'">
+                                        成功
+                                    </template>
+                                    <template v-else-if="it.Status=='Failed'">
+                                        失败
+                                    </template>
+                                    <template v-else="it.Status=='PartialSuccess'">
+                                        部分成功
+                                    </template>
+                                </td>
+                                <td>{{it.CreatedUser}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div>
+                    </div>
+                </div>
+                <div slot="footer">
+                    <button class="modal-default-button" v-on:click="closeSmsRecordDia()" v-bind:disabled="false">确认</button>
+                </div>
+            </modal>
+        </div>
+    </div>
+
+</div>
+    <script type="text/x-template" id="modal-template">
+        <transition name="modal">
+            <div class="modal-mask">
+                <div class="modal-wrapper">
+                    <div class="modal-container">
+                        <div class="modal-header">
+                            <slot name="header"></slot>
+                        </div>
+                        <div class="modal-body">
+                            <slot name="body"></slot>
+                        </div>
+                        <div class="modal-footer">
+                            <slot name="footer">
+                                <button class="modal-default-button" v-on:click="">OK</button>
+                            </slot>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+    </script>
+@section scripts{
+<script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+        <script type="text/javascript" src="~/Scripts/dateJs/vue-date.min.js"></script>
+        <script type="text/javascript">
+            Vue.component('modal', {
+                template: '#modal-template'
+            });
+            var vm = new Vue({
+                el: '#div',
+                data: {
+                    allMrCooperateUserConfigs: [],
+                    filterCondition: {
+                        cooperateId: 0,
+                        packageDetailId: 0,
+                        settleMentMethod: ""
+                    },
+                    beautyServicePackageDetails: [],
+                    excelFile: "",
+                    statistics: [],
+                    lock: false,
+                    loading: false,
+                    filePath: "",
+                    pager: {
+                        total: 0,
+                        pages: 0,
+                        currentPage: 1,
+                        size: 20,
+                        inputPage: 0,
+                    },
+                    showEditCode: false,
+                    editCode: {
+                        batchCode: "",
+                        cooperateName: "",
+                        serviceName: "",
+                        vipSettlementPrice: 0,
+                        settlementMethod: "",
+                        startTime: "",
+                        endTime: ""
+                    },
+                    Saving: false,
+                    Reverting: false,
+                    errorMsg:"",
+                    tipMsg:"",
+                    disableConfirmButton: false,
+                    sizes: [5, 10, 20, 40, 50, 100, 200],
+                    sendSmsDialog: {
+                        show: false
+                    },
+                    smsRecordDialog: {
+                        show: false
+                    },
+                    smsTemplates: [],
+                    smsBatchCode: 0,
+                    smsTemplateId: 0,
+                    SmsRecords: [],
+                    sendSmsLock: false,
+                    sendDate: "",
+                    sendHour: 0,
+                    sendMin: 0,
+                    sendHours: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+                    sendMinutes:[0,10,20,30,40,50]                 
+                },
+                components: { datepicker },
+                created: function () {
+                    this.load();
+                },
+                watch: {
+                    "filterCondition.cooperateId": function () {
+                        var self = this;
+                        self.getBeautyServicePackageDetails(self.filterCondition.cooperateId);
+                        self.pager.currentPage = 1;
+                        if (self.filterCondition.packageDetailId == 0) {
+                            self.getBeautyCodeStatistics();
+                        } else {
+                            self.filterCondition.packageDetailId = 0;
+                        }
+
+                    },
+                    "filterCondition.settleMentMethod": function () {
+                        var self = this;
+                        self.pager.currentPage = 1;
+                        self.getBeautyCodeStatistics();
+                    },
+                    "filterCondition.packageDetailId": function () {
+                        var self = this;
+                        self.pager.currentPage = 1;
+                        self.getBeautyCodeStatistics();
+                    },
+                    "pager.total": function () {
+                        var self = this;
+                        var pager = self.pager;
+                        pager.pages = Math.ceil(pager.total / pager.size);
+                    },
+                    "pager.size": function () {
+                        var self = this;
+                        if (self.pager.size <= 0) {
+                            self.pager.size = 1;
+                            return;
+                        }
+                        if (self.pager.size > 200) {
+                            self.pager.size = 200;
+                            return;
+                        }
+                        self.pager.pages = Math.ceil(self.pager.total / self.pager.size);
+                        this.load();
+                    },
+                    "pager.currentPage": function () {
+                        var self = this;
+                        if (self.pager.currentPage <= 0) {
+                            self.pager.currentPage = 1;
+                            return;
+                        }
+                        if (self.pager.pages > 0 && self.pager.currentPage > self.pager.pages) {
+                            self.pager.currentPage = self.pager.pages;
+                            return;
+                        }
+                        self.load();
+                    },
+                },
+                methods: {
+                    load: function () {
+                        this.getBeautyCodeStatistics();
+                        this.getAllMrCooperateUserConfigs();
+                    },
+                    getAllMrCooperateUserConfigs: function () {
+                        var self = this;
+                        $.get("/BankMRActivity/GetCooperateUserConfigsForImportUser", function (data) {
+                            self.allMrCooperateUserConfigs = data;
+                        })
+                    },
+                    getBeautyServicePackageDetails: function (cooperateId) {
+                        var self = this;
+                        if (cooperateId > 0) {
+                            $.get("GetBeautyServicePackageDetails", { cooperateId: cooperateId }, function (rsp) {
+                                self.beautyServicePackageDetails = rsp.Data.Item1 || [];
+                            })
+                        } else {
+                            self.beautyServicePackageDetails = [];
+                        }
+                    },
+                    exportBeautyCodeTemplate: function () {
+                        window.location.href = "ExportBeautyCodeTemplate";
+                    },
+
+                    uploadFileChange: function (event) {
+                        var self = this;
+                        var input = event.target;
+                        var file = input.files[0];
+                        if (file) {
+                            self.excelFile = file;
+                        }
+                        else self.excelFile = null;
+                    },
+
+                    uploadExcelFile: function () {
+                        var self = this;
+
+                        if (!(self.filterCondition.packageDetailId > 0)) {
+                            alert("请先选择服务");
+                            return;
+                        }
+                        if (self.excelFile == null) {
+                            alert("请先上传文件");
+                            return;
+                        }
+                        self.lock = true;
+                        var formData = new FormData();
+                        formData.append("file", self.excelFile);
+                        formData.append("id", self.filterCondition.packageDetailId);
+
+                        $.ajax({
+                            url: 'UploadExcel',
+                            type: "post",
+                            data: formData,
+                            dataType: "json",
+                            contentType: false,
+                            processData: false,
+                            success: function (rsp) {
+                                if (rsp.Status) {
+                                    alert("上传成功");
+                                    self.getBeautyCodeStatistics();
+                                    document.querySelector("#file").value = "";
+                                    self.excelFile = null;
+                                }
+                                else {
+                                    alert("上传失败!" + (rsp.Msg || ""));
+                                }
+                                self.lock = false;
+                            },
+                            error: function (rsp) {
+                                alert("上传失败");
+                                self.lock = false;
+                            }
+                        });
+                    },
+
+                    getBeautyCodeStatistics: function (isAuto) {
+                        var self = this;
+                        self.loading = isAuto ? false : true;
+                        $.get("GetBeautyCodeStatistics", {
+                            pageIndex: self.pager.currentPage,
+                            pageSize: self.pager.size,
+                            cooperateId: self.filterCondition.cooperateId,
+                            packageDetailId: self.filterCondition.packageDetailId,
+                            settleMentMethod: self.filterCondition.settleMentMethod
+                        }, function (rsp) {
+                            self.statistics = rsp.Data || [];
+                            self.pager.total = rsp.TotalCount || 0;
+                            self.loading = false;
+                        });
+                    },
+
+                    editCodeTime: function (it) {
+                        var self = this;
+                        self.editCode.batchCode = it.BatchCode;
+                        self.editCode.cooperateName = it.CooperateName;
+                        self.editCode.serviceName = it.ServiceName;
+                        self.editCode.vipSettlementPrice = it.VipSettlementPrice;
+                        self.editCode.settlementMethod = it.SettlementMethod;
+                        self.editCode.startTime = "";
+                        self.editCode.endTime = "";
+                        self.showEditCode = true;
+                    },
+                    RevertServiceCode: function (it) {
+                        if (!window.confirm("确定删除当前批次服务码"))
+                            return;
+                        var self = this;
+                        self.errorMsg = "";
+                        self.tipMsg = "请耐心等待...";
+                        self.Reverting = true;
+                        $.post("RevertServiceCode", { batchCode: it.BatchCode, channel: "MeiRong", source: "VOL" }, function (result) {
+                            if (result && result.IsSuccess) {
+                                self.errorMsg = "";
+                                self.tipMsg = result.Msg || "";
+                            } else {
+                                self.errorMsg = result.Msg || "";
+                                self.tipMsg = "";
+                            }
+                        });
+                    },
+                    closeRevertingDialog: function () {
+                        this.Reverting = false;
+                    },
+                    updateCodeTimeByBatchCode: function () {
+                        var self = this;
+                        self.disableConfirmButton = true;
+                        self.showEditCode = false;
+                        self.Saving = true;
+                        $.post("UpdateCodeTimeByBatchCode", { batchCode: self.editCode.batchCode, startTime: self.editCode.startTime, endTime: self.editCode.endTime },
+                            function (result) {
+                                if (result && result.Status) {
+                                    alert("成功");
+                                } else {
+                                    if (result && result.Msg) {
+                                        alert(result.Msg);
+                                    } else {
+                                        alert("失败");
+                                    }
+                                }
+                                self.Saving = false;
+                                self.disableConfirmButton = false;
+                            })
+                    },
+                    closeShowEditCode: function () {
+                        this.showEditCode = false;
+                    },
+                    closeSavingDialog: function () {
+                        this.Saving = false;
+                    },
+                    GetSmsTemplates: function () {
+                        var self = this;
+                        $.get("GetSmsTemplates", function (data) {
+                            self.smsTemplates = data;
+                        })
+                    },
+                    showSendSmsDia: function (it) {
+                        var self = this;
+                        self.smsBatchCode = it.BatchCode;
+                        self.sendSmsDialog.show = true;
+                        self.smsTemplateId = 0;
+                        self.sendDate = "";
+                        self.sendHour = 0;
+                        self.sendMin = 0;
+                        self.GetSmsTemplates();
+                    },
+                    showSmsRecordDia: function (it) {
+                        var self = this;
+                        $.get("GetCompanyUserSmsRecords",{ batchCode: it.BatchCode }, function (result) {
+                            self.SmsRecords = result;
+                            self.smsRecordDialog.show = true;
+                        })                     
+                    },
+                    sendSms: function () {
+                        var self = this;
+                        if (self.smsTemplateId <= 0) {
+                            alert("请选择短信模板");
+                            return;
+                        }
+                        if (!self.sendSmsLock) {
+                            self.sendSmsLock = true;
+                            var sendTime = null;
+                            if (self.sendDate && self.sendDate != '') {
+                                sendTime = self.sendDate + ' ' + self.sendHour + ':' + self.sendMin;
+                            }                         
+                            $.post("SendSms", { batchCode: self.smsBatchCode, templateId: self.smsTemplateId, sendTime: sendTime }, function (data) {
+                                switch (data.result) {
+                                    case "Success":
+                                        self.sendSmsDialog.show = false;
+                                        alert("成功");
+                                        break;
+                                    case "Failed":
+                                        self.sendSmsDialog.show = false;
+                                        alert("失败");
+                                        break;
+                                    case "PartialSuccess":
+                                        self.sendSmsDialog.show = false;
+                                        alert("部分成功");
+                                        break;
+                                    case "Frequently":
+                                    case "TimeNotAvailable":
+                                    case "BeLimited":
+                                        alert(data.msg);
+                                        break;
+                                }
+                              
+                                self.sendSmsLock = false;
+                            });
+                        }                      
+                    },
+                    closeSendSmsDia: function () {
+                        var self = this;
+                        self.sendSmsDialog.show = false;
+                    },
+                    closeSmsRecordDia: function () {
+                        var self = this;
+                        self.smsRecordDialog.show = false;
+                    },
+                }
+            });
+            setInterval(function () {
+                vm.getBeautyCodeStatistics(true);
+            }, 5000);
+
+            window.onbeforeunload = function (e) {
+                if (vm.lock) {
+                    return "正在上传，请勿离开页面";
+                }
+            };
+            Vue.filter('formatDate', formatDate);
+            function formatDate(value) {
+                if (value) {
+                    var time = value instanceof Date ? value : eval('new ' + value.toString().replace(/\//g, ""));
+                    var year = time.getFullYear();
+                    var day = time.getDate();
+                    var month = time.getMonth() + 1;
+                    var hours = time.getHours();
+                    var minutes = time.getMinutes();
+                    var seconds = time.getSeconds();
+                    var func = function (value, number) {
+                        var str = value.toString();
+                        while (str.length < number) {
+                            str = "0" + str;
+                        }
+                        return str;
+                    }
+                    if (year == 1) {
+                        return "";
+                    } else {
+                        return func(year, 4) + '-' + func(month, 2) + '-' + func(day, 2) + ' ' + func(hours, 2) + ':' + func(minutes, 2) + ':' + func(seconds, 2)
+                    }
+                }
+            }
+        </script>
+    }

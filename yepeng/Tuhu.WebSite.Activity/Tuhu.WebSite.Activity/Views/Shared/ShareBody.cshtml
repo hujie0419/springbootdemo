@@ -1,0 +1,61 @@
+﻿<img width="0" height="0" id="bdtj2" />
+<div data-role="page" data-theme="e" class="iscroll">
+    <script>
+        //document.body.style.zoom = document.documentElement.clientWidth * 100.0 / 480 + "%";
+        //window.addEventListener("resize", function ()
+        //{
+        //	document.body.style.zoom = document.documentElement.clientWidth * 100.0 / 480 + "%";
+        //});
+        //页面加载初始化完成
+        //$(document).on("pagechange", function ()
+        //{
+
+        //});
+        var userAgentInfo = navigator.userAgent;
+        var Agents = new Array("Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod");
+        var flag = true;
+        for (var v = 0; v < Agents.length; v++) {
+            if (userAgentInfo.indexOf(Agents[v]) > 0) { flag = false; break; }
+        }
+
+        if (flag) {
+            //window.location = "http://www.tuhu.cn";
+        }
+        $.mobile.hoverDelay = 1;
+        $.mobile.hideUrlBar = true;
+        $.mobile.loader.prototype.options.html = '<div class="spinner"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>';
+        $.mobile.loader.prototype.options.textVisible = true;
+        $.mobile.degradeInputs.date = true;
+        $.mobile.pageLoadErrorMessage = "页面加载错误";
+        $.mobile.defaultPageTransition = "slide";
+        $.mobile.ajaxEnabled = false;
+        $(document).bind("pageloadfailed", function () {
+            alert("页面加载错误");
+        });
+        $(function () {
+            //为按钮添加 active 状态
+            $(document).on("touchstart", ".need_active_btn", function () {
+                console.log("add");
+                $(this).addClass("rb");
+            }).on("touchend", ".need_active_btn", function () {
+                console.log("remove");
+                $(this).removeClass("rb");
+            });
+            //滚动到顶部
+            $(".scrolltoTop").on("tap", function () {
+                $.mobile.activePage.scrollTop(0);
+                $.mobile.silentScroll(0);
+            });
+        });
+        (function () {
+            if (!window.console) {
+                var console = {
+                    log: function () { },
+                    dir: function () { },
+                    debug: function () { },
+                    table: function () { }
+                };
+                window.console = console;
+            }
+        }());
+    </script>

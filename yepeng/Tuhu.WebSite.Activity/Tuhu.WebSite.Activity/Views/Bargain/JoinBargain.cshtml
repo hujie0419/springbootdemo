@@ -1,0 +1,58 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, width=device-width,minimal-ui" />
+    <meta name="description" content="途虎养车网" />
+    <meta content="telephone=no" name="format-detection" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>0.99元抢迷你便携式车载吸尘器</title>
+    @Html.Partial("~/Views/Shared/ShareHeadClean.cshtml")
+    @Html.Partial("BargainShare")
+    @Html.Partial("~/Views/Shared/WxJsSDK.cshtml")
+    <link rel="stylesheet" href="http://resource.tuhu.cn/css/wx/active/bargain.min.css">
+    <style type="text/css">
+        *{
+            outline:none;
+            outline-width:0px;
+        }
+    </style>
+    <script type="text/javascript">
+        function cfgready(c) {
+            ubc(c, 'bgname');
+            ubc(c, 'bgdesc');
+            $('#bjoin').click(function () {
+                var sphone = $('#tphone').val();
+                if (vphone('#tphone')) {
+                    location.href = 'http://faxian.tuhu.cn/hwx/entry.html?cburl=' + cburl('myturn.html?aid='+c.aid+'&phone=' + sphone + '&wxinfo=');
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    @*@Html.Partial("~/Views/Shared/ShareBody.cshtml")*@
+<div class="content">
+    <img src="http://resource.tuhu.cn/Css/images/Activities/bargain_b.png" width="100%" />
+    <p class="word">
+        点击”立即参加“，然后转发至微信朋友圈，让朋友们来帮忙砍价最先砍到0.99的前5000名用户,即能以0.99元购买<font bgname="hoover">迷你便携式车载吸尘器</font>来吧，拼的不是人品，是真爱啊！
+    </p>
+    <p style="color:red; text-align:center; font-weight:bold;">再追加5000只吸尘器，名额有限，抢完即止</p>
+    <div class="form">
+        <input id="tphone" type="text" class="is-text" placeholder="手机号" data-role="none"/>
+        <a id="bjoin" href="#" class="btn btn-yellow">立即参加</a>
+    </div>
+    <p class="word">
+        <span bgdesc="hdesc">***</span>
+    </p>
+</div>
+    <div class="adv" id="downApp">
+        <a href="http://a.app.qq.com/o/simple.jsp?pkgname=cn.TuHu.android"><img src="http://resource.tuhu.cn/Css/images/Activities/tuhu-adv.png" width="100%" /></a>
+    </div>
+
+</body>
+</html>

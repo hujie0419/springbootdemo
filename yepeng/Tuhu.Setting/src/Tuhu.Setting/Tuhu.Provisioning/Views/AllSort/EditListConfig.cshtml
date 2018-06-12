@@ -1,0 +1,256 @@
+﻿@{
+    ViewBag.Title = "编辑内容栏配置";
+    Layout = null;
+}
+@model Tuhu.Provisioning.DataAccess.Entity.AllSort.AllSortListConfig
+<link href="http://setting.tuhu.work/Scripts/My97DatePicker/skin/WdatePicker.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="/Scripts/My97DatePicker/WdatePicker.js"></script>
+<div class="modal-dialog">
+    <div class="modal-content" style="width: 800px;">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                &times;
+            </button>
+            <h4 class="modal-title">
+                编辑内容栏活动配置
+            </h4>
+        </div>
+        <div class="modal-body">
+            <form id="form1" class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-2 form-label">名称：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title"/>
+                    </div>
+                    <label class="col-sm-2 form-label">状态:</label>
+                    <div class="col-sm-4">
+                        <input type="radio" name="State" value="1" @(Model.State == 1 ? "checked=\"checked\"" : "")/><span>启用</span>
+                        <input type="radio" name="State" value="0" @(Model.State == 0 ? "checked=\"checked\"" : "")/><span>禁用</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 form-label">名称文字色值:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="TitleColor" name="TitleColor" value="@Model.TitleColor"/>
+                    </div>
+                    <label class="col-sm-2 form-label">名称背景色色值:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="TitleBgColor" name="TitleBgColor" value="@Model.TitleBgColor"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 form-label">开始版本：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="StartVersion" name="StartVersion" value="@Model.StartVersion"/>
+                    </div>
+                    <label class="col-sm-2 form-label">结束版本：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="EndVersion" name="EndVersion" value="@Model.EndVersion"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 form-label"> 按钮图片:</label>
+                    <div class="col-sm-4">
+                        <img width="30" id="imgButtonImage" height="30" @(string.IsNullOrWhiteSpace(Model.ButtonImage) == false ? "src=" + Model.ButtonImage : "") style="display: inline;"/>
+                        <input type="file" id="uploadButtonImage" name="uploadButtonImage" onchange="UploadBgImg(this, 'imgButtonImage', 'ButtonImage')" style="display: inline; width: 100px;"/>
+                        @*<input type="hidden" id="BgImageUrl" name="BgImageUrl" value="@Model.BgImageUrl" />*@
+                    </div>
+                    <label class="col-sm-2 form-label"> 按钮图片Url:</label>
+                    <div class="col-sm-4">
+                        <input type="text" id="ButtonImage" name="ButtonImage" value="@Model.ButtonImage"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 form-label"> Banne图片:</label>
+                    <div class="col-sm-4">
+                        <img width="30" id="imgBannerImage" height="30" @(string.IsNullOrWhiteSpace(Model.BannerImage) == false ? "src=" + Model.BannerImage : "") style="display: inline;"/>
+                        <input type="file" id="uploadBannerImage" name="uploadBannerImage" onchange="UploadBgImg(this, 'imgBannerImage', 'BannerImage')" style="display: inline; width: 100px;"/>
+                        @*<input type="hidden" id="BgImageUrl" name="BgImageUrl" value="@Model.BgImageUrl" />*@
+                    </div>
+                    <label class="col-sm-2 form-label"> Banne图片Url:</label>
+                    <div class="col-sm-4">
+                        <input type="text" id="BannerImage" name="BannerImage" value="@Model.BannerImage"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 form-label">APP链接:</label>
+                    <div class="col-sm-3">
+                        <select class="form-control required" id="Category" name="Category" style="display: inline;">
+                            <option value="">请选择</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-7">
+                        <input type="text" class="form-control" id="LinkUrl" name="LinkUrl" size="50" data-toggle="modal" value="@(Model.JumpUrl)">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2">没有编码链接:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="NoLinkUrl" name="NoLinkUrl" size="50" readonly="readonly">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 form-label">小程序链接:</label>
+                    <div class="col-sm-3">
+                        <select class="form-control required" id="WeiXinCatagory" name="WeiXinCatagory" style="display: inline;">
+                            <option value="">请选择</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-7">
+                        <input type="text" class="form-control" id="WeiXinLinkUrl" name="WeiXinLinkUrl" size="50" data-toggle="modal" value="@(Model.XiaoJumpUrl)">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 form-label">统计：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="Statistics" name="Statistics" value="@Model.Statistics"/>
+                    </div>
+                    <label class="col-sm-2 form-label">优先级：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="Priority" name="Priority" value="@Model.Priority"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 form-label">开始时间：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control Wdate" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm:ss' })" name="StartTime" id="StartTime" value="@Model.StartTime">
+                    </div>
+                    <br/>
+                    <br/>
+                    <label class="col-sm-2 form-label">结束时间：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control Wdate" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm:ss' })" name="EndTime" id="EndTime" value="@Model.EndTime">
+                    </div>
+                    <input type="hidden" id="ParentId" name="ParentId" value="@Model.ParentId"/>
+                    <input type="hidden" id="ID" name="ID" value="@Model.PKID"/>
+                    <input type="hidden" id="ParentTitle" name="ParentTitle" value="@Model.ParentMaintitle"/>
+                </div>
+                <div class="col-sm-9">
+                    <input type="text" style=" display:none" class="form-control" id="WeiXinNoLinkUrl" name="WeiXinNoLinkUrl" size="50" readonly="readonly">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="btnSave" name="btnSave" class="btn btn-primary">
+                保 存
+            </button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                取 消
+            </button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+
+    $(function() {
+
+
+        $('#btnSave').on('click',
+            function() {
+
+
+                if ($("#Title").val() === "") {
+                    alert("请填写名称");
+                    return;
+                }
+
+                if ($("#Statistics").val() === "") {
+                    $("#Statistics").val($('#ParentTitle').val() + "_活动_" + $('#Title').val());
+
+                }
+
+                var data = {};
+                data.PKID = $('#ID').val();
+                data.ParentId = $('#ParentId').val();
+
+                data.Title = $('#Title').val().replace(/(^\s*)|(\s*$)/g, "");
+                data.State = $('input[name="State"]:checked').val();
+                data.TitleColor = $('#TitleColor').val().replace(/(^\s*)|(\s*$)/g, "");
+                data.TitleBgColor = $('#TitleBgColor').val().replace(/(^\s*)|(\s*$)/g, "");
+                data.StartVersion = $('#StartVersion').val().replace(/(^\s*)|(\s*$)/g, "");
+                data.EndVersion = $('#EndVersion').val().replace(/(^\s*)|(\s*$)/g, "");
+                data.ButtonImage = $('#ButtonImage').val();
+                data.BannerImage = $('#BannerImage').val();
+                data.JumpUrl = $('#LinkUrl').val();
+                data.XiaoJumpUrl = $('#WeiXinLinkUrl').val();
+                data.Priority = $('#Priority').val().replace(/(^\s*)|(\s*$)/g, "");
+                data.Statistics = $('#Statistics').val().replace(/(^\s*)|(\s*$)/g, "");
+                data.StartTime = $('#StartTime').val().replace(/(^\s*)|(\s*$)/g, "");
+                data.EndTime = $('#EndTime').val().replace(/(^\s*)|(\s*$)/g, "");
+
+                if (!data.ButtonImage) {
+                    alert("请上传按钮图片");
+                    return;
+                }
+
+
+                $(this).attr("disabled", "disabled");
+                $.ajax({
+                    url: '/AllSort/ConfigListSave',
+                    type: 'post',
+                    data: data,
+                    dataType: 'json'
+                }).done(function(result) {
+                    if (result == 1) {
+                        alert('保存成功');
+                        $('#edit').modal("hide");
+                        location.reload();
+                    } else {
+                        alert("保存失败");
+                    }
+                });
+            });
+        
+    });
+
+    function Toolbar() {
+        var url = "/HomePageConfigV2/SmallToolbar";
+        // dialogOpen("新增首页", url, "edit");
+        var dialog = $('#toobal');
+        dialog.empty();
+        dialog.html(dialog.load(url));
+    }
+
+    ///showImg：上传时Image显示的标签ID
+    //showUrl:真正显示的
+    function UploadBgImg(obj, showImg, showUrl) {
+
+        var pobj = $(obj);
+        var fileSize = pobj[0].files[0].size / 1024 * 1.0;
+        if (fileSize > 400) {
+            alert("不能上传大于400KB的图片");
+            return false;
+        }
+        var rd = Math.ceil(Math.random() * 9999) + 1;
+        var fileElId = $(obj).attr("id");
+        console.log(fileElId);
+        $.ajaxFileUpload({
+            url: '/Article/ImageUploadToAli?rd=' + rd,
+            secureuri: false,
+            fileElementId: fileElId,
+            dataType: 'json',
+            async: false,
+            success: function(result) {
+                if (result.BImage != "" && result.SImage != "") {
+                    $("#" + showImg).attr("src", result.SImage).show();
+                    $("#" + showUrl).val(result.BImage);
+                } else {
+                    alert("上传失败！");
+                }
+            },
+            error: function(data, status, e) //服务器响应失败处理函数
+            {
+                alert(e);
+            }
+        });
+        return true;
+    }
+
+    initSelectRouter(Category,1);             //生成选择项
+    initDocodeLink(LinkUrl, NoLinkUrl);     //生成未编码链接
+    getUrl(LinkUrl, NoLinkUrl, Category, 1);   //进入跳转页面
+    initSelectRouter(WeiXinCatagory, 2);             //生成选择项
+    getUrl(WeiXinLinkUrl, WeiXinNoLinkUrl, WeiXinCatagory, 2);   //进入跳转页面
+
+</script>

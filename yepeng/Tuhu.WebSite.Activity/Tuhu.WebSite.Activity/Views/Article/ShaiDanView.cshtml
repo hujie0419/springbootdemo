@@ -1,0 +1,101 @@
+﻿@model ActionDataDetail
+@{
+    Layout = null;
+    string dataTitle = "";
+    if (!string.IsNullOrEmpty(Model.SingleTitle))
+    {
+        dataTitle = Model.SingleTitle;
+    }
+    else
+    {
+        var proModel = Model.ProductList.FirstOrDefault();
+        string vehicle = "";
+        if (!string.IsNullOrEmpty(Model.UserVehicle))
+        {
+            vehicle = Model.UserVehicle;
+        }
+        else
+        {
+            vehicle = "途虎车主";
+        }
+        dataTitle = vehicle + " " + proModel.ProductName + "  作业";
+    }
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>@dataTitle</title>
+    <link href="~/Content/shareCss/wxreset.min.css" rel="stylesheet" />
+    <link href="~/Content/shareCss/shareOrder.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="wrapper">
+        <div class="head">
+            <div class="title">@dataTitle</div>
+        </div>
+        <!-- 消费体验 -->
+        <div class="experience">
+            <div class="content">@Model.Content</div>
+            <div class="pic">
+                @if (!string.IsNullOrEmpty(Model.Images))
+                {
+                    string[] pics = Model.Images.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var item in pics)
+                    {
+                        <img src="@item" />
+                    }
+                }
+            </div>
+        </div>
+        <!-- 产品信息 -->
+        <div class="productInfo">
+            @if (Model.ProductList.Count > 0)
+            {
+                <div class="caption">产品信息</div>
+                foreach (var product in Model.ProductList)
+                {
+                    <div class="productCon">
+                        <div class="productImg">
+                            <a href="@product.ProductUrl" target="_blank"><img src="@product.ProductPic" width="80" height="80" /></a>
+                        </div>
+                        <div class="productName">
+                            <a href="@product.ProductUrl" target="_blank">@product.ProductName</a>
+                        </div>
+                        <div class="productPrice">
+                            <div class="unitPrice">
+                                <span>@product.ProductPrice.ToString("0.00")</span>
+                                <i>¥</i>
+                            </div>
+                            <div class="amount">
+                                <span>@product.ProductNum</span>
+                                <i>X</i>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }        
+        </div>
+        <!-- 分享 -->
+        <div class="share" style="display:none">
+            <div class="shareHead">分享</div>
+            <div class="sharePic">
+                <div class="friend">
+                    <img src="/Content/images/friend.png" alt="">
+                    <span>微信好友</span>
+                </div>
+                <div class="circle">
+                    <img src="/Content/images/circle.png" alt="">
+                    <span>微信朋友圈</span>
+                </div>
+                <div class="more">
+                    <img src="/Content/images/more.png" alt="">
+                    <span>更多</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

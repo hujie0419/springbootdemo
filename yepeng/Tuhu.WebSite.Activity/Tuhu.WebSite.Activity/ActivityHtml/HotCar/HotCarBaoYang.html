@@ -1,0 +1,297 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>98元汽车小保养</title>
+    <script src="http://resource.tuhu.cn/Scripts/jquery-2.1.0.js"></script>
+    <script src="http://resource.tuhu.cn/Js/WebViewJavascriptBridge.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #d6dfe8;
+        }
+
+        img {
+            display: block;
+            width: 100%;
+        }
+
+        .tips {
+            margin: 15px;
+            border-radius: 3px;
+            background-color: #f9f9ef;
+            color: #f3831d;
+            font-size: 12px;
+            line-height: 20px;
+            padding: 5px;
+        }
+
+        .btn-group {
+            margin: 0 15px 20px;
+        }
+
+            .btn-group:after {
+                display: table;
+                content: "";
+                clear: both;
+            }
+
+            .btn-group a {
+                float: left;
+                color: #fceead;
+                font-weight: bold;
+                font-size: 18px;
+                padding: 16px 0;
+                text-decoration: none;
+                text-align: center;
+            }
+
+                .btn-group a span {
+                    font-size: 12px;
+                }
+
+                .btn-group a i {
+                    font-size: 20px;
+                    font-style: normal;
+                }
+
+            .btn-group .btn-red {
+                height: 24px;
+                width: 55%;
+                margin-right: 5%;
+                background: url(images/btn-red.png) 0 0 no-repeat;
+                -webkit-background-size: 100% 100%;
+                background-size: 100% 100%;
+            }
+
+            .btn-group .btn-blue {
+                height: 24px;
+                width: 40%;
+                background: url(images/btn-blue.png) 0 0 no-repeat;
+                -webkit-background-size: 100% 100%;
+                background-size: 100% 100%;
+            }
+
+            .btn-group .btn-gray {
+                height: 24px;
+                width: 55%;
+                margin-right: 5%;
+                background: url(images/btn-gray.png) 0 0 no-repeat;
+                -webkit-background-size: 100% 100%;
+                background-size: 100% 100%;
+                color: #fff;
+            }
+    </style>
+    <script type="text/javascript">
+
+        var userAgentInfo = navigator.userAgent;
+        function connectWebViewJavascriptBridge(callback) {
+            if (window.WebViewJavascriptBridge) {
+                callback(WebViewJavascriptBridge)
+            } else {
+                document.addEventListener(
+                    'WebViewJavascriptBridgeReady'
+                    , function () {
+                        callback(WebViewJavascriptBridge)
+                    },
+                    false
+                );
+            }
+        }
+        connectWebViewJavascriptBridge(function (bridge) {
+            bridge.init(function (message, responseCallback) {
+                var data = {
+                    'Javascript Responds': 'Wee!'
+                };
+                responseCallback(data);
+            });
+            bridge.registerHandler("functionInJs", function (data, responseCallback) {
+                var responseData = "Javascript Says Right back aka!";
+                responseCallback(responseData);
+            });
+        })
+
+        //判断登录
+        function Login() {
+            if (userAgentInfo.indexOf("Android") >= 0) {
+                window.WebViewJavascriptBridge.callHandler(
+                    'actityBridge'
+                    , { 'param': "" }
+                    , function (responseData) {
+
+                        if (responseData != null) {
+                            CallBackAppLoginResponse(responseData);
+                        }
+                    });
+            }
+            else {
+                iosend("Userinfo", "CallBackAppLoginResponse");
+            }
+        };
+
+
+        function CallBackAppLoginResponse(responseData) {
+            var da = null;
+            if (userAgentInfo.indexOf("Android") >= 0) da = JSON.parse(responseData);
+            else da = responseData;
+            UserId = da.userid;
+            Phone = da.phone;
+            selectCarObject();
+
+        };
+        //进入iosApp
+        function iosend(cmd, arg) { location.href = '#testapp#' + cmd + '#' + encodeURIComponent(arg); }
+
+        var salesName = "";
+        var brand = '';
+        var vehicleLogin = "";
+        var vehicleName = "";
+        var LIYANGID = "";
+        var Nian = "";
+        var Pailiang = "";
+        var TID = "";
+        var ProductID = "";
+        var strUrl = "http://item.tuhu.cn/";
+        var strApi = "http://api.tuhu.cn/";
+        $(function () {
+
+            $("#btn-red").hide();
+            //$("#btn-gray").hide();
+            //$(".tips").hide();
+            Login();
+
+        });
+
+        function selectCarObject() {
+
+            $.ajax({
+
+                url: strUrl + "CarHistory/SelectCarObject.html",
+
+                type: 'GET',
+
+                data: { userID: UserId },//'{fcd72b80-76a7-dbd9-b750-6bcc349a280e}'
+
+                dataType: 'jsonp',
+
+                async: false,
+
+                success: function (data) {
+
+                    if (data.Code == "1" && data.CarHistory.length > 0) {
+
+                        for (var obj in data.CarHistory) {
+                            if (data.CarHistory[obj].IsDefaultCar == "1") {
+
+                                LIYANGID = data.CarHistory[obj].LIYANGID;
+                                Nian = data.CarHistory[obj].Nian;
+                                Pailiang = data.CarHistory[obj].Pailiang;
+                                TID = data.CarHistory[obj].TID;
+                                ProductID = data.CarHistory[obj].ProductID;
+                                vehicleName = data.CarHistory[obj].Vehicle;
+                                brand = data.CarHistory[obj].Brand;
+                                vehicleLogin = data.CarHistory[obj].VehicleLogin;
+                                salesName = data.CarHistory[obj].SalesName
+                                break;
+                            }
+                        }
+                        getPackageProducts(ProductID, Nian, Pailiang, LIYANGID, TID);
+                    }
+                },
+                error: function () {
+
+                }
+            });
+        }
+
+        function getPackageProducts(ProductID, Nian, Pailiang, LIYANGID, TID) {
+            //alert(ProductID);
+            //alert(Nian);
+            //alert(Pailiang);
+            //alert(LIYANGID);
+            //alert(TID);
+            $.ajax({
+
+                url: strApi + "BaoYang/SelectPackageProducts",
+
+                type: 'GET',
+
+                data: { "vehicleId": ProductID, "nian": Nian, "paiLiang": Pailiang, "liyangId": LIYANGID, "tid": TID, "callback": "" },
+
+                jsonpCallback: "__SelectPackageProducts__",
+
+                dataType: 'jsonp',
+
+                //async: false,
+
+                success: function (data) {
+                    //alert(JSON.stringify(data));
+                    if (data.Code == "1" && data.Products.length > 0) {
+                        $("#btn-gray").hide();
+                        $(".tips").hide();
+                        $("#btn-red").show();
+                    }
+                    else {
+                        $("#btn-gray").show();
+                        $(".tips").show();
+                    }
+
+                },
+                error: function () {
+
+                }
+            });
+        };
+
+        function getQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]); return null;
+        }
+
+        function btnBlueClick() {
+
+            if (userAgentInfo.indexOf("Android") >= 0) {
+                window.WebViewJavascriptBridge.callHandler(
+                       'toBaoYang'
+                       , { 'param': "" }
+                       );
+            }
+            else {
+                window.location.href = 'http://faxian.tuhu.cn/ActivityHtml/HotCar/HotCarBaoYang.html#testapp#customSegue#TNMaintainVC#{"types": "xby"}';
+            }
+        };
+
+        function btnRedClick() {
+
+            window.location.href = 'http://faxian.tuhu.cn/ActivityHtml/HotCar/BaoYangBuy.html?v=2&LiYangID='
+               + LIYANGID + '&Tid=' + TID + '&Nian=' + Nian + '&PaiLiang=' + Pailiang + '&vehicleID='
+               + ProductID + '&VehicleName=' + vehicleName + '&VehicleLogin=' + vehicleLogin + '&Brand=' + brand + "&SalesName=" + salesName;
+
+        };
+    </script>
+</head>
+
+<body>
+    <div>
+        <div>
+            <img src="images/banner.jpg" alt="" />
+            <img src="images/img1.png" alt="" />
+            <img src="images/img2.png" alt="" />
+            <div class="tips">
+                很遗憾，您的爱车不在此次活动中，请回首页更换车型后再查看，或通过自助保养流程下单，同样比4S店便宜一半哦！
+            </div>
+            <div class="btn-group">
+                <a href="javascript:;" id="btn-gray" class="btn-gray"><i>¥98</i><span>起</span>做保养</a>
+                <a href="javascript:;" id="btn-red" onclick="btnRedClick();" class="btn-red"><i>¥98</i><span>起</span>做保养</a>
+                <a href="javascript:;" onclick="btnBlueClick()" class="btn-blue">自助保养</a>
+            </div>
+            <img src="images/footer.png" alt="" />
+        </div>
+    </div>
+</body>
+</html>

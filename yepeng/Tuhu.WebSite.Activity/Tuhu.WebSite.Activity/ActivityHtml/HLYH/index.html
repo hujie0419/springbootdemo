@@ -1,0 +1,246 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="css/hlyh.css?v=20150917" /> 
+</head> 
+<body>
+	   <div class="input">
+        <input type="tel" id="tel_phone" class="tel" placeholder="输入您的手机号" />
+	   </div>
+	   <div class="input">
+        <input id="tel_code" type="text" class="code" placeholder="输入验证码" /> 
+        <div id="getCode" class="getCode">获取验证码</div>
+	   </div>
+        <div class="errorMsg"></div>
+        <div class="submit" id="getCoupon">立即领取</div>
+	   <div class="rule-div"> 
+		   	<div class="rule">活动规则</div>    
+		   <ul>
+		   	<li>输入手机号参与抽奖</li>  
+		   	<li>中奖率100%</li>
+		   	<li>中奖优惠券已直接发送至用户账号，下载【途虎养车】APP登录后在【我的优惠券】即可查看并使用</li>
+		   </ul>
+	   </div>
+	   <a href="#" class="downApp">
+			<span>&nbsp;</span>
+			<span>下载途虎App,查看订单更方便<br/>还有洗车、打蜡、内饰清洗</span>
+			<span id="downSoft">立即下载</span> 
+			<label>X</label>
+		</a>
+	<div class="layer"></div>
+    <div class="success">
+        <p>50元内饰清洁券</p>
+    </div>
+    <div class="got">
+        <!--<div class="ok">好</div>-->
+    </div>
+</body>
+<script type="text/javascript" src="js/jquery-2.1.0.js" ></script>
+<!--<script type="text/javascript" src="js/flexible.js"></script>-->
+<script type="text/javascript" src="http://image.tuhu.cn/activity/huodong/hlyh/js/flexible.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+	    var $tip = $(".errorMsg");
+	    var getCodeObj = null;
+	    var getCodeSecond = 60;
+	    var getCouponObj = null;
+	    var getCouponSecond = 3;
+	    var docH = $(document).height();
+	    $(".layer").height($(document).height());
+	    setTimeout(function () {
+	        $(".layer").height($(document).height());
+	    }, 500);
+
+        function openUrl(url) {
+            var f = document.createElement("form");
+            f.setAttribute("action", url);
+            f.setAttribute("method", 'get');
+            f.setAttribute("target", '_black');
+            document.body.appendChild(f)
+            f.submit();
+        }
+
+        function validPhone(phone) {
+            if (!phone.trim()) {
+                return;
+            }
+            if (phone.length != 11) {
+                var msg = "手机号的长度不是11位";
+                $tip.text(msg).show();
+                return false;
+            }
+            var reg = /^1\d{10}$/;
+            if (!reg.test(phone)) {
+                var msg = "手机号必须是以1开头";
+                $tip.text(msg).show();
+                return false;
+            }
+
+            $tip.text("").show();
+            return true;
+        }
+
+        function getCodeTip() {
+            getCodeSecond--;
+            if (getCodeSecond < 1) {
+                getCodeSecond = 60;
+                clearInterval(getCodeObj);
+                $("#getCode").removeClass("disabled").text("获取验证码");
+            } else {
+                $("#getCode").addClass("checkcode disabled").text(getCodeSecond + "秒后重试");
+            }
+        }
+
+        function getCouponTip() {
+            getCouponSecond--;
+            if (getCouponSecond < 1) {
+                clearInterval(getCouponObj);
+                getCouponSecond = 3;
+                $("#getCoupon").removeClass("disabled");
+            } else {
+                $("#getCoupon").addClass("submit");
+                return false;
+            }
+        }
+
+        function MsgBoxSuccess(msg)
+        {
+            $(".success").show().find("p").html(msg);
+            $(".layer").show();
+            $(".got").hide();
+        }
+        
+        function MsgBoxErrror()
+        {
+            $(".got").show();
+            $(".layer").show();
+            $(".success").hide();
+        }
+
+        //获取验证码
+        $("#getCode").click(function () {
+            var phone = $("#tel_phone").val();
+            if (validPhone(phone) == true) {
+                if (getCodeSecond == 60) {
+                    $("#getCode").addClass("checkcode disabled");
+                    getCodeObj = setInterval(getCodeTip, 1000);
+                    $.ajax({
+                        url: "http://wx.tuhu.cn/Wxgwbt/GetCodeForTXFL?callback=?",
+                        data: {
+                            "phone": phone
+                        },
+                        dataType: "jsonp",
+                        type: "get",
+                        success: function (data) {
+                            var result = parseInt(data);
+                            if (result == -1) {
+                                var msg = "不在活动时间范围内";
+                                $tip.text(msg).show();
+                                alert(msg);
+                            } else if (result == -2) {
+                                var msg = "手机号码不正确";
+                                $tip.text(msg).show();
+                            } else if (result == -3) {
+                                var msg = "验证码发送失败";
+                                $tip.text(msg).show();
+                            } else if (result == -4) {
+                                var msg = "您已经领取过了，不能领取";
+                                $tip.text(msg).show();
+                                MsgBoxErrror();
+                            } else if (result == -5) {
+                                var msg = "系统错误";
+                                $tip.text(msg).show();
+                            } else if (result == 0) {
+                                var msg = "验证码发送失败";
+                                $tip.text(msg).show();
+                            } else if (result == 1) {
+                                var msg = "验证码发送成功";
+                                $tip.text(msg).show();
+                            } else {
+                                var msg = "未知错误";
+                                $tip.text(msg).show();
+                            }
+                        }
+                    });
+                }
+                else { return; }
+            }
+        });
+
+	    //获取优惠券
+        $("#getCoupon").click(function () {
+            var phone = $("#tel_phone").val();
+            var code = $("#tel_code").val();
+            if (validPhone(phone) == true && code.length > 0) {
+                if (getCouponSecond == 3) {
+                    $("#getCoupon").addClass("submit disabled");
+                    getCouponObj = setInterval(getCouponTip, 1000);
+                    $.ajax({
+                        url: "http://wx.tuhu.cn/Wxgwbt/GetCouponForTXFL?callback=?",
+                        data: {
+                            "phone": phone,
+                            "code": code
+                        },
+                        dataType: "jsonp",
+                        type: "get",
+                        success: function (data) {
+                            var jsonData = eval("(" + data + ")");
+                            var jsonCode = jsonData.code;
+                            var jsonMsg = jsonData.msg;
+                            console.log(jsonData);
+
+                            var result = parseInt(jsonCode);
+                            if (result == -1) {
+                                var msg = "不在活动时间范围内";
+                                $tip.text(msg).show();
+                                alert(msg);
+                            } else if (result == -2) {
+                                var msg = "输入的手机号码或验证码不正确";
+                                $tip.text(msg).show();
+                            } else if (result == -3) {
+                                var msg = "验证码不正确";
+                                $tip.text(msg).show();
+                            } else if (result == -4) {
+                                var msg = "您已经领取过了，不能领取";
+                                $tip.text(msg).show();
+                                MsgBoxErrror();
+                            } else if (result == -5) {
+                                var msg = "系统错误";
+                                $tip.text(msg).show();
+                            } else if (result == 0) {
+                                var msg = "领取失败";
+                                $tip.text(msg).show();
+                            } else if (result == 1) {
+                                var msg = "领取成功";
+                                $tip.text(msg).show();
+                                MsgBoxSuccess(jsonMsg);
+                            } else {
+                                var msg = "未知错误";
+                                $tip.text(msg).show();
+                            }
+                        }
+                    });
+                }
+                else { return; }
+            } else {
+                var msg = "手机号或验证码输入有误";
+                $tip.text(msg).show();
+            }
+        });
+
+        $(".downApp").on("click", "label", function () {
+            $(this).parent().hide();
+        });
+
+        $("#downSoft").click(function () {
+            var url = "http://dwz.cn/1HExza";
+            window.onload = openUrl(url);
+        });
+    });
+</script>
+</html>
+<script type="text/javascript">
+    var _hmt = _hmt || []; (function () { var t = document.createElement("script"), n; t.src = "//hm.baidu.com/hm.js?16afd1d01373c6f2bf619ff824868a5e"; n = document.getElementsByTagName("script")[0]; n.parentNode.insertBefore(t, n) })(), function (n, t, i, r, u, f, e) { n.GoogleAnalyticsObject = u; n[u] = n[u] || function () { (n[u].q = n[u].q || []).push(arguments) }; n[u].l = 1 * new Date; f = t.createElement(i); e = t.getElementsByTagName(i)[0]; f.async = 1; f.src = r; e.parentNode.insertBefore(f, e) }(window, document, "script", "//www.google-analytics.com/analytics.js", "ga"); ga("create", "UA-53906036-1", "auto"); ga("send", "pageview");
+</script>

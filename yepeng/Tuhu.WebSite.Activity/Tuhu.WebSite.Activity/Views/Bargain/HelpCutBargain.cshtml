@@ -1,0 +1,149 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, width=device-width,minimal-ui" />
+<meta name="description" content="途虎养车网" />
+<meta content="telephone=no" name="format-detection" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>0.99元抢迷你便携式车载吸尘器</title>
+    @Html.Partial("~/Views/Shared/ShareHeadClean.cshtml")
+    @Html.Partial("BargainShare")
+    @Html.Partial("~/Views/Shared/WxJsSDK.cshtml")
+    <script type="text/javascript">
+        var bag = {};
+        var wxinfo = null;
+        var pu = parseurl('helpcut.html', []);
+        function verifyready(d) {
+            if (!d || d.isexpired) {
+                location.href = '/bargain/end.html';
+            } else if (d.isready) {
+                $('#pop').hide().fadeIn(100);
+                $('#bcut').attr('href', '#').addClass('bdisabled');                
+            }
+        }
+        function showmsgs(detail) {
+            if (detail.players && detail.players.length > 0) {
+                $('#pregion').addClass('hidden');
+                $('#kregion').removeClass('hidden');
+                $('#klist')[0].innerHTML = '';
+                for (var i = 0; i < detail.players.length; i++) {
+                    var pl = detail.players[i];
+                    var h = cutitem(pl);
+                    $('#klist')[0].innerHTML += h;
+                }
+            }
+        }
+        var utry = 'http://faxian.tuhu.cn/hwx/entry.html?cburl=' + cburl('prejoin.html?hdsrc=hc&aid=1&oid=' + pu.foid + '&wxinfo=');
+        function cfgready(c) {
+            $('#avatar').attr('src', 'http://resource.tuhu.cn/Image/Product/jinlaohu.png');
+            $('#nick').html('亲');
+            ubc(c, 'bgname');
+            var i = $.cookie('wxinfo');
+            if (i) {
+                wxinfo = JSON.parse(i);
+                if (wxinfo.openid == pu.foid) {
+                    location.href = utry;
+                }
+            }
+            $.ajax({
+                url: 'http://faxian.tuhu.cn/bargain/selfdetail.html?aid=' + c.aid + '&soid=' + pu.foid
+                , async: true
+            }).done(function (data) {
+                try {
+                    var detail = JSON.parse(data);
+                    if (detail.simg) {
+                        $('#avatar').attr('src', detail.simg);
+                    }
+                    if (detail.nick) {
+                        $('#nick').text(detail.nick);
+                    }
+                    window.pgbar = $('[control=pgbarcs]').inject({ min: 10, max: 90, cmin: detail.dprice })[0];
+                    pgbar.setData(detail.cprice, detail.tprice);
+                    showmsgs(detail);
+                    $('#btry').attr('href', utry);
+                    if (!detail.isready) {
+                        var ucut = 'http://faxian.tuhu.cn/hwx/entry.html?cburl=' + cburl('play.html?aid=1&foid=' + pu.foid + '&wxinfo=');
+                        if (wxinfo && wxinfo.openid && wxinfo.openid == pu.foid) {
+                            $('#bcut').attr('href', '#');
+                            $('#bcut').click(function () {
+                                toastr.info('亲，不能替自己砍价哦')
+                            });
+                        } else {
+                            $('#bcut').attr('href', ucut);
+                        }
+                    }
+                    var shurl = 'http://faxian.tuhu.cn/bargain/helpcut.html?aid=' + c.aid + '&nick=target&foid=' + pu.foid;
+                    window.wxbag = {
+                        gtitle: c.wxgtitle 
+                        , ftitle: c.wxftitle
+                        , gdesc: c.gdesc 
+                        , fdesc: c.fdesc 
+                        , link: shurl
+                        , gimg: c.wxshareimg
+                        , fimg: c.wxshareimg
+                    };
+                    wxready();
+                    verifyready(detail);
+                } catch (e) {
+                    console.log(e);
+                }
+            });
+        }
+    </script>
+<link rel="stylesheet" href="http://resource.tuhu.cn/css/wx/active/bargain.min.css">
+</head>
+<body>
+<div class="sponsor icon clearfix">
+    <img id="avatar" src="" alt="" class="img" />
+    <p class="word">
+        <span id="nick">亲</span><br /> 
+        <font bgname="hoover">迷你便携式车载吸尘器</font>，想要很久了，
+        大家来帮我砍价！
+    </p>
+    <img src="http://resource.tuhu.cn/Css/images/Activities/p_img.png" width="30%" class="fr" />
+</div>
+<div class="content">
+    <div control="pgbarcs" class="progress-bar">
+        <div alias="cursor" class="num" style="left:90%;"><span alias="indicator" class="curtprice">--</span> <span class="arrow-d"></span></div>
+        <div alias="bar" class="progress icon">
+            <div alias="remain" class="inset icon" style="width:90%;border-radius:18px 0 0 18px"></div>
+        </div>
+    </div>
+    <p class="text">
+        点击右上角，发送到朋友圈，让朋友帮忙来砍价！
+    </p>
+    <p style="color:red; text-align:center; font-weight:bold;">再追加5000只吸尘器，名额有限，抢完即止</p>
+    <div class="clearfix btn-group">
+        <a id="bcut" href="#" class="btn btn-yellow">帮忙砍一刀</a>
+        <a id="btry" href="#" class="btn">我也来一发</a>
+    </div>
+    @*<a href="" class="btn  btn-yellow">立即下单</a>*@
+    <div id="pregion" class="box">
+        <div class="title icon" bgname="hoover">迷你便携式车载吸尘器</div>
+        <center>@*<img src="" alt="" class="p-img">*@
+            <img src="http://resource.tuhu.cn/Css/images/Activities/p_img.png" width="80%" /></center>
+    </div>
+    <div id="kregion" class="box hidden">
+        <div class="title icon">砍价榜</div>
+        <div id="klist" class="list">
+        </div>
+    </div>
+    
+    
+</div>
+<!--弹出层-->
+<div id="pop" class="pop" style="margin-top:-50px; border:solid 0px red;">
+    <span class="icon have hidden"></span>
+    <span class="icon end"></span>
+</div>
+    <div class="adv" id="downApp">
+        <a href="http://a.app.qq.com/o/simple.jsp?pkgname=cn.TuHu.android"><img src="http://resource.tuhu.cn/Css/images/Activities/tuhu-adv.png" width="100%" /></a>
+    </div>
+
+</body>
+</html>

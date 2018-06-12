@@ -1,0 +1,1034 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@model SE_GiftManageConfigModel
+
+@{
+    ViewBag.Title = "修改赠品活动";
+    Layout = "../Shared/_Layout.cshtml";
+}
+
+<style type="text/css">
+    body {
+        font-family: Lucida Sans, Arial, Helvetica, Sans-Serif;
+        font-size: 13px;
+        margin: 20px;
+    }
+
+    #main {
+        width: 960px;
+        margin: 0px auto;
+        border: solid 1px #b2b3b5;
+        -moz-border-radius: 10px;
+        padding: 20px;
+        background-color: #f6f6f6;
+    }
+
+    #header {
+        text-align: center;
+        border-bottom: solid 1px #b2b3b5;
+        margin: 0 0 20px 0;
+    }
+    /*fieldset { border:none; width:320px;}*/
+    legend {
+        font-size: 18px;
+        margin: 0px;
+        padding: 10px 0px;
+        color: #b0232a;
+        font-weight: bold;
+    }
+
+    label {
+        margin: 5px 0 15px;
+        display: inline-block;
+    }
+
+    input[type=text], input[type=password], input[type=number], input[type=submit] {
+        width: 300px;
+        padding: 5px;
+        border: solid 1px #000;
+        margin-bottom: 10px;
+    }
+
+    input[type=button] {
+        width: 80px;
+        padding: 5px;
+        border: solid 1px #000;
+        margin-bottom: 10px;
+    }
+
+    .prev, .next {
+        background-color: #b0232a;
+        padding: 5px 10px;
+        color: #fff;
+        text-decoration: none;
+    }
+
+        .prev:hover, .next:hover {
+            background-color: #000;
+            text-decoration: none;
+        }
+
+    .prev {
+        float: left;
+    }
+
+    .next {
+        float: right;
+    }
+
+    .editor-label {
+        font-weight: 900;
+        color: #b0232a;
+    }
+
+    #steps {
+        list-style: none;
+        width: 100%;
+        overflow: hidden;
+        margin: 0px;
+        padding: 0px;
+    }
+
+        #steps li {
+            font-size: 24px;
+            float: left;
+            padding: 10px;
+            color: #b0b1b3;
+        }
+
+            #steps li span {
+                font-size: 11px;
+                display: block;
+            }
+
+            #steps li.current {
+                color: #000;
+            }
+
+    #makeWizard {
+        background-color: #b0232a;
+        color: #fff;
+        padding: 5px 10px;
+        text-decoration: none;
+        font-size: 18px;
+    }
+
+        #makeWizard:hover {
+            background-color: #000;
+        }
+</style>
+
+<link href="~/Scripts/zTree/css/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+
+@helper  U_ChannelPayHTML(int type = 0)
+{
+
+var list = ((List<ChannelDictionariesModel>)ViewBag.U_ChannelPayList).Where(_ => _.ChannelType == (type == 1 ? "H5合作渠道" : type == 2 ? "其他" : type == 3 ? "第三方平台" : type == 4 ? "自有渠道" : "")).ToList();
+    <div>
+        <h1 style="color:red;display:inline-block;"> @(list.FirstOrDefault().ChannelType)</h1>
+        <label style="display:inline-block;"><input type="checkbox" onclick="CreateManage.ChannelChecks(this,@(type))" />(全选/反选)</label>
+    </div>
+foreach (var item in list)
+{
+        <label style="display:inline-block;"><input data-checked-value="@(item.ChannelKey)" data-checked-type="@(type)" type="checkbox" value="@item.ChannelKey" @(item.IsChecked ? "checked=checked" : "") />@item.ChannelKey</label>
+}
+}
+
+@helper OrdersWayCheckBox(string items = "")
+{
+items = items ?? "";
+    <label><input type="checkbox" disabled="disabled" data-id="OrdersWay" value="1" @(items.Contains("1") ? "checked=checked" : "") />到店安装</label>
+    <label><input type="checkbox" disabled="disabled" data-id="OrdersWay" value="2" @(items.Contains("2") ? "checked=checked" : "") />上门安装</label>
+    <label><input type="checkbox" disabled="disabled" data-id="OrdersWay" value="3" @(items.Contains("3") ? "checked=checked" : "") />无需安装</label>
+}
+
+@helper GiftTypeCheckBox(string items = "")
+{
+items = items ?? "";
+    <label style="display:none;">
+        <input type="checkbox" data-id="GiftType" value="1" @(items.Contains("1") ? "checked=checked" : "") /> 减
+        @Html.TextBoxFor(model => model.GiftMoney, new { @type = "number", @style = "width:100px;" }) 元
+    </label>
+    <label><input type="checkbox" disabled="disabled" data-id="GiftType" value="2" onclick="CreateManage.GiftTypeSwitch(this);" @(items.Contains("2") ? "checked=checked" : "") />送赠品</label>
+}
+
+<body>
+    @using (Html.BeginForm("Save", "SE_GiftManageConfig", FormMethod.Post, new { name = "CreateForm", id = "CreateForm" }))
+    {
+        @Html.HiddenFor(model => model.Id)
+        @Html.HiddenFor(model => model.Creater)
+        @Html.HiddenFor(model => model.Mender)
+        @Html.HiddenFor(model => model.CreateTime)
+        @Html.HiddenFor(model => model.UpdateTime)
+        @Html.HiddenFor(model => model.Channel)
+
+        <fieldset style="border:none;" id="setp1">
+            <legend>活动渠道</legend>
+            @U_ChannelPayHTML(1)
+            <hr />
+            @U_ChannelPayHTML(2)
+            <hr />
+            @U_ChannelPayHTML(3)
+            <hr />
+            @U_ChannelPayHTML(4)
+            <hr />
+        </fieldset>
+
+        <fieldset style="border:none;width:320px;" id="setp2">
+            <legend>活动全局配置</legend>
+            <div class="editor-label">
+                活动名称
+            </div>
+            <div class="editor-field">
+                @Html.EditorFor(model => model.Name, new { disabled = "disabled" })
+            </div>
+            <div class="editor-label">
+                状态
+            </div>
+            <div class="editor-field" style="display:block;">
+                <label>@Html.RadioButtonFor(model => model.State, true, new { disabled = "disabled" }) 启用</label>
+                <label>@Html.RadioButtonFor(model => model.State, false, new { disabled = "disabled" }) 禁用</label>
+            </div>
+
+            <div class="editor-label" style="display:none;">
+                每人限购
+            </div>
+            <div class="editor-field" style="display:none;">
+                @Html.EditorFor(model => model.Limit, new { disabled = "disabled" })
+            </div>
+
+            <div class="editor-label">
+                赠送方式
+            </div>
+            <div class="editor-field" style="display:block;">
+                <label>@Html.RadioButtonFor(model => model.DonateWay, 1, new { disabled = "disabled" }) 不随单</label>
+                <label>@Html.RadioButtonFor(model => model.DonateWay, 2, new { disabled = "disabled" }) 随单</label>
+                <label style="color:red">注：随单附送仅限于添加1、广告宣传用品2、低值营销礼品3、供应商赠品4、最好同样的产品，赠送方式配成一样的（特殊情况除外)</label>
+            </div>
+
+            <div class="editor-label" style="display:none;">
+                套餐描述
+            </div>
+            <div class="editor-field" style="display:none;">
+                @Html.EditorFor(model => model.Describe, new { disabled = "disabled" })
+            </div>
+
+            <div class="editor-label">
+                可见条件
+            </div>
+            <div class="editor-field" style="display:block;">
+                <label>@Html.RadioButtonFor(model => model.Visible, true, new { disabled = "disabled" }) 所有人</label>
+                <label>@Html.RadioButtonFor(model => model.Visible, false, new { disabled = "disabled" }) 电销可见</label>
+            </div>
+
+            <div class="editor-label">
+                订单安装方式
+            </div>
+            <div class="editor-field" style="display:block;">
+                @OrdersWayCheckBox(Model.OrdersWay)
+                @Html.HiddenFor(model => model.OrdersWay, new { disabled = "disabled" })
+            </div>
+
+            <div class="editor-label">
+                是否套装
+            </div>
+            <div class="editor-field" style="display:block;">
+                <label><input type="radio" disabled="disabled" value="true" name="IsPackage" @( Model.IsPackage == true ? "checked" : "") />套装</label>
+                <label><input type="radio" disabled="disabled" value="false" name="IsPackage" @( Model.IsPackage == false ? "checked" : "") /> 非套装</label>
+            </div>
+            <div class="editor-label">
+                是否列表页展示"赠"标签
+            </div>
+            <div class="editor-field" style="display:block;">
+                <label><input type="radio" value="true" name="TagDisplay" @( Model.TagDisplay == true ? "checked" : "") />展示</label>
+                <label><input type="radio" value="false" name="TagDisplay" @( Model.TagDisplay == false ? "checked" : "") /> 不展示</label>
+            </div>
+            <div class="editor-label">
+                有效时间
+            </div>
+            <div class="editor-field">
+                @Html.TextBoxFor(model => model.ValidTimeBegin, new { style = "width:120px;" })
+                至
+                @Html.TextBoxFor(model => model.ValidTimeEnd, new { style = "width:120px;" })
+            </div>
+
+        </fieldset>
+
+        <fieldset style="border: none; width: 500px;" id="setp3">
+            <legend>配置赠品</legend>
+            <div style="border-bottom:1px solid #b0232a; text-align: center;color: #b0232a ">产品</div>
+            <div class="editor-label">
+                选择商品类型
+            </div>
+            <div class="editor-field" style="display: block;">
+                <label>@Html.RadioButtonFor(model => model.Type, 1, new { onclick = "CreateManage.TypeSwitch(1);", disabled = "disabled" }) 按轮胎尺寸</label>
+                <label>@Html.RadioButtonFor(model => model.Type, 2, new { onclick = "CreateManage.TypeSwitch(2);", disabled = "disabled" }) 按轮毂尺寸</label>
+                <label>@Html.RadioButtonFor(model => model.Type, 3, new { onclick = "CreateManage.TypeSwitch(3);", disabled = "disabled" }) 按品类</label>
+                <label>@Html.RadioButtonFor(model => model.Type, 4, new { onclick = "CreateManage.TypeSwitch(4);", disabled = "disabled" }) 按PID</label>
+                <label>@Html.RadioButtonFor(model => model.Type, 5, new { onclick = "CreateManage.TypeSwitch(5);", disabled = "disabled" }) 按轮胎类型</label>
+
+                <div style="display: block;" data-id="div_type_1">
+                    @Html.DropDownListFor(model => model.ConditionSize, new List<SelectListItem>()
+                    {
+                        new SelectListItem() {Value = "1", Text = "大于"},
+                        new SelectListItem() {Value = "2", Text = "大于等于"},
+                        new SelectListItem() {Value = "3", Text = "等于"},
+                        new SelectListItem() {Value = "4", Text = "小于"},
+                        new SelectListItem() {Value = "5", Text = "小于等于"}
+                    }, new { disabled = "disabled" })
+                    @Html.TextBoxFor(model => model.Size, new { @type = "number", @min = "1", @style = "width:100px;", disabled = "disabled" }) 尺寸
+                </div>
+
+                <div style="display: block;" data-id="div_type_3">
+                    <div>
+                        <div class="editor-label">按类别</div>
+                        <ul id="TreeB_Categorys" class="ztree"></ul>
+                        @Html.HiddenFor(model => model.B_Categorys)
+                    </div>
+
+                    <div>
+                        <div class="editor-label"> 按品牌</div>
+                        <input type="button" disabled="disabled" onclick="CreateManage.Add_B_Brands_Dialog(1);" value="新增品牌" />
+                        <table id="Show_B_Brands_Table">
+                            <thead>
+                                <tr>
+                                    <th>类目</th>
+                                    <th>品牌</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                            <tfoot>
+                                @Html.HiddenFor(model => model.B_Brands)
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div>
+                        <div class="editor-label">按PID</div>
+                        <label>@Html.RadioButtonFor(model => model.B_PID_Type, true, new { disabled = "disabled" }) 增加PID</label>
+                        <label>@Html.RadioButtonFor(model => model.B_PID_Type, false, new { disabled = "disabled" }) 排除PID</label>
+                        <table id="B_Brands_PID_Table">
+                            <thead>
+                                <tr>
+                                    <th>产品编号</th>
+                                    <th>产品名称</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                            <tfoot>
+                                @Html.HiddenFor(model => model.B_PID)
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="display: block;" data-id="div_type_4">
+                    <div>
+                        <div class="editor-label">按PID</div>
+                        <form id="UploadExcelToPID" enctype="multipart/form-data" method="post" action="">
+
+                            <input type="file" id="File_UploadExcelToPID" name="File_UploadExcelToPID" onchange="CreateManage.UploadFile('File_UploadExcelToPID', CreateManage.CallBack_P_PID);" />
+                        </form>
+                        <br />
+                        @Html.ActionLink("下载PID导入模板.xlsx", "Export", new { id = (@Model == null ? 0 : @Model.Id) })
+                        @*<button type="button" class="btn btn-primary" onclick="CreateManage.Export(@(Model==null?0:Model.Id))" style="margin-top: 10px;">
+                                下载模板
+                            </button>
+                            <select id="disk">
+                                <option value="D" >D盘</option>
+                                <option value="E">E盘</option>
+                                <option value="F">F盘</option>
+                                <option value="W">W盘</option>
+                            </select>*@
+                        @*<label><input type="button"  test="下载模板"onclick="CreateManage.Export(@(Model==null?0:Model.Id))"/></label>;*@
+                        @*<a href="/Content/Export/PID导入模板.xlsx">下载PID导入模板.xlsx</a>*@
+                        <span style="display: inline-block; color: red; font-weight: 900;">（* 注意Excel最多只能导入100行）</span>
+                    </div>
+                    <table id="P_PID_PID_Table">
+                        <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>PID</th>
+                                <th>名称</th>
+                                <th>价格</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                        <tfoot>
+                            @Html.HiddenFor(model => model.P_PID)
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div style="display: block;" data-id="div_type_5">
+                    @Html.Label("轮胎类型:")
+                    @Html.DropDownListFor(model => model.TireType, new List<SelectListItem>()
+                    {
+                        new SelectListItem() {Value = "1", Text = "所有轮胎"},
+                        new SelectListItem() {Value = "2", Text = "防爆胎"},
+                        new SelectListItem() {Value = "3", Text = "非防爆胎"}
+                    }, new { disabled = "disabled" })
+                    <br />
+                    @Html.Label("轮胎尺寸:")
+                    @Html.DropDownListFor(model => model.TireSizeCondition, new List<SelectListItem>()
+                    {
+                        //new SelectListItem() {Text = "请选择对应尺寸"},
+                        new SelectListItem() {Value = "1", Text = "大于"},
+                        new SelectListItem() {Value = "2", Text = "大于等于"},
+                        new SelectListItem() {Value = "3", Text = "等于"},
+                        new SelectListItem() {Value = "4", Text = "小于"},
+                        new SelectListItem() {Value = "5", Text = "小于等于"}
+                    }, new { disabled = "disabled" })
+                    @Html.TextBoxFor(model => model.TireSize, new { @type = "number", @min = "1", @style = "width:100px;", disabled = "disabled" }) 尺寸
+                </div>
+            </div>
+            <div style="border-bottom:1px solid #b0232a; text-align: center;color: #b0232a ">赠品</div>
+            <div class="editor-label">
+                优惠门槛
+            </div>
+            <div class="editor-field" style="display: block;">
+                @Html.DropDownListFor(model => model.GiftCondition, new List<SelectListItem>()
+                {
+                    new SelectListItem() {Value = "1", Text = "满"},
+                    new SelectListItem() {Value = "2", Text = "大于等于"}
+                }, new { disabled = "disabled" })
+
+                @Html.TextBoxFor(model => model.GiftNum, new { @type = "number", @min = "0", @style = "width:100px;", disabled = "disabled" })
+
+                @Html.DropDownListFor(model => model.GiftUnit, new List<SelectListItem>()
+                {
+                    new SelectListItem() {Value = "1", Text = "件"},
+                    new SelectListItem() {Value = "2", Text = "元"}
+                }, new { disabled = "disabled" })
+            </div>
+
+            <div class="editor-label">
+                优惠方式
+            </div>
+            <div class="editor-field" style="display: block;">
+                @GiftTypeCheckBox(Model.GiftType)
+                @Html.HiddenFor(model => model.GiftType)
+                <table id="GiftProductsTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>PID</th>
+                            <th>数量</th>
+                            <th>名称</th>
+                            <th>描述</th>
+                            <th>库存(不填默认为不限制库存)</th>
+                            <th>已销售数量</th>
+                            <th>是否强制取回</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        @Html.HiddenFor(model => model.GiftProducts)
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="editor-label" style="display:none;">
+                优惠说明
+            </div>
+            <div class="editor-field" style="display: none;">
+                @Html.EditorFor(model => model.GiftDescribe)
+            </div>
+
+        </fieldset>
+    }
+    <div style="right: 50px; position: absolute;bottom: 80px">
+        <input type="button" value="保存" id="SaveAccount" name="SaveAccount" onclick="CreateManage.Save();" />
+    </div>
+</body>
+<div id="B_Brands_Page" style="display:none;"></div>
+
+<script type="text/template" id="GiftProductsTemplate">
+    <tr>
+        <td><input onblur="CreateManage.onblur_PID(this,1);" disabled="disabled" type="text" style="width:150px;" value="{{pid}}" /></td>
+        <td><input type="number" min="1" style="width:60px;" value="{{num}}" disabled="disabled" /></td>
+        <td><input type="text" style="width:150px;" value="{{name}}" disabled="disabled" /></td>
+        <td><input type="text" style="width:150px;" value="{{describe}}" disabled="disabled" /></td>
+        <td><input type="number" style="width:60px;" value="{{stock}}" /></td>
+        <td><input type="number" style="width:60px;" value="{{sendQty}}" disabled="disabled" /></td>
+        <td><input type="checkbox" style="width:60px;" value="{{isRetrieve}}" {{checked}} /></td>
+    </tr>
+</script>
+
+<script type="text/template" id="B_Brands_TableTemplate">
+    <tr>
+        <td>{CategoryName}</td>
+        <td>{Brands}</td>
+    </tr>
+</script>
+
+<script type="text/template" id="B_PID_TableTemplate">
+    <tr>
+        <td><input onblur="CreateManage.onblur_PID(this,2);" type="text" style="width:150px;" value="{{pid}}" disabled="disabled" /></td>
+        <td><input type="text" style="width:150px;" value="{{name}}" disabled="disabled" /></td>
+    </tr>
+</script>
+
+<script type="text/template" id="P_PID_TableTemplate">
+    <tr>
+        <td><input type="text" style="width:200px;" value="{{Index}}" disabled="disabled" /></td>
+        <td><input type="text" style="width:200px;" value="{{PID}}" /></td>
+        <td><input type="text" style="width:200px;" value="{{name}}" /></td>
+        <td><input type="text" style="width:50px;" value="{{money}}" /></td>
+        <td><input type="button" value="删除" onclick="CreateManage.Del_GiftProducts(this);" /></td>
+    </tr>
+</script>
+
+<script src="~/Scripts/FormToWizard/formToWizard.js" type="text/javascript"></script>
+<script src="~/Scripts/zTree/js/jquery.ztree.core-3.5.min.js" type="text/javascript"></script>
+<script src="~/Scripts/zTree/js/jquery.ztree.excheck-3.5.min.js" type="text/javascript"></script>
+<script src="~/Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<script src="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.js"></script>
+<script type="text/javascript">
+    var _B_CategorysCategorysJson = @Html.Raw(ViewBag.B_Categorys ?? "[]"),     //类别类目树
+    _BrandsListControlCategorysJson,                                            //品牌类目树
+    _B_CategorysParnets=[],                                                     //当前选择品牌类目树
+    _B_BrandsItems=@Html.Raw(Model.B_Brands ?? "[]"),                           //按品牌数据集合
+    _modelType = @Model.Type,
+    _modelGiftProducts = @Html.Raw(Model.GiftProducts ?? "[]"),
+    _modelB_PID = @Html.Raw(Model.B_PID ?? "[]"),
+    _modelP_PID = @Html.Raw(Model.P_PID ?? "[]"),
+    IsDebug=false;
+    var flag = true;
+    var button = $(this);
+    var attrtext = '';
+    button.attr("disabled", "false");
+    var CreateManage = {
+        TypeSwitch:function(type){
+            type = type || 1;
+            if(type == 2) type = 1;
+            var el = "div_type_" + type;
+            $("div[data-id='"+ el +"']").show().siblings("div[data-id!='"+ el +"']").hide();
+        },
+        ChannelChecks:function (obj,type){
+            var hasChk = $(obj).is(':checked');
+            $("input[data-checked-type='" + type + "']").attr("checked", hasChk);
+        },
+        GiftTypeSwitch:function (obj) {
+            var hasChk = $(obj).is(':checked')
+                ? $("#GiftProductsTable").show()
+                : $("#GiftProductsTable").hide();
+        },
+        CP_Brand_Checked:function(obj){
+            var hasChk = $(obj).is(':checked')
+                ? $("input=[data-id='CP_Brand_Checked']").attr("checked", "checked")
+                : $("input=[data-id='CP_Brand_Checked']").removeAttr("checked");
+        },
+        LoadBrandCheckeds:function(id){
+            $("#Tree_B_Brands_Page_table_td").html("").load('/SE_GiftManageConfig/BrandsCheckBoxListControl?categorys='+id);
+        },
+        ConfirmBrandCheckeds:function(type){
+            type = type || 0;
+            var _tempGetCategory = _B_CategorysParnets[_B_CategorysParnets.length-1].split(':')[1] || ""
+                ,_tempGetCategoryNmae = _B_CategorysParnets[_B_CategorysParnets.length-1].split(':')[0] || ""
+                ,_tempCategoryName = JSON.stringify(_B_CategorysParnets); //此处转换为了解决引用类型的坑
+
+            if(type == 0){
+                for (var i = 0; i < _B_BrandsItems.length; i++) {
+                    if(_B_BrandsItems[i].Category ==_tempGetCategory){
+                        alert("1.【"+ _tempGetCategoryNmae +"】类目已存在,不能重复添加！\r\n2. 如要更改请使用编辑操作进行更改！");
+                        return false;
+                    }
+                }
+            }
+            else{
+                for (var i = _B_BrandsItems.length-1; i>=0; i--){
+                    if (parseInt(_B_BrandsItems[i].Category||0) == _tempGetCategory){
+                        _B_BrandsItems.splice(i,1);
+                    }
+                }
+            }
+
+            _B_BrandsItems.push({
+                "CategoryName":JSON.parse(_tempCategoryName || ""),
+                "Category":_tempGetCategory,
+                "Brands":
+                $("input[data-id='CP_Brand_Checked']").map(function(){
+                    if($(this).is(":checked"))return $(this).val();
+                }).get().join(',')
+            });
+
+            CreateManage.Set_B_Brands(_B_BrandsItems);
+            CreateManage.CancelBrandCheckeds();
+
+            console.log(JSON.stringify(_B_randsItems));
+        },
+        CancelBrandCheckeds:function(){
+            $("#B_Brands_Page").dialog("close");
+        },
+        Get_Channel:function(){
+            return $("#setp1 input[data-checked-type='1'],input[data-checked-typ='2'],input[data-checked-type='3'],input[data-checked-type='4']").map(function(i){
+                if($(this).is(':checked'))
+                    return $(this).attr("data-checked-value");
+            }).get().join(',');
+        },
+        Get_OrdersWay:function(){
+            return $("input=[data-id='OrdersWay']").map(function(){
+                if($(this).is(':checked'))
+                    return $(this).val();
+            }).get().join(',');
+        },
+        Get_GiftType:function(){
+            return $("input=[data-id='GiftType']").map(function(){
+                if($(this).is(':checked'))
+                    return $(this).val();
+            }).get().join(',');
+        },
+        Set_B_Brands:function(data){
+            if(data.length > 0){
+                var $Show_B_Brands_Table = $("#Show_B_Brands_Table > tbody");
+                $Show_B_Brands_Table.html("");
+
+                for (var i = 0; i < data.length; i++) {
+                    $Show_B_Brands_Table.append($("#B_Brands_TableTemplate").html()
+                        .replace(/{CategoryName}/ig,
+                            data[i].CategoryName.map(function(e){
+                                return e.split(':')[0];
+                            }).join('<span style="color:red;"> -> </span>')
+                        ).replace(/{Brands}/ig,
+                            data[i].Brands.split(',').map(function(e){
+                                return "<span style='display:inline-block;border:1px solid red;margin-bottom:2px;'>"+ e +"</span>";
+                            }).join(' ')
+                        ).replace(/{BrandsToId}/ig,data[i].Brands
+                        ).replace(/{CategoryNameToId}/ig,
+                             data[i].CategoryName.map(function(e){
+                                 return e.split(':')[1];
+                             }).join('.')
+                        ).replace(/{Category}/ig,data[i].Category));
+                }
+            }
+        },
+        Get_B_Brands:function(){
+            _B_BrandsItems = _B_BrandsItems || [];
+            if(_B_BrandsItems.length>0)
+                return JSON.stringify(_B_BrandsItems);
+            return null;
+        },
+        Edit_B_Brands:function(c,b){
+            CreateManage.Add_B_Brands_Dialog(c,b,1);
+        },
+        Del_B_Brands:function(o,c){
+            if (confirm("确认删除？")) {
+                _B_CategorysParnets = [];
+                for (var i = _B_BrandsItems.length-1; i>=0; i--){
+                    if (parseInt(_B_BrandsItems[i].Category||0) == c){
+                        _B_BrandsItems.splice(i,1);
+                        $(o).parents("tr").remove();
+                    }
+                }
+                CreateManage.Set_B_Brands(_B_BrandsItems);
+            }
+        },
+        Add_GiftProducts:function () {
+            $("#GiftProductsTable tbody").append($("#GiftProductsTemplate").html()
+                .replace(/{{pid}}/ig,"")
+                .replace(/{{num}}/ig,"")
+                .replace(/{{name}}/ig,"")
+                .replace(/{{describe}}/ig, "")
+                .replace(/{{stock}}/ig, "")
+                .replace(/{{sendQty}}/ig, "")
+                .replace(/{{isRetrieve}}/ig, "")
+            );
+        },
+        Get_GiftProducts:function(){
+            var items = [];
+            $("#GiftProductsTable tbody tr").each(function(i,e){
+                var _pid = $(e).find("td").eq(0).find("input").val()||"",
+                    _num = $(e).find("td").eq(1).find("input").val()||0,
+                    _name = $(e).find("td").eq(2).find("input").val()||"",
+                    _describe = $(e).find("td").eq(3).find("input").val() || "";
+                    _stock = $(e).find("td").eq(4).find("input").val() || "";
+                    _isRetrieve = $(e).find("td").eq(6).find("input").prop("checked") == true ? 1 : 0;
+
+                if(_pid.length > 0)
+                    items.push({ pid: _pid, num: _num, name: _name, describe: _describe, stock: _stock, isRetrieve: _isRetrieve});
+            });
+            return items.length > 0 ? JSON.stringify(items) : null;
+        },
+        Set_GiftProducts:function(source){
+            source = source || [];
+            var $template = $("#GiftProductsTemplate").html();
+            var sendNum = '';
+            for (var i = 0; i < source.length; i++) {
+                $.ajax({
+                    type: "POST",
+                    url: "/SE_GiftManageConfig/GetGiftProductSendNum",
+                    async: false,
+                    data: { pid: source[i].pid, ruleId:@Model.Id},
+                    success: function (v) {
+                        if (v.state > 0) {
+                            sendNum = v.sendNum;
+                        }
+                    }
+                });
+                $("#GiftProductsTable > tbody").append($template
+                    .replace(/{{pid}}/ig,source[i].pid)
+                    .replace(/{{num}}/ig,source[i].num)
+                    .replace(/{{name}}/ig,source[i].name)
+                    .replace(/{{describe}}/ig, source[i].describe)
+                    .replace(/{{stock}}/ig, source[i].stock)
+                    .replace(/{{sendQty}}/ig, sendNum)
+                    .replace(/{{isRetrieve}}/ig, source[i].isRetrieve)
+                    .replace(/{{checked}}/ig, source[i].isRetrieve == 1?"checked":"")
+                );
+            }
+        },
+        Del_GiftProducts:function (obj) {
+            if (confirm("确认删除？"))
+                $(obj).parents("tr").remove();
+        },
+        Add_B_PID:function () {
+            $("#B_Brands_PID_Table tbody").append($("#B_PID_TableTemplate").html().replace(/{{pid}}/ig,"")
+                .replace(/{{name}}/ig,""));
+        },
+        Get_B_PID:function(){
+            var items = [],_pid,_name;
+            $("#B_Brands_PID_Table tbody tr").each(function(i,e){
+                _pid = $(e).find("td").eq(0).find("input").val()||"",
+                _name = $(e).find("td").eq(1).find("input").val()||"";
+                if(_pid.length > 0)
+                    items.push({pid:_pid,name:_name});
+            });
+            return items.length > 0 ? JSON.stringify(items) : null;
+        },
+        Set_B_PID:function(source){
+            var $template = $("#B_PID_TableTemplate").html();
+            for (var i = 0; i < source.length; i++) {
+                $("#B_Brands_PID_Table > tbody").append($template.replace(/{{pid}}/ig,source[i].pid)
+                    .replace(/{{name}}/ig,source[i].name));
+            }
+        },
+        Add_B_Brands_Dialog:function(ids,_brands,type){
+            var _title = (ids || "").length > 0 ? "修改品牌" : "新增品牌";
+            var dialogConfig = {
+                title: _title,
+                width: 800,
+                height: 500,
+                modal:true,
+                resizable:false,
+                stack:true,
+                open:function(event,i)
+                {
+                    setTimeout(function(){
+                        var obj = new TreeManageConfig(_BrandsListControlCategorysJson,"Tree_B_Brands_Page",false);
+                        obj.zTreeInit();
+                        _B_CategorysParnets=[];                                         //打开重置获取当前选中项
+                        CreateManage.RecursiveQueryForGetParents(obj.getItems(false)[0]);    //打开页面加载当前类目所有层级
+                        _B_CategorysParnets.reverse();                                  //反序,修改会影响编品牌结果
+                        //CreateManage.LoadBrandCheckeds(obj.getItems()[0].NodeNo);     //打开页面加载当前选中项品牌
+                        console.log("Add_B_Brands_Dialog.NodeNo=> ",obj.getItems(false)[0].NodeNo);
+                    },3000);
+                }
+            };
+            $("#B_Brands_Page").html("").load('/SE_GiftManageConfig/BrandsListControl?B_Categorys='+(ids||1)+'&B_Brands='+(_brands||"")+'&type='+(type||0)).dialog(dialogConfig);
+        },
+        RecursiveQueryForGetParents:function(node){
+            //递归获取当前选中项所有父节点
+            if((node.parentTId || "").length <= 0){
+                _B_CategorysParnets.push(node.name + ":" + node.id);
+                return;
+            }
+            else{
+                _B_CategorysParnets.push(node.name+ ":" + node.id);
+                return this.RecursiveQueryForGetParents(node.getParentNode());
+            }
+        },
+        CallBack_P_PID:function(source){
+            if(source.Status > 0){
+                if (source.Count > 100) {
+                    alert("最多导入100条");
+                    return false;
+                }
+                var sourceData = source.Data.length > 0 ? JSON.parse(source.Data):[];
+                CreateManage.Set_P_PID(sourceData);
+            }
+            else{
+                alert(source.Error);
+                return false;
+            }
+        },
+        Set_P_PID:function(source){
+            var $template = $("#P_PID_TableTemplate").html();
+            $.each(source, function (i) {
+                $.ajax({
+                    type: "POST",
+                    url: "/SE_GiftManageConfig/GetVW_ProductsModel",
+                    data: {pid:source[i].PID},
+                    //async: true,
+                    success: function(r) {
+                        if(r.Status <= 0){
+                            alert("PID:『"+ source[i].PID+"』不存在！");
+                        }
+                        else {
+                            $("#P_PID_PID_Table > tbody").append($template.replace(/{{PID}}/ig, source[i].PID)
+                                .replace(/{{name}}/ig, r.DisplayName)
+                                .replace(/{{money}}/ig, r.money)
+                                .replace(/{{index}}/ig, i + 1));
+                        }
+                    }
+                });
+            });
+        },
+        Get_P_PID:function(){
+            var values = [],_pid,_name,_money;
+            $("#P_PID_PID_Table > tbody > tr").each(function(i,e){
+                _pid = $(e).find("td").eq(1).find("input").val(),
+               _name = $(e).find("td").eq(2).find("input").val(),
+               _money = $(e).find("td").eq(3).find("input").val();
+                if((_pid || "").length > 0)
+                    values.push({"PID":_pid,name:_name,money:_money});
+            });
+            return values.length > 0 ? JSON.stringify(values) : null;
+        },
+        UploadFile:function(_fileElementId,_callback){
+            $.ajaxFileUpload({
+                url: '/SE_GiftManageConfig/UploadExcelToPID',
+                secureuri: false,
+                fileElementId: _fileElementId || '',
+                dataType: 'json',
+                async: false,
+                success: function (result) {
+                    console.log("UploadFile",result);
+                    _callback(result);
+                }
+            });
+        },
+
+        onblur_PID:function(el,t){
+            var val = $.trim($(el).val()),
+                _parentElement = $(el).closest("table[id='GiftProductsTable'],table[id='B_Brands_PID_Table']").attr("id");
+
+            if(val.length > 0)
+            {
+                $.ajax({
+                    type: "POST",
+                    url: "/SE_GiftManageConfig/GetVW_ProductsModel",
+                    data: {pid:val},
+                    success: function(r){
+                        if(r.Status <= 0){
+                            $(el).val("");
+                            alert("PID:『"+ val +"』不存在！");
+                        }
+                        else{
+                            if(_parentElement != 'undefined'&&t==1){
+                                $(el).parents("td").next().next().find("input[type='text']").val(r.DisplayName);
+                            }
+                            if(_parentElement != 'undefined'&&t === 2){
+                                $(el).parents("td").next().find("input[type='text']").val(r.DisplayName);
+                            }
+                        }
+                    }
+                });
+                $.ajax({
+                    type: "POST",
+                    url: "/SE_GiftManageConfig/GetGiftProductStock",
+                    data: { pid: val },
+                    success: function (v) {
+                        if (_parentElement != 'undefined' && t == 1 && v.state > 0) {
+                            $(el).parents("td").next().next().next().next().find("input[type='number']").val(v.stock);
+                        }
+
+                    }
+                });
+            }
+        },
+         showWrongTip:function (target, titText) {
+             button.attr("disabled", "true");
+             alert(titText);
+        },
+         Export: function (e) {
+             var disk = $("#disk").find("option:selected").val();
+    $.ajax({
+        type: "POST",
+        url: "/SE_GiftManageConfig/Export",
+        data: {
+            id:e,
+            disk: disk
+         },
+        //success: function (r) {
+        //    if (r.Status)
+        //        alert("下载到"+r.disk+"共" + r.result + "条记录");
+        //    else
+        //        alert( r.msg);
+        //}
+    })
+    },
+         Save: function () {
+             if (confirm("确定要保存吗？（备注：保存成功后，15s后配置生效）")){
+            $(".tip").remove();
+            $("#GiftProducts").val(CreateManage.Get_GiftProducts());    //送赠品
+            $("#B_Brands").val(CreateManage.Get_B_Brands());            //按品类:按品牌
+            $("#B_PID").val(CreateManage.Get_B_PID);                    //按品类:按PID
+            $("#P_PID").val(CreateManage.Get_P_PID());                  //按PID
+            $("#Channel").val(CreateManage.Get_Channel());              //渠道
+            $("#OrdersWay").val(CreateManage.Get_OrdersWay());
+            $("#GiftType").val(CreateManage.Get_GiftType());
+                    if (! $("#Channel").val()) {
+                        attrtext= attrtext+"至少勾选一个渠道;"+'\n';
+                        };
+                        //if (!$("#Name").val()) {
+                        //    attrtext= attrtext+"标识名称必填;"+'\n';
+                    //};
+                    //if (!$("#Describe").val()) {
+                    //    attrtext= attrtext+"套餐描述必填;"+'\n';
+                    //    };
+                 if (!$("#GiftProducts").val()) {
+                     attrtext = attrtext + "必须添加赠品;" + '\n';
+
+                        };
+                        var gifts = jQuery.parseJSON($("#GiftProducts").val());
+                        for (var i = 0; i < gifts.length; i++) {
+                            var sendNum = 0;
+                        $.ajax({
+                    type: "POST",
+                    url: "/SE_GiftManageConfig/GetGiftProductSendNum",
+                    async: false,
+                    data: { pid: gifts[i].pid, ruleId:@Model.Id},
+                    success: function (v) {
+                        if (v.state > 0) {
+                            sendNum = v.sendNum;
+                        }
+                    }
+                });
+                        if (gifts[i].stock!=''&&gifts[i].stock < sendNum) {
+                            attrtext = attrtext + "赠品" + gifts[i].pid + "配置的库存" + gifts[i].stock + "不能小于已经送出的数量" + sendNum + "(提示：送出数量跟界面上不一致的话请手动刷新)"+'\n';
+                            }
+                        }
+             if ($("#Size").val() <= 1 && !$("#B_Brands").val()&&!$("#B_Categorys").val() &&!$("#P_PID").val()&&!$("B_PID").val() && $("#TireSize").val() <= 1) {
+                  attrtext= attrtext+"请配置所赠赠品的商品。";
+                    }
+             console.log($("#Size").val(),$("#B_Brands").val(),$("#B_Categorys").val(),$("#P_PID").val(),$("#TireSize").val());
+             if (attrtext !== '') {
+                 alert(attrtext);
+                 attrtext = '';
+                  return false;
+             }
+            if(IsDebug)return false;
+            $("#CreateForm").submit();
+            $.ajax({
+                type: "POST",
+                async: false,
+                url: "/SE_GiftManageConfig/RefreshCache",
+                success: function (r) {
+                    r = JSON.parse(r);
+                    if (r.state)
+                        alert("保存并成功刷新缓存");
+                    else
+                        alert("刷新失败,请手动刷新\r\n" + r.msg);
+                }
+            })
+        }},
+        Initializer:function() {
+            CreateManage.TypeSwitch(_modelType);
+            CreateManage.Set_GiftProducts(_modelGiftProducts);
+            CreateManage.Set_B_Brands(_B_BrandsItems);
+            CreateManage.Set_B_PID(_modelB_PID);
+            CreateManage.Set_P_PID(_modelP_PID);
+            CreateManage.GiftTypeSwitch($("input=[data-id='GiftType'][value='2']"));
+            CreateManage.TypeSwitch(_modelType);
+         }
+    }
+
+
+    CreateManage.Initializer();
+        $("#step0Next").onclick=function()
+            {
+                alert("天要下雨");
+            }
+    var TreeManageConfig = function (jsonData, defaultElement, isCheckParent) {
+        var self = this,
+            getZTreeObj = $.fn.zTree.getZTreeObj(defaultElement);
+        this.setting = {
+            check: !isCheckParent
+                ? { enable: true, chkStyle: "radio", radioType: "all", disabled : "disabled"}
+                : { enable: true, chkboxType: { "Y": "ps", "N": "ps" }, disabled : "disabled"},
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            },
+            callback: {
+                onCheck: function () {
+                    var ids = [];
+                    if(defaultElement.indexOf("TreeB_Categorys") >= 0) {
+                        $(self.getItems(isCheckParent)).each(function (i, item) {
+                            ids.push(item.id);
+                        });
+                        $("#B_Categorys").val(ids.join(","));
+                    }
+                    else{
+                        _B_CategorysParnets = [];
+
+                        var dataSource = self.getItems(isCheckParent);
+
+                        CreateManage.RecursiveQueryForGetParents(dataSource[0]);
+
+                        CreateManage.LoadBrandCheckeds(dataSource[0].NodeNo);
+
+                        _B_CategorysParnets.reverse(); //反序,修改会影响编品牌结果
+
+                        console.log("onCheck.dataSource => ",dataSource);
+                        console.log("onCheck._B_CategorysParnets =>",_B_CategorysParnets);
+                    }
+                }
+            }
+        },
+        this.zTreeJson = jsonData || [],
+        this.zTreeInit = function () {
+            $.fn.zTree.init($("#" + defaultElement), this.setting, this.zTreeJson);
+        },
+
+        this.getItems = function (isCheckBox) {
+            var treeObj = $.fn.zTree.getZTreeObj(defaultElement);
+            var nodes = new Array();
+            var sNodes = treeObj.getCheckedNodes(true);
+            if (isCheckBox) {
+                $.each(sNodes, function() {
+                    var node = $(this);
+                    if (node[0].check_Child_State == 2 || node[0].check_Child_State == -1)
+                        nodes.push(node[0]);
+                });
+                return nodes;
+            } else {
+                return sNodes;
+            }
+        },
+        this.expandAll = function (isExpandAll) {
+            $.fn.zTree.getZTreeObj(defaultElement).expandAll(isExpandAll || false);
+        },
+        this.checkAllTree = function (ischecks) {
+            $.fn.zTree.getZTreeObj(defaultElement).checkAllNodes(ischecks || false);
+            self.setting.callback.onCheck();
+        }
+    };
+    new TreeManageConfig(_B_CategorysCategorysJson, "TreeB_Categorys", true).zTreeInit();
+
+    $(function() {
+        $("#CreateForm").formToWizard({ submitButton: 'SaveAccount' });
+        $("#ValidTimeBegin").datetimepicker({
+            dateFormat: "yy-mm-dd",
+            showSecond: true,
+            timeFormat: 'HH:mm:ss',
+            stepHour: 1,
+            stepMinute: 1,
+            stepSecond: 1,
+            //todayHighlight: 1,
+        });
+        $("#ValidTimeEnd").datetimepicker({
+            dateFormat: "yy-mm-dd",
+            showSecond: true,
+            timeFormat: 'HH:mm:ss',
+            stepHour: 1,
+            stepMinute: 1,
+            stepSecond: 1,
+            todayHighlight: 1,
+            autoclose: 1
+
+        });
+    });
+</script>

@@ -1,0 +1,580 @@
+﻿@{
+    ViewBag.Title = "模块明细";
+
+}
+
+@model Tuhu.Provisioning.DataAccess.Entity.SE_HomePageModuleConfig
+
+
+<div class="ibox ibox-content">
+    <div class="row">
+        <form id="form1" class="form-horizontal">
+            <div class="form-group">
+                <label class="col-sm-1 control-label">背景图片：</label>
+                <div class="col-sm-1">
+                    <img id="imgBgImageUrl" width="30" height="30" />
+                </div>
+                <div class="col-sm-4">
+
+                    <input type="text" class="form-control" id="BgImageUrl" name="BgImageUrl" value="@ViewBag.BgImageUrl" />
+                </div>
+                <div class="col-sm-2">
+                    <input type="file" id="uploadFile" name="uploadFile" style="margin-top:6px; width:220px;" onchange="UploadBgImg(this, 'imgBgImageUrl', 'BgImageUrl')" />
+                </div>
+                <div class="col-sm-3">
+
+                    <a href="javascript:void(0)" class="btn btn-default btn-sm" id="btnShowSplit" style="width:120px;">显示划分</a>
+
+                    <a href="javascript:void(0)" class="btn btn-primary btn-sm" onclick="canvas.cancelLastStep()" style="width:120px;margin-left:5px;">撤 销</a>
+
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="row" style="text-align:center;">
+       <div class="col-sm-2">坐标X：<label id="X"></label></div>
+      
+        <div class="col-sm-2">
+            坐标Y：<label id="Y"></label>
+        </div>
+        <div class="col-sm-2">
+            实际图片宽度: <label id="imgWidth"></label>
+        </div>
+        <div class="col-sm-2">
+            实际图片高度: <label id="imgHeight"></label>
+        </div>
+        <div class="col-sm-2">
+            当前图片的宽度:<label id="imgCurWidth"></label>
+        </div>
+        <div class="col-sm-2">
+            当前图片的高度:<label id="imgCurHeight"></label>
+        </div>
+    </div>
+    <div class="row" style="text-align:center;background-color:#FFF0F5;">
+        <canvas class="process" id="drawing" style="padding:0px;"></canvas>
+    </div>
+    <div class="row">
+        @*<table class="table table-bordered" id="moduleTable" style="text-align:center;">
+            <thead>
+                <tr style="text-align:center;">
+                    <th style="text-align:center;">ID</th>
+                    <th style="text-align:center;">名称</th>
+                    <th style="text-align:center;">设备类型</th>
+                    <th style="text-align:center;">开始版本</th>
+                    <th style="text-align:center;">结束版本</th>
+                    <th style="text-align:center;">状态</th>
+                    <th style="text-align:center;">链接</th>
+                    <th style="text-align:center;">创建时间</th>
+                    <th style="text-align:center;">更新时间</th>
+                    <th style="text-align:center;">管 理</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>*@
+        @Html.Action("HomePageContentTable", "PersonalCenterConfigV2",new { moduleID= ViewBag.ModuleID, moduleHelperID= ViewBag.ModuleHelperID })
+    </div>
+</div>
+
+<div id="edit" class="modal fade" aria-hidden="true" role="dialog" tabindex="-1">
+
+</div>
+<input type="hidden" id="hiddenUrl" name="hiddenUrl" value="@Model.BgImageUrl" />
+<input type="hidden" id="hiddenModeulType" name="hiddenModeulType" value="@Model.ModuleType" />
+<input type="hidden" id="hiddenModuleID" name="hiddenModuleID" value="@ViewBag.ModuleID" />
+<input type="hidden" id="hiddenModuleHelperID" name="hiddenModuleHelperID" value="@ViewBag.ModuleHelperID" />
+@section scripts{
+    <script type="text/javascript">
+        var canvas = {
+            uri: null,
+            context: null,
+            startPoint: { X: null, Y: null },
+            endPoint: { width: null, height: null },
+            isdraw: true,
+            rects: [],
+            realityWidth: null,
+            realityHeight:null,
+            width: null,//当前图片显示的宽度
+            height: null,//当前图片显示的高度
+            //canvasImage   ///根据图片实际大小缩小2倍显示
+            createCanvas: function (url) {
+                //http://image.tuhu.test/activity/image/c2e33f2c-3b0e-490f-a3fc-90e974d740d8$1080w_5770h.png
+                //http://image.tuhu.test/activity/image/3029/aaa6/30bc8413f2d9e7ff1f826801_w720_h350.jpg
+               
+               
+                var s = url.match(/[w|h]\d+/g);
+                var array = [];
+                array.push(s[0].substring(1, s[0].length));
+                array.push(s[1].substring(1, s[1].length));
+                if (array == null) {
+                    alert("图片链接中没有该图片的宽度和高度");
+                    return false;
+                }
+                canvas.uri = url;
+                var width = array[0];
+                var height = array[1];
+                canvas.realityWidth = width;
+                canvas.realityHeight = height;
+
+                $('#imgWidth').html(width);
+                $('#imgHeight').html(height);
+                //  var scale = (width / 2).toFixed(3);
+                //  var scaleHeight = parseInt( (height / scale));
+                var scale = 2;
+                var scaleWidth = parseInt(width / 2);
+                var scaleHeight = parseInt(height / 2);
+
+                $('#imgCurWidth').html(scaleWidth);
+                $('#imgCurHeight').html(scaleHeight);
+
+                var drawing = document.getElementById("drawing");
+                drawing.width = scaleWidth;
+                drawing.height = scaleHeight;
+                // drawing.style.backgroundColor = "#EBEBEB";
+                canvas.width = scaleWidth;
+                canvas.height = scaleHeight;
+                var cxt = drawing.getContext("2d");//画布对象
+                var img = new Image();
+                img.width = scaleWidth;
+                img.height = scaleHeight;
+                img.src = url;
+
+                img.onload = function () {
+                    cxt.globalAlpha = 1;
+                    cxt.drawImage(img, 0, 0, scaleWidth, scaleHeight);
+                    //canvas.reset();
+                    // canvasEvent();//注册canvas的事件
+                    canvas.bindClick();
+                }
+
+            },
+            //canvasEvent
+            click: function (e) {
+                var drawing = document.getElementById("drawing");
+                var context = drawing.getContext("2d");
+                context.globalAlpha = 0.7;
+                // context.strokeStyle = "#FF0000";
+                context.fillStyle = "#EED5D2";
+              
+                console.log("canvas的点击事件:");
+                console.log(e.layerX + " " + e.layerY);
+
+                var inside = context.isPointInPath(e.layerX, e.layerY);
+               
+                if (!inside) {
+                    if (canvas.isdraw) {
+                       
+                        canvas.startPoint.X = e.layerX;
+                        canvas.startPoint.Y = e.layerY;
+                        canvas.isdraw = false;
+                    } else {
+                        //是否绘制
+                        // endPoint.X = e.layerX;
+                        // endPoint.Y = e.layerY;
+                       
+                        canvas.endPoint.width = e.layerX - canvas.startPoint.X;
+                        canvas.endPoint.height = e.layerY - canvas.startPoint.Y;
+                       
+                        if (canvas.endPoint.width < 0) {
+                            canvas.endPoint.width = canvas.startPoint.X - e.layerX;
+                            canvas.endPoint.height = canvas.startPoint.Y - e.layerY;
+                            context.rect(e.layerX, e.layerY, canvas.endPoint.width, canvas.endPoint.height);
+                            console.log("起点坐标:");
+                            console.log(canvas.startPoint);
+                            console.log("矩形的宽高:");
+                            console.log(canvas.endPoint);
+
+                            context.stroke();//绘制矩形
+                            var rect = {
+                                endX: canvas.startPoint.X,
+                                endY: canvas.startPoint.Y,
+                                startX: e.layerX,
+                                startY: e.layerY,
+                                relativelyX2: parseInt((canvas.startPoint.X / canvas.width) * 100),
+                                relativelyY2: parseInt((canvas.startPoint.Y / canvas.height) * 100),
+                                relativelyX1: parseInt((e.layerX / canvas.width) * 100),
+                                relativelyY1: parseInt((e.layerY / canvas.height) * 100)
+                            };
+                            console.log(rect);
+                            canvas.rects.push(rect);//存储矩形
+
+
+                            context.font = "bold 35px Arial";
+                            context.textAlign = "center";
+                            var length = canvas.rects.length;
+                            context.strokeText(length, (canvas.startPoint.X + e.layerX) / 2, (canvas.startPoint.Y + e.layerY) / 2);//绘制文字
+                            canvas.isdraw = true;
+                            canvas.createModule(length, rect.relativelyX1, rect.relativelyY1, rect.relativelyX2, rect.relativelyY2);
+                        } else {
+
+                            context.rect(canvas.startPoint.X, canvas.startPoint.Y, canvas.endPoint.width, canvas.endPoint.height);
+                            console.log("起点坐标:");
+                            console.log(canvas.startPoint);
+                            console.log("矩形的宽高:");
+                            console.log(canvas.endPoint);
+
+                            context.stroke();//绘制矩形
+                            var rect = {
+                                startX: canvas.startPoint.X,
+                                startY: canvas.startPoint.Y,
+                                endX: e.layerX,
+                                endY: e.layerY,
+                                relativelyX1: parseInt((canvas.startPoint.X / canvas.width) * 100),
+                                relativelyY1: parseInt((canvas.startPoint.Y / canvas.height) * 100),
+                                relativelyX2: parseInt((e.layerX / canvas.width) * 100),
+                                relativelyY2: parseInt((e.layerY / canvas.height) * 100)
+                            };
+                            console.log(rect);
+                            canvas.rects.push(rect);//存储矩形
+
+
+                            context.font = "bold 35px Arial";
+                            context.textAlign = "center";
+                            var length = canvas.rects.length;
+                            context.strokeText(length, (canvas.startPoint.X + e.layerX) / 2, (canvas.startPoint.Y + e.layerY) / 2);//绘制文字
+                            canvas.isdraw = true;
+                            canvas.createModule(length, rect.relativelyX1, rect.relativelyY1, rect.relativelyX2, rect.relativelyY2);
+                        }
+                    }
+                } else {
+                    console.log("点击到矩形区域中了");
+                }
+                // }, false);
+            },
+            bindClick: function () {
+                var drawing = document.getElementById("drawing");
+                drawing.addEventListener('click', canvas.click, false);
+            },
+            cancelLastStep: function () {
+                if (canvas.startPoint.X && canvas.startPoint.Y && canvas.endPoint.width && canvas.endPoint.height) {
+                    var drawing = document.getElementById("drawing");
+                    var context = drawing.getContext("2d");
+                    // context.clearRect(canvas.startPoint.X, canvas.startPoint.Y, canvas.endPoint.width, canvas.endPoint.height);
+                    // canvas.reset();
+                    // context.clearRect(0, 0, canvas.width, canvas.height);
+                   // var array = canvas.uri.split('$')[1].split('.')[0].replace('w', '').replace('h', '').split('_');
+                    var s = canvas.uri.match(/[w|h]\d+/g);
+                    var array = [];
+                    array.push(s[0].substring(1, s[0].length));
+                    array.push(s[1].substring(1, s[1].length));
+                    if (array == null) {
+                        alert("图片链接中没有该图片的宽度和高度");
+                        return false;
+                    }
+                    var width = array[0];
+                    var height = array[1];
+                    //  var scale = (width / 2).toFixed(3);
+                    //  var scaleHeight = parseInt( (height / scale));
+                    var scale = 2;
+                    var scaleWidth = parseInt(width / 2);
+                    var scaleHeight = parseInt(height / 2);
+
+                    var drawing = document.getElementById("drawing");
+                    drawing.width = scaleWidth;
+                    drawing.height = scaleHeight;
+                    // drawing.style.backgroundColor = "#EBEBEB";
+                    canvas.width = scaleWidth;
+                    canvas.height = scaleHeight;
+                    var cxt = drawing.getContext("2d");//画布对象
+                    var img = new Image();
+                    img.width = scaleWidth;
+                    img.height = scaleHeight;
+                    img.src = canvas.uri;
+
+                    img.onload = function () {
+                        cxt.globalAlpha = 1;
+                        cxt.drawImage(img, 0, 0, scaleWidth, scaleHeight);
+                        //canvas.reset();
+                        // canvasEvent();//注册canvas的事件
+                        canvas.bindClick();
+                        canvas.rects.pop();
+                        canvas.drawing();
+                        $('#moduleTable tbody tr').last().remove();
+                    }
+
+                }
+            },
+            //重置
+            reset: function () {
+                canvas.startPoint = { X: null, Y: null };
+                canvas.endPoint = { width: null, height: null };
+                canvas.isdraw = true;
+                canvas.rects = [];
+                var drawing = document.getElementById("drawing");
+                drawing.removeEventListener('click', canvas.click, false);
+               
+            },
+            drawing: function () {
+                var drawing = document.getElementById("drawing");
+
+                for (var i = 0; i < canvas.rects.length; i++) {
+                    var context = drawing.getContext("2d");
+                    context.globalAlpha = 0.7;
+                    context.fillStyle = "#EED5D2";
+                    // context.strokeStyle = "#FF0000";
+                    var rect = canvas.rects[i];
+                    var width = rect.endX - rect.startX;
+                    var height = rect.endY - rect.startY;
+
+                    context.rect(rect.startX, rect.startY, width, height);
+                    context.stroke();
+
+                    context.font = "bold 35px Arial";
+                   // context.fillStyle = "#FFFFFF";
+                   // context.strokeStyle = "#FFFFFF";
+                    context.textAlign = "center";
+                    console.log("绘图" + (i + 1));
+
+                    context.strokeText((i + 1), ((rect.startX + rect.endX) / 2), ((rect.startY + rect.endY) / 2));//绘制文字
+
+
+
+                }
+
+                canvas.isdraw = true;
+            },
+            createModule: function (index, x1, y1, x2, y2) {
+                var table = $('#moduleTable tbody');
+                var data = {
+                    ID:0,
+                    index: index,
+                    UpperLeftX: x1,
+                    UpperLeftY: y1,
+                    LowerRightX: x2,
+                    LowerRightY: y2,
+                  //  Width: (x2 - x1) * 2,
+                    //  Height: (y2 - y1) * 2
+                    Width: canvas.width,
+                    Height:canvas.height
+                };
+                var html = '<tr>';
+                html += "<td>" + index + "</td>";
+                html += "<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>";
+                html += '<td>' + '<a href="javascript:void(0)" class="btn btn-default btn-sm" data-toggle="modal" name="btnEdit" data-target="#edit" data-postion=' + JSON.stringify(data) + ' >编 辑</a>';
+                html += '<a href="javascript:void(0)" class="btn btn-default btn-sm" name="btnDel"    >删 除</a> </td>';
+                html+= '</tr>';
+                table.append(html);
+                BindEditorDelete();
+            },
+           
+            //鼠标移动事件
+            bindMouseMove: function () {
+                drawing.addEventListener("mousemove", function (event) {
+                    //console.log(event.layerX + " " + event.layerY);
+                    $('#X').html(event.layerX);
+                    $('#Y').html(event.layerY);
+                }, false);
+            },
+            loadDrawing: function () {
+                var drawing = document.getElementById("drawing");
+                var context = drawing.getContext("2d");
+                // context.clearRect(canvas.startPoint.X, canvas.startPoint.Y, canvas.endPoint.width, canvas.endPoint.height);
+                // canvas.reset();
+                // context.clearRect(0, 0, canvas.width, canvas.height);
+                // var array = canvas.uri.split('$')[1].split('.')[0].replace('w', '').replace('h', '').split('_');
+                var s = canvas.uri.match(/[w|h]\d+/g);
+                var array = [];
+                array.push(s[0].substring(1, s[0].length));
+                array.push(s[1].substring(1, s[1].length));
+                var width = array[0];
+                var height = array[1];
+                //  var scale = (width / 2).toFixed(3);
+                //  var scaleHeight = parseInt( (height / scale));
+                var scale = 2;
+                var scaleWidth = parseInt(width / 2);
+                var scaleHeight = parseInt(height / 2);
+
+                var drawing = document.getElementById("drawing");
+                drawing.width = scaleWidth;
+                drawing.height = scaleHeight;
+                // drawing.style.backgroundColor = "#EBEBEB";
+                canvas.width = scaleWidth;
+                canvas.height = scaleHeight;
+                var cxt = drawing.getContext("2d");//画布对象
+                var img = new Image();
+                img.width = scaleWidth;
+                img.height = scaleHeight;
+                img.src = canvas.uri;
+
+                img.onload = function () {
+                    cxt.globalAlpha = 1;
+                    cxt.drawImage(img, 0, 0, scaleWidth, scaleHeight);
+                    //canvas.reset();
+                    // canvasEvent();//注册canvas的事件
+                    canvas.bindClick();
+                   // canvas.rects.pop();
+                    canvas.drawing();
+                }
+            }
+        };
+
+        $(function () {
+            var url = $('#hiddenUrl').val();
+          
+            if (url) {
+                $('#imgBgImageUrl').attr("src", url);
+                canvas.reset();
+                canvas.createCanvas(url);
+
+            } 
+          
+            BindEditorDelete();
+            canvas.bindMouseMove();//绑定移动
+
+            $('#moduleTable tbody tr').each(function (e) {
+                var xy = $(this).data("xy");
+                if (xy) {
+                    var rect = {};
+                    rect.startX = parseInt((xy.UpperLeftX * canvas.width) / 100);
+                    rect.startY = parseInt((xy.UpperLeftY * canvas.height) / 100);
+                    rect.endX = parseInt((xy.LowerRightX * canvas.width) / 100);
+                    rect.endY = parseInt((xy.LowerRightY * canvas.height) / 100);
+                    rect.relativelyX1 = xy.UpperLeftX;
+                    rect.relativelyX2 = xy.LowerRightX;
+                    rect.relativelyY1 = xy.UpperLeftY;
+                    rect.relativelyY2 = xy.LowerRightY;
+                    canvas.rects.push(rect);
+                }
+                if ($('#moduleTable tbody tr').length == canvas.rects.length) {
+                    canvas.loadDrawing();
+                }
+            });
+          
+          
+        });
+
+
+        var tr = null;
+        //编辑
+        function BindEditorDelete() {
+            $('a[name="btnEdit"]').on('click', function () {
+              
+                var id = $(this).data("id");
+                var data = $(this).data("postion");
+                var url = "";
+                if (id) {
+                    url = "/PersonalCenterConfigV2/HomePageModuleDeatilEdit?id=" + id + "&postion=" + JSON.stringify(data) + "&moduleID=" + $('#hiddenModuleID').val() + "&moduleHelperID=" + $('#hiddenModuleHelperID').val();;
+                } else {
+                    url = "/PersonalCenterConfigV2/HomePageModuleDeatilEdit?id=0&postion=" + JSON.stringify(data) + "&moduleID=" + $('#hiddenModuleID').val() + "&moduleHelperID=" + $('#hiddenModuleHelperID').val();;
+                }
+                //   var url = "/PersonalCenterConfigV2/HomePageModuleChildEdit?FKHomePage=" + $('#hiddenFKHomePage').val() + "&ModeulType=" + $('#hiddenModeulType').val() + "&Module=" + data.ID + "&ParentID=" + $('#hiddenModuleID').val() + "&UpperLeftX=" + data.UpperLeftX + "&UpperLeftY=" + data.UpperLeftY + "&LowerRightX=" + data.LowerRightX + "&LowerRightY=" + data.LowerRightY + "&Width=" + data.Width + "&Height=" + data.Height;
+                // dialogOpen("新增首页", url, "edit");
+                var dialog = $('#edit');
+                dialog.empty();
+                dialog.html(dialog.load(url));
+                tr = $(this).parent().parent();
+               // $(this).removeAttr("disabled");
+            });
+
+            $('a[name="btnDel"]').on('click', function () {
+                var id =$(this).data("id");
+                if (confirm("您确定删除吗?")) {
+                    if (id) {
+                        $.ajax({
+                            url: '/PersonalCenterConfigV2/DeleteHomePageModuleContent',
+                            type: 'post',
+                            data: { id: id },
+                            dataType: 'json'
+                        }).done(function (result) {
+                            if (result == 1) {
+                                location.reload();
+                            } else {
+                                alert("删除失败");
+                            }
+                        }).fail(function () {
+
+                        });
+                    } else {
+                        $(this).parent().parent().remove();
+                    }
+                }
+            });
+        }
+
+
+        //上传图片
+        function UploadBgImg(obj, showImg, showUrl) {
+
+            var pobj = $(obj);
+            var rd = Math.ceil(Math.random() * 9999) + 1;
+            var fileElId = $(obj).attr("id");
+            console.log(fileElId);
+            $.ajaxFileUpload({
+                url: '/Article/ImageUploadToAli?rd=' + rd,
+                secureuri: false,
+                fileElementId: fileElId,
+                dataType: 'json',
+                async: false,
+                success: function (result) {
+                    if (result.BImage != "" && result.SImage != "") {
+                        $("#" + showImg).attr("src", result.SImage).show();
+                        $("#" + showUrl).val(result.BImage);
+                        if (showImg == "imgBgImageUrl") {
+                            $.ajax({
+                                url: '/PersonalCenterConfigV2/UpdateBgImage',
+                                type: 'post',
+                                data: { moduleID: $('#hiddenModuleID').val(), moduleHelperID: $('#hiddenModuleHelperID').val(), url: result.BImage },
+                                dataType: 'json'
+                            }).done(function (result) {
+                                if (result == 1) {
+                                    alert("背景图片更新");
+                                    location.reload();
+                                } else {
+                                    alert("背景图片更新失败");
+                                }
+                            });
+                        }
+                    } else {
+                        alert("上传失败！");
+                    }
+                },
+                error: function (data, status, e)//服务器响应失败处理函数
+                {
+                    alert(e);
+                }
+            });
+        }
+
+
+        function BindModuleTable() {
+            var parentID = $('#hiddenModuleID').val();
+            if (parentID) {
+                $.ajax({
+                    url: '/PersonalCenterConfigV2/GetHomePageModuleList',
+                    type: 'post',
+                    data: { parentModuleID:parentID},
+                    dataType:'json'
+                }).done(function (result) {
+                    if (result && result.length > 0) {
+                        console.log(result);
+                        var table = $('#moduleTable tbody');
+                        result.forEach(function (e) {
+                            var data = {
+                                ID: e.ID,
+                                index: e.ID,
+                                UpperLeftX: e.Property.UpperLeftX,
+                                UpperLeftY: e.Property.UpperLeftY,
+                                LowerRightX: e.Property.LowerRightX,
+                                LowerRightY: e.Property.LowerRightY,
+                                Width: (e.Property.LowerRightX - e.Property.UpperLeftX) * 2,
+                                Height: (e.Property.LowerRightY - e.Property.UpperLeftY) * 2
+                            };
+                            var html = '<tr>';
+                            html += "<td>" + data.index + "</td>";
+                            html += "<td></td>" + e.ModuleName + "<td>" + data.Width + "</td><td>" + data.Height + "</td><td>" + data.UpperLeftX + "</td><td>" + data.UpperLeftY + "</td><td>" + data.LowerRightX + "</td><td>" + data.LowerRightY + "</td>";
+                            html += '<td>' + '<a href="javascript:void(0)" class="btn btn-default btn-sm" data-toggle="modal" onclick="Edit(this)" data-target="#edit" data-postion=' + JSON.stringify(data) + ' >编 辑</a>';
+                            html += '<a href="javascript:void(0)" class="btn btn-default btn-sm" onclick="Del(this)"  >删 除</a> </td>';
+                            html += '</tr>';
+                            table.append(html);
+                        });
+                    }
+                })
+            }
+        }
+
+        $('#btnShowSplit').on('click', function () {
+            canvas.loadDrawing();
+        });
+    </script>
+}

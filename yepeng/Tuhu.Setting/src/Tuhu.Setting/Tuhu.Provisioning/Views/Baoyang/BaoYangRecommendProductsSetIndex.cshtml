@@ -1,0 +1,1438 @@
+﻿@model Tuhu.Provisioning.Models.BaoYangRulesModel
+@{
+    ViewBag.Title = "BaoYangRecommendProductsSetIndex";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var Enabled = Model.AntifreezeStatus;
+}
+
+@section head{
+    <link rel="stylesheet" href="~/Content/iview/iview.css" type="text/css" />
+    <style>
+        .nodata {
+            width: 98%;
+            border: 4px solid #f0f0f0;
+            color: #cccccc;
+            font-size: 22px;
+            font-weight: bold;
+            line-height: 200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+
+        .ModuleList, .ModuleList ul, .ModuleList ul li {
+            width: 100%;
+            float: left;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .ModuleList ul li {
+            padding-right: 2%;
+            padding-bottom: 20px;
+            width: 18%;
+            float: left;
+        }
+
+        .ModuleList ul li .box {
+            height: auto;
+            width: 100%;
+            float: left;
+            background-color: #d10a0a;
+            color: #ffffff;
+        }
+
+        .ModuleList ul li .box .picbox {
+            height: auto;
+            width: 100%;
+            float: left;
+            -moz-border-radius: 5px 5px 0 0; /* Gecko browsers */
+            -webkit-border-radius: 5px 5px 0 0; /* Webkit browsers */
+            border-radius: 5px 5px 0 0;
+        }
+
+        .ModuleList ul li .box .addnew {
+            height: auto;
+            width: 100%;
+            text-align: center;
+            line-height: 160px;
+            float: left;
+            background-color: #820c0c;
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: bold;
+            -moz-border-radius: 5px; /* Gecko browsers */
+            -webkit-border-radius: 5px; /* Webkit browsers */
+            border-radius: 5px;
+        }
+
+
+        .ModuleList ul li .box .addnew a {
+            color: #ffffff;
+        }
+
+        .ModuleList ul li .box .picbox .line1 {
+            height: 30px;
+            line-height: 30px;
+            width: 100%;
+            float: left;
+            font-weight: bold;
+        }
+
+        .ModuleList ul li .box .picbox .line2 {
+            height: 60px;
+            line-height: 60px;
+            width: 100%;
+            float: left;
+            font-weight: bold;
+            font-size: 28px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .ModuleList ul li .box .picbox .line3 {
+            height: 30px;
+            line-height: 30px;
+            width: 100%;
+            float: left;
+        }
+
+        .ModuleList ul li .box .picbox .line3 a {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        .ModuleList ul li .box .picbox .line4 {
+            height: 40px;
+            line-height: 40px;
+            width: 100%;
+            float: left;
+            font-size: 15px;
+            text-align: center;
+            background-color: #820c0c;
+            color: #ffffff;
+        }
+
+        .ModuleList ul li .box .picbox .line4 a {
+            color: #ffffff;
+        }
+
+        .fengefu {
+            width: 100%;
+            border-bottom: 2px solid #999999;
+            clear: both;
+        }
+
+        .inpercentage {
+            width: 20px;
+            display: none;
+            text-align: right;
+        }
+
+        .vaild-result {
+            color: #008000;
+        }
+
+        .vaild-result:before {
+            content: "\2714";
+            margin-right: 3px;
+        }
+
+        .inVaild-result {
+            color: #f00;
+        }
+
+        .inVaild-result:before {
+            content: "\2716";
+            margin-right: 3px;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+        /*引入iview, 还原样式*/
+        .h2 {
+            margin-bottom: 15px;
+            margin-top: 15px;
+            padding-bottom: 10px
+        }
+
+        .ModuleList li {
+            box-sizing: content-box;
+        }
+
+        .line4 > div > button,
+        .line4 > div > input[type=button] {
+            padding: 1px 6px;
+            -webkit-appearance: push-button;
+            font-size: 13.3333px;
+        }
+
+        .row-margin {
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+    </style>
+}
+
+
+<div style="clear:both;"></div>
+<div style="float:left;">
+    <h2 class="h2">
+        保养默认产品配置
+    </h2>
+</div>
+<div class="ModuleList">
+    <ul>
+        <li>
+            <div class="box">
+                <div class="picbox">
+                    <div class="line1">
+                        <div style="float:left;padding-left:10px;">
+                            <font color="white">
+                                @{
+                                    if (ViewData["JYEnable"] != null)
+                                    {
+                                        <input type="hidden" id="JYenablehien" value="@ViewData["JYEnable"].ToString()" />
+                                        if (ViewData["JYEnable"].ToString() == "0")
+                                        {
+                                            <div id="JYstateshow">已开启</div>
+                                        }
+                                        else
+                                        {
+                                            <div id="JYstateshow">已关闭</div>
+                                        }
+                                    }
+                                }
+                            </font>
+                        </div>
+                        <div style="float:right;padding-right:10px;">
+                        </div>
+                    </div>
+                    <div class="line2" title="机油">机油</div>
+                    <div class="line3" style="text-align:center">
+
+                    </div>
+                    <div class="line4">
+                        <div style="float:left">
+                            <input type="button" id="buttonEdit" value="编辑" onclick="btnEdit('jy')" />
+                        </div>
+                        @*<div style="float:right">
+                                @{
+                                    if (ViewData["JYEnable"] != null)
+                                    {
+                                        if (ViewData["JYEnable"].ToString() == "0")
+                                        {
+                                            <input type="button" id="jybuttonState" value="关闭" onclick="btnSetEnabled('jy')" />
+                                        }
+                                        else
+                                        {
+                                            <input type="button" id="jybuttonState" value="启用" onclick="btnSetEnabled('jy')" />
+                                        }
+                                    }
+                                }
+                            </div>*@
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="box" id="new-jiyou">
+                <div class="picbox">
+                    <div class="line1">
+                        <div style="float: left; padding-left: 10px;">
+                            <font color="white">
+                                <div v-show="isEnabled">已开启</div>
+                                <div v-show="!isEnabled" style="display:none;">已关闭</div>
+                            </font>
+                        </div>
+                        <div style="float:right;padding-right:10px;">
+                        </div>
+                    </div>
+                    <div class="line2" title="新机油">新机油</div>
+                    <div class="line3" style="text-align:center"></div>
+                    <div class="line4">
+                        <div style="float:left">
+                            <button type="button" @@click="edit">编辑</button>
+                        </div>
+                    </div>
+                </div>
+                <jiyou-new-modal v-model="showModal" ref="jy_modal"></jiyou-new-modal>
+            </div>
+        </li>
+
+        <li>
+            <div class="box">
+                <div class="picbox">
+                    <div class="line1">
+                        <div style="float:left;padding-left:10px;">
+                            <font color="white">
+                                @{
+                                    if (ViewData["XDCenable"] != null)
+                                    {
+                                        <input type="hidden" id="JYenablehien" value="@ViewData["XDCenable"].ToString()" />
+                                        if (ViewData["XDCenable"].ToString() == "0")
+                                        {
+                                            <div id="jystateshow">已开启</div>
+                                        }
+                                        else
+                                        {
+                                            <div id="jystateshow">已关闭</div>
+                                        }
+                                    }
+                                }
+                            </font>
+                        </div>
+                        <div style="float:right;padding-right:10px;">
+                        </div>
+                    </div>
+                    <div class="line2" title="蓄电池">蓄电池</div>
+                    <div class="line3" style="text-align:center">
+
+                    </div>
+                    <div class="line4">
+                        <div style="float:left">
+                            <input type="button" id="buttonEdit" value="编辑" onclick="btnEdit('xdc')" />
+                        </div>
+                        <div style="float:right">
+                            @{
+                                if (ViewData["XDCenable"] != null)
+                                {
+                                    if (ViewData["XDCenable"].ToString() == "0")
+                                    {
+                                        <input type="button" id="xdcbuttonState" value="关闭" onclick="btnxdcSetEnabled('xdc')" />
+                                    }
+                                    else
+                                    {
+                                        <input type="button" id="xdcbuttonState" value="启用" onclick="btnxdcSetEnabled('xdc')" />
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </li>
+
+        <li>
+            <div class="box">
+                <div class="picbox">
+                    <div class="line1">
+                        <div style="float: left; padding-left: 10px;">
+                            <font color="white">
+                                <div id="fdstateshow">@(Enabled ? "已开启" : "已关闭")</div>
+                            </font>
+                        </div>
+                        <div style="float: right; padding-right: 10px;">
+                        </div>
+                    </div>
+                    <div class="line2" title="防冻液">防冻液</div>
+                    <div class="line3" style="text-align: center">
+
+                    </div>
+                    <div class="line4">
+                        <div style="float: left">
+                            <input type="button" id="buttonEdit" value="编辑" onclick="btnfdEdit('fd')" />
+                        </div>
+                        @*<div style="float: right">
+                                @{
+                                    if (Enabled)
+                                    {
+                                        <input type="button" id="fdbuttonState" value="关闭" onclick="btnfdSetEnabled(0)" />
+                                    }
+                                    else
+                                    {
+                                        <input type="button" id="fdbuttonState" value="启用" onclick="btnfdSetEnabled(1)" />}
+                                }
+
+                            </div>*@
+                    </div>
+                </div>
+            </div>
+        </li>
+
+        @foreach (var item in Model.SkuItems)
+        {
+            <li>
+                <div class="box">
+                    <div class="picbox">
+                        <div class="line1">
+                            <div style="float: left; padding-left: 10px;">
+                                <font color="white">
+                                    <div id="fdstateshow">@(item.Value.Item2 ? "已开启" : "已关闭")</div>
+                                </font>
+                            </div>
+                            <div style="float: right; padding-right: 10px;">
+                            </div>
+                        </div>
+                        <div class="line2" title="@item.Value.Item1">@item.Value.Item1</div>
+                        <div class="line3" style="text-align: center">
+
+                        </div>
+                        <div class="line4">
+                            <div style="float: left">
+                                <input type="button" class="buttonEdit" value="编辑" data-type="SKU" onclick="EditSku('@item.Key', '@item.Value.Item1')" />
+                            </div>
+                            <div style="float: right">
+                                @{
+                                    if (item.Value.Item2)
+                                    {
+                                        <input type="button" class="buttonState" value="关闭" onclick="setEnabled('@item.Value.Item1', 1,'@item.Key')" />
+                                    }
+                                    else
+                                    {
+                                        <input type="button" class="buttonState" value="启用" onclick="setEnabled('@item.Value.Item1', 0,'@item.Key')" />
+                                    }
+                                }
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        }
+
+        @foreach (var item in Model.BrandItems)
+        {
+            <li>
+                <div class="box">
+                    <div class="picbox">
+                        <div class="line1">
+                            <div style="float: left; padding-left: 10px;">
+                                <font color="white">
+                                    <div id="fdstateshow">@(item.Value.Item2 ? "已开启" : "已关闭")</div>
+                                </font>
+                            </div>
+                            <div style="float: right; padding-right: 10px;">
+                            </div>
+                        </div>
+                        <div class="line2" title="@item.Value.Item1">@item.Value.Item1</div>
+                        <div class="line3" style="text-align: center">
+
+                        </div>
+                        <div class="line4">
+                            <div style="float: left">
+                                <input type="button" class="buttonEdit" value="编辑" data-type="Brand" onclick="EditBrand('@item.Key', '@item.Value.Item1')" />
+                            </div>
+                            <div style="float: right">
+                                @{
+                                    if (item.Value.Item2)
+                                    {
+                                        <input type="button" class="buttonState" value="关闭" onclick="setEnabled('@item.Value.Item1', 1,'@item.Key')" />
+                                    }
+                                    else
+                                    {
+                                        <input type="button" class="buttonState" value="启用" onclick="setEnabled('@item.Value.Item1', 0,'@item.Key')" />
+                                    }
+                                }
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        }
+
+        @foreach (var item in Model.BrandPriceItems)
+        {
+            <li>
+                <div class="box">
+                    <div class="picbox">
+                        <div class="line1">
+                            <div style="float: left; padding-left: 10px;">
+                                <font color="white">
+                                    <div id="fdstateshow">@(item.Value.Item2 ? "已开启" : "已关闭")</div>
+                                </font>
+                            </div>
+                            <div style="float: right; padding-right: 10px;">
+                            </div>
+                        </div>
+                        <div class="line2" title="@item.Value.Item1">@item.Value.Item1</div>
+                        <div class="line3" style="text-align: center">
+
+                        </div>
+                        <div class="line4">
+                            <div style="float: left">
+                                <input type="button" class="buttonEdit" value="编辑" data-type="BrandPrice" onclick="EditBrandPrice('@item.Key', '@item.Value.Item1')" />
+                            </div>
+                            @if (item.Value.Item1 != "雨刷")
+                            {
+                                <div style="float: right">
+                                    @if (item.Value.Item2)
+                                    {
+                                        <input type="button" class="buttonState" value="关闭" onclick="setEnabled('@item.Value.Item1', 1,'@item.Key')" />
+                                    }
+                                    else
+                                    {
+                                        <input type="button" class="buttonState" value="启用" onclick="setEnabled('@item.Value.Item1', 0,'@item.Key')" />
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </li>
+        }
+    </ul>
+</div>
+<div class="fengefu"></div>
+<div id="AddItem" style="display: none"></div>
+<div id="editsku-dialog" style="display: none">
+    <div>
+        <label>第一优先级</label>
+        <div>
+            <label>PID:</label>
+            <input type="text" id="pid-level1" />
+            <input type="button" class="searchSku" value="查询" />
+        </div>
+        <div style="width: 100%; height: 30px; line-height: 20px; margin: 5px 0 5px 0;">
+            <span class="skuResult"></span>
+        </div>
+    </div>
+    <div>
+        <label>第二优先级</label>
+        <div>
+            <label>PID:</label>
+            <input type="text" id="pid-level2" />
+            <input type="button" class="searchSku" value="查询" />
+        </div>
+        <div style="width: 100%; height: 30px; line-height: 20px; margin: 5px 0 5px 0;">
+            <span class="skuResult"></span>
+        </div>
+    </div>
+</div>
+<div id="editbrand-dialog" style="display: none">
+    <div>
+        <label>第一优先级</label>
+        <select id="brand-level1" style="margin-left: 10px; margin-bottom: 8px;"></select>
+    </div>
+    <div>
+        <label>第二优先级</label>
+        <select id="brand-level2" style="margin-left: 10px; margin-bottom: 8px;"></select>
+    </div>
+    <div>
+        <label>第三优先级</label>
+        <select id="brand-level3" style="margin-left: 10px; margin-bottom: 8px;"></select>
+    </div>
+</div>
+@*<div id="AddxdcItem" style="display: none"></div>*@
+
+<script type="text/x-template" id="jiyou-new-modal">
+    <Modal v-model="showModal" title="保养产品推荐配置" :loading="loading" :mask-closable="false" width="600">
+        <Tabs value="矿物油">
+            <TabPane label="矿物油" name="矿物油">
+                <oil-select-list v-model="mineralOil" :brand_series="brand_series"></oil-select-list>
+                <row type="flex" justify="space-around" v-bind:align="'middle'" class="row-margin">
+                    <i-col span="3"></i-col>
+                    <i-col span="16">
+                        <Checkbox :value="true" disabled>启用</Checkbox>
+                    </i-col>
+                    <i-col span="3"></i-col>
+                </row>
+            </TabPane>
+            <TabPane label="半合成" name="半合成">
+                <oil-select-list v-model="semiSyntheticOil" :brand_series="brand_series"></oil-select-list>
+                <row type="flex" justify="space-around" v-bind:align="'middle'" class="row-margin">
+                    <i-col span="3"></i-col>
+                    <i-col span="16">
+                        <Checkbox :value="true" disabled>启用</Checkbox>
+                    </i-col>
+                    <i-col span="3"></i-col>
+                </row>
+            </TabPane>
+            <TabPane label="全合成" name="全合成">
+                <oil-select-list v-model="fullySyntheticOil" :brand_series="brand_series"></oil-select-list>
+                <row type="flex" justify="space-around" v-bind:align="'middle'" class="row-margin">
+                    <i-col span="3"></i-col>
+                    <i-col span="16">
+                        <Checkbox :value="true" disabled>启用</Checkbox>
+                    </i-col>
+                    <i-col span="3"></i-col>
+                </row>
+            </TabPane>
+        </Tabs>
+        <div slot="footer">
+            <i-button v-on:click="open">特殊车型配置</i-button>
+            <i-button v-on:click="submit" type="primary" :loading="submitLoading">保存</i-button>
+            <i-button v-on:click="showModal=false" type="ghost">取消</i-button>
+        </div>
+        <Spin size="large" fix v-show="executing"></Spin>
+    </Modal>
+</script>
+
+<script type="text/x-template" id="oil-select">
+    <row type="flex" justify="space-around" v-bind:align="'middle'" class="row-margin">
+        <i-col span="3">第{{priority}}优先级</i-col>
+        <i-col span="16">
+            <row>
+                <i-col span="12">
+                    <i-select v-model="setting.brand" transfer>
+                        <i-option value="">请选择品牌优先级</i-option>
+                        <i-option :value="item" :key="item" v-for="item in brandList">{{item}}</i-option>
+                    </i-select>
+                </i-col>
+                <i-col span="12">
+                    <i-select v-model="setting.series" transfer>
+                        <i-option value="">请选择指定系列</i-option>
+                        <i-option :value="item" :key="item" v-for="item in seriesList">{{item}}</i-option>
+                    </i-select>
+                </i-col>
+            </row>
+        </i-col>
+        <i-col span="3">
+            <i-button type="ghost" v-on:click="$emit('on-remove')">删除</i-button>
+        </i-col>
+    </row>
+</script>
+
+<script type="text/x-template" id="oil-select-list">
+    <div>
+        <oil-select v-for="(item, index) in list"
+                    :brand.sync="list[index].brand"
+                    :series.sync="list[index].series"
+                    :settings="list"
+                    :brand_series="brandSeries"
+                    :key="list[index].key"
+                    :priority="index+1"
+                    v-on:on-remove="remove(index)">
+        </oil-select>
+        <row>
+            <i-col span="5" push="4">
+                <i-button long type="dashed" icon="plus-round" v-on:click="append">新增优先级</i-button>
+            </i-col>
+        </row>
+    </div>
+</script>
+
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/vue.js"></script>
+    <script type="text/javascript" src="~/Scripts/iview/iview.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $(".searchSku").click(searchSku);
+        });
+
+        function setEnabled(partName, onOrof, category) {
+            var $this = $(this);
+            var state = $this.attr("value");
+            $.ajax({
+                type: "post",
+                url: "/Baoyang/setIsEnable",
+                data: { parameters: partName, category: category, onOrof: onOrof },
+                success: function (data) {
+                    if (data == true) {
+                        alert("操作成功！");
+                        if (state == "启用") {
+                            $this.attr("value", "关闭");
+                            $this.text("已开启");
+
+                        } else if (state == "关闭") {
+                            $this.attr("value", "启用");
+                            $this.text("已关闭");
+                        }
+                    } else {
+                        alert("操作失败！");
+                    }
+                    window.location.reload();
+                }
+            });
+        }
+
+        function searchSku() {
+            var $this = $(this);
+            var pid = $this.prev().val();
+            var category = $("#editsku-dialog").attr("data-id");
+            if (pid) {
+                $.get("/Baoyang/GetProductNameByPid", { pid: pid, category: category }, function (data) {
+                    if (data) {
+                        $this.parent().parent().find(".skuResult").removeClass("inVaild-result");
+                        $this.parent().parent().find(".skuResult").addClass("vaild-result");
+                        $this.parent().parent().find(".skuResult").text(data);
+                        $this.parent().parent().find(".skuResult").attr("PID", pid);
+                    } else {
+                        $this.parent().parent().find(".skuResult").removeClass("Vaild-result");
+                        $this.parent().parent().find(".skuResult").addClass("inVaild-result");
+                        $this.parent().parent().find(".skuResult").text("未找到产品");
+                        $this.parent().parent().find(".skuResult").attr("PID", pid);
+                    }
+                });
+            }
+        }
+
+        function EditSku(key, partName) {
+            $.get("/Baoyang/GetPriorityRules", { partName: partName, priorityField: "SKU" }, function (data) {
+                $("#pid-level1").val("");
+                $("#pid-level2").val("");
+                $(".skuResult").text("").removeClass("vaild-result").removeClass("inVaild-result").attr("PID", "");
+                $("#editsku-dialog").attr("data-id", key);
+                if (data && data.length > 0) {
+                    $("#pid-level1").val(data[0].FirstPriority);
+                    $("#pid-level2").val(data[0].SecondPriority);
+                }
+
+                $(".searchSku").click();
+
+                $("#editsku-dialog").dialog({
+                    title: "保养推荐产品配置",
+                    width: 500,
+                    height: 300,
+                    modal: true,
+                    draggable: false,
+                    resizable: false,
+                    buttons: {
+                        "特殊车型配置": function () {
+                            window.open("/Baoyang/BaoYangPriorityVehicleSetting?key=" + key + "&&partName=" + partName);
+                        },
+                        "保存": function () {
+                            var sku1 = $("#pid-level1").parent().parent().find(".skuResult").attr("PID");
+                            sku1 = $("#pid-level1").val() == sku1 ? sku1 : "";
+                            var sku2 = $("#pid-level2").parent().parent().find(".skuResult").attr("PID");
+                            sku2 = $("#pid-level2").val() == sku2 ? sku2 : "";
+                            var isInVaild1 = $("#pid-level1").parent().parent().find(".skuResult").hasClass("inVaild-result");
+                            var isInVaild2 = $("#pid-level2").parent().parent().find(".skuResult").hasClass("inVaild-result");
+                            if (sku1 && !isInVaild1 && ((sku2 && !isInVaild2) || !sku2)) {
+                                var list = [];
+                                var project = { PartName: partName, PropertyType: key, PriorityField: "SKU", FirstPriority: sku1, SecondPriority: !sku2 ? null : sku2 };
+                                list.push(project);
+                                $.ajax({
+                                    type: "POST",
+                                    url: "/Baoyang/SaveRecommendProducts",
+                                    data: { project: JSON.stringify(list) },
+                                    success: function (data) {
+                                        if (data == true) {
+                                            alert("保存成功！");
+                                            window.location.reload();
+                                        } else {
+                                            alert("保存失败！");
+                                        }
+                                    }
+                                });
+                            } else {
+                                alert("不符合规范！");
+                            }
+                        },
+                        "取消": function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            });
+
+        }
+
+        function EditBrand(key, partName) {
+            $("#brand-level1").empty();
+            $("#brand-level2").empty();
+            $("#brand-level3").empty();
+            $.get("/Baoyang/GetPriorityRules", { partName: partName, priorityField: "Brand" }, function (data) {
+                $.get("/BaoYang/GetBrands", { productCategory: key }, function (brands) {
+                    if (brands) {
+                        var html = "";
+
+                        html += "<option value='-1'>无</option>";
+                        $.each(brands, function (index) {
+                            html += "<option value='" + brands[index] + "'>" + brands[index] + "</option>";
+                        });
+                        $("#brand-level1").append(html);
+                        $("#brand-level2").append(html);
+                        $("#brand-level3").append(html);
+                    }
+
+                    if (data && data.length > 0) {
+                        $("#brand-level1").val(data[0].FirstPriority);
+                        $("#brand-level2").val(data[0].SecondPriority);
+                        $("#brand-level3").val(data[0].ThirdPriority);
+                    }
+
+                    $("#editbrand-dialog").dialog({
+                        title: "保养推荐产品配置",
+                        width: 500,
+                        height: 300,
+                        modal: true,
+                        draggable: false,
+                        resizable: false,
+                        buttons: {
+                            "特殊车型配置": function () {
+                                window.open("/Baoyang/BaoYangPriorityVehicleSetting?key=" + key + "&&partName=" + partName);
+                            },
+                            "保存": function () {
+                                var brand1 = $("#brand-level1").val();
+                                var brand2 = $("#brand-level2").val();
+                                var brand3 = $("#brand-level3").val();
+                                if (brand1 !== "-1" && (brand2 !== "-1" || (brand2 === "-1" && brand3 === "-1"))) {
+                                    var list = [];
+                                    var project = { PartName: partName, PropertyType: key, PriorityField: "Brand", FirstPriority: brand1, SecondPriority: brand2 === "-1" ? null : brand2, ThirdPriority: brand3 === "-1" ? null : brand3 };
+                                    list.push(project);
+                                    $.ajax({
+                                        type: "POST",
+                                        url: "/Baoyang/SaveRecommendProducts",
+                                        data: { project: JSON.stringify(list) },
+                                        success: function (data) {
+                                            if (data == true) {
+                                                alert("保存成功！");
+                                                window.location.reload();
+                                            } else {
+                                                alert("保存失败！");
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    alert("不符合规范！");
+                                }
+                            },
+                            "取消": function () {
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+                });
+            });
+        }
+
+        function EditBrandPrice(key, partName) {
+
+            $("#AddItem").load('/Baoyang/BrandPriceEditBaoYangRecommendProducts?PrimaryParentCategory=' + key);
+
+            $("#AddItem").dialog({
+                title: "保养推荐产品配置",
+                width: 500,
+                height: 300,
+                modal: true,
+                draggable: false,
+                resizable: false,
+                buttons: {
+                    "特殊车型配置": function () {
+                        window.open("/Baoyang/BaoYangPriorityVehicleSetting?key=" + key + "&&partName=" + partName);
+                    },
+                    "保存": function () {
+                        $.ajax({
+                            type: "POST",
+                            url: "/Baoyang/SaveRecommendProducts",
+                            data: { project: $("#result").val() },
+                            success: function (data) {
+                                if (data == true) {
+                                    alert("保存成功！");
+                                    $("#AddItem").dialog("close");
+                                }
+                                else {
+                                    alert("保存失败！");
+                                    $("#AddItem").dialog("close");
+                                }
+                            }
+                        });
+                    },
+                    "取消": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        }
+
+        function btnEdit(parameters) {
+            if (parameters == "jy") {
+                var key = "Oil";
+                var partName = "机油";
+                $("#AddItem").load('/Baoyang/JYEditBaoYangRecommendProducts');
+            }
+            if (parameters == "xdc") {
+                var key = "Battery";
+                var partName = "蓄电池";
+                $("#AddItem").load('/Baoyang/BatteryEditBaoYangRecommendProducts');
+            }
+
+            if (parameters == "jy") {
+                $("#AddItem").dialog({
+                    title: "保养推荐产品配置",
+                    width: 500,
+                    height: 400,
+                    modal: true,
+                    draggable: false,
+                    resizable: false,
+                    buttons: {
+                        "机油特殊车型配置": function () {
+                            if (parameters == "jy") {
+                                window.open("/Baoyang/BaoYangPriorityVehicleSetting?key=" + key + "&&partName=" + partName);
+                            }
+                        },
+                        "保存": function () {
+                            var result = $("#result").val();
+                            if (result != "") {
+                                $.ajax({
+                                    type: "POST",
+                                    url: "/Baoyang/UpsertRecommendPrioritySetting",
+                                    data: { project: $("#result").val() },
+                                    success: function (data) {
+                                        if (data == true) {
+                                            alert("保存成功！");
+                                            $("#AddItem").dialog("close");
+                                        }
+                                        else {
+                                            alert("保存失败！");
+                                            $("#AddItem").dialog("close");
+                                        }
+                                    }
+                                });
+                            } else {
+                                alert("您未作任何修改！");
+                            }
+                        },
+                        "取消": function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }
+            else {
+                $("#AddItem").dialog({
+                    title: "保养推荐产品配置",
+                    width: 500,
+                    height: 300,
+                    modal: true,
+                    draggable: false,
+                    resizable: false,
+                    buttons: {
+                        "机油特殊车型配置": function () {
+                            if (parameters == "jy") {
+                                window.open("/Baoyang/BaoYangPriorityVehicleSetting?key=" + key + "&&partName=" + partName);
+                            }
+                        },
+                        "保存": function () {
+                            $.ajax({
+                                type: "POST",
+                                url: "/Baoyang/SaveRecommendProducts",
+                                data: { project: $("#result").val() },
+                                success: function (data) {
+                                    if (data == true) {
+                                        alert("保存成功！");
+                                        $("#AddItem").dialog("close");
+                                    }
+                                    else {
+                                        alert("保存失败！");
+                                        $("#AddItem").dialog("close");
+                                    }
+                                }
+                            });
+                        },
+                        "取消": function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }
+        }
+
+        function btnSetEnabled(parameter) {
+            var onOrof;
+            var state = $("#jybuttonState").attr("value");
+            if (state == "启用")
+                onOrof = 0
+            else if (state == "关闭")
+                onOrof = 1
+            $.ajax({
+                type: "post",
+                url: "/Baoyang/SetProductsRecommendIsEnable",
+                data: { parameters: parameter, onOrof: onOrof },
+                success: function (data) {
+                    if (data == true) {
+                        alert("操作成功！");
+                        if (state == "启用") {
+                            $("#jybuttonState").attr("value", "关闭");
+                            $("#jystateshow").text("已开启");
+
+                        }
+                        else if (state == "关闭") {
+                            $("#jybuttonState").attr("value", "启用");
+                            $("#jystateshow").text("已关闭");
+                        }
+                    }
+                    else {
+                        alert("操作失败！");
+                    }
+                    window.location.reload();
+                }
+            });
+        }
+        function btnxdcSetEnabled(parameter) {
+            var onOrof;
+            var state = $("#xdcbuttonState").attr("value");
+            if (state == "启用")
+                onOrof = 0
+            else if (state == "关闭")
+                onOrof = 1
+            $.ajax({
+                type: "post",
+                url: "/Baoyang/setIsEnable?parameters",
+                data: { parameters: parameter, onOrof: onOrof },
+                success: function (data) {
+                    if (data == true) {
+                        alert("操作成功！");
+                        debugger;
+                        if (state == "启用") {
+                            $("#xdcbuttonState").attr("value", "关闭");
+                            $("#xdcstateshow").text("已开启");
+                        }
+                        else if (state == "关闭") {
+                            $("#xdcbuttonState").attr("value", "启用");
+                            $("#xdcstateshow").text("已关闭");
+                        }
+                    }
+                    else {
+                        alert("操作失败！");
+                    }
+                }
+            });
+        }
+        var domainurl = "";
+        function GetDomain() {
+            var temptopdomain = '';
+            temptopdomain = ".tuhu.cn";
+            if (/\.tuhu\.(\w+)$/.test(location.host))
+                temptopdomain = ".tuhu." + RegExp.$1;
+            return location.protocol + "//by" + temptopdomain;
+        }
+
+        function btnfdEdit(parameters) {
+            $("#AddItem").load('/Baoyang/AntifreezeEditPage')
+            $("#AddItem").dialog({
+                title: "防冻液配置",
+                width: 700,
+                height: 400,
+                modal: true,
+                draggable: false,
+                resizable: false,
+                buttons: {
+                    "保存": function () {
+                        var ids = '', names = '';
+                        var oldConfig = $(".fdychange").val();
+                        $.each($('input[name="chk"]:checked'), function () {
+                            ids += $(this).attr('data-id') + '|';
+                            names += $(this).attr('data-value') + '|';
+                        });
+                        if (oldConfig == ids) { alert("您未作任何改变！"); return false; }
+                        var saveButton = $(".ui-dialog-buttonpane button:contains('保存')");
+                        saveButton.attr("disabled", true).addClass("ui-state-disabled");
+                        $.ajax({
+                            type: "POST",
+                            url: "/Baoyang/SaveAntifreezeSetting",
+                            data: { Code: $('.active').attr('data-code'), Brands: $("#selbrand").val(), ProvinceIds: ids, ProvinceNames: names, FreezingPoint: $('.active').attr('data-id') },
+                            success: function (data) {
+                                if (data.IsSuccess) {
+                                    alert("保存成功！");
+                                    saveButton.attr("disabled", false).removeClass("ui-state-disabled");
+                                    $("#AddItem").dialog("close");
+                                    window.location.reload();
+                                    //$.getJSON(GetDomain() + "/Home/RemoveAllShop.html?callback=?", { key: "AntifreezeSettingKey" }, function (msg) {
+
+                                    //});
+                                }
+                                else {
+                                    alert(data.Msg);
+                                    saveButton.attr("disabled", false).removeClass("ui-state-disabled");
+                                    // $("#AddItem").dialog("close");
+                                }
+                            }
+                        });
+                    },
+                    "取消": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        }
+
+        function btnfdSetEnabled(Status) {
+            $.post("/Baoyang/SetAntifreezeStatus", { Status: Status }, function (data) {
+                if (data.IsSuccess) {
+                    $.getJSON(GetDomain() + "/Home/RemoveAllShop.html?callback=?", { key: "AntifreezeSettingKey" }, function (msg) {
+                        console.log(msg);
+                    });
+                    alert("操作成功！");
+                    $("#fdstateshow").text((Status == 1 ? "已开启" : "已关闭"));
+                    $("#fdbuttonState").attr("value", (Status == 1 ? "关闭" : "开启"));
+                    $("#fdbuttonState").attr("onclick", (Status == 1 ? "btnfdSetEnabled(0)" : "btnfdSetEnabled(1)"));
+                }
+                else {
+                    alert("操作失败！");
+                }
+            });
+        }
+
+        Vue.component('oil-select', {
+            template: '#oil-select',
+            props: {
+                brand: {
+                    type: String,
+                    default: '',
+                },
+                series: {
+                    type: String,
+                    default: '',
+                },
+                brand_series: {
+                    type: Object,
+                    default: function () { return {} },
+                },
+                priority: {
+                    type: Number,
+                    default: 1,
+                }
+            },
+            data: function () {
+                return {
+                    setting: { brand: '', series: '' },
+                };
+            },
+            watch: {
+                brand: function (value) {
+                    var vm = this;
+                    vm.setting.brand = value;
+                },
+                series: function (value) {
+                    var vm = this;
+                    vm.setting.series = value;
+                },
+            },
+            computed: {
+                brandList: function () {
+                    var vm = this;
+                    return Object.keys(vm.brand_series || {});
+                },
+                seriesList: function () {
+                    var vm = this;
+                    var bs = vm.brand_series || {};
+                    return bs[vm.setting.brand] || [];
+                }
+            },
+            mounted: function () {
+                var vm = this;
+                vm.setting.brand = vm.brand;
+                vm.setting.series = vm.series;
+                vm.$watch('setting.brand', function (value) {
+                    var vm = this;
+                    if (value !== vm.brand) {
+                        vm.$emit('update:brand', value);
+                    }
+                    vm.setting.series = '';
+                });
+                vm.$watch('setting.series', function (value) {
+                    var vm = this;
+                    if (value !== vm.series) {
+                        vm.$emit('update:series', value);
+                    }
+                });
+            },
+        });
+        Vue.component('oil-select-list', {
+            template: '#oil-select-list',
+            props: {
+                brand_series: {
+                    type: Object,
+                    default: function () { return {} },
+                },
+                value: {
+                    type: Array,
+                    default: function () { return [] },
+                }
+            },
+            data: function () {
+                return {
+                    list: [],
+                    keyIncrease: 0,
+                    s_list: '',
+                    s_value: '',
+                };
+            },
+            watch: {
+                value: {
+                    handler: function (value) {
+                        var vm = this;
+                        var list = (value || []).map(function (x) { return x; }).sort(function (x, y) {
+                            return x.priority - y.priority
+                        });
+                        vm.s_value = JSON.stringify(list);
+                    },
+                    deep: true,
+                },
+                list: {
+                    handler: function (value) {
+                        var vm = this;
+                        var list = (value || []).map(function (x, i) {
+                            return { brand: x.brand, series: x.series, priority: (i + 1) };
+                        }).sort(function (a, b) { return a.priority - b.priority });
+                        vm.s_list = JSON.stringify(list);
+                    },
+                    deep: true,
+                },
+                s_value: function (s_value) {
+                    var vm = this;
+                    var s_list = vm.s_list;
+                    if (s_list !== s_value) {
+                        var list = (JSON.parse(s_value) || []).map(function (x) {
+                            vm.keyIncrease += 1;
+                            var key = vm.keyIncrease.toString();
+                            return { brand: x.brand, series: x.series, key: key };
+                        });
+                        if (!list || !list.length) {
+                            vm.keyIncrease += 1;
+                            var key = vm.keyIncrease.toString();
+                            list = [{ brand: '', series: '', key: key }];
+                        }
+                        vm.list = list;
+                        //console.log(list);
+                    }
+                },
+                s_list: function (s_list) {
+                    var vm = this;
+                    var s_value = vm.s_value;
+                    if (s_list != s_value) {
+                        vm.$emit('input', JSON.parse(s_list));
+                    }
+                }
+            },
+            mounted: function () {
+                var vm = this;
+                vm.s_value = JSON.stringify(vm.value);
+            },
+            methods: {
+                append: function () {
+                    var vm = this;
+                    vm.keyIncrease += 1;
+                    var key = vm.keyIncrease.toString();
+                    if (!vm.list || !vm.list.length) {
+                        var list = [{ brand: '', series: '', key: key }];
+                        vm.list = list;
+                    } else {
+                        vm.list.push({ brand: '', series: '', key: key });
+                    }
+                },
+                remove: function (index) {
+                    var vm = this;
+                    vm.list.splice(index, 1);
+                },
+            },
+            computed: {
+                brandSeries: function () {
+                    var vm = this;
+                    return vm.brand_series || {};
+                }
+            }
+        });
+        var vm = new Vue({
+            el: '#new-jiyou',
+            data: {
+                isEnabled: true,
+                showModal: false,
+            },
+            methods: {
+                edit: function () {
+                    this.showModal = true;
+                },
+            },
+            components: {
+                'jiyou-new-modal': {
+                    template: '#jiyou-new-modal',
+                    props: {
+                        value: {
+                            type: Boolean,
+                            default: false,
+                        }
+                    },
+                    data: function () {
+                        return {
+                            loading: true,
+                            mineralOil: [],
+                            semiSyntheticOil: [],
+                            fullySyntheticOil: [],
+                            brand_series: {},
+                            delayLock: false,//只读库延迟
+                            executing: false,
+                            submitLoading: false,
+                            origin:'',
+                        };
+                    },
+                    watch: {
+                        delayLock: function (value) {
+                            var vm = this;
+                            var executing = vm.executing;
+                            if (!value && executing) {
+                                vm.getData();
+                            }
+                        },
+                        value: function (val) {
+                            if (val) {
+                                this.getData();
+                            }
+                        },
+                    },
+                    methods: {
+                        getOilBrandAndSeries: function () {
+                            var vm = this;
+                            $.get("GetOilBrandAndSeries").done(function (res) {
+                                vm.brand_series = res.data || {};
+                            });
+                        },
+                        submit: function () {
+                            var vm = this;
+
+                            var _mineralOil = (vm.mineralOil || []).map(function (x) {
+                                return x;
+                            }).sort(function (x, y) {
+                                return x.priority - y.priority
+                            });
+                            var _semiSyntheticOil = (vm.semiSyntheticOil || []).map(function (x) {
+                                return x;
+                            }).sort(function (x, y) {
+                                return x.priority - y.priority
+                            });
+                            var _fullySyntheticOil = (vm.fullySyntheticOil || []).map(function (x) {
+                                return x;
+                            }).sort(function (x, y) {
+                                return x.priority - y.priority
+                            });
+
+
+                            var all = _mineralOil.concat(_semiSyntheticOil).concat(_fullySyntheticOil);
+                            if (JSON.stringify(all) === vm.origin) {
+                                vm.$Message.warning('未做任何修改');
+                                return;
+                            }
+                            debugger;
+                            var mineralOil = vm.convertToSettings(_mineralOil, "矿物油");
+                            var semiSyntheticOil = vm.convertToSettings(_semiSyntheticOil, "半合成");
+                            var fullySyntheticOil = vm.convertToSettings(_fullySyntheticOil, "全合成");
+
+                            var settings = mineralOil.concat(semiSyntheticOil).concat(fullySyntheticOil);
+                            vm.submitLoading = true;
+                            vm.$Modal.confirm({
+                                title: "确认",
+                                content: "确认修改优先级?",
+                                loading: true,
+                                onOk: function () {
+                                    $.post("AddProductPrioritySettingsNew", { settings: settings }).done(function (res) {
+                                        if (!res.status) {
+                                            vm.$Message.warning('操作失败！' + (res.msg || ""));
+                                            return;
+                                        }
+                                        vm.showModal = false;
+                                        vm.$Message.info('操作成功！');
+                                        vm.delayLock = true;
+                                        setTimeout(function () {
+                                            vm.delayLock = false;
+                                        }, 2000);
+                                    }).fail(function () {
+                                        vm.$Message.warning('操作失败！');
+                                    }).always(function () {
+                                        vm.$Modal.remove();
+                                        vm.loading = false;
+                                        vm.submitLoading = false;
+                                        vm.$nextTick(function () {
+                                            vm.loading = true;
+                                        });
+                                    });
+                                },
+                                onCancel: function () {
+                                    vm.loading = false;
+                                    vm.submitLoading = false;
+                                    vm.$nextTick(function () {
+                                        vm.loading = true;
+                                    });
+                                }
+                            });
+                        },
+                        getData: function () {
+                            var vm = this;
+                            vm.executing = true;
+                            if (vm.delayLock) {
+                                return;//如果在需要延迟时间内, 则不执行;
+                            }
+                            $.get('/BaoYang/GetProductPrioritySettingsNew', { partName: '机油' }).done(function (res) {
+                                var data = res.data || [];
+                                data.forEach(function (item) {
+                                    switch (item.PriorityType) {
+                                        case '全合成':
+                                            vm.fullySyntheticOil = (item.Priorities || []).map(function (x) {
+                                                var obj = {};
+                                                obj.brand = x.Brand;
+                                                obj.series = x.Series;
+                                                obj.priority = x.Priority;
+                                                return obj;
+                                            }).sort(function (x, y) {
+                                                return x.priority - y.priority;
+                                            });
+                                            return;
+                                        case '半合成':
+                                            vm.semiSyntheticOil = (item.Priorities || []).map(function (x) {
+                                                var obj = {};
+                                                obj.brand = x.Brand;
+                                                obj.series = x.Series;
+                                                obj.priority = x.Priority;
+                                                return obj;
+                                            }).sort(function (x, y) {
+                                                return x.priority - y.priority;
+                                            });
+                                            return;
+                                        case '矿物油':
+                                            vm.mineralOil = (item.Priorities || []).map(function (x) {
+                                                var obj = {};
+                                                obj.brand = x.Brand;
+                                                obj.series = x.Series;
+                                                obj.priority = x.Priority;
+                                                return obj;
+                                            }).sort(function (x, y) {
+                                                return x.priority - y.priority;
+                                            });
+                                            return;
+                                    }
+                                });
+                                var all = (vm.mineralOil || []).concat(vm.semiSyntheticOil || []).concat(vm.fullySyntheticOil || []);
+                                vm.origin = JSON.stringify(all);
+                            }).always(function () {
+                                vm.executing = false;
+                            });
+                        },
+                        convertToSettings: function (rawList, priorityType) {
+                            var settings = (rawList || []).filter(function (x) {
+                                return !(!x.brand && !x.series);
+                            }).map(function (item) {
+                                var setting = {};
+                                setting.Brand = item.brand;
+                                setting.Series = item.series;
+                                setting.IsEnabled = true;
+                                setting.Priority = item.priority;
+                                setting.PartName = "机油";
+                                setting.PriorityType = priorityType;
+                                return setting;
+                            }).sort(function (x, y) {
+                                return x.priority - y.priority;
+                            });
+                            settings.forEach(function (setting, i) {
+                                setting.Priority = i + 1;
+                            });
+                            return settings;
+                        },
+                        open: function () {
+                            window.open("/Baoyang/BaoYangPriorityVehicleSetting?key=oilnew&partName=机油");
+                        }
+                    },
+                    computed: {
+                        showModal: {
+                            get: function () {
+                                return this.value;
+                            },
+                            set: function (value) {
+                                this.$emit('input', value);
+                            },
+                        }
+                    },
+                    mounted: function () {
+                        var vm = this;
+                        vm.getOilBrandAndSeries();
+                    }
+                }
+            },
+        });
+
+    </script>
+}
+

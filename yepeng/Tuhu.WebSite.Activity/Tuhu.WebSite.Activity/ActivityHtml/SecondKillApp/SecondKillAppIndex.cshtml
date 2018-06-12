@@ -1,0 +1,77 @@
+﻿@{
+
+}
+
+@section head
+{
+<link href="~/css/msys.css" rel="stylesheet" />
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/tuhu.public.js"></script>
+<script src="../../js/SecondKillApp.js"></script>
+}
+<link href="~/css/msys.css" rel="stylesheet" />
+<body>
+    <div class="title">
+        <p>每日：10:00/ 11:00/ 13:00/ 14:00/ 20:00/ 21:00/</p>
+        <div>
+            <!--离下次仅剩 <span id="hourid"></span>时
+            <span id="minuteid"></span> 分
+            <span id="secondid"></span>秒-->
+            离下次仅剩 <span id="tenhourid"></span><span id="thehourid"></span>时
+            <span id="tenminuteid"></span><span id="theminuteid"></span> 分
+            <span id="tensecondid"></span><span id="thesecondid"></span>秒
+        </div>
+    </div>
+    <div class="bg">
+        <!--<div id="msBtn" class="ljms"></div>-->
+        <!--<div id="msBtn" class="ljmshs"></div>-->
+        <!--<div id="msBtn" class="kqtz"></div>-->
+        <div id="msBtn" class="ljmscx"></div>
+        <span id="tip">呃， 没有秒到！</span>
+    </div>
+    <div class="container">
+        <div></div>
+        <ul>
+            <li>
+                <span><span>主雨刷</span></span>
+                <span>博世火翼接口雨刷片博世火翼接口雨刷片博世火翼接口雨刷片</span>
+            </li>
+            <li>
+                <span><span>副雨刷</span></span>
+                <span>博世火翼接口雨刷片博世火翼接口雨刷片博世火翼接口雨刷片</span>
+            </li>
+            <li><label>&yen;1.00</label>/副</li>
+            <li>途虎价：<label>&yen;66.00</label></li>
+            <li><a href="#">没秒到？  没关系</a></li>
+        </ul>
+        <a href="#">7折购买   &yen;  46.2</a>
+    </div>
+    <div class="rule">
+        <div class="ruleTitle">
+            <div>
+                <span></span><label>活动规则</label> <span></span>
+            </div>
+            <ol>
+                <li>活动时间：3.31-4.30 每天六波，准时开秒，秒完为止；</li>
+                <li>秒杀时间： 10:00、11:00、13:00、16:00、20:00、21:00；</li>
+                <li>秒杀后，请小伙伴在30分钟内完成付款，否则将会因为超时而取消资格；</li>
+                <li>秒杀商品需在线付款；</li>
+                <li>秒杀成功的用户无法再享受7折优惠；</li>
+                <li>秒杀商品不需要支付邮费；</li>
+                <li>仅电脑网站参与本次活动，手机端暂不支持；</li>
+                <li>秒杀商品直接进入下单页面，不可与其他商品同时购买；</li>
+                <li>每人仅限参加一次1元抢购活动；</li>
+                <li>笨活动解释权归途虎养车网所有。</li>
+            </ol>
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+    window.onload = function () {
+        document.getElementById("msBtn").onclick = function () {
+            document.getElementById("tip").style.display = "block";
+            setTimeout(function () {
+                document.getElementById("tip").style.display = "none";
+            }, 3000)
+        }
+}

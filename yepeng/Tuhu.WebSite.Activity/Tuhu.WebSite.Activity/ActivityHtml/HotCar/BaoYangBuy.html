@@ -1,0 +1,429 @@
+﻿
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>小保养套餐</title>
+    <link rel="stylesheet" href="css/swipe.min.css" />
+    <link rel="stylesheet" href="css/tcby.css?time" />
+    <link rel="stylesheet" href="http://resource.tuhu.cn/CSS/toastr.css" />
+    <link rel="stylesheet" href="http://faxian.tuhu.cn/CSS/huodong.css" />
+    <script src="http://resource.tuhu.cn/Js/angular.ext.js" type="text/javascript"></script>
+    <script src="http://resource.tuhu.cn/Js/toastr.js" type="text/javascript"></script>
+    <script src="http://resource.tuhu.cn/js/build.js" type="text/javascript"></script>
+    <script type="text/javascript" src="http://faxian.tuhu.cn/js/huodong.js"></script>
+    <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+    <script type="text/javascript" src="http://resource.tuhu.cn/js/hd/activity.js"></script>
+    <script type="text/javascript" src="js/jquery-2.1.0.js"></script>
+    <script type="text/javascript" src="js/swipe.js"></script>
+    <script src="http://resource.tuhu.cn/js/WebViewJavascriptBridge.js"></script>
+    <script type="text/javascript">
+
+        var userAgentInfo = navigator.userAgent;
+        var Agents = new Array("iPhone", "iPad", "iPod");
+        var flag = true;
+        for (var v = 0; v < Agents.length; v++) {
+            if (userAgentInfo.indexOf(Agents[v]) > 0) { flag = false; break; }
+        }
+        function connectWebViewJavascriptBridge(callback) {
+
+            if (window.WebViewJavascriptBridge) {
+
+                callback(WebViewJavascriptBridge)
+            } else {
+
+                document.addEventListener(
+                    'WebViewJavascriptBridgeReady'
+                    , function () {
+
+                        callback(WebViewJavascriptBridge)
+                    },
+                    false
+                );
+            }
+        }
+        connectWebViewJavascriptBridge(function (bridge) {
+
+            bridge.init(function (message, responseCallback) {
+
+                var data = {
+                    'Javascript Responds': 'Wee!'
+                };
+                responseCallback(data);
+            });
+            bridge.registerHandler("functionInJs", function (data, responseCallback) {
+
+                var responseData = "Javascript Says Right back aka!";
+                responseCallback(responseData);
+            });
+        })
+        function torder(par, isNew) {
+            par = encodeURIComponent(par);
+            if (userAgentInfo.indexOf("Android") >= 0) {
+                try {
+
+                    window.WebViewJavascriptBridge.callHandler(
+                        'toOrder'
+                        , encodeURIComponent(par)
+                        );
+                } catch (e) {
+                    alert(e);
+                }
+            } else {
+                isNew === true ? iosendNew('customSegue', par) : iosend('toOrder', par);
+            }
+        }
+        function iosendNew(cmd, arg) {
+            var h = '#testapp#' + cmd + '#TNCreateMaintainOrderViewController#' + arg;
+            location.href = h;
+        }
+        function iosend(cmd, arg) {
+            var h = '#testapp#' + cmd + '#' + arg;
+            location.href = h;
+        }
+
+        function verifylogin(cb) {
+            //toBaoYang
+            if (window.debug) {
+                alert('debug enabled');
+                window.setTimeout(function () {
+                    window[cb]({ phone: 15221306857 });
+                }, 1000);
+            } else {
+                if (cb && window[cb]) {
+                    if (userAgentInfo.indexOf("Android") >= 0) {
+                        try {
+                            window.WebViewJavascriptBridge.callHandler(
+                                'actityBridge'
+                                , { 'param': "" }
+                                , function (responseData) {
+                                    //alert(responseData);
+                                    if (responseData != null) {
+                                        var da = JSON.parse(responseData);
+                                        window[cb](da);
+                                    }
+                                });
+                        } catch (e) {
+                            alert(e);
+                        }
+                    } else {
+                        iosend("Userinfo", cb);
+                    }
+                }
+            }
+        }
+
+        var urltou = "http://api.tuhu.cn"; //"http://api.tuhu.dev";
+        var Agents = new Array("iPhone", "iPad", "iPod");
+        var flag = true;
+        for (var v = 0; v < Agents.length; v++) {
+            if (userAgentInfo.indexOf(Agents[v]) > 0) { flag = false; break; }
+        }
+        var packPrice = "";
+        var vehicleID = "";
+        var nian = "";
+        var paiLiang = "";
+        var tid = "";
+        var liyangid = "";
+        var brand = "";
+        var engineType = "";
+        var GoodsArray = [];
+        function isWX() {
+            var ua = navigator.userAgent.toLowerCase();
+            if (ua.match(/MicroMessenger/i) == "micromessenger") {
+                return true;//是微信
+            } else {
+                return false;
+            }
+        }
+        function getSortFun(order, sortBy) {
+            var ordAlpah = (order == 'asc') ? '>' : '<';
+            var sortFun = new Function('a', 'b', 'return a.' + sortBy + ordAlpah + 'b.' + sortBy + '?1:-1');
+            return sortFun;
+        }
+
+        //获取url参数
+        function getQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]); return null;
+        }
+
+        String.prototype.replaceAll = function (s1, s2) {
+            return this.replace(new RegExp(s1, "gm"), s2);
+        }
+
+        //格式化金额
+        function formatPrice(val, hasZero) {
+            var v = val.toString().indexOf(".") === -1 ? val : val.split(".")[0];
+            if (hasZero) {
+                v += ".00";
+            }
+            return v;
+        }
+        var BageImage = getQueryString("VehicleLogin");
+        var VehicleName = decodeURIComponent(escape(getQueryString("VehicleName")));
+        $("#vehicleName").text(VehicleName);
+        vehicleID = getQueryString("vehicleID"),
+        nian = getQueryString("Nian"),
+        paiLiang = getQueryString("PaiLiang"),
+        tid = getQueryString("Tid"),
+        liyangid = getQueryString("LiYangID"),
+        brand = decodeURIComponent(escape(getQueryString("Brand")));
+        engineType = getQueryString("SalesName"),
+        getUrl = urltou + "/baoyang/SelectPackageProducts",
+
+
+        $(function () {
+
+            if (isWX()) {
+                $(".bottom").show();
+            }
+
+            data = {
+                "vehicleID": vehicleID,
+                "nian": nian,
+                "paiLiang": paiLiang,
+                "liyangId": liyangid,
+                "tid": tid,
+            };
+            $("#vehicleID").val(vehicleID);
+            $("#pailiang").text(paiLiang);
+            $("#nian").text(nian);
+
+            $.ajax({
+                url: getUrl,
+                data: data,
+                type: "get",
+                jsonpCallback: "__SelectPackageProducts__",
+                dataType: "jsonp",
+                async: false,
+                success: function (data) {
+                    //alert(JSON.stringify(data));
+                    var array = data.Products.sort(getSortFun('asc', 'TaoCanPrice'));
+                    if (array[0].TaoCanName.indexOf("上汽APSIS") >= 0)//判断是APS，则显示详情否则，不显示
+                    {
+                        $("#pingLunXiangQing").show();
+                    }
+                    else//如果是优惠活动则-不显示
+                    {
+                        $("#pingLunXiangQing").hide();
+                    }
+
+                    Goods = new Object();
+                    Goods.orderTitle = array[0].TaoCanName;
+                    Goods.orderNum = 1;
+                    Goods.orderPrice = array[0].TaoCanPrice;
+                    Goods.ProductID = array[0].TaoCanPID.split("|")[0];
+                    Goods.VariantID = array[0].TaoCanPID.split("|")[1];
+                    if (array[0].TaoCanImage != "" && array[0].TaoCanImage != null) {
+                        Goods.produteImg = encodeURI(array[0].TaoCanImage.replaceAll("/", "!")) //encodeURI(data.List[index].Image[0].replaceAll("/", "!"));
+                    }
+                  
+                    GoodsArray.push(Goods);
+                    if (data.Code === 0) {
+                        return;
+                    }
+                    $("#brandImage").attr("src", "http://api.tuhu.cn" + BageImage);
+                    if (array[0] != null) {//Products可能会为空
+                        var swipeHtml = "";
+                        if (array[0].TaoCanName.indexOf("上汽APSIS") >= 0)//判断是APS，则显示详情否则，不显示
+                        {
+                            var imageUrl = array[0].TaoCanImage,
+                                  imageUrl = imageUrl.replace(/Width=100/, "Width=1500");
+                            imageUrl = imageUrl.replace(/Height=100/, "Height=1500");
+                            swipeHtml = '<figure><div class="wrap"><div class="image" style="background:url(' + imageUrl + ') center no-repeat;background-size:contain;"></div></div></figure>';
+                        }
+                        swipDotHtml = '<li class="on"></li>';
+                        var i = 0
+                        for (var x = 0; x < array[0].TaoCaoproductModel.length ; x++) {
+                            Array.prototype.slice.call(array[0].TaoCaoproductModel[x].Items).forEach(function (ele, index) {
+                                i += 1;
+                                var imageUrl = array[0].TaoCaoproductModel[x].Items[index].image,
+                                      imageUrl = imageUrl.replace(/Width=100/, "Width=1500");
+                                imageUrl = imageUrl.replace(/Height=100/, "Height=1500");
+
+                                swipeHtml += '<figure><div class="wrap"><div class="image" style="background:url(' + imageUrl + ') center no-repeat;background-size:contain;"></div></div></figure>';
+                                if (i != 1) {
+                                    swipDotHtml += '<li></li>';
+                                }
+                            })
+                        }
+
+                        $("#swipWrap").append(swipeHtml);
+                        $("#position").append(swipDotHtml);
+                        $("#description").text(array[0].TaoCanName);
+
+                        var listHtml = '';
+                        for (var i = 0; i < array[0].TaoCaoproductModel.length ; i++) {
+                            Array.prototype.slice.call(array[0].TaoCaoproductModel[i].Items).forEach(function (ele, index) {
+                                listHtml += '<div class="item"><div style="background:url(' + array[0].TaoCaoproductModel[i].Items[index].image + ') center no-repeat;background-size:contain;"></div><div>' + array[0].TaoCaoproductModel[i].Items[index].name + '</div><div>&yen;' + array[0].TaoCaoproductModel[i].Items[index].cy_list_price + ' X ' + array[0].TaoCaoproductModel[i].Items[index].quantity + '</div></div>';
+                            })
+                        }
+                        $(".items").append(listHtml);
+                        $("#packPrice").text(formatPrice(array[0].TaoCanPrice, true));
+                        $("#totalPrice").text(formatPrice(array[0].TaoCanTotalPrice, true));
+                        $("#lijian").text(formatPrice(array[0].TaoCanTotalPrice - array[0].TaoCanPrice, false));
+                    }
+
+                    var slider = $("#slider").Swipe({
+                        continuous: true,
+                        callback: function (pos) {
+                            var i = bullets.length;
+                            while (i--) {
+                                bullets[i].className = ' ';
+                            }
+                            bullets[pos].className = 'on';
+                        }
+                    });
+
+                    var bullets = $('#position li');
+                    packPrice = array[0].TaoCanPrice;
+                }
+            })
+
+            //套餐列表展开
+            $(".detail").click(function (e) {
+                var that = $(this).parent();
+                if (that.hasClass("top")) {
+                    that.removeClass("top");
+                    $(".items").slideUp();
+                }
+                else {
+                    that.addClass("top");
+                    $(".items").slideDown();
+                }
+            })
+
+            //查看套餐详情
+            $("#tcxq").click(function () {
+                window.location.href = "tcDetail.html?vehicleID=" + vehicleID + "&nian=" + nian + "&paiLiang=" + paiLiang + "&ContainImage=0";
+            })
+        })
+
+        function ByNow() {
+            var typeServiceArray = [];
+            var typeService = new Object();
+            typeService.Type = "dby";
+            typeService.Name = "大保养服务";
+            typeService.Description = "大保养套餐";
+            typeService.Count = 1;
+            typeServiceArray.push(typeService);
+            var reg = new RegExp("!", "g");
+            var stringObj = GoodsArray[0].produteImg;
+            var imgUrlNew = "";
+            if (stringObj != null && stringObj != "") {
+                imgUrlNew = stringObj.replace(reg, "/");
+            }
+
+            if (userAgentInfo.indexOf("Android") >= 0) {
+
+                var goods = List();
+
+                var g = {
+                    "orderTitle": GoodsArray[0].VariantID + GoodsArray[0].orderTitle,
+                    "orderNum": GoodsArray[0].orderNum,
+                    "orderPrice": packPrice,
+                    "ProductID": GoodsArray[0].ProductID,
+                    "VariantID": GoodsArray[0].VariantID,
+                    "produteImg": imgUrlNew
+                };
+
+
+                goods.add(g);
+
+                var opar = {
+                    "orderType": "1",
+                    "carTypeSize": "",
+                    "typeService": [{
+                        "Type": "xby",
+                        "Name": "小保养",
+                        "Description": "小保养",
+                        "Count": "1",
+                    }],
+                    "quanType": "maintenance",
+                    "Goods": goods,
+                    "Car": ""
+                };
+
+                if (!opar || !opar.Goods || opar.Goods.length < 1) {
+                    toastr.info('请先选择机油与滤清器');
+                    return;
+                }
+
+                var s = JSON.stringify(opar);
+                try {
+                    var rr = ga('send', 'event', 'button', 'click', 'Order', 4);
+
+                } catch (e) {
+
+                }
+                //alert(s);
+                torder(s);
+            }
+            else {
+                window.location.href = '#testapp#customSegue#THCreatOrderVC#' +
+                '{' +
+                ' "goods<THGoods>":[{"productID": "' + GoodsArray[0].ProductID + '","variantID":"' + GoodsArray[0].VariantID +
+                '","name":"' + GoodsArray[0].VariantID + GoodsArray[0].orderTitle + '","image":"' + imgUrlNew + '","price": '
+                + GoodsArray[0].orderPrice + ',"count": ' + GoodsArray[0].orderNum + '} ], ' +
+                ' "totalPrice" : ' + packPrice + ',' +
+            '  "orderType" : 2,' +
+                ' "orderAddressType" : 2,' +
+                ' "couponType" : 2,' +
+                ' "maintainTypes" : [{"type":"dby","count":0}  ],' +
+                '"tireSize" : "" ' +
+                '}';
+            }
+        };
+
+    </script>
+</head>
+<body>
+    <div class="by-server-title">
+        <img src="#" id="brandImage" />
+        <div id="vehicleName"></div>
+        <div>
+            排量：   <span id="pailiang"></span>&nbsp;&nbsp;&nbsp;生产年份：  <span id="nian"></span>年
+        </div>
+    </div>
+
+    <div id="slider" class="swipe">
+        <div class="swipe-wrap" id="swipWrap"></div>
+    </div>
+    <nav>
+        <ul id="position"></ul>
+    </nav>
+    <ul class="tcby-ul noTopBorder">
+        <li>
+            <div class="sub-title" id="description"></div>
+        </li>
+        <li class="rightArrow top">
+            <div class="detail"><label class="key">套餐详情：</label> <label id="typeName"></label></div>
+            <div class="items"></div>
+        </li>
+        <li>
+            <div class="price">
+                <span class="border-btn">立减 &yen; <label id="lijian"></label></span>
+                <span>途虎价：</span>
+                <span>&yen; <label id="packPrice"></label></span>
+                <span>&yen; <label id="totalPrice"></label></span>
+            </div>
+        </li>
+    </ul>
+    <ul class="tcby-ul" id="pingLunXiangQing">
+        <li class="rightArrow" id="tcxq">
+            <div>查看图文详情</div>
+        </li>
+    </ul>
+    <div><input type="button" style="position:fixed;bottom:0;-webkit-appearance: none; width:100%;height:10%;background-color:red;color:white;border:none;font-size:25px;font-weight:300" value="立即购买" onclick="ByNow();" /></div>
+    <div class="footer bottom"></div>
+    <div class="footLogo bottom">
+        <span></span>
+        <a href="http://a.app.qq.com/o/simple.jsp?pkgname=cn.TuHu.android" class="footerDownApp bottom">下载途虎养车，即刻下单</a>
+    </div>
+</body>
+
+</html>

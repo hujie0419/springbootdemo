@@ -1,0 +1,161 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>今日特价</title>
+    <link href="css/jrtj1.css?v=4" rel="stylesheet" />
+    <!--<link href="css/swiper.min.css" rel="stylesheet" />-->
+    <link rel="dns-prefetch" href="http://resource.tuhu.cn">
+    <link rel="dns-prefetch" href="http://image.tuhu.cn">
+    <link rel="dns-prefetch" href="//api.tuhu.cn">
+    <style type="text/css">
+        .progress {
+            width: 60%;
+            height: 20px;
+            overflow: hidden;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-left: -30%;
+            margin-top: -10px;
+        }
+
+        .progress-bar {
+            position: absolute;
+            width: 40px;
+            height: 100%;
+            font-size: 12px;
+            line-height: 20px;
+            color: #fff;
+            background-color: #337ab7;
+            -webkit-box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+            box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+            -webkit-animation: bar 2s linear infinite;
+            -moz-animation: bar 2s linear infinite;
+            animation: bar 2s linear infinite;
+        }
+
+        @-webkit-keyframes bar {
+            from {
+                left: 0;
+            }
+
+            to {
+                left: 100%;
+            }
+        }
+
+        @-moz-keyframes bar {
+            from {
+                left: 0;
+            }
+
+            to {
+                left: 100%;
+            }
+        }
+
+        @keyframes bar {
+            from {
+                left: 0;
+            }
+
+            to {
+                left: 100%;
+            }
+        }
+    </style>
+
+</head>
+<body id="b" style="padding: 0px 0px 40px;">
+    <!-- loading -->
+    <div class="progress">
+        <div class="progress-bar"></div>
+    </div>
+    <img id="bannerImg" v-style="margin-top:(ShowCountDown?0:0)+'px'" />
+    <!-- 计时 -->
+    <div class="top-header" v-show="ShowCountDown">
+        <div v-component="countDown" id="time-down"></div>
+    </div>
+
+
+    <div v-component="{{currentView}}"></div>
+    <!--弹出提示框-->
+    <div class="custom-popup" id="popTips">
+        <p id="tipsContent"></p>
+    </div>
+
+    <!--<script>window.onerror = function (err) { alert(err) }</script>-->
+    <script src="http://resource.tuhu.cn/Scripts/wx/zepto.min.js"></script>
+    <script src="http://resource.tuhu.cn/Js/TuhuWebViewBridge.min.js"></script>
+    <script src="http://resource.tuhu.cn/scripts/wx/vue.min.js"></script>
+    <!--<script src="js/swiper.min.js"></script>-->
+    <script src="js/flexible.js"></script>
+
+    <script type="text/x-template" id="tmpl_list">
+        <div class="lists">
+            <div class="list" v-if="Products" v-repeat="p:Products" id="{{p.PID}}">
+                <div>
+                    <div class="{{p.Label=='限量'?'tip xl':'' }}"></div>
+                    <div class="{{p.Label=='热卖'?'tip rm':'' }}"></div>
+                    <div class="{{p.Label=='秒杀'?'tip ms':'' }}"></div>
+                    <img v-attr="src:p.ProductImg" alt="" v-on="click:toDetail(p)" />
+                    <div class="remain" v-if="p.MaxQuantity>0" style="display:{{p.MaxQuantity>0?'block':'none'}}">限购 {{p.MaxQuantity}} 件</div>
+                </div>
+                <div>
+                    <div class="pTitle" v-on="click:toDetail(p)">{{p.ProductName}}</div>
+                    <div class="pPrice">
+                        <div>
+                            <div class="pBar">
+                                已抢购{{p.SaleOutPercentage}}% <span><span style="width: {{p.SaleOutPercentage}}%;"></span></span>
+                                <label style="display:{{p.IsUsePCode?'none':'inline-block'}}"><span>不可用券</span></label>
+                            </div>
+                            <small>&yen;</small>{{p.Price}} <small style="display:{{p.MarketingPrice>0?'inline-block':'none'}}">&yen;{{p.MarketingPrice}}</small>
+                        </div>
+                        <div class="count_container" style="visibility:hidden">
+                            <span class="sub" v-class="active:p.enSub" v-on="touchstart:sub(p)"></span>
+                            <span><input type="text" readonly placeholder="0" v-on="keyup:input(p)" v-model="p.Quantity" /></span>
+                            <span class="add" v-class="active:p.enAdd" v-on="touchstart:add(p)"></span>
+                        </div>
+                        <div style="border-radius:15px;" class="{{p.surplusQuantity<=0||p.IsEnd||p.IsStart? 'disabled':''}}" v-on="click:toDetail(p)">
+                            {{p.surplusQuantity<=0&&!p.IsEnd&&!p.IsStart? '已抢光':''}}
+                            {{p.surplusQuantity>0&&!p.IsEnd&&!p.IsStart? '马上抢':''}}
+                            {{p.IsEnd&&p.TotalQuantity>0&&!p.IsStart? '已结束':''}}
+                            {{p.IsStart? '即将开始':''}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- 底部 {{IsEnd||IsStart? 'display:none':''}}-->
+        <div class="footer" style="display:none">
+            <div class="price">
+                &yen;{{TotalPrice}}
+                <span>
+                    (共{{TotalQuantity}}件)
+                </span>
+            </div>
+            <a href="#" class="pay" v-on="touchstart:submit">去结算</a>
+        </div>
+    </script>
+    <script src="js/index.min.js?v=20161201"></script>
+    <script src="js/login.min.js?v=20161201"></script>
+    <img id="endImg" style="margin-top:0" />
+    <script type="text/javascript">
+        window.onload = function () {
+            window.onscroll = function () {
+                var timeDown = document.getElementById("time-down"),
+                    logoHei = document.getElementById("bannerImg").height || 0,
+                    scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+                scrollTop > logoHei ? timeDown.style.position = "fixed" : timeDown.style.position = "static";
+            }
+            $footer = $(".footer"), $("body").css("padding-bottom", $footer.height())
+        }
+    </script>
+</body>
+</html>

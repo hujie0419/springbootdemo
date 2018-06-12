@@ -1,0 +1,385 @@
+html{
+	font-size: 62.5%;
+}
+
+body{
+	margin: 0;
+	padding: 0;
+	font: 12px "微软雅黑";
+	background-color: #f0eff5;
+	padding-bottom: 70px;
+}
+
+.tcby-title{
+	height: 50px;
+	background-color: #ed393d;
+}
+
+.tcby-title div{
+	float: left;
+}
+
+.tcby-title div:first-child{
+	width: 15%;
+}
+
+.tcby-title div:first-child{
+	height: 50px;
+	background:url(../img/back.png) no-repeat center;
+}
+
+.tcby-title div:nth-of-type(2){
+	width: 70%;
+	text-align: center;
+	font-size: 22px;
+	line-height: 50px; 
+	color: #ffffff;
+	letter-spacing: 2px;
+}
+
+#slider .image{
+	width: 100%;
+	height: 163px;
+}
+
+.by-server-title{
+	height: 60px;
+	background-color: #ffffe4;
+}
+
+.by-server-title img, .by-server-title div{
+	float: left;
+}
+
+.by-server-title > img{
+	width: 35px;
+	height:35px;
+	margin: 12px 18px 0;
+}
+
+.by-server-title > div:first-of-type{
+	margin-top: 10px; 
+	font:normal 14px "微软雅黑";
+	color: #333333;
+}
+
+#slider figure div.image{
+	height: 14rem;
+	margin: 0 auto;
+}
+
+nav{
+	margin:0;
+	padding: 10px 0;
+	background-color: #ffffff;
+}
+
+#position li{
+	background-color: #f0eff5;
+	background-image: none;
+}
+
+.swipe {
+	width: 100%;
+	height: 14rem;
+	overflow: hidden;
+	visibility: hidden;
+	position: relative;
+	border: none;
+	background-color: #ffffff;
+}
+.swipe-wrap {
+	overflow: hidden;
+	position: relative;
+}
+.tcby-ul{
+	border-top: 1px solid #dfdfdf;
+	border-bottom: 1px solid #dfdfdf;
+	margin: 0 0 10px 0;
+	padding: 0;
+	font-size:12px;
+	line-height: 22px;
+	color: #333;
+	background-color: #ffffff;
+}
+
+.noTopBorder{
+	border-top: none;
+}
+
+.tcby-ul:first-of-type{
+	/*margin-top: 10px;*/
+}
+
+.tcby-ul > li{
+	margin-left: 20px;
+	list-style-type: none;
+	border-top: 1px solid #dfdfdf;
+	padding: 10px 0;
+	font-weight: bold;
+}
+
+.sub-title{
+	margin-right: 20px;
+}
+
+.tcby-ul > li:first-child{
+	border-top: none;
+}
+
+.tcby-ul li .item{
+	width: 100%;
+	min-height: 40px;
+	padding: 6px 0;
+	border-bottom: 1px solid #dfdfdf;
+	display: table;
+}
+
+.tcby-ul li .item:last-child{
+	border-bottom: none;
+}
+
+.tcby-ul li .item div:first-child{
+	width: 40px;
+	height: 40px;
+	display: table-cell;
+}
+
+.tcby-ul li .item > div:nth-of-type(2){
+	margin-left: 10px;
+	padding-left: 10px;
+	font-weight: normal;
+	color: #333;
+	display: table-cell;
+	vertical-align: middle;
+	text-align: left;
+}
+
+.tcby-ul li .item > div:last-child{
+	width: 80px;
+	padding-right: 20px;
+	font-weight: normal;
+	color: #333;
+	display: table-cell;
+	vertical-align: middle;
+	text-align: right;
+}
+
+.tcby-ul > li.rightArrow > div:first-child{
+	display: inline-block;
+	width: 95%;
+	background: url(../img/rightArrow.png) no-repeat center;
+	background-position-x: 100%;
+}
+
+.tcby-ul > li.rightArrow.top{
+	padding-bottom: 0;
+}
+
+.tcby-ul > li.rightArrow.top > div:first-child{
+	display: inline-block;
+	width: 95%;
+	background: url(../img/topArrow.png) no-repeat center;
+	background-position-x: 100%;
+}
+
+.tcby-ul > li > div > label.key{
+	display: inline-block;
+	letter-spacing: 3px;
+}
+
+.tcby-ul > li > div.price span{
+	display: inline-block;
+}
+
+.border-btn{
+	display: inline-block;
+	border: 1px solid #ed393d;
+	color: #ed393d;
+	border-radius: 5px;
+	padding: 3px 6px;
+	margin-right: 7px;
+	min-width: 70px;
+	text-align: center;
+}
+
+.border-btn.year{
+	min-width: 90px;
+}
+
+.tcby-ul li > div.price span:nth-of-type(3){
+	color: #ed393d;
+	margin-right: 3px;
+}
+
+.tcby-ul li > div.price span:nth-of-type(4){
+	color: #999;
+	font-size: 14px;
+	line-height: 14px;
+	text-decoration: line-through;
+}
+
+
+.footer{
+	position: fixed;
+	bottom: 0;
+	height: 50px;
+	width: 100%;
+	background-color: black;
+	opacity: 0.4;
+	padding-bottom: 5px; 
+}
+
+.footLogo{
+	width: 80%;
+	height: 35px;
+	position: fixed;
+	bottom: 10px;
+	left: 15%; 
+	
+}
+
+.footLogo span{
+	display: inline-block;
+	width: 35px;
+	height: 35px;
+	background: url(../img/tuhu_logo.png) no-repeat left center;
+	background-size: contain;
+	float: left;
+}
+
+.footerDownApp{
+	display: inline-block;
+	width: 70%;
+	padding:0 15px;
+	font-size: 16px;
+	color: white;
+	height: 35px;
+	margin-left: 10px;
+	line-height: 35px;
+	border-radius: 5px;
+	background-color: #b8100f;
+	text-decoration: none;
+	text-align: center;
+	float: left;
+}
+
+.bottom{
+	display: none; 
+}
+
+
+.tcxq-ul{
+	list-style-type: none;
+	padding: 0;
+	display: inline-block;
+}
+
+.tcxq-ul li{
+	width: 40%;
+	padding-left: 10%;
+	margin: 6px 0;
+	float: left;
+}
+
+.tcxq-ul li span{
+	color: #888;
+	display: inline-block;
+}
+
+.tcxq-ul li span:first-child{
+	width: 90px;
+	text-align: right;
+}
+
+.tcxq-img{
+	width: 100%;
+	height: auto;
+}
+
+.tcxq-ul ~ img{
+	float: left;
+	border: none;
+	border-color: #f0eff5; 
+}
+
+@media only screen and (min-width: 100px) and (max-width: 320px) {
+	body{
+		padding-bottom: 50px;
+	}
+	
+	.tcby-title{
+		height: 35px;
+	}
+	.tcby-title div:nth-of-type(2){
+		height: 35px;
+		font-size: 18px;
+		line-height: 35px;
+	}
+	
+	.tcby-title div:first-child{
+		height: 35px;
+		background: url(../img/minBack.png) no-repeat center;
+	}
+	
+	.by-server-title div{
+	}
+	.tcby-ul{
+		font-size: 14px;
+	}
+	.tcby-ul > li{
+		padding: 10px;
+		margin-left: 15px;
+	}
+	.border-btn{
+		padding: 2px 4px;
+		min-width: 50px;
+	}
+	
+	.border-btn.year{
+		min-width: 70px;
+	}
+	
+	
+	
+	.tcby-ul li .item{
+		min-height:30px;
+		padding:8px 0;
+	}
+	
+	.tcby-ul li .item img{
+		width: 30px;
+		height: 30px;
+		margin-right: 10px;
+	}
+	.swipe {
+		width: 100%;
+		height: 14rem;
+		overflow: hidden;
+		visibility: hidden;
+		position: relative;
+		border: none;
+	}
+	
+	.tcxq-ul{
+		width: 100%;
+	}
+	
+	.tcxq-ul li{
+		float: none;
+		width: 100%;
+	}
+}
+
+@media only screen and (min-width: 321px){
+	.by-server-title div{
+		width: 80%;
+	}
+	
+	.tcxq-ul li{
+		width: 48%;
+		padding-left: 2%;
+	}
+}
+
+

@@ -1,0 +1,170 @@
+﻿@using Newtonsoft.Json;
+@model Tuhu.Provisioning.DataAccess.Entity.BaoYangPackageBrandPriorityConfig
+@{
+    Layout = null;
+    List<string> brands = new List<string>() { "胜牌", "海湾", "嘉实多", "雪佛龙", "3M", "道达尔", "壳牌", "美孚","出光" };
+    List<string> jiyouGrades = new List<string>() { "HX3", "HX5", "HX6", "HX7", "HX8", "ULTRA"};
+    string edit = ViewBag.Edit as string;
+    string VehicleID = ViewBag.VehicleID as string;
+}
+<div>
+    <input type="hidden" id="edit" value="@edit" />
+    <input type="hidden" id="VehicleID" value="@VehicleID" />
+    <input type="hidden" id="id" value="@Model.Id" />
+    <table id="table2">
+        <tbody>
+        <tr>
+            <td>
+                <a href="javascript:;" style="color:blue" onclick="CloneTr()">添加品牌</a>
+            </td>
+        </tr>
+        @if (!string.IsNullOrWhiteSpace(Model.PackageBrands))
+        {
+            foreach (var item in Model.PackageBrands.Split(';'))
+            {
+                if (!string.IsNullOrWhiteSpace(item))
+                {
+                    <tr class="newTr">
+                        <td>品牌：</td>
+                        <td>
+                            <select>
+                                <option value="">-请选择-</option>
+                                @foreach (var brand in brands)
+                                {
+                                    if (brand == item)
+                                    {
+                                        <option value="@brand" selected="selected">@brand</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@brand">@brand</option>
+                                    }
+                                }
+                            </select>
+                        </td>
+                        <td><a style="color:blue;display:inline-block;width:50px;" href="javascript:;" onclick="DeleteTr(this)">删除</a></td>
+                    </tr>
+                }
+            }
+        }
+        </tbody>
+    </table>
+    <br/>
+    <table id="table3">
+        <tbody>
+        <tr>
+            <td>
+                <a style="color:blue">机油等级</a>
+            </td>
+        </tr>       
+        <tr class="newTr">
+            <td>等级：</td>
+            <td>
+                <select id="jiyouGrade">
+                    <option value="">-请选择-</option>
+                    @foreach (var grade in jiyouGrades)
+                    {
+                        if (string.Equals(Model.JiYouGrade,grade) )
+                        {
+                            <option value="@grade" selected="selected">@grade</option>
+                        }
+                        else
+                        {
+                            <option value="@grade">@grade</option>
+                        }
+                    }
+                </select>
+            </td>
+        </tr>                  
+        </tbody>
+    </table>
+    <input type="button" class="btn" onclick="SaveModel()" value="保存" />
+</div>
+<table id="templateTable" style="display:none;">
+    <tr class="newTr">
+        <td>品牌：</td>
+        <td>
+            <select>
+                <option value="">-请选择-</option>
+                @foreach (var brand in brands)
+                {
+                    <option value="@brand">@brand</option>
+                }
+            </select>
+        </td>
+        <td><a style="color:blue;display:inline-block;width:50px;" href="javascript:;" onclick="DeleteTr(this)">删除</a></td>
+    </tr>
+
+</table>
+
+<script>
+
+    function SaveModel() {
+        var dataArray = new Array();
+        var dataBrand = "";// new Array();
+
+        $('#table2 >tbody> tr').each(function (i) {
+            if (i >= 0) {
+                if ($(this).attr("class") == "newTr") {
+                    var columns = $(this).children();
+                    //var jsonData = { "Brand": "", "Sort": "" };
+                    //jsonData.Brand = columns.eq(1).find("option:selected").val();
+                    //jsonData.Sort = columns.eq(3).find("input[type='number']").val();
+                    //dataBrand.push(jsonData);
+                    dataBrand += columns.eq(1).find("option:selected").val() + ";";
+                }
+            }
+        });
+
+        if ($("#edit").val() && $("#VehicleID").val()) {
+            var jsonData = { "VehicleID": "", "Id": 0, "PackageBrands": "" };
+            jsonData.Id = $("#id").val();
+            jsonData.VehicleID = $("#VehicleID").val();
+            jsonData.PackageBrands = dataBrand;
+            jsonData.JiYouGrade = $("#jiyouGrade").val();
+            dataArray.push(jsonData);
+
+        } else {
+            $('#table1 >tbody> tr').each(function (i) {
+                if (i >= 0) {
+                    var columns = $(this).children();
+                    if (columns.eq(0).find("input[type=checkbox]").is(':checked')) {
+                        var jsonData = { "VehicleID": "", "Id": 0, "PackageBrands": "" };
+                        jsonData.Id = columns.eq(1).text();
+                        jsonData.VehicleID = columns.eq(2).text();
+                        jsonData.PackageBrands = dataBrand;
+                        jsonData.JiYouGrade = $("#jiyouGrade").val();
+                        dataArray.push(jsonData);
+                    }
+                }
+            });
+        }
+        var dataList = JSON.stringify(dataArray);
+        $.ajax({
+            type: "POST",
+            url: "/BaoYangPackageBrandPriorityConfig/Edit",
+            data: {
+                "dataList": dataList
+            },
+            dataType: "JSON",
+            success: function (result) {
+                if (result) {
+                    window.location.reload(true);
+                }
+            },
+            error: function (result) {
+
+            }
+        });
+    }
+
+    function DeleteTr(target) {
+
+        $(target).closest('tr').remove();
+    }
+    function CloneTr() {
+        var tr = $("#templateTable tr").clone();
+        tr.appendTo("#table2");
+    }
+
+</script>

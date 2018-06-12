@@ -1,0 +1,45 @@
+﻿@using Tuhu.WebSite.Component.Discovery.BusinessData;
+@model List<Comment>
+@{
+    var IsApp = Convert.ToBoolean(ViewData["IsApp"]);
+}
+@if (Model.Count > 0)
+{
+ <!-- APP页面用的评论 -->
+    <div class="comment @(IsApp?"APPcomment":"")">
+        <div class="commentTitle">
+            <h6 class="pinglun">
+                <a href="javascript:;">评论</a>
+            </h6>
+        </div>
+        <div class="commentList">
+            @foreach (var comment in Model)
+            {
+                <div class="commentCon" code="@comment.UserId">
+                    <div class="user toUserCenter">
+                        <img src="@comment.HeadImage">
+                    </div>
+                    <div class="commentDet">
+                        <div class="commentTop">
+                            <p class="userName toUserCenter">
+                                @*@(comment.UserName.IsCellphone()?comment.UserName.Replace(comment.UserName.Substring(3,4),"****"):comment.UserName)*@
+                                @comment.NickName
+                            </p>
+                            @*<div class="dianzan">
+                                    <span class="zanNum">@(comment.Praise!=0&& comment.Praise !=null? comment.Praise.ToString():"")</span>
+                                    <i></i>
+                                </div>*@
+                        </div>
+                        <div class="commentDown">@comment.CommentContent</div>
+                    </div>
+                </div>
+            }
+        </div>
+        @if (IsApp)
+        {
+            <div class="allBtn">
+                <a href="javascript:;" id="openAllComment">查看全部评论&nbsp;&nbsp;<span></span></a>
+            </div>
+        }
+    </div>
+}

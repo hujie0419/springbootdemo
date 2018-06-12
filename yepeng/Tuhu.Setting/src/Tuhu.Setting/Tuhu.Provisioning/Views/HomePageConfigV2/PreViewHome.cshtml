@@ -1,0 +1,265 @@
+﻿@{
+    Layout = null;
+}
+
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.SE_HomePageModuleConfig>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>预览首页</title>
+    <link rel="stylesheet" href="~/Content/preView/css/index.css" type="text/css" />
+    <link rel="stylesheet" href="~/Content/preView/css/swiper.min.css" type="text/css" />
+</head>
+<body>
+    <div class="wrapper">
+        <div class="battery">
+            <div class="left">Sketch</div>
+            <div class="center">9:41 AM</div>
+            <div class="right">100%</div>
+        </div>
+        @foreach (var item in Model.Where(o => o.IsEnabled == true).OrderBy(o => o.PriorityLevel))
+        {
+            if (item.ModuleType == 8)
+            {
+        <!-- 通知栏 -->
+                <div class="logo" @(string.IsNullOrWhiteSpace(item.BgColor) == false ? "style=\"background-color:" + item.BgColor + "\"" : "")>
+                    <div class="left">上海市</div>
+                    <div class="center">
+                        <img src="~/Content/preView/img/logo.png" />
+                    </div>
+                    <div class="right"></div>
+                </div>
+            }
+
+            if (item.ModuleType == 10)
+            {
+        <!-- 车型库 -->
+                <div class="carmodel" @(string.IsNullOrWhiteSpace(item.BgColor) == false ? "style=\"background-color:" + item.BgColor + "\"" : "")>
+                    <span class="left">迈锐宝 2.0T 2014年产</span>
+                    <span class="right">当前里程 20000km</span>
+                </div>
+            }
+
+            if (item.ModuleType == 6)
+            {
+               <!--保养提醒 -->
+                <div class="byTip">
+                    <img src="@item.BgImageUrl" />
+                </div>
+            }
+
+            if (item.ModuleType == 1)
+            {
+
+                var manager = new Tuhu.Provisioning.Business.SE_HomePageConfigManager();
+                var model = manager.GetHomePageContentList(item.ID, null);
+                var contentList = model != null ? model.OrderBy(o => o.PriorityLevel).ToArray() : null;
+                if (contentList != null)
+                {
+                    <!-- 主业务 -->
+                    <div class="entry">
+                        @for (int i = 0; i < contentList.Count() && i < 4; i++)
+                        {
+                            <a>
+                                <img src="@(contentList[i].ButtonImageUrl)">
+                                <p class="strong">@(contentList[i].Title)</p>
+                                <p class="icon">@(contentList[i].BannerImageUrl)</p>
+                            </a>
+                        }
+                    </div>
+                    <div class="swiperItem">
+                        <div class="swiper-container" id="service">
+                            <div class="swiper-wrapper">
+                                @if (contentList.Count() > 4)
+                                {
+                                    for (int i = 4; i < contentList.Count(); i++)
+                                    {
+                                        <div class="swiper-slide"><img src="@(contentList[i].ButtonImageUrl)" />@contentList[i].Title</div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+
+            if (item.ModuleType == 5)
+            {
+              <!--汽车头条-->
+                <div class="hotnews">
+                    <img src="@item.BgImageUrl" />
+                </div>
+            }
+
+            if (item.ModuleType == 4)
+            {
+        <!-- 新人专区 -->
+                <div class="advertise">
+                    @{
+                        Tuhu.Provisioning.Business.SE_HomePageConfigManager manager = new Tuhu.Provisioning.Business.SE_HomePageConfigManager();
+                        var entity = manager.GetHomePageContentList(item.ID, null).FirstOrDefault();
+                        if (entity != null)
+                        {
+                            <img src="@(entity.BannerImageUrl)" />
+                        }
+                    }
+                   
+                </div>
+                        }
+
+                        if (item.ModuleType == 2)
+                        {
+        <!-- Banner 一美人 -->
+                            <div class="banner">
+                                <div class="swiper-container" id="banner">
+                                    <div class="swiper-wrapper">
+                                        @{
+                                            Tuhu.Provisioning.Business.SE_HomePageConfigManager manager = new Tuhu.Provisioning.Business.SE_HomePageConfigManager();
+                                            var list = manager.GetHomePageContentList(item.ID, null);
+                                            if (list != null)
+                                            {
+                                                foreach (var it in list)
+                                                {
+                                                    <div class="swiper-slide">
+                                                        <img src="@it.BannerImageUrl" />
+                                                    </div>
+                                                }
+                                            }
+                                        }
+                                    </div>
+                                    <div class="swiper-pagination"></div>
+                                </div>
+                            </div>
+
+                                            }
+
+                                            if (item.ModuleType == 3)
+                                            {
+        <!--天天秒杀-->
+                                                <div class="flash">
+                                                    <div class="title">
+                                                        <div class="left">天天秒杀</div>
+                                                        <div class="right">
+                                                            <img src="~/Content/preView/img/time.png" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="content">
+                                                        <img src="~/Content/preView/img/flash.png" />
+                                                    </div>
+                                                </div>
+                                            }
+
+                                            if (item.ModuleType == 7)
+                                            {
+                                                <div class="recom">
+                                                    <div class="content">
+                                                        <img src="@item.BgImageUrl" width="100%" height="100%" />
+                                                    </div>
+                                                </div>
+                                                }
+
+                                            }
+
+
+
+
+        @{
+            try
+            {
+                var manger = new Tuhu.Provisioning.Business.SE_HomePageConfigManager();
+                var menu = manger.GetHomePageMenuListList().Where(o => o.StartDateTime <= DateTime.Now && o.EndDateTime > DateTime.Now).FirstOrDefault();
+                if (menu != null)
+                {
+                    var menuContent = manger.GetHomePageMenuList(menu.ID);
+                    if (menuContent != null)
+                    {
+                        <div class="footbar">
+                            @foreach (var m in menuContent.OrderBy(o => o.PriorityLevel))
+                            {
+                                <a class="home">
+                                    <img src="@m.ShowImageUrl" />
+                                    @m.MenuName
+                                </a>
+                            }
+                        </div>
+                    }
+                }
+            }
+            catch (Exception em)
+            {
+
+            }
+        }
+        <!-- 底部 -->
+        @*<div class="footbar">
+                <a class="home">
+                    <img src="~/Content/preView/img/home.png" />
+                    首页
+                </a>
+                <a class="md">
+                    <img src="~/Content/preView/img/md.png" />
+                    门店
+                </a>
+                <a class="find">
+                    <img src="~/Content/preView/img/faxian.png" />
+                    发现
+                </a>
+                <a class="answer">
+                    <img src="~/Content/preView/img/wenda.png" />
+                    问答
+                </a>
+                <a class="my">
+                    <img src="~/Content/preView/img/home.png" />
+                    我的
+                </a>
+            </div>*@
+
+    </div>
+</body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
+<script type="text/javascript" src="~/Content/preView/js/zepto.js"></script>
+<script src="~/Content/preView/js/swiper.min.js" type="text/javascript"></script>
+<script>
+    var bannerSwiper = new Swiper("#banner", {
+        loop: true,
+        pagination: '.swiper-pagination'
+    })
+
+    var serviceSwiper = new Swiper("#service", {
+        slidesPerView: 6
+    })
+</script>

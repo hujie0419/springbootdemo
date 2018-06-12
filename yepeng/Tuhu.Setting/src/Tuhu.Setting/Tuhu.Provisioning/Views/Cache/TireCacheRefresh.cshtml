@@ -1,0 +1,18 @@
+﻿@{
+    ViewBag.Title = "刷新缓存";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>刷新缓存</h2>
+<table style="width:100%;">
+    <tr>
+        <th>类目</th>
+        <th>功能</th>
+        <th>操作</th>
+    </tr>
+    <tr>
+        <td>轮胎</td>
+        <td>轮胎列表页缺货状态</td>
+        <td><a href="#" onclick="$.post('/Cache/RefreshProductStock', function (result) { if (result) { alert('刷新成功！'); } else { alert('刷新失败！');}})">刷新</a></td>
+    </tr>
+</table>

@@ -1,0 +1,33 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutBootrap.cshtml";
+}
+
+<div id="nav-col" style="width:180px;">
+    <section id="col-left" >
+        <div id="col-left-inner" >
+            <div class="collapse navbar-collapse" id="sidebar-nav">
+                <ul class="nav nav-pills nav-stacked"></ul>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="content-wrapper" style="margin-left:180px;">
+    <div class="content-tabs">
+        <button class="roll-nav roll-left tabLeft">
+            <i class="fa fa-backward"></i>
+        </button>
+        <nav class="page-tabs menuTabs">
+            <div class="page-tabs-content">
+                <a href="javascript:;" class="active menuTab" data-id="/ProductFaqManage/List">已配置商品列表</a>
+            </div>
+        </nav>
+    </div>
+    <div class="content-iframe" style="background-color: #f9f9f9; overflow: hidden;">
+        <div class="mainContent" id="content-main" style="margin-bottom: 0px; padding: 0;">
+            <iframe class="NFine_iframe" id="iframe4794C57D-5F82-4CB5-9A9C-4F3F42B02E96" name="iframe4794C57D-5F82-4CB5-9A9C-4F3F42B02E96" width="100%" height="100%" src="/ProductFaqManage/List" frameborder="0" data-id="/ProductFaqManage/List" seamless=""></iframe>
+        </div>
+    </div>
+</div>

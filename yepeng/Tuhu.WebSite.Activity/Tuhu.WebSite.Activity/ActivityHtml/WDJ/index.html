@@ -1,0 +1,158 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>联名养车</title>
+    <link rel="stylesheet" href="css/lmyc.css" />
+    <script src="http://resource.tuhu.cn/Scripts/jquery-2.1.0.js"></script>
+    <script src="http://resource.tuhu.cn/Js/WebViewJavascriptBridge.js"></script>
+</head>
+<body>
+	<img src="img/lmyc.png" alt="" class="bg"/>
+    <div id="lqBtn" class="lqBtn btn" style="display:none;"></div>
+    <div id="yhqBtn" class="yhqBtn btn" style="display:none;"></div>
+	<ul>
+		<li>1、一个手机号一台设备只能领取一次</li>
+		<li>2、领取成功后至<a href="#">【我的优惠券】</a>查看，购买相关产品时即可直接抵用</li>
+		<li>3、优惠券使用期：至9.30</li>
+	</ul>
+</body>
+</html>
+<script type="text/javascript">
+    var userAgentInfo = navigator.userAgent;
+
+    function connectWebViewJavascriptBridge(callback) {
+        if (window.WebViewJavascriptBridge) {
+            callback(WebViewJavascriptBridge)
+        } else {
+            document.addEventListener(
+                'WebViewJavascriptBridgeReady'
+                , function () {
+                    callback(WebViewJavascriptBridge)
+                },
+                false
+            );
+        }
+    }
+
+    connectWebViewJavascriptBridge(function (bridge) {
+        bridge.init(function (message, responseCallback) {
+            var data = {
+                'Javascript Responds': 'Wee!'
+            };
+            responseCallback(data);
+        });
+        bridge.registerHandler("functionInJs", function (data, responseCallback) {
+            var responseData = "Javascript Says Right back aka!";
+            responseCallback(responseData);
+        });
+    });
+
+    function MyCoupon() {
+        var Parameters = { "FunctionID": "cn.TuHu.Activity.MyPersonCenter.MyCenterOtherUI", "key": "1" };
+        window.WebViewJavascriptBridge.callHandler('toActityBridge',
+            encodeURIComponent(encodeURIComponent(JSON.stringify(Parameters))));
+    };
+
+    //领取优惠券
+    function GetCoupon() {
+        if (userAgentInfo.indexOf("Android") >= 0)
+        {
+            window.WebViewJavascriptBridge.callHandler(
+                'actityBridge'
+                , { 'param': "" }
+                , function (responseData) {
+                    if (responseData != null) {
+                        var da = JSON.parse(responseData);
+                        var UserId = da.userid;
+                        var Phone = da.phone;
+                        var Uuid = da.uuid;
+                        if (da != null && UserId.length > 0 && Uuid.length > 0 && Phone.length > 0) {
+                            $.ajax({
+                                type: "get",
+                                url: 'http://faxian.tuhu.cn/WDJ/GetCoupon?phone=' + Phone + "&userid=" + UserId + "&deviceid=" + Uuid,
+                                async: false,
+                                success: function (data) {
+                                    var resultData = eval('(' + data + ')');
+                                    if (resultData.OldUser == 1 && resultData.Code == 0) {
+                                        //老用户
+                                        $("#yhqBtn").css("display", "");
+                                        $("#lqBtn").css("display", "none");
+                                    }
+                                    else if (resultData.OldUser == 0 && resultData.Code == 1) {
+                                        //新用户
+                                        $("#yhqBtn").css("display", "");
+                                        $("#lqBtn").css("display", "none");
+                                        alert("优惠券领取成功!");
+                                    }
+                                    else if (resultData.OldUser == 0 && resultData.Code == -1) {
+                                        alert("获取登陆信息异常!");
+                                    }
+                                    else {
+                                        alert("优惠券领取失败!");
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+        }
+    };
+
+    //检测是否领取过优惠券
+    function CheckCouponUser(responseData) {
+        if (userAgentInfo.indexOf("Android") >= 0) {
+            var da = JSON.parse(responseData);
+            var UserId = da.userid;
+            var Phone = da.phone;
+            var Uuid = da.uuid;
+            if (UserId.length > 0) {
+                $.ajax({
+                    type: "get",
+                    url: 'http://faxian.tuhu.cn/WDJ/CheckCouponUser?phone=' + Phone + "&userid=" + UserId + "&deviceid=" + Uuid,
+                    async: false,
+                    success: function (data) {
+                        var resultData = eval('(' + data + ')');
+                        if (resultData.OldUser == 1 && resultData.Code == 0) {
+                            //老用户
+                            $("#yhqBtn").css("display", "");
+                            $("#lqBtn").css("display", "none");
+                        }
+                        else if (resultData.OldUser == 0 && resultData.Code == 0) {
+                            $("#yhqBtn").css("display", "none");
+                            $("#lqBtn").css("display", "");
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    //登陆
+    function Login() {
+        if (userAgentInfo.indexOf("Android") >= 0) {
+            window.WebViewJavascriptBridge.callHandler(
+                'actityBridge'
+                , { 'param': "" }
+                , function (responseData) {
+                    if (responseData != null) {
+                        CheckCouponUser(responseData);
+                    }
+                });
+        }
+    };
+
+    $(function () {
+        Login();
+
+        $("body").on("touchend", "#lqBtn", function () {
+            GetCoupon();
+        });
+            
+        $("body").on("touchend", "#yhqBtn", function () {
+            MyCoupon();
+        });
+    })
+
+</script>

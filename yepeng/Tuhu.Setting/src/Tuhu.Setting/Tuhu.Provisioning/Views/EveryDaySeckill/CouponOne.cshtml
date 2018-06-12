@@ -1,0 +1,43 @@
+﻿@{
+    ViewBag.Title = "CouponOne";
+    Layout = null;
+}
+
+<table class="table tab-content">
+    <thead>
+        <tr>
+            <th>排 序</th>
+            <th>样 式</th>
+            <th>优惠券GUID</th>
+            <th>优惠券名称&描述</th>
+            <th>领券用户属性</th>
+            <th>背景图片</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                <input type="number" id="OrderBy" name="OrderBy" value="1" />
+            </td>
+            <td>
+                <span>通知栏</span>
+                <input type="hidden" id="Style" name="Style" value="1" />
+            </td>
+            <td>
+                <input type="text" id="CouponGuid"  onchange="GetCoupon(this)" name="CouponGuid" style="width:260px;" />
+            </td>
+            <td>
+                <textarea id="Description" name="Description"></textarea>
+            </td>
+            <td>
+                <span></span>
+                <input type="hidden" id="UserType" name="UserType" />
+            </td>
+            <td>
+                <img id="imgac" width="30" height="30"/>
+                <input type="file" id="acFile1" name="acFile1" onchange="UploadBgImg(this, 'imgac', 'BgUrl')" />
+                <input type="hidden" id="BgUrl" name="BgUrl" />
+            </td>
+        </tr>
+    </tbody>
+</table>

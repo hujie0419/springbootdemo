@@ -1,0 +1,391 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@model WheelAdapterConfigWithTid
+@{
+    Layout = null;
+    var query = ViewBag.query as WheelAdapterConfigQuery;
+}
+@Html.Hidden("issave", 0)
+<form id="FrmWheelAdapterConfig" action="" method="post">
+    @Html.HiddenFor(m => m.PKId, new { id = "PKId1", @name = "PKId" })
+    @Html.HiddenFor(m => m.TID, new { id = "TID", @name = "TID" })
+    <table id="TabShareSConfig" style="font-size:12px;width:100%;" border="0">
+        <tr>
+            <td style="width:100px;">PCD：</td>
+            <td>
+                @Html.TextBoxFor(m => m.PCD, new { id = "PCD", @name = "PCDCriterion", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>ET：</td>
+            <td>
+                @Html.TextBoxFor(m => m.ET, new { id = "ET", @name = "ETCriterion", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>最小ET：</td>
+            <td>
+                @Html.TextBoxFor(m => m.MinET, new { id = "MinET", @name = "MinETCriterion", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>最大ET：</td>
+            <td>
+                @Html.TextBoxFor(m => m.MaxET, new { id = "MaxET", @name = "MaxETCriterion", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>CB：</td>
+            <td>
+                @Html.TextBoxFor(m => m.CB, new { id = "CB", @name = "CBCriterion", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>BoltNutSpec：</td>
+            <td>
+                @Html.TextBoxFor(m => m.BoltNutSpec, new { id = "BoltNutSpec", @name = "BoltNutSpecCriterion", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>BoltNut：</td>
+            <td>
+                @Html.TextBoxFor(m => m.BoltNut, new { id = "BoltNut", @name = "BoltNutCriterion", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>最小轮毂尺寸：</td>
+            <td>
+                @Html.TextBoxFor(m => m.MinWheelSize, new { id = "MinWheelSize", @name = "MinWheelSizeCriterion", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>最大轮毂尺寸：</td>
+            <td>
+                @Html.TextBoxFor(m => m.MaxWheelSize, new { id = "MaxWheelSize", @name = "MaxWheelSizeCriterion", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>最小轮毂宽度：</td>
+            <td>
+                @Html.TextBoxFor(m => m.MinWheelWidth, new { id = "MinWheelWidth", @name = "MinWheelWidthCriterion", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>最大轮毂宽度：</td>
+            <td>
+                @Html.TextBoxFor(m => m.MaxWheelWidth, new { id = "MaxWheelWidth", @name = "MaxWheelWidthCriterion", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+    </table>
+</form>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var pkid = $("#PKId1").val();
+        if (pkid == "0") {
+            $("#PCD").val("");
+            $("#ET").val("");
+            $("#MinET").val("");
+            $("#MaxET").val("");
+            $("#CB").val("");
+            $("#BoltNutSpec").val("");
+            $("#BoltNut").val("");
+            $("#MinWheelSize").val("");
+            $("#MaxWheelSize").val("");
+            $("#MinWheelWidth").val("");
+            $("#MaxWheelWidth").val("");
+        }
+    });
+    function BatchSaveWheelAdapterConfig(target) {
+        var issave = $("#issave").val();
+        if (issave == "1") {
+            alert("上次保存未完成..");
+        }
+        var tids = [];
+        $('input[name="BatchEditItems"]:checked').each(function () {
+            tids.push(this.value);
+        });
+        console.log(tids);
+        if (tids.length > 100) {
+            alert("最多保存100个");
+            return;
+        }
+        if (!tids.length) {
+            alert("未选择数据");
+            return;
+        }
+
+        var PCD = $("#PCD").val();
+        //if (PCD == "") {
+        //    alert("PCD不能为空！");
+        //    return;
+        //}
+
+        var ET = $("#ET").val();
+        if (ET != "") {
+            if (!CheckNumber(ET)) {
+                alert("ET只能为数字！");
+                return;
+            }
+        }
+
+        var MinET = $("#MinET").val();
+        if (MinET != "") {
+            if (!CheckNumber(MinET)) {
+                alert("最小ET只能为数字！");
+                return;
+            }
+        }
+
+        var MaxET = $("#MaxET").val();
+        if (MaxET != "") {
+            if (!CheckNumber(MaxET)) {
+                alert("最大ET只能为数字！");
+                return;
+            }
+        }
+
+        var CB = $("#CB").val();
+        if (CB != "") {
+            if (!CheckNumber(CB)) {
+                alert("CB只能为数字！");
+                return;
+            }
+        }
+
+        var BoltNutSpec = $("#BoltNutSpec").val();
+
+        var BoltNut = $("#BoltNut").val();
+        if (BoltNut != "") {
+            if (BoltNut != "B" && BoltNut != "N") {
+                alert("BoltNut只能为B或N(B为螺栓,N为螺母)！");
+                return;
+            }
+        }
+
+        var MinWheelSize = $("#MinWheelSize").val();
+        if (MinWheelSize != "") {
+            if (!CheckNumber(MinWheelSize)) {
+                alert("最小轮毂尺寸只能为数字！");
+                return;
+            }
+        }
+
+        var MaxWheelSize = $("#MaxWheelSize").val();
+        if (MaxWheelSize != "") {
+            if (!CheckNumber(MaxWheelSize)) {
+                alert("最大轮毂尺寸只能为数字！");
+                return;
+            }
+        }
+
+        var MinWheelWidth = $("#MinWheelWidth").val();
+        if (MinWheelWidth != "") {
+            if (!CheckNumber(MinWheelWidth)) {
+                alert("最小轮毂宽度只能为数字！");
+                return;
+            }
+        }
+
+        var MaxWheelWidth = $("#MaxWheelWidth").val();
+        if (MaxWheelWidth != "") {
+            if (!CheckNumber(MaxWheelWidth)) {
+                alert("最大轮毂宽度只能为数字！");
+                return;
+            }
+        }
+
+        var wac = {
+            PKId: "",
+            TID: "",
+            PCD: PCD,
+            ET: ET,
+            MinET: MinET,
+            MaxET: MaxET,
+            CB: CB,
+            BoltNutSpec: BoltNutSpec,
+            BoltNut: BoltNut,
+            MinWheelSize: MinWheelSize,
+            MaxWheelSize: MaxWheelSize,
+            MinWheelWidth: MinWheelWidth,
+            MaxWheelWidth: MaxWheelWidth,
+        };
+        console.log(wac);
+        $.post("/WheelAdapterConfig/BatchSaveWheelAdapterConfig",
+            {
+                wac,
+                tids
+            },
+            function (result) {
+                $("#issave").val(0);
+                console.log(result);
+                if (result == true) {
+                    alert('保存成功！');
+                    $(target).dialog("close");
+                    CheckToSubmit(GetPageIndex());
+                }
+                else {
+                    alert('保存失败！');
+                }
+            });
+        //$.ajax({
+        //    url: "/WheelAdapterConfig/BatchSaveWheelAdapterConfig",
+        //    type: "POST",
+        //    data: {
+        //        wac: wac,
+        //        tids: tids
+        //    },
+        //    dataType: "json",
+        //    async: false,
+        //    success: function (data) {
+        //        if (data == true) {
+        //            alert('保存成功！');
+        //            $(target).dialog("close");
+        //            CheckToSubmit(GetPageIndex());
+        //        }
+        //        else {
+        //            alert('保存失败！');
+        //        }
+        //    },
+        //    error: function () {
+        //        alert('提交失败！');
+        //    },
+        //})
+    }
+    function SaveWheelAdapterConfig(target) {
+        var PKId1 = $("#PKId1").val();
+        var TID = $("#TID").val();
+        var PCD = $("#PCD").val();
+        if (PCD == "") {
+            alert("PCD不能为空！");
+            return;
+        }
+        var ET = $("#ET").val();
+        if (ET == "") {
+            alert("ET不能为空！");
+            return;
+        }
+        if (!CheckNumber(ET)) {
+            alert("ET只能为数字！");
+            return;
+        }
+        var MinET = $("#MinET").val();
+        if (MinET == "") {
+            alert("最小ET不能为空！");
+            return;
+        }
+        if (!CheckNumber(MinET)) {
+            alert("最小ET只能为数字！");
+            return;
+        }
+        var MaxET = $("#MaxET").val();
+        if (MaxET == "") {
+            alert("最大ET不能为空！");
+            return;
+        }
+        if (!CheckNumber(MaxET)) {
+            alert("最大ET只能为数字！");
+            return;
+        }
+        var CB = $("#CB").val();
+        if (CB == "") {
+            alert("CB不能为空！");
+            return;
+        }
+        if (!CheckNumber(CB)) {
+            alert("CB只能为数字！");
+            return;
+        }
+        var BoltNutSpec = $("#BoltNutSpec").val();
+        if (BoltNutSpec == "") {
+            alert("BoltNutSpec不能为空！");
+            return;
+        }
+        var BoltNut = $("#BoltNut").val();
+        if (BoltNut == "") {
+            alert("BoltNut不能为空！");
+            return;
+        }
+        if (BoltNut != "B" && BoltNut != "N") {
+            alert("BoltNut只能为B或N(B为螺栓,N为螺母)！");
+            return;
+        }
+        var MinWheelSize = $("#MinWheelSize").val();
+        if (MinWheelSize == "") {
+            alert("最小轮毂尺寸不能为空！");
+            return;
+        }
+        if (!CheckNumber(MinWheelSize)) {
+            alert("最小轮毂尺寸只能为数字！");
+            return;
+        }
+        var MaxWheelSize = $("#MaxWheelSize").val();
+        if (MaxWheelSize == "") {
+            alert("最大轮毂尺寸不能为空！");
+            return;
+        }
+        if (!CheckNumber(MaxWheelSize)) {
+            alert("最大轮毂尺寸只能为数字！");
+            return;
+        }
+        var MinWheelWidth = $("#MinWheelWidth").val();
+        if (MinWheelWidth == "") {
+            alert("最小轮毂宽度不能为空！");
+            return;
+        }
+        if (!CheckNumber(MinWheelWidth)) {
+            alert("最小轮毂宽度只能为数字！");
+            return;
+        }
+        var MaxWheelWidth = $("#MaxWheelWidth").val();
+        if (MaxWheelWidth == "") {
+            alert("最大轮毂宽度不能为空！");
+            return;
+        }
+        if (!CheckNumber(MaxWheelWidth)) {
+            alert("最大轮毂宽度只能为数字！");
+            return;
+        }
+        $.ajax({
+            url: "/WheelAdapterConfig/SaveWheelAdapterConfig",
+            type: "POST",
+            data: {
+                PKId: PKId1,
+                TID: TID,
+                PCD: PCD,
+                ET: ET,
+                MinET: MinET,
+                MaxET: MaxET,
+                CB: CB,
+                BoltNutSpec: BoltNutSpec,
+                BoltNut: BoltNut,
+                MinWheelSize: MinWheelSize,
+                MaxWheelSize: MaxWheelSize,
+                MinWheelWidth: MinWheelWidth,
+                MaxWheelWidth: MaxWheelWidth,
+            },
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                if (data == true) {
+                    alert('保存成功！');
+                    $(target).dialog("close");
+                    CheckToSubmit(GetPageIndex());
+                }
+                else {
+                    alert('保存失败！');
+                }
+            },
+            error: function () {
+                alert('提交失败！');
+            },
+        })
+    }
+    //判断字符串是否为数字
+    function CheckNumber(input) {
+        var re = /^-?[0-9]+.?[0-9]*$/;
+        if (!re.test(input)) {
+            return false;
+        }
+        return true;
+    }
+</script>

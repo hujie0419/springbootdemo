@@ -1,0 +1,262 @@
+﻿@{
+    ViewBag.Title = "花纹配置列表页";
+}
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.SE_DecorativePattern>
+<table width="100%">
+    <thead>
+        <tr>
+            <td colspan="6" style="height:20px;">
+                <select id="selType">
+                    <option value="0">名称</option>
+                    <option value="1">品牌</option>
+                    <option value="2">花纹标示</option>
+                </select>
+                <input type="text" id="txtSel" name="txtSel"  style="width:200px;margin-left:5px;margin-right:5px;"/>
+                <input type="button" id="btnSel" name="btnSel" value="查询" style="width:120px;"/>
+                <input type="button" value="新 增" id="btnAdd" style="position:absolute;right:20px;top:5px;width:100px;" />
+            </td>
+        </tr>
+        <tr>
+            <th width="25%">ID</th>
+            <th width="10%">名 称</th>
+            <th width="10%">品 牌</th>
+            <th width="10%">花 纹</th>
+            <th width="15%">Url</th>
+            <th width="10%">分享参数</th>
+            <th width="20%">管 理</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.ID.ToString()</td>
+                <td>@item.Name</td>
+                <td>@item.Brand</td>
+                <td>@item.Flower</td>
+                <td>
+                    <a href="@System.Configuration.ConfigurationManager.AppSettings["WeiXinDomain"]/Shops/PatternDetail?patternid=@item.ID">@System.Configuration.ConfigurationManager.AppSettings["WeiXinDomain"]/Shops/PatternDetail?patternid=@item.ID</a>
+                </td>
+                <td>@item.ShareParameter</td>
+                <td>
+                    <input type="button" value="编 辑" style="width:120px; margin-left:10px;" onclick="Edit(this,'@item.ID')" />
+                    <input type="button" value="删除" style="width:120px; margin-left:10px;" onclick="Delete(this,'@item.ID')" />
+                </td>
+            </tr>
+        }
+       
+    </tbody>
+</table>
+<div id="edit"></div>
+@section scripts{
+    <script src="/Scripts/ajaxfileupload.js" type="text/javascript"></script>
+    <script src="~/Scripts/jquery.validate-1.8.1.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $('#btnAdd').on('click', function () {
+            $('#edit').empty();
+            $('#edit').load("/DecorativePattern/Edit");
+            $('#edit').dialog({
+                title: "编辑花纹",
+                width: 600,
+                height: 900,
+                modal: true,
+                resizable: false,
+                buttons: {
+
+                    "保 存": function () {
+                        var data = GetData();
+                        if (data) {
+
+                            $.ajax({
+                                url: '/DecorativePattern/Save',
+                                type:'post',
+                                data: { content:JSON.stringify(data)}
+                            }).done(function (result) {
+                                if (result == 1) {
+                                    alert("保存成功");
+                                    $('#edit').dialog("close");
+                                    location.reload();
+                                } else {
+                                    alert("保存失败");
+                                }
+                            }).fail(function () {
+                                alert("保存失败");
+                            });
+                        }
+                    },
+                    "取 消": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+
+        });
+
+        function Edit(obj,id) {
+            $('#edit').empty();
+            $('#edit').load("/DecorativePattern/Edit?id="+id);
+            $('#edit').dialog({
+                title: "编辑花纹",
+                width: 600,
+                height: 900,
+                modal: true,
+                resizable: false,
+                buttons: {
+
+                    "保 存": function () {
+                        var data = GetData();
+                        if (data) {
+                            data.ID = id;
+                            $.ajax({
+                                url: '/DecorativePattern/Save',
+                                type: 'post',
+                                data: { content: JSON.stringify(data) }
+                            }).done(function (result) {
+                                if (result == 1) {
+                                    alert("保存成功");
+                                    $('#edit').dialog("close");
+                                    location.reload();
+                                } else {
+                                    alert("保存失败");
+                                }
+                            }).fail(function () {
+                                alert("保存失败");
+                            });
+                        }
+                    },
+                    "取 消": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        }
+
+        function Delete(obj, id) {
+            var r = confirm("您确定删除吗?");
+            if (r) {
+                $.ajax({
+                    url: '/DecorativePattern/Delete',
+                    type: 'post',
+                    data: { id: id }
+                }).done(function (result) {
+                    if (result == 1) {
+                        alert("删除成功");
+                        location.reload();
+                    } else {
+                        alert("删除失败");
+                    }
+                }).fail(function () {
+                    alert("删除失败");
+                });
+            }
+        }
+
+
+        function ArticleValidate(obj, formName) {
+
+            var value = $(obj).val();
+
+            if (value == '' || value == null) { return; }
+
+            $.ajax({
+                type: 'post',
+                url: '/BrandFlagship/SelectActricle?id=' + value,
+                dataType: 'json'
+            }).done(function (result) {
+
+                result = JSON.parse(result);
+                if (result.length > 0) {
+                    $('#ArticleTitle', '#' + formName).val(result[0].BigTitle);
+                } else {
+                    alert("文章不存在");
+                    $(obj).val('');
+                }
+            }).fail(function () {
+
+            });
+        }
+
+
+        function Upload(obj, showImg, hidImg) {
+
+            var pobj = $(obj);
+            var rd = Math.ceil(Math.random() * 9999) + 1;
+            var fileElId = $(obj).attr("id");
+            console.log(fileElId);
+            $.ajaxFileUpload({
+                url: '/Article/ImageUploadToAli?rd=' + rd,
+                secureuri: false,
+                fileElementId: fileElId,
+                dataType: 'json',
+                async: false,
+                success: function (result) {
+                    if (result.BImage != "" && result.SImage != "") {
+                        $("#" + showImg).attr("src", result.SImage).show();
+                        $('#' + hidImg).val(result.BImage);
+                    } else {
+                        alert("上传失败！");
+                    }
+                },
+                error: function (data, status, e)//服务器响应失败处理函数
+                {
+                    alert(e);
+                }
+            });
+        }
+
+
+        function BindBrand(sel) {
+
+            $.ajax({
+                url: '/Home/GetBrandName',
+                type: 'post',
+                dataType: 'json'
+            }).done(function (result) {
+                $('#Brand').append('<option value=""></option>');
+                for (var i = 0; i < result.TiresBrand.length; i++) {
+                    var item = result.TiresBrand[i];
+                    if (item != sel)
+                        $('#Brand').append(' <option value="' + item + '">' + item + '</option>');
+                    else
+                        $('#Brand').append(' <option value="' + item + '"  selected="selected" >' + item + '</option>');
+                }
+            });
+        }
+
+
+        function BindTriePatten(sel, flower)
+        {
+      
+            if (!sel) {
+                return false;
+            }
+        
+            $.ajax({
+                url: '/DecorativePattern/GetTriePatten?tire=' + sel,
+                type: 'post',
+                dataType:'json'
+            }).done(function (result) {
+                result = JSON.parse(result);
+                $('#Flower').empty();
+                //  $('#Flower').append('<option value=0>请选择-花纹</option>');
+                result.forEach(function (e) {
+                    if (e.CP_Tire_Pattern != flower)
+                        $('#Flower').append('<option value="' + e.CP_Tire_Pattern + '">' + e.CP_Tire_Pattern + '</option>');
+                    else
+                        $('#Flower').append('<option value="' + e.CP_Tire_Pattern + '" selected="selected" >' + e.CP_Tire_Pattern + '</option>');
+                });
+            }).fail(function () {
+
+            });
+
+           
+        }
+
+
+        $('#btnSel').on('click', function () {
+            var type = $('#selType').val();
+            var value = $('#txtSel').val();
+            location.href = "/DecorativePattern/Index?type="+type+"&selName="+value;
+        });;
+    </script>
+    }

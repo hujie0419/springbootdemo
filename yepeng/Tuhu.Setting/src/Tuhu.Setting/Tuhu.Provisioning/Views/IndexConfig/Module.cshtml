@@ -1,0 +1,417 @@
+﻿
+@{
+    ViewBag.Title = "配置入口页";
+    ViewBag.PageTitle = "配置入口页";
+    Layout = "../Shared/_LayoutIndexPage.cshtml";
+}
+@using IndexConfigManager = Tuhu.Provisioning.Business.Setting.IndexConfigManager;
+@using IndexModuleItem = Tuhu.Provisioning.DataAccess.Entity.IndexModuleItem;
+<style>
+    #sortbtn {
+        margin-top: 50px;
+        margin-bottom: 50px;
+        width: 100%;
+        text-align: center;
+    }
+
+    span.glyphicon-plus {
+        font-size: 30px;
+        position: absolute;
+        top: 10px;
+        left: auto;
+        right: auto;
+        width: 100%;
+        text-align: center;
+    }
+
+        span.glyphicon-plus:hover {
+            color: grey;
+        }
+
+    span.glyphicon-pencil {
+        position: absolute;
+        top: 15px;
+        right: 120px;
+    }
+
+        span.glyphicon-pencil:hover {
+            color: grey;
+        }
+
+    span.glyphicon-remove {
+        position: absolute;
+        top: 15px;
+        right: 80px;
+    }
+
+        span.glyphicon-remove:hover {
+            color: grey;
+        }
+
+
+    ol.item li {
+        display: inline-block;
+        list-style: none;
+        background-color: #5c87b2;
+        margin-top: 10px;
+        width: 100%;
+        height: 50px;
+        padding-left: 50px;
+        line-height: 50px;
+        font-size: 20px;
+        font-family: 黑体;
+        font-weight: bold;
+        color: #fff;
+    }
+
+        ol.item li div {
+            position: relative;
+        }
+
+    body.dragging, body.dragging * {
+        cursor: move !important;
+    }
+
+    .dragged {
+        position: absolute;
+        opacity: 0.5;
+        z-index: 2000;
+    }
+
+    ol.item li.placeholder {
+        position: relative;
+    }
+
+        ol.item li.placeholder:before {
+            position: absolute;
+            /** Define arrowhead **/
+        }
+</style>
+<ol class='item'>
+    @{
+        List<IndexModuleItem> itemList = IndexConfigManager.GetIndexItems(ViewBag.moduleId);
+        foreach (var item in itemList)
+        {
+            <li>
+                <div data-id="@item.PKID" data-moduleId="@item.ModuleId" data-entryName="@item.EntryName" data-controller="@item.Controller" data-action="@item.Action">
+                    @item.EntryName
+                    <span class="glyphicon glyphicon-pencil" onclick="loadUpdateModuleItem(this)" aria-hidden="true"></span>
+                    <span class="glyphicon glyphicon-remove" onclick="loadDeleteModuleItem(this)" aria-hidden="true"></span>
+                </div>
+            </li>
+        }
+        <li>
+            <div id="addModuleItemButton" data-moduleId="@ViewBag.moduleId">
+                <span onclick="loadAddModuleItem()" class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            </div>
+        </li>
+    }
+
+</ol>
+<div id="sortbtn">
+    <button class="btn btn-primary" onclick="drag(this)">调整模块顺序</button>
+</div>
+
+
+
+<!---添加模块模态框-->
+<div class="modal fade" id="addModuleItem" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">
+                    添加配置入口
+                </h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form" id="addModuleItemForm">
+                    <div class="form-group">
+                        <input id="addModuleId" type="number" name="moduleId" hidden />
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">模块名</label>
+                        <div class="col-sm-6">
+                            <input autofocus type="text" name="entryName" class="form-control" placeholder="模块名">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">控制器名</label>
+                        <div class="col-sm-6">
+                            <input type="text" name="controller" class="form-control" placeholder="控制器名">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">Action名</label>
+                        <div class="col-sm-6">
+                            <input type="text" name="action" class="form-control" placeholder="action名">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    取消
+                </button>
+                <button type="button" onclick="addModuleItem()" class="btn btn-primary">
+                    添加
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--更新模块-->
+<div class="modal fade" id="updateModuleItem" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">
+                    更新模块入口
+                </h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form" id="updateModuleItemForm">
+                    <input type="number" id="updateModuleItemId" name="itemId"  value="" hidden />
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">模块名</label>
+                        <div class="col-sm-6">
+                            <input autofocus type="text" id="updateEntryName" name="entryName" class="form-control" value="">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">控制器名</label>
+                        <div class="col-sm-6">
+                            <input autofocus type="text" id="updateController" name="controller" class="form-control" value="">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">action名</label>
+                        <div class="col-sm-6">
+                            <input autofocus type="text" id="updateAction" name="action" class="form-control" value="">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    取消
+                </button>
+                <button type="button" onclick="updateModuleItem()" class="btn btn-primary">
+                    添加
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--确定删除模态框-->
+<div class="modal fade" id="deleteModuleItem" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" style="text-align:center;width:100%;margin-bottom:30px">
+                    确定删除？
+                </h4>
+                <form id="deleteModuleItemForm">
+                    <input id="deleteModuleItemId" type="number" name="itemId" hidden />
+                </form>
+                <div style="width:100%;text-align:center;">
+                    <button type="button" class="btn btn-default" style="margin-right:50px" data-dismiss="modal">
+                        取消
+                    </button>
+                    <button type="button" onclick="deleteModuleItem()" class="btn btn-primary">
+                        删除
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    //加载添加
+    function loadAddModuleItem() {
+        $("#addModuleItem").modal("show");
+        var moduleId = $("#addModuleItemButton").attr("data-moduleId");
+        $("#addModuleId").attr("value", moduleId);
+    }
+    //添加
+    function addModuleItem() {
+        var o = document.getElementById("addModuleItemForm");
+        var data = getFormJson(o);
+        $.ajax({
+            url: "/IndexConfig/CreateModuleItem",
+            method: "POST",
+            data: data,
+            success: function (status) {
+                if (status > 0)
+                    setCache();
+                $("#addModuleItem").modal("hide");
+                location.reload(true);
+            }
+        })
+    }
+
+    //加载更新
+    function loadUpdateModuleItem(item) {
+        var itemId = $(item).parent().attr("data-id");
+        var entryName = $(item).parent().attr("data-entryName");
+        var controller = $(item).parent().attr("data-controller");
+        var action = $(item).parent().attr("data-action");
+
+
+        $("#updateModuleItem").modal("show");
+
+        $("#updateModuleItemId").attr("value", itemId);
+        $("#updateEntryName").attr("value", entryName);
+        $("#updateController").attr("value", controller);
+        $("#updateAction").attr("value", action);
+    }
+
+    //更新
+    function updateModuleItem() {
+        var o = document.getElementById("updateModuleItemForm");
+        var data = getFormJson(o);
+        $.ajax({
+            url: "/IndexConfig/UpdateModuleItemEntry",
+            method: "POST",
+            data: data,
+            success: function (status) {
+                if (status > 0)
+                    setCache();
+                $("#updateModuleItem").modal("hide");
+                location.reload(true);
+            }
+        })
+    }
+
+    //加载删除
+    function loadDeleteModuleItem(item) {
+        var itemId = $(item).parent().attr("data-id");
+        $("#deleteModuleItem").modal("show");
+        $("#deleteModuleItemId").attr("value", itemId);
+    }
+
+    //删除
+    function deleteModuleItem() {
+        var o = document.getElementById("deleteModuleItemForm");
+        var data = getFormJson(o);
+        console.log(data);
+        $.ajax({
+            url: "/IndexConfig/DeleteModuleItem",
+            method: "POST",
+            data: data,
+            success: function (status) {
+                if (status > 0)
+                    setCache();
+                $("#deleteModuleItem").modal("hide");
+                location.reload(true);
+            }
+        })
+    }
+
+    //更新顺序
+    function updateIndex() {
+        var itemIds = "";
+        var lis = $("ol").children();
+        lis.each(function (i, v) {
+            if ($(v).children().first().attr("data-id") != undefined)
+                itemIds += $(v).children().first().attr("data-id") + ",";
+        });
+        var data = {};
+        data["itemIds"] = itemIds;
+        $.ajax({
+            url: "/IndexConfig/UpdateModuleItemIndex",
+            method: "POST",
+            data: data,
+            success: function (status) {
+                if (status > 0)
+                    setCache();
+                location.reload(true);
+            }
+        })
+    }
+
+
+    //将form中的值转换为键值对。
+    function getFormJson(frm) {
+        var o = {};
+        var a = $(frm).serializeArray();
+        $.each(a, function () {
+            if (o[this.name] !== undefined) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    }
+
+    //重写缓存
+    function setCache() {
+        $.ajax({
+            url: "/IndexConfig/SetIndexModulesCache",
+            method: "POST",
+            success: function (result) {
+                if (result <= 0)
+                    alert("缓存更新失败");
+            }
+        });
+    }
+
+    function drag(e) {
+
+        if (e.innerHTML == "调整模块顺序") {
+            $("ol.item").sortable("enable");
+            e.innerHTML = "保存调整结果";
+        }
+        else {
+            $("ol.item").sortable("disable");
+            e.innerHTML = "调整模块顺序";
+            updateIndex();
+        }
+    }
+    $(function () {
+        var adjustment;
+
+        $("ol.item").sortable({
+            group: 'item',
+            pullPlaceholder: false,
+            // animation on drop
+            onDrop: function ($item, container, _super) {
+                var $clonedItem = $('<li/>').css({ height: 0 });
+                $item.before($clonedItem);
+                $clonedItem.animate({ 'height': $item.height() });
+
+                $item.animate($clonedItem.position(), function () {
+                    $clonedItem.detach();
+                    _super($item, container);
+                });
+            },
+
+            // set $item relative to cursor position
+            onDragStart: function ($item, container, _super) {
+                var offset = $item.offset(),
+                    pointer = container.rootGroup.pointer;
+
+                adjustment = {
+                    left: pointer.left - offset.left,
+                    top: pointer.top - offset.top
+                };
+
+                _super($item, container);
+            },
+            onDrag: function ($item, position) {
+                $item.css({
+                    left: position.left - adjustment.left,
+                    top: position.top - adjustment.top
+                });
+            }
+        });
+        $("ol.item").sortable("disable");
+    });
+</script>

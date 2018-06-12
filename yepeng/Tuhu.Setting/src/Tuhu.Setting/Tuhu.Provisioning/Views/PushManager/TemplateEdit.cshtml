@@ -1,0 +1,272 @@
+﻿@using Tuhu.Service.Push.Models.Push;
+@using Tuhu.Provisioning.Business.Push;
+@using Tuhu.Service.Push.Models.MessageBox
+@model List<PushTemplate>
+@{
+    ViewBag.Title = "模版编辑";
+    var plan = Model != null ? Model.FirstOrDefault() : null;
+    var iosdata = Model == null ? null : Model.FirstOrDefault(x => x.DeviceType == Tuhu.Service.Push.Models.Push.DeviceType.iOS);
+    var androiddata = Model == null ? null : Model.FirstOrDefault(x => x.DeviceType == Tuhu.Service.Push.Models.Push.DeviceType.Android);
+    var messagebox = Model == null ? null : Model.FirstOrDefault(x => x.DeviceType == Tuhu.Service.Push.Models.Push.DeviceType.MessageBox);
+
+    var dict = ViewData["dict"] as Dictionary<string, string>;
+    var navigationTypes = ViewData["NavigationTypes"] as IEnumerable<MessageNavigationType>;
+
+
+}
+@section head{
+    <link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+}
+@functions {
+
+    List<SelectListItem> GetTemplateEnable(PushTemplate template)
+    {
+        var enabletemplate = new List<SelectListItem>()
+{
+    new SelectListItem() { Text = "启用", Value = "1" },
+    new SelectListItem() { Text = "禁用", Value = "0", Selected = template != null && template.PushStatus == PushStatus.Suspend }
+};
+
+        return enabletemplate;
+    }
+}
+<div class="content">
+    <h3>
+        <a href="@Url.Action("index")">返回列表</a>
+    </h3>
+    <div class="container">
+
+        <div class="row">
+            <div class="col-md-6">
+
+                <table class="table" style="background: #ffffff; font-size: 12px; width: 100%; text-align: center" border="1">
+                    <tr>
+                        <th colspan="3">沟通计划</th>
+                    </tr>
+                    <tr>
+                        <td>计划ID</td>
+                        <td>计划名称</td>
+                        <td>状态</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            @if (plan != null)
+                            {
+                                <span>@plan.BatchID</span>
+
+                            }
+                            @Html.Hidden("BatchID", plan == null ? 0 : plan.BatchID)
+                        </td>
+                        <td>
+                            @if (plan != null)
+                            {
+                                <span>
+                                    @Html.TextBox("PlanName", plan.PlanName, new { @style = "width:100%" })
+                                </span>
+                            }
+                        </td>
+                        <td>
+                            @if (plan != null)
+                            {
+                                <span>@PushManagerNew.GetPushStatusName(plan.PushStatus)</span>
+                            }
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td colspan="3">沟通对象</td>
+                    </tr>
+                    <tr>
+                        <td>对象ID</td>
+                        <td colspan="2">对象描述</td>
+
+                    </tr>
+                    <tr>
+                        <td>
+                            广播
+                        </td>
+                        <td colspan="2">
+                            @if (plan != null)
+                            {
+                                <span>@plan.Description</span>
+                            }
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td colspan="3">iOS沟通内容</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">标题</td>
+                        <td>操作</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            @if (iosdata != null)
+                            {
+                                @iosdata.Title
+                            }
+                        </td>
+                        <td>
+                            @Html.DropDownList("iosenable", GetTemplateEnable(iosdata))
+                            @Html.Hidden("iosid", iosdata == null ? 0 : iosdata.PKID)
+                            @if (iosdata != null)
+                            {
+                                @*<span>编辑</span>*@
+                                <button onclick="addedit('ios')">编辑</button>
+                            }
+                            else
+                            {
+                                <button onclick="addedit('ios')">新增</button>
+                            }
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="3">Android沟通内容</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">标题</td>
+                        <td>操作</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            @if (androiddata != null)
+                            {
+                                @androiddata.Title
+                            }
+                        </td>
+                        <td>
+                            @Html.DropDownList("androidenable", GetTemplateEnable(androiddata))
+                            @Html.Hidden("androidid", androiddata == null ? 0 : androiddata.PKID)
+                            @if (androiddata != null)
+                            {
+                                @*<span>编辑</span>*@
+                                <button onclick="addedit('android')">编辑</button>
+                            }
+                            else
+                            {
+                                <button onclick="addedit('android')">新增</button>
+                            }
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td colspan="3">APP沟通内容</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">标题</td>
+                        <td>操作</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            @if (messagebox != null)
+                            {
+                                @messagebox.Title
+                            }
+                        </td>
+                        <td>
+                            @Html.Hidden("boxid", messagebox == null ? 0 : messagebox.PKID)
+                            @Html.DropDownList("boxenable", GetTemplateEnable(messagebox))
+                            @if (messagebox != null)
+                            {
+                                <button onclick="addedit('box')">编辑</button>
+                            }
+                            else
+                            {
+                                <button onclick="addedit('box')">新增</button>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="button" onclick="custom_close()" value="取消" />
+                        </td>
+                        <td>
+                            <input onclick="saveplan()" type="button" value="保存推送计划" />
+                        </td>
+                        <td>
+                            <input type="button" onclick="SetPlanReadyPush()" value="提交发送(进入消息推送队列)" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-5">
+                @Html.Partial("Share/_AndroidPlanForm", Model, new ViewDataDictionary() { { "dict", dict }, { "NavigationTypes", navigationTypes } })
+            </div>
+            <div class="col-md-5">
+                @Html.Partial("Share/_IOSPlanForm", Model, new ViewDataDictionary() { { "dict", dict }, { "NavigationTypes", navigationTypes } })
+            </div>
+            <div class="col-md-5">
+                @Html.Partial("Share/_MessageBoxForm", Model, new ViewDataDictionary() { { "dict", dict }, { "NavigationTypes", navigationTypes } })
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="diaglog" style="display: none;width: auto">
+
+    <div>
+        推送预览
+    </div>
+    <p>
+        预览手机号,逗号隔开
+    </p>
+    <p>
+        <input type="text" id="diaglogphpne" />
+    </p>
+
+</div>
+
+<div id="expirediaglog" style="display: none; width: auto;width:100%">
+
+    <table>
+        <tr>
+            <th>天</th>
+            <th>小时</th>
+            <th>分钟</th>
+        </tr>
+        <tr>
+            <td>
+                <input style="width:50px" type="number" id="txtday" />
+            </td>
+            <td>
+                <input style="width:50px" type="number" id="txthour" />
+            </td>
+            <td>
+                <input style="width:50px" type="number" id="txtmin" />
+            </td>
+        </tr>
+    </table>
+
+</div>
+
+<div id="buildintent" style="display: none; width: 500px">
+    <span id="intentresult"></span>
+    <br />
+    <div id="intentapp">
+        <span>AppActivity:</span>
+        <input type="text" id="BuildActivity" />
+        <input onclick="addintentextra()" type="button" value="添加键值对" />
+        <br />
+    </div>
+    <div class="intentkeyvalue" id="intentkeyvalue" style="display: none">
+        <span>Key:</span> <input class="intentkey" type="text" />
+        <span>Value:</span><input class="intentvalue" type="text" />
+        <input onclick="deleteintentextra(this)" type="button" value="删除" />
+    </div>
+
+</div>
+
+<script src="/Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<script type="text/javascript" src="/Scripts/TimeObjectUtil.js"></script>
+<link href="/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.css" rel="stylesheet" type="text/css" />
+<link href="/Scripts/ztree/css/zTreeStyle/zTreeStyle.css" rel="stylesheet" type="text/css" />
+<script src="/Scripts/jquery-ui-timepicker-addon/jquery-ui-sliderAccess.js" type="text/javascript"></script>
+<script src="/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.js" type="text/javascript"></script>
+<script src="/Scripts/zTree/js/jquery.ztree.core-3.5.min.js" type="text/javascript"></script>
+<script src="/Scripts/zTree/js/jquery.ztree.excheck-3.5.min.js" type="text/javascript"></script>
+<script src="https://res.tuhu.org/lib/vuejs/vue.min.js?v=20160704" type="text/javascript"></script>
+
+<script src="~/Scripts/Push/TemplatePush.js?v=1443"></script>

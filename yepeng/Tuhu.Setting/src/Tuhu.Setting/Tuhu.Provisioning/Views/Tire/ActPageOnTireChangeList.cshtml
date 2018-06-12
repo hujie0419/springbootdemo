@@ -1,0 +1,130 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity.Tire;
+@using Tuhu.Provisioning;
+@model Tuhu.Component.Common.Models.ListModel<ActivityItem>
+    @{
+        Layout = null;
+        var selectModel = ViewBag.selectModel as ListActCondition;
+    }
+    @if (Model.Source.Any())
+    {
+        <table class="table" data-count="@Model.Pager.TotalItem"  style="background: #ffffff; font-size: 12px; width: 100%; text-align: center" border="1">
+            <tr>
+                <th style="text-align: center">
+                    <input type="checkbox" value="" name="selectAll" />全选
+                </th>
+                <th style="text-align: center">品牌</th>
+                <th style="text-align: center">车系</th>
+                <th style="text-align: center">规格</th>
+                <th style="text-align: center">活动Hash值</th>
+                <th style="text-align: center">活动H5链接</th>
+                <th style="text-align: center">开始时间</th>
+                <th style="text-align: center">结束时间</th>
+                <th style="text-align: center">负责人</th>
+                <th style="text-align: center">活动状态</th>
+                <th style="text-align: center; width: 65px">操作</th>
+                <th style="text-align: center">操作历史</th>
+                <th style="text-align: center">缓存刷新</th>
+            </tr>
+            @foreach (var item in Model.Source)
+            {
+
+                <tr>
+                    <td><input type="checkbox" name="selectSingle" value="" data-vehicleid="@item.VehicleId" data-tiresize="@item.TireSize" data-aid="@item.HashKey" data-pkid="@item.PKId" data-status = "@(item.Status == null ? "" : (item.Status.Value == 0 ? "0" : "1"))"/></td>
+                    <td>@item.Brand</td>
+                    <td>@item.Vehicle</td>
+                    <td>@item.TireSize</td>
+                    <td>@((string.IsNullOrWhiteSpace(item.HashKey)) ? "-" : item.HashKey)</td>
+                    <td class="activityPageUrl" data-hashkey="@item.HashKey"></td>
+                    <td>@(item.StartTime == null ? "-" : item.StartTime.Value.ToString("yyyy-MM-dd HH:mm:ss"))</td>
+                    <td>@(item.EndTime == null ? "-" : item.EndTime.Value.ToString("yyyy-MM-dd HH:mm:ss"))</td>
+                    <td>@(string.IsNullOrWhiteSpace(item.Manager) ? "-" : item.Manager)</td>
+                    <td>@(item.Status == null ? "-" : (item.Status.Value == 0 ? "禁用" : "启用"))</td>
+                    <td>
+                        <button class="btn btn-primary btn-small" onclick="UpdateChangedTireActivity('@(item.PKId == null ? -1 : item.PKId.Value)', '@item.VehicleId', '@item.TireSize')">编辑</button>&nbsp; &nbsp;
+                        <button class="btn btn-primary btn-small" onclick="DeleteChangedTireActivity('@(item.PKId == null ? -1 : item.PKId.Value)')" @(item.PKId.GetValueOrDefault() <= 0 ? "disabled" : null)>删除</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-primary btn-small" onclick="CheckChangedTireActHistory('@item.VehicleId', '@item.TireSize')">查看</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-primary btn-small" onclick="RefreshChangedTireActCache('@item.VehicleId', '@item.TireSize')">刷新</button>
+                    </td>
+                </tr>
+            }
+
+        </table>
+        <div style="margin-bottom:30px">
+            每页显示：
+            <select class="PageSize">
+                <option value="10" @(Model.Pager.PageSize == 10 ? "selected" : null)>10</option>
+                <option value="20" @(Model.Pager.PageSize == 20 ? "selected" : null)>20</option>
+                <option value="50" @(Model.Pager.PageSize == 50 ? "selected" : null)>50</option>
+                <option value="100" @(Model.Pager.PageSize == 100 ? "selected" : null)>100</option>
+                <option value="10000" @(Model.Pager.PageSize == 10000 ? "selected" : null)>10000</option>
+            </select>条
+            <span class="data_count"></span>
+            &nbsp;&nbsp;<label>跳转到第<input type="text" name="jumpPage" style="width: 125px" id="jumpPage" onfocus="$('#pagejumphint').hide()" oninput="this.value = this.value.replace(/\D/g, '')">页</label>
+            &nbsp;<input type="button" name="jumpPageTriger" id="jumpPageTriger" value="跳转" class="btn btn-primary" style="width:82px">&nbsp;<label class="pagejumphint" id="pagejumphint">输入页数不符合要求！</label>
+        </div>
+       @Html.Pager(Model.Pager, true, id => Url.Action("ActPageOnTireChangeList", new
+       {
+           VehicleId = selectModel.VehicleId,
+           IsActive = selectModel.IsActive,
+           ShowType = selectModel.ShowType,
+           TireSize = selectModel.TireSize,
+           pageSize = Model.Pager.PageSize,
+           pageIndex = id
+       }))
+    }
+
+<script>
+    $("[name=selectAll]").change(function () {
+        $("[name=selectSingle]").prop("checked", $(this).prop("checked"));
+    });
+    $(".PageSize").change(function () {
+        LoadList(1);
+    });
+    $(".activityPageUrl").each(function () {
+        var hashkey = $(this).data("hashkey");
+        if (hashkey) {
+            var domain = "wx.tuhu." + location.host.split('.')[2];
+            if (location.host.split('.')[2] == "cn" || location.host.split('.')[2] == "com")
+                domain = "https://" + domain;
+            else
+                domain = "http://" + domain;
+            $(this).html(`<a style="color: blue;" href="${domain}/staticpage/promotion/activity/?id=${hashkey}&tuhu">${domain}/staticpage/promotion/activity/?id=${hashkey}&tuhu </a> `);
+        }
+        else
+        {
+            $(this).html('-');
+        }
+    });
+
+    $("#jumpPageTriger").click(function() {
+        var pageNum = parseInt($("#jumpPage").val());
+        if (pageNum < 1 || pageNum > Math.ceil(parseInt($(".table").attr("data-count")) / $(".PageSize option:selected").val())) {
+            $("#pagejumphint").show();
+            return;
+        }
+        $(".loadimg").show();
+        $.post("/Tire/ActPageOnTireChangeList",
+            {
+                VehicleId: '@selectModel.VehicleId',
+                IsActive : @selectModel.IsActive,
+                ShowType : @selectModel.ShowType,
+                TireSize : '@selectModel.TireSize',
+                PageSize: @Model.Pager.PageSize,
+                PageIndex: pageNum
+            }, function (html1, status1) {
+                if (status1 === "success") {
+                    $(".loadimg").hide();
+                    $(".list").html(html1);
+                    $(".data_count").text('共' + ($(".table").length ? $(".table").attr("data-count") : 0) + '条数据');
+                }
+            });
+    });
+
+    function GetPageIndex() {
+        return @Model.Pager.CurrentPage;
+    }
+</script>

@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex, noarchive, nofollow" />
+    <title>@ViewBag.Title</title>
+   
+    <link href="~/Content/nfine/css/framework-font.css" rel="stylesheet" />
+    <link href="~/Content/nfine/css/framework-theme.css" rel="stylesheet" />
+    <script src="~/Content/nfine/js/jquery/jquery-2.1.1.min.js"></script>
+    <script src="~/Content/nfine/js/bootstrap/bootstrap.js"></script>
+    <link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <script src="~/Content/nfine/js/jqgrid/jqgrid.min.js"></script>
+    <link href="~/Content/nfine/js/jqgrid/jqgrid.css" rel="stylesheet" />
+    <script src="~/Content/nfine/js/jqgrid/grid.locale-cn.js"></script>
+    <link href="~/Content/nfine/css/framework-ui.css" rel="stylesheet" />
+    <script src="~/Content/nfine/js/framework-ui.js"></script>
+    <script src="../../Scripts/jquery-ui.1.12.1.min.js" type="text/javascript"></script>
+    @RenderSection("link",false)
+</head>
+<body style="overflow:hidden;" class="theme-blue-gradient pace-done">
+                          @RenderBody()
+</body>
+</html>
+
+@RenderSection("script",false)
+
+

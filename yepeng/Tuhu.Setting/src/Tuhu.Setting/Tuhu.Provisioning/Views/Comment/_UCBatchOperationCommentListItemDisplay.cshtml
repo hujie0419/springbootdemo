@@ -1,0 +1,70 @@
+﻿@model Tuhu.Provisioning.Models.CommentItem
+@using MVCControlsToolkit.Controls
+@using ThBiz.Common.Configurations;
+@using System.Text.RegularExpressions
+@{
+    Layout = null;
+}
+<td style="text-align: left;">
+    <input type="checkbox" name="checkName" checked="checked" value="@Model.CommentId" />@Model.CommentContent
+</td>
+<td style="width: 60px;">
+    @Html.DisplayField(m => m.CommentUserName)
+</td>
+<td style="width:80px">
+    <label>
+        @if (Model.CommentExtAttr != null && Model.CommentType == 1)
+        {
+            @Regex.Match(Model.CommentExtAttr, @"InstallShop[^ID][\s|\S]*[-]*.*testUserInfo").ToString().Replace("InstallShop", "").Replace("testUserInfo", "").Replace(":", "").Replace(",", "").Replace("\"", "");
+        }
+    </label>
+</td>
+<td style="width: 140px;">
+    @Html.DisplayField(m => m.CreateTimeDate)
+    @Html.DisplayField(m => m.CreateTime)
+</td>
+<td style="width: 140px;">
+    @if (Model.CommentProductId != null)
+    {
+        <a href='@Model.getProductLink(Model.CommentProductId)'>@Model.CommentProductId</a>
+    }
+</td>
+
+<td style="width: 50px;">
+    @if (Model.CommentOrderId != null)
+    {
+        <a href="@YewuDomainConfig.YewuSite/Order/Details/@Model.CommentOrderId" target="_blank">@Model.CommentOrderId.ToString()</a>
+    }
+</td>
+
+@if (Model.ParentComment == null)
+{
+    <td style="width:20px">@Html.DisplayField(m => m.CommentR1)</td>
+    <td style="width:20px">@Html.DisplayField(m => m.CommentR2)</td>
+    <td style="width:20px">@Html.DisplayField(m => m.CommentR3)</td>
+    <td style="width:20px">@Html.DisplayField(m => m.CommentR4)</td>
+    <td style="width:20px">@Html.DisplayField(m => m.CommentR5)</td>
+    <td style="width:20px">@Html.DisplayField(m => m.CommentR6)</td>
+    <td style="width:20px">@Html.DisplayField(m => m.CommentR7)</td>
+}
+else
+{
+    <td style="width:20px"></td ><td style="width:20px"></td><td style="width:20px"></td><td style="width:20px"></td><td style="width:20px"></td><td style="width:20px"></td><td style="width:20px"></td>
+}
+
+<td style="width: 60px;">
+    @if (Model.CommentStatus == 4)
+    {
+        <div style="color: red;">可能有敏感内容</div>
+    }
+    else if (Model.CommentStatus == 5)
+    {
+        <div style="color: red;">敏感内容已屏蔽</div>
+    }
+    <label id="@Model.CommentId" style="@(Model.CommentStatus == 1 ? "color: Red;" : "display: none;")">未审核</label>
+    <label style="@(Model.CommentStatus == 2 ? null : (Model.CommentStatus == 3?null:"display: none;"))">@(Model.CommentStatus == 2 ? "审核通过" : (Model.CommentStatus == 3 ? "仅通过打分" : ""))</label>
+    <label style="@(Model.CommentStatus == 0 ? "color: Red;" : "display: none;")">审核不通过</label>
+</td>
+<td style="width: 60px;"> <a href="/Comment/CommentDetails?CommentId=@Model.CommentId">详细信息</a> </td>
+</tr>
+

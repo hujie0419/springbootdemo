@@ -1,0 +1,1099 @@
+﻿@{
+    ViewBag.Title = "美容服务包";
+}
+@section head{
+    <link href="~/css/bankMRActivity.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/iview/iview.css" rel="stylesheet" />
+    <style type="text/css">
+        .vertical-group .floatCenter {
+            margin-left: 30%;
+        }
+    </style>
+}
+
+<div id="div" v-cloak>
+    <h2>银行美容活动配置</h2>
+    <h2>
+        <i-button v-on:click="EditBankMRActivityConfig()">添加活动</i-button>
+        <i-button v-on:click="JumpToCooperateUserConfig()">编辑合作用户</i-button>
+        <i-select v-model="FilterCondition.cooperateId" style="width:200px;" placeholder="请选择客户">
+            <i-option value="0">请选择</i-option>
+            <i-option v-for="item in AllMrCooperateUserConfigs" v-bind:value="item.PKID">
+                {{item.CooperateName}}
+            </i-option>
+        </i-select>
+        <i-input  v-model="FilterCondition.activityName" placeholder="请输入活动名称" style="width:200px;"></i-input>
+        <i-select v-model="FilterCondition.serviceId" style="width:200px;" placeholder="请选择服务">
+            <i-option value="">请选择</i-option>
+            <i-option v-for="item  in AllVipService" v-bind:value="item.key">
+                {{item.value}}
+            </i-option>
+        </i-select>
+        <i-select v-model="FilterCondition.settleMentMethod" style="width:200px;" placeholder="请选择结算类型">
+            <i-option value="">请选择</i-option>
+            <i-option value="ByPeriod">据实</i-option>
+            <i-option value="PreSettled">买断</i-option>
+        </i-select>
+        <i-button v-on:click="SearchBankMRActivityConfigs">查询</i-button>
+    </h2>
+    <br />
+    <div>
+        <table class="tableContainer">
+            <thead>
+                <tr>
+                    <th>活动ID</th>
+                    <th>活动链接</th>
+                    <th>活动名称</th>
+                    <th>合作名</th>
+                    <th>服务码名称</th>
+                    <th>用户售价</th>
+                    <th>结算价</th>
+                    <th>活动有效期</th>
+                    <th>场次周期</th>
+                    <th>服务码有效期</th>
+                    <th>活动图片</th>
+                    <th>关联服务（PID）</th>
+                    <th>是否有效</th>
+                    <th>客户类型</th>
+                    <th>编辑</th>
+                </tr>
+            </thead>
+            <tr v-for="item in BankMRActivityConfigList">
+                <td>{{item.ActivityId}}</td>
+                <td v-if="IsOnLine" style="width:300px;">
+                <a :href="'https://wx.tuhu.cn/activity/abcbank?activityId='+item.ActivityId" 
+                   target="_blank">https://wx.tuhu.cn/activity/abcbank?activityId={{item.ActivityId}}</a>
+                </td>
+                <td v-else  style="width:300px;">
+                <a :href="'https://wxdev.tuhu.work/react/reactTest/index.html?_project=ABCBank&activityId='+item.ActivityId" target="_blank">https://wxdev.tuhu.work/react/reactTest/index.html?_project=ABCBank&activityId={{item.ActivityId}}</a>
+                </td>
+                <td>{{item.ActivityName}}</td>
+                <td>{{item.CooperateName}}</td>
+                <td>{{item.ServiceName}}</td>
+                <td>{{item.UserSettlementPrice}}</td>
+                <td>{{item.BankSettlementPrice}}</td>
+                <td>{{item.StartTime | formatDate}}-{{item.EndTime | formatDate}}</td>
+                <td>
+                    <template v-if="item.RoundCycleType=='year'">
+                        年
+                    </template>
+                    <template v-else-if="item.RoundCycleType=='quarter'">
+                        季
+                    </template>
+                    <template v-else-if="item.RoundCycleType=='month'">
+                        月
+                    </template>
+                    <template v-else-if="item.RoundCycleType=='week'">
+                        周
+                    </template>
+                </td>
+                <td>{{item.ValidDays}}天</td>
+                <td><img style="width:80px;height:50px" v-bind:src="item.BannerImageUrl" /></td>
+                <td>{{item.ServiceId}}</td>
+                <td>
+                    <template v-if="item.IsActive">
+                        是
+                    </template>
+                    <template v-else>
+                        否
+                    </template>
+                </td>
+                <td>
+                    <template v-if="item.CustomerType==1">
+                        保险公司
+                    </template>
+                    <template v-else>
+                        银行
+                    </template>
+                </td>
+                <td>
+                    <button v-on:click="EditBankMRActivityConfig(item)">编辑</button>
+                    <button v-on:click="JumpBankMRActivityLimitConfig(item.ActivityId)">限购</button>
+                    <button v-on:click="ShowImportRulesDialog(item)">导入规则</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div style="float: right;">
+        <Page :total="pager.total" :current="pager.currentPage" :page-size="pager.size" show-total v-on:on-change="changePage"></Page>
+    </div>
+    <div id="BankMRActivityConfigDialog">
+        <div class="content">
+            <modal v-if="Dialog.ShowBankMRActivityConfigDialog" v-on:close="Dialog.ShowBankMRActivityConfigDialog=false">
+                <h3 slot="header">编辑活动</h3>
+                <div slot="body" class="vertical-group">
+                    <div>
+                        <label>活动名称:</label>
+                        <input type="text" v-model="BankMRActivityConfig.ActivityName" />
+                    </div>
+                    <div>
+                        <label>活动开始时间:</label>
+                        <input v-if="ActivityDisable" type="text" v-model="BankMRActivityConfig.StartTime" readonly="readonly" />
+                        <datepicker v-else v-model="BankMRActivityConfig.StartTime"></datepicker>
+                    </div>
+                    <div>
+                        <label>活动结束时间:</label>
+                        <input v-if="ActivityDisable" type="text" v-model="BankMRActivityConfig.EndTime" readonly="readonly" />
+                        <datepicker v-else v-model="BankMRActivityConfig.EndTime"></datepicker>
+                    </div>
+                    <div>
+                        <label>选择客户:</label>
+                        <select v-model="BankMRActivityConfig.CooperateId">
+                            <option v-for="item in AllMrCooperateUserConfigs" v-bind:value="item.PKID">
+                                {{item.CooperateName}}
+                            </option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>选择服务:</label>
+                        <select v-model="BankMRActivityConfig.ServiceId">
+                            <option v-for="item in AllVipService" v-bind:value="item.key">
+                                {{item.value}}
+                            </option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>服务码名称:</label>
+                        <input type="text" v-model="BankMRActivityConfig.ServiceName" />
+                    </div>
+                    <div>
+                        <label>包含服务码数量:</label>
+                        <input type="text" v-model="BankMRActivityConfig.ServiceCount" />
+                    </div>
+                    <div>
+                        <label>用户售价:</label>
+                        <input type="text" v-model="BankMRActivityConfig.UserSettlementPrice" />
+                    </div>
+                    <div>
+                        <label>结算价:</label>
+                        <input type="text" v-model="BankMRActivityConfig.BankSettlementPrice" />
+                    </div>
+                    <div>
+                        <label>码有效期(天):</label>
+                        <input type="text" v-model="BankMRActivityConfig.ValidDays" />
+                    </div>
+                    <div>
+                        <label>客户类型：</label>
+                        <template v-if="ActivityDisable">
+                            <label><input type="radio" name="CustomerType" v-bind:value=0 v-model="BankMRActivityConfig.CustomerType" disabled="disabled" />银行</label>
+                            <label><input type="radio" name="CustomerType" v-on:change="CustomerTypeChange" v-bind:value=1 v-model="BankMRActivityConfig.CustomerType" disabled="disabled" />保险公司</label>
+                        </template>
+                        <template v-else>
+                            <label><input type="radio" name="CustomerType" v-on:change="CustomerTypeChange" v-bind:value=0 v-model="BankMRActivityConfig.CustomerType" />银行</label>
+                            <label><input type="radio" name="CustomerType" v-on:change="CustomerTypeChange" v-bind:value=1 v-model="BankMRActivityConfig.CustomerType" />保险公司</label>
+                        </template>
+                    </div>
+                    <div>
+                        <label>验证类型:</label>
+                        <template v-if="ActivityDisable">
+                            <label><input type="checkbox" name="verifyType" :value="'Moble1'" v-model="VerifyTypes" disabled="disabled" />手机号</label>
+                            <label v-if="BankMRActivityConfig.CustomerType!=1"><input type="checkbox" name="verifyType" :value="'Card2'" v-model="VerifyTypes" disabled="disabled" />卡BIN</label>
+                            <label v-if="BankMRActivityConfig.CustomerType!=1"></label>
+                            <label v-if="BankMRActivityConfig.CustomerType!=1"><input type="checkbox" name="verifyType" :value="'Card1'" v-model="VerifyTypes" disabled="disabled" />前N后M</label>
+                            <label><input type="checkbox" name="verifyType" :value="'LicenseNo'" v-model="VerifyTypes" disabled="disabled" />车牌号</label>
+                            <label></label>
+                            <label><input type="checkbox" name="verifyType" :value="'ETC'" v-model="VerifyTypes" disabled="disabled" />ETC号</label>
+                        </template>
+                        <template v-else>
+                            <label><input type="checkbox" name="verifyType" :value="'Moble1'" v-model="VerifyTypes" />手机号</label>
+                            <label v-if="BankMRActivityConfig.CustomerType!=1"><input type="checkbox" name="verifyType" :value="'Card2'" v-model="VerifyTypes" />卡BIN</label>
+                            <label v-if="BankMRActivityConfig.CustomerType!=1"></label>
+                            <label v-if="BankMRActivityConfig.CustomerType!=1"><input type="checkbox" name="verifyType" :value="'Card1'" v-model="VerifyTypes" />前N后M</label>
+                            <label><input type="checkbox" name="verifyType" :value="'LicenseNo'" v-model="VerifyTypes" />车牌号</label>
+                            <label></label>
+                            <label><input type="checkbox" name="verifyType" :value="'ETC'" v-model="VerifyTypes" />ETC号</label>
+                        </template>
+
+                        @*<label><input type="checkbox" name="verifyType" value="CardLevel" />银行卡等级</label>*@
+                    </div>
+                    <div v-if="VerifyTypes.indexOf('Card2') >= 0">
+                        <label>卡BIN长度:</label>
+                        <input type="text" v-model="BankMRActivityConfig.Card2Length" />
+                    </div>
+                    <div>
+                        <label>活动场次周期:</label>
+                        <template v-if="ActivityDisable">
+                            <label><input type="radio" name="roundCycleType" value="year" v-model="BankMRActivityConfig.RoundCycleType" disabled="disabled" />年</label>
+                            <label><input type="radio" name="roundCycleType" value="quarter" v-model="BankMRActivityConfig.RoundCycleType" disabled="disabled" />季</label>
+                            <label></label>
+                            <label><input type="radio" name="roundCycleType" value="month" v-model="BankMRActivityConfig.RoundCycleType" disabled="disabled" />月</label>
+                            <label><input type="radio" name="roundCycleType" value="week" v-model="BankMRActivityConfig.RoundCycleType" disabled="disabled" />周</label>
+                        </template>
+                        <template v-else>
+                            <label><input type="radio" name="roundCycleType" value="year" v-model="BankMRActivityConfig.RoundCycleType" />年</label>
+                            <label><input type="radio" name="roundCycleType" value="quarter" v-model="BankMRActivityConfig.RoundCycleType" />季</label>
+                            <label></label>
+                            <label><input type="radio" name="roundCycleType" value="month" v-model="BankMRActivityConfig.RoundCycleType" />月</label>
+                            <label><input type="radio" name="roundCycleType" value="week" v-model="BankMRActivityConfig.RoundCycleType" />周</label>
+                        </template>
+                    </div>
+                    <div>
+                        <label>活动Banner：</label>
+                        <div class="floatCenter">
+                            <label><input type="file" id="file" value="上传文件" v-on:change="UploadActivityBannerImageChange" /></label>
+                            <label><input type="button" value="上传" v-on:click="UploadActivityBannerImage()" /></label>
+                        </div>
+                        <div class="floatCenter">
+                            <img type="text" style="width: 100px;height: 70px" :src="BankMRActivityConfig.BannerImageUrl" />
+                        </div>
+                    </div>
+                    <div>
+                        <label>按钮颜色：</label>
+                        <input type="text" v-model="BankMRActivityConfig.ButtonColor" />
+                    </div>
+                    <div>
+                        <label>活动细则：</label>
+                        <textarea cols="50" v-model="BankMRActivityConfig.RuleDescription"></textarea>
+                    </div>
+                    <div>
+                        <label>结算类型:</label>
+                        <select v-model="BankMRActivityConfig.SettleMentMethod">
+                            <option value="">请选择</option>
+                            <option value="ByPeriod">据实</option>
+                            <option value="PreSettled">买断</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>描述:</label>
+                        <textarea rows="3" cols="20" v-model="BankMRActivityConfig.Description"></textarea>
+                    </div>
+                    <div>
+                        <label>广告位1：</label>
+                        <div class="floatCenter">
+                            <label><input type="file" id="file" value="上传文件" v-on:change="UploadCenterAdImgChange" /></label>
+                            <label><input type="button" value="上传" v-on:click="UploadCenterAdImg()" /></label>
+                        </div>
+                        <div class="floatCenter">
+                            <img type="text" style="width: 100px;height: 70px" :src="CenterAdConfig.ImgUrl" />
+                        </div>
+                        <div class="floatCenter">
+                            <input type="text" v-model="CenterAdConfig.JumpUrl" placeholder="跳转URL" />
+                        </div>
+                    </div>
+                    <div>
+                        <label>广告位2：</label>
+                        <div class="floatCenter">
+                            <label><input type="file" id="file" value="上传文件" v-on:change="UploadBottomAdImgChange" /></label>
+                            <label><input type="button" value="上传" v-on:click="UploadBottomAdImg()" /></label>
+                        </div>
+                        <div class="floatCenter">
+                            <img type="text" style="width: 100px;height: 70px" :src="BottomAdConfig.ImgUrl" />
+                        </div>
+                        <div class="floatCenter">
+                            <input type="text" v-model="BottomAdConfig.JumpUrl" placeholder="跳转URL" />
+                        </div>
+                    </div>
+                    <div>
+                        <label>启用：</label>
+                        <label><input type="radio" name="IsActive" v-bind:value="true" v-model="BankMRActivityConfig.IsActive" />是</label>
+                        <label><input type="radio" name="IsActive" v-bind:value="false" v-model="BankMRActivityConfig.IsActive" />否</label>
+                    </div>
+                </div>
+                <div slot="footer">
+                    <button class="modal-default-button" v-on:click="UpsertBankMRActivityConfig()" v-bind:disabled="DisableUpsertButton">确认</button>
+                    <button class="modal-default-button" v-on:click="CloseBankMRActivityConfigDialog()">取消</button>
+                </div>
+            </modal>
+        </div>
+    </div>
+    <div id="ImportRulesDialog">
+        <div class="content">
+            <modal v-if="Dialog.ShowImportRulesDialog" v-on:close="Dialog.ShowImportRulesDialog=false">
+                <div slot="body" class="vertical-group">
+                    <h3 style="color:red">已导入记录</h3>
+                    <div>
+                        <table v-if="ImportBankMRActivityUsersRecords.length>0" hight="200px">
+                            <tr>
+                                <td>批次号</td>
+                                <td>场次类型</td>
+                                <td>操作人</td>
+                                <td>所属场次时间段</td>
+                                <td>备注</td>
+                                <td>上传时间</td>
+                                <td>操作</td>
+                            </tr>
+                            <tr v-for="item in ImportBankMRActivityUsersRecords">
+                                <td>{{item.BatchCode}}</td>
+                                <td>{{item.ImportRoundType}}</td>
+                                <td>{{item.OperateUser}}</td>
+                                <td>
+                                    <table>
+                                        <tr v-for="item1 in item.RoundTime">
+                                            <td>{{item1.StartTime}}至{{item1.EndTime}}</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td>{{item.Note}}</td>
+                                <td>{{item.CreateTimeString}}</td>
+                                <td><a v-on:click="download(item.BatchCode)">下载</a>||<a v-on:click="Delete(item.BatchCode)">删除</a></td>
+                            </tr>
+                        </table>
+
+                        <span v-else>暂无记录</span>
+                    </div>
+                    <div  v-if="ImportBankMRActivityUsersRecords.length>0" style="float: right;">
+                        <Page :total="Dialog.pager.total" :current="Dialog.pager.currentPage" :page-size="Dialog.pager.size" show-total v-on:on-change="dialogchangePage"></Page>
+                    </div>
+                    <h3 slot="header" style="color:blue">查询单条数据</h3>
+                    <div>
+                        <i-select v-model="SearchVerifyType" style="width:200px;" placeholder="请选择条件">
+                            <i-option v-for="item in SearchVerifyTypes" v-bind:value="item.Id">
+                                {{item.Name}}
+                            </i-option>
+                        </i-select>
+                        <i-input v-model="SearchVerifyTypeName" placeholder="请输入对应条件" style="width:200px;"></i-input>
+                        <i-button v-on:click="SearchSingleData">查询</i-button> <br />
+                        <table v-if="SignleBankMRActivityUser.length>0">
+                            <tr>
+                                <td>银行卡号</td>
+                                <td>手机号</td>
+                                <td>其他号码(ETC,LicenseNo)</td>
+                                <td>场次限购</td>
+                                <td>每日限购</td>
+                                <td>开始时间</td>
+                                <td>结束时间</td>
+                                <td>上传时间</td>
+                                <td>操作人</td>
+                            </tr>
+                            <tr v-for="user in SignleBankMRActivityUser">
+                                <td>{{user.BankCardNum}}</td>
+                                <td>{{user.Mobile}}</td>
+                                <td>{{user.OtherNum}}</td>
+                                <td>{{user.LimitCount}}</td>
+                                <td>{{user.DayLimit}}</td>
+                                <td>{{user.StartTimeString}}</td>
+                                <td>{{user.EndTimeString}}</td>
+                                <td>{{user.CreateTimeString}}</td>
+                                <td>{{user.OperateUser}}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <h3 slot="header"  style="color:forestgreen">导入规则</h3>
+                    <div>
+                        <input type="file" id="file" value="上传文件" v-on:change="UploadFileChange" />
+                        <input type="button" v-on:click="DownLoadRulesTemplate()" value="下载模板" />
+                    </div>
+                    <div>
+                        <label><input type="radio" name="ImportRoundType" value="AllRound" v-model="ImportRoundType" />全部场次</label>
+                        <label><input type="radio" name="ImportRoundType" value="CurrentRound" v-model="ImportRoundType" />当前场次</label>
+                        <label><input type="radio" name="ImportRoundType" value="NextRound" v-model="ImportRoundType" />下一场次</label>
+                    </div>
+                </div>
+                <div slot="footer">
+                    <button class="modal-default-button" v-if="!IsUpload" v-on:click="UploadRulesFile()">确认</button>
+                    <button class="modal-default-button" v-else v-on:click="UploadRulesFile()" disabled="disabled">确认</button>
+                    <button class="modal-default-button" v-on:click="CloseImportRulesDialog()">取消</button>
+                </div>
+            </modal>
+        </div>
+    </div>
+</div>
+<script type="text/x-template" id="modal-template">
+    <transition name="modal">
+        <div class="modal-mask">
+            <div class="modal-wrapper">
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <slot name="header"></slot>
+                    </div>
+                    <div class="modal-body">
+                        <slot name="body"></slot>
+                    </div>
+                    <div class="modal-footer">
+                        <slot name="footer">
+                            <button class="modal-default-button" v-on:click="">OK</button>
+                        </slot>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</script>
+<script type="text/x-template" id="region-template">
+    <div style="display:inline-block">
+        <select v-on:change="ChangeProvince()" v-model="CurrentProvinceId">
+            <option v-for="item in AllProvince" v-bind:value="item.RegionId">{{ item.RegionName }}</option>
+        </select>
+        <label><input style="display:inline-block" type="button" value="收起" /></label>
+        <br />
+        <label v-for="city in Citys">
+            <span><input type="checkbox" name="cityName" v-bind:value="city.RegionId" />{{city.RegionName}}</span>
+        </label>
+    </div>
+</script>
+@section scripts{
+<script src="~/Scripts/vue.min.js"></script>
+<script src="~/Scripts/iview/iview.min.js"></script>
+<script type="text/javascript" src="~/Scripts/dateJs/vue-date.min.js"></script>
+    <script type="text/javascript">
+        function formatDate(value) {
+            if (value) {
+                var time = value instanceof Date ? value : eval('new ' + value.toString().replace(/\//g, ""));
+                var year = time.getFullYear();
+                var day = time.getDate();
+                var month = time.getMonth() + 1;
+                var hours = time.getHours();
+                var minutes = time.getMinutes();
+                var seconds = time.getSeconds();
+                var func = function (value, number) {
+                    var str = value.toString();
+                    while (str.length < number) {
+                        str = "0" + str;
+                    }
+                    return str;
+                }
+                if (year == 1) {
+                    return "";
+                } else {
+                    return func(year, 4) + '-' + func(month, 2) + '-' + func(day, 2) + ' '
+                }
+            }
+        }
+        Vue.filter('formatDate', formatDate);
+        Vue.component('modal', {
+            template: '#modal-template'
+        });
+
+
+        Vue.component("region", {
+            template: '#region-template',
+            data: function () {
+                return {
+                    AllProvince: [],
+                    Citys: [],
+                    CurrentProvinceId: 0,
+                }
+            },
+            created: function () {
+                this.Load();
+            },
+            methods: {
+                Load: function () {
+                    var self = this;
+                    self.GetAllProvince();
+                },
+                ChangeProvince: function () {
+                    var self = this;
+                    self.GetRegionByRegionId(self.CurrentProvinceId, function (region) {
+                        self.Citys = region.ChildRegions;
+                    });
+                },
+                GetRegionByRegionId: function (regionId, callBack) {
+                    $.get("GetRegionByRegionId", { regionId: regionId }, function (region) {
+                        return callBack(region);
+                    });
+                },
+                GetAllProvince: function () {
+                    var self = this;
+                    $.get("GetAllProvince", function (data) {
+                        self.AllProvince = data;
+                    })
+                }
+            }
+        })
+        var vue = new Vue({
+            el: "#div",
+            data: {
+                BankMRActivityConfigList: [],
+                pager: {
+                    total: 0,
+                    pages: 0,
+                    currentPage: 1,
+                    size: 10,
+                    inputPage: 0
+                },
+                FilterCondition: {
+                    cooperateId: 0,
+                    activityName: "",
+                    serviceId: "",
+                    settleMentMethod: ""
+                },
+                BankMRActivityConfig: {
+                    ActivityId: "",
+                    BankId: "",
+                    ServiceId: "",
+                    ServiceCount: 1,
+                    ServiceName: "",
+                    UserSettlementPrice: "",
+                    BankSettlementPrice: "",
+                    ValidDays: "",
+                    BannerImageUrl: "",
+                    RuleDescription: "",
+                    VerifyType: "",
+                    ActivityName: "",
+                    CooperateId: "",
+                    StartTime: "",
+                    EndTime: "",
+                    RoundCycleType: "",
+                    ButtonColor: "",
+                    SettleMentMethod: "",
+                    Description: "",
+                    IsActive: "",
+                    CustomerType: 0,
+                    Card2Length: 0
+                },
+                CenterAdConfig:
+                {
+                    ActivityId: "00000000-0000-0000-0000-000000000000",
+                    AdType: "center",
+                    ImgUrl: "",
+                    JumpUrl: ""
+                },
+                BottomAdConfig:
+                {
+                    ActivityId: "00000000-0000-0000-0000-000000000000",
+                    AdType: "bottom",
+                    ImgUrl: "",
+                    JumpUrl: ""
+                },
+                DaysOfMonthArray: [],
+                DaysOfWeekArray: [],
+                Dialog: {
+                    ShowBankMRActivityConfigDialog: false,
+                    ShowImportRulesDialog: false,
+                    pager: {
+                        total: 0,
+                        pages: 0,
+                        currentPage: 1,
+                        size: 5,
+                        inputPage: 0
+                    },
+                },
+                ProvinceCityList: [],
+                ProvinceCity: {
+                    ProvinceId: 0,
+                    CityList: [],
+                },
+                AllMrCooperateUserConfigs: [],
+                AllVipService: [],
+                VerifyTypes: [],
+                SearchVerifyTypes: [],
+                SearchVerifyType: '',
+                SearchVerifyTypeName: '',
+                SignleBankMRActivityUser:[],
+                AllProvince: [],
+                ProvinceIds: [],
+                CityIds: [],
+                DisableUpsertButton: false,
+                LimitDateType: "",
+                DaysOfMonth: [],
+                DaysOfWeek: [],
+                ShowDaysOfMonth: false,
+                ShowDaysOfWeek: false,
+                IsChooseAllLimitDate: "checked",
+                CurrentActivity: "",
+                ExcelFile: "",
+                ActivityBannerImage: "",
+                AdCenterImage: "",
+                AdBottomImage: "",
+                ImportRoundType: "",
+                ActivityDisable: false,
+                IsOnLine: true,
+                ImportBankMRActivityUsersRecords: [],
+                IsUpload: false,
+            },
+            components: { datepicker },
+            created: function () {
+                this.load();
+            },
+            watch: {
+                "ProvinceCityList": function () {
+                    console.log(this.ProvinceCityList);
+                },
+                "LimitDateType": function () {
+                    var self = this;
+                    switch (self.LimitDateType) {
+                        case "month":
+                            self.ShowDaysOfMonth = true;
+                            self.ShowDaysOfWeek = false;
+                            break;
+                        case "week":
+                            self.ShowDaysOfMonth = false;
+                            self.ShowDaysOfWeek = true;
+                            break;
+                    }
+                }
+            },
+            methods: {
+                load: function (callback) {
+                    var self = this;
+                    self.GetBankMRActivityConfigs(self.pager.currentPage, self.pager.size);
+                    self.GetAllMrCooperateUserConfigs();
+                    self.GetAllVipService();
+                    for (var i = 1; i <= 31; i++) {
+                        self.DaysOfMonth.push(i);
+                    }
+                    for (var j = 1; j <= 7; j++) {
+                        self.DaysOfWeek.push(j);
+                    };
+                    self.IsOnLine = !(location.host.indexOf('dev') > 0 || location.host.indexOf('work') > 0 || location.host.indexOf('localhost') >= 0);
+                },
+                delayLoad: function (callback) {
+                    var self = this;
+                    setTimeout(function () { self.load(callback); }, 2000);
+                },
+                SearchBankMRActivityConfigs: function () {
+                    var self = this;
+                    self.pager.currentPage = 1;
+                    self.GetBankMRActivityConfigs(self.pager.currentPage, self.pager.size, self.FilterCondition.cooperateId,
+                        self.FilterCondition.activityName, self.FilterCondition.serviceId, self.FilterCondition.settleMentMethod);
+                },
+                EditBankMRActivityConfig: function (activity) {
+                    var self = this;
+                    self.InitAdConfig();
+                    if (activity) {
+                        self.BankMRActivityConfig = JSON.parse(JSON.stringify(activity))
+                        self.BankMRActivityConfig.StartTime = formatDate(activity.StartTime);
+                        self.BankMRActivityConfig.EndTime = formatDate(activity.EndTime);
+                        if (activity.VerifyType) {
+                            self.VerifyTypes = activity.VerifyType.split(',');
+                        }
+                        self.GetBankMRActivityAdConfig(activity.ActivityId);
+                        self.ActivityDisable = true;
+                    } else {
+                        self.BankMRActivityConfig.ActivityId = "";
+                        self.BankMRActivityConfig.BankId = "";
+                        self.BankMRActivityConfig.ServiceId = "";
+                        self.BankMRActivityConfig.ServiceCount = 1;
+                        self.BankMRActivityConfig.ServiceName = "";
+                        self.BankMRActivityConfig.UserSettlementPrice = "";
+                        self.BankMRActivityConfig.BankSettlementPrice = "";
+                        self.BankMRActivityConfig.ValidDays = 0;
+                        self.BankMRActivityConfig.BannerImageUrl = "";
+                        self.BankMRActivityConfig.RuleDescription = "";
+                        self.BankMRActivityConfig.VerifyType = "";
+                        self.BankMRActivityConfig.ActivityName = "";
+                        self.BankMRActivityConfig.CooperateId = 0;
+                        self.BankMRActivityConfig.StartTime = "";
+                        self.BankMRActivityConfig.EndTime = "";
+                        self.BankMRActivityConfig.RoundCycleType = "";
+                        self.BankMRActivityConfig.ButtonColor = "";
+                        self.BankMRActivityConfig.SettleMentMethod = "";
+                        self.BankMRActivityConfig.Description = "";
+                        self.BankMRActivityConfig.IsActive = true;
+                        self.BankMRActivityConfig.CustomerType = 0;
+                        self.BankMRActivityConfig.Card2Length = 0;
+                        self.ActivityDisable = false;
+                        self.VerifyTypes = [];
+                    }
+                    self.Dialog.ShowBankMRActivityConfigDialog = true;
+                },
+                InitAdConfig: function () {
+                    var self = this;
+                    self.CenterAdConfig.ActivityId = "00000000-0000-0000-0000-000000000000";
+                    self.CenterAdConfig.AdType = "center";
+                    self.CenterAdConfig.ImgUrl = "";
+                    self.CenterAdConfig.JumpUrl = "";
+                    self.BottomAdConfig.ActivityId = "00000000-0000-0000-0000-000000000000";
+                    self.BottomAdConfig.AdType = "bottom";
+                    self.BottomAdConfig.ImgUrl = "";
+                    self.BottomAdConfig.JumpUrl = "";
+                },
+                CloseBankMRActivityConfigDialog: function () {
+                    var self = this;
+                    self.Dialog.ShowBankMRActivityConfigDialog = false;
+                },
+                GetBankMRActivityConfigs: function (pageIndex, pageSize, cooperateId, activityName, serviceId, settleMentMethod) {
+                    var self = this;
+                    $.get("GetBankMRActivityConfigs", {
+                        pageIndex: pageIndex, pageSize: pageSize, cooperateId: cooperateId,
+                        activityName: activityName, serviceId: serviceId, settleMentMethod: settleMentMethod
+                    }, function (result) {
+                        self.BankMRActivityConfigList = result.result;
+                        self.pager.total = result.total;
+                    })
+                },
+                GetBankMRActivityAdConfig: function (activityId) {
+                    var self = this;
+                    $.get("GetBankMRActivityAdConfig", { activityId: activityId },
+                        function (data) {
+                            if (data) {
+                                for (var i in data) {
+                                    var item = data[i];
+                                    switch (item.AdType) {
+                                        case "center":
+                                            self.CenterAdConfig = item;
+                                            break;
+                                        case "bottom":
+                                            self.BottomAdConfig = item;
+                                            break;
+                                    }
+                                }
+                            }
+                        });
+                },
+                GetAllVipService: function () {
+                    var self = this;
+                    $.get("GetAllBeautyServiceCodeTypeConfig", function (data) {
+                        var vipServices = new Array();
+                        if (data) {
+                            for (var item in data) {
+                                vipServices.push({
+                                    key: item,
+                                    value: data[item]
+                                });
+                            }
+                        }
+                        self.AllVipService = vipServices;
+                    })
+                },
+                GetAllMrCooperateUserConfigs: function () {
+                    var self = this;
+                    self.GetMrCooperateUserConfigs(function (data) {
+                        self.AllMrCooperateUserConfigs = data;
+                    })
+                },
+                GetMrCooperateUserConfigs: function (callback) {
+                    $.get("GetAllMrCooperateUserConfigs", function (data) { return callback(data); })
+                },
+                UpsertBankMRActivityConfig: function () {
+                    var self = this;
+                    var config = self.BankMRActivityConfig;
+                    if (!config.ActivityName || !config.StartTime || !config.EndTime || (!config.CooperateId || config.CooperateId <= 0) || !config.ServiceId
+                        || !config.ServiceName || config.ServiceCount <= 0 || config.UserSettlementPrice < 0 || config.BankSettlementPrice < 0
+                        || config.ValidDays <= 0 || !config.RoundCycleType || !config.BannerImageUrl
+                        || !config.ButtonColor || !config.RuleDescription || !config.SettleMentMethod) {
+                        alert("信息不完善");
+                        return;
+                    }
+                    var verifyTypeStr = "";
+                    if (self.VerifyTypes.indexOf("ETC") >= 0 && self.VerifyTypes.indexOf("LicenseNo") >= 0) {
+                        alert("车牌号和ETC号不能同时选中，服务暂时不支持");
+                        return;
+                    }
+                    if (self.VerifyTypes.indexOf("Card1") >= 0 && self.VerifyTypes.indexOf("Card2") >= 0) {
+                        alert("卡BIN和前N后M不能同时选中，服务暂时不支持");
+                        return;
+                    }
+                    for (var i = 0; i < self.VerifyTypes.length; i++) {
+                        verifyTypeStr += self.VerifyTypes[i] + ",";
+                    }
+                    if (verifyTypeStr != '') {
+                        verifyTypeStr = verifyTypeStr.substring(0, verifyTypeStr.length - 1);
+                    }
+                    self.BankMRActivityConfig.VerifyType = verifyTypeStr;
+
+                    var adConfig = new Array();
+                    self.CenterAdConfig.ActivityId = config.ActivityId;
+                    self.BottomAdConfig.ActivityId = config.ActivityId;
+                    adConfig.push(self.CenterAdConfig);
+                    adConfig.push(self.BottomAdConfig);
+                    if (!self.DisableUpsertButton) {
+                        self.DisableUpsertButton = true;
+                        $.post("UpsertBankMRActivityConfig", { config: config, adConfig: adConfig }, function (result) {
+                            self.DisableUpsertButton = false;
+                            if (result) {
+                                self.Dialog.ShowBankMRActivityConfigDialog = false;
+                                self.load();
+                            } else {
+                                alert("失败");
+                            }
+                        })
+                    }
+                },
+                JumpBankMRActivityLimitConfig: function (activityId) {
+                    var self = this;
+                    window.open("BankMRActivityLimitConfig?activityId=" + activityId + "");
+                },
+                ShowImportRulesDialog: function (activity) {
+                    var self = this;
+                    self.CurrentActivity = activity;
+                    self.Dialog.pager.total = 0;
+                    self.Dialog.pager.currentPage = 1;
+                    self.SearchVerifyTypes = [];
+                    self.SearchVerifyType = "";
+                    self.SearchVerifyTypeName = '';
+                    self.SignleBankMRActivityUser = [];
+                    if (activity.VerifyType) {
+                        activity.VerifyType.split(',').forEach(function (x) {
+                            if (x == "Moble1") {
+                                self.SearchVerifyTypes.push({ Id: 'Moble1', Name: '手机号' });
+                            }
+                            else if (x == "Card2") {
+                                self.SearchVerifyTypes.push({ Id: 'Card2', Name: '卡BIN' });
+                            }
+                            else if (x == "Card1") {
+                                self.SearchVerifyTypes.push({ Id: 'Card1', Name: '前N后M' });
+                            }
+                            else if (x == "LicenseNo") {
+                                self.SearchVerifyTypes.push({ Id: 'LicenseNo', Name: '车牌号' });
+                            }
+                            else if (x == "ETC")
+                            {
+                                self.SearchVerifyTypes.push({ Id: 'ETC', Name: 'ETC号' });
+                            }
+                        });
+                    }
+                    $.post("GetImportBankMRActivityUsersRecords", {
+                        activityId: activity.ActivityId,
+                        pageIndex: self.Dialog.pager.currentPage,
+                        pageSize: self.Dialog.pager.size
+                    }, function (data) {
+                        if (data != null && data.Result != null && data.Result.length > 0) {
+                            self.ImportBankMRActivityUsersRecords = data.Result;
+                            self.Dialog.pager.total = data.Total;
+                        }
+                        else {
+                            self.ImportBankMRActivityUsersRecords = [];
+                        }
+                    });
+                    self.Dialog.ShowImportRulesDialog = true;
+                },
+                SearchSingleData: function ()
+                {
+                    var _this = this;
+                    _this.SignleBankMRActivityUser = [];
+                    var type = _this.SearchVerifyType;
+                    var keywork = _this.SearchVerifyTypeName;
+                    var activityId = _this.CurrentActivity.ActivityId;
+                    $.post("GetSignleBankMRActivityUser", { activityId: activityId, searchVerifyType: type, searchVerifyTypeName: keywork }, function (data) {
+                        if (data.IsSuccess) {
+                            if (data.Result != null)
+                            {
+                                _this.SignleBankMRActivityUser.push(data.Result);
+                            }
+                            else {//不存在
+                                alert("没有查询到数据！");
+                            }
+                        } else {
+                            alert(data.Msg);
+                        }
+                    })
+
+
+                },
+                download: function (e) {
+                    console.log(e);
+                    window.location.href = "GetImportBankMRActivityUsers?batchCode=" + e;
+                },
+                Delete: function (e) {
+                    if (confirm("确定要删除？"))
+                    {
+                        var _this = this;
+                        $.post("DeleteImportBankMRActivityUsers", { batchCode: e }, function (data) {
+                            if (data != null) {
+                                console.log(data);
+                                if (data.Result) {
+                                    _this.ShowImportRulesDialog(_this.CurrentActivity);
+                                }
+                                else {
+                                    alert("服务端执行异常：" + data.Msg);
+                                }
+                            }
+                        });
+                    }
+
+                },
+                CloseImportRulesDialog: function () {
+                    var self = this;
+                    self.Dialog.ShowImportRulesDialog = false;
+                },
+                GetAllProvince: function (callBack) {
+                    var self = this;
+                    $.get("GetAllProvince", function (data) {
+                        self.AllProvince = data;
+                        return callBack();
+                    })
+                },
+                GetRegionByRegionId: function (regionId, callBack) {
+                    $.get("GetRegionByRegionId", { regionId: regionId }, function (region) {
+                        return callBack(region);
+                    });
+                },
+                DownLoadRulesTemplate: function () {
+                    var self = this;
+                    var verifyType = self.CurrentActivity.VerifyType;
+                    window.location.href = "DownLoadRulesTemplate?verifyType=" + verifyType + "";
+                },
+                UploadFileChange: function (event) {
+                    var self = this;
+                    var input = event.target;
+                    var file = input.files[0];
+                    if (file) {
+                        self.ExcelFile = file;
+                    }
+                    else self.ExcelFile = null;
+                },
+                UploadActivityBannerImageChange: function (event) {
+                    var self = this;
+                    var input = event.target;
+                    var file = input.files[0];
+                    if (file) {
+                        self.ActivityBannerImage = file;
+                    }
+                    else self.ActivityBannerImage = null;
+                },
+                UploadRulesFile: function () {
+                    var self = this;
+                    if (self.ExcelFile == null) {
+                        alert("请先上传文件");
+                        return;
+                    }
+                    if (!self.ImportRoundType) {
+                        alert("请选择场次类型");
+                        return;
+                    }
+                    self.IsUpload = true;
+                    var formData = new FormData();
+                    formData.append("file", self.ExcelFile);
+                    formData.append("verifyType", self.CurrentActivity.VerifyType);
+                    formData.append("activityId", self.CurrentActivity.ActivityId);
+                    formData.append("importRoundType", self.ImportRoundType);
+                    $.ajax({
+                        url: 'UploadRulesFile',
+                        type: "post",
+                        data: formData,
+                        dataType: "json",
+                        contentType: false,
+                        processData: false,
+                        success: function (rsp) {
+                            if (rsp.Status) {
+                                alert("上传成功");
+                                document.querySelector("#file").value = "";
+                                self.excelFile = null;
+                                self.ShowImportRulesDialog(self.CurrentActivity);
+                                self.IsUpload = false;
+                            }
+                            else {
+                                alert("上传失败!" + (rsp.Msg || ""));
+                                self.IsUpload = false;
+                            }
+                            self.lock = false;
+                        },
+                        error: function (rsp) {
+                            alert("上传失败");
+                            self.lock = false;
+                            self.IsUpload = false;
+                        }
+                    });
+                },
+                UploadActivityBannerImage: function () {
+                    var self = this;
+                    if (self.ActivityBannerImage == null) {
+                        alert("请选择文件");
+                        return;
+                    }
+                    var formData = new FormData();
+                    formData.append("file", self.ActivityBannerImage);
+                    $.ajax({
+                        url: 'UploadActivityBannerImage',
+                        type: "post",
+                        data: formData,
+                        dataType: "json",
+                        contentType: false,
+                        processData: false,
+                        success: function (rsp) {
+                            if (rsp.Status) {
+                                alert("上传成功");
+                                self.ActivityBannerImage = null;
+                                self.BankMRActivityConfig.BannerImageUrl = rsp.ImageUrl;
+                            }
+                            else {
+                                alert("上传失败!" + (rsp.Msg || ""));
+                            }
+                        }
+                    });
+                },
+                UploadCenterAdImgChange: function (event) {
+                    var self = this;
+                    var input = event.target;
+                    var file = input.files[0];
+                    if (file) {
+                        self.AdCenterImage = file;
+                    }
+                    else self.AdCenterImage = null;
+                },
+                UploadBottomAdImgChange: function (event) {
+                    var self = this;
+                    var input = event.target;
+                    var file = input.files[0];
+                    if (file) {
+                        self.AdBottomImage = file;
+                    }
+                    else self.AdBottomImage = null;
+                },
+                UploadCenterAdImg: function (event) {
+                    var self = this;
+                    if (self.AdCenterImage == null) {
+                        alert("请选择文件");
+                        return;
+                    }
+                    var formData = new FormData();
+                    formData.append("file", self.AdCenterImage);
+                    self.UploadImg(formData, function (rsp) {
+                        if (rsp.Status) {
+                            self.AdCenterImage = null;
+                            self.CenterAdConfig.ImgUrl = rsp.ImageUrl;
+                        }
+                    });
+                },
+                UploadBottomAdImg: function (event) {
+                    var self = this;
+                    if (self.AdBottomImage == null) {
+                        alert("请选择文件");
+                        return;
+                    }
+                    var formData = new FormData();
+                    formData.append("file", self.AdBottomImage);
+                    self.UploadImg(formData, function (rsp) {
+                        if (rsp.Status) {
+                            self.AdBottomImage = null;
+                            self.BottomAdConfig.ImgUrl = rsp.ImageUrl;
+                        }
+                    });
+                },
+                UploadImg: function (formData, callback) {
+                    $.ajax({
+                        url: 'UploadActivityBannerImage',
+                        type: "post",
+                        data: formData,
+                        dataType: "json",
+                        contentType: false,
+                        processData: false,
+                        success: function (rsp) {
+                            if (rsp.Status) {
+                                alert("上传成功");
+                            }
+                            else {
+                                alert("上传失败!" + (rsp.Msg || ""));
+                            }
+                            return callback(rsp);
+                        }
+                    });
+                },
+                JumpToCooperateUserConfig: function () {
+                    window.open("MrCooperateUser");
+                },
+                CustomerTypeChange: function () {
+                    var _this = this;
+                    console.log(_this.VerifyTypes);
+                    _this.VerifyTypes = [];
+                },
+                changePage(page) {
+                    var _this = this;
+                    _this.pager.currentPage = page;
+                    _this.GetBankMRActivityConfigs(_this.pager.currentPage, _this.pager.size, _this.FilterCondition.cooperateId,
+                        _this.FilterCondition.activityName, _this.FilterCondition.serviceId, _this.FilterCondition.settleMentMethod)
+                },
+                dialogchangePage(page) {
+                    var _this = this;
+                    _this.Dialog.pager.currentPage = page;
+                    $.post("GetImportBankMRActivityUsersRecords", {
+                        activityId: _this.CurrentActivity.ActivityId,
+                        pageIndex: _this.Dialog.pager.currentPage,
+                        pageSize: _this.Dialog.pager.size
+                    }, function (data) {
+                        if (data != null && data.Result != null && data.Result.length > 0) {
+                            _this.ImportBankMRActivityUsersRecords = data.Result;
+                            _this.Dialog.pager.total = data.Total;
+                        }
+                        else {
+                            _this.ImportBankMRActivityUsersRecords = [];
+                        }
+                    });
+                },
+            }
+        })
+
+    </script>
+}

@@ -1,0 +1,242 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>申请0元购</title>
+    <meta name="keywords" content="轮胎,保养服务,雨刷,滤清器,机油,电瓶,刹车片,途虎养车网,卡帕养车网" />
+    <meta name="description" content="中国领先轮胎、汽车保养在线商城，在线预约就近安装，网点遍布全国" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <link href="http://resource.tuhu.cn/Css/wx/active/0buy.css" rel="stylesheet" />
+    <script src="http://resource.tuhu.cn/Scripts/Activity/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+    <script type="text/javascript" src="http://resource.tuhu.cn/Scripts/Activity/ZeroPublic.js"></script>
+    <script type="text/javascript">    window.delayready = true;    </script>
+    <script type="text/javascript" src="http://resource.tuhu.cn/js/hd/wxjsapi.js"></script>
+    <script type="text/javascript">
+        //调试: "menuItem:jsDebug"
+        function wxready(hidemenu) {
+            wx.ready(function () {
+                wx.hideMenuItems({
+                    menuList: [
+                        'menuItem:readMode', // 阅读模式
+                        'menuItem:copyUrl', // 复制链接
+                        "menuItem:share:qq",
+                        "menuItem:share:weiboApp",
+                        "menuItem:favorite",
+                        "menuItem:share:facebook",
+                        "menuItem:share:QZone",
+                        "menuItem:share:brand",
+                        "menuItem:share:email",
+                        "menuItem:openWithSafari",
+                        "menuItem:openWithQQBrowser",
+                        "menuItem:originPage",
+                        "menuItem:delete",
+                        "menuItem:editTag"
+                    ],
+                    success: function (res) {
+                        //alert('已隐藏“阅读模式”，“分享到朋友圈”，“复制链接”等按钮');
+                    },
+                    fail: function (res) {
+                        //alert(JSON.stringify(res));
+                    }
+                });
+                if (hidemenu) {
+                    wx.hideOptionMenu();
+                } else if (window.wxbag) {
+                    var title = wxbag.gtitle;
+                    var ftitle = wxbag.ftitle;
+                    var desc = wxbag.gdesc;
+                    var fdesc = wxbag.fdesc;
+                    var link = wxbag.link;
+                    var imgurl = wxbag.fimg;
+                    var imgurlShare = wxbag.gimg;
+
+                    wx.checkJsApi({
+                        jsApiList: [
+                            'onMenuShareTimeline',
+                            'onMenuShareAppMessage'
+                        ],
+                        success: function (res) {
+                            //alert(JSON.stringify(res));
+                        }
+                    });
+                    wx.showOptionMenu();
+
+                    wx.onMenuShareTimeline({
+                        title: desc,// 分享标题
+                        link: link, // 分享链接
+                        imgUrl: imgurlShare, // 分享图标
+                        success: function () {
+                        },
+                        cancel: function () {
+                            // 用户取消分享后执行的回调函数
+                        }
+                    });
+
+                    wx.onMenuShareAppMessage({
+                        title: ftitle, // 分享标题
+                        desc: fdesc, // 分享描述
+                        link: link, // 分享链接
+                        imgUrl: imgurl, // 分享图标
+                        type: '', // 分享类型,music、video或link，不填默认为link
+                        dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                        success: function () {
+                        },
+                        cancel: function () {
+                            // 用户取消分享后执行的回调函数
+                        }
+                    });
+                }
+            });
+        }
+        wxready(true);
+    </script>
+    <script type="text/javascript">
+        var shurl = 'http://faxian.tuhu.cn/ActivityHtml/LuxxanZero/Index.html',
+            title = "玛吉斯轮胎 0元购来了！  名额抢不够", desc = "路迈/LUXXAN ASPIRER C3轮胎 每周3个试用名额 每人4条",
+            imgurl = ImgDomain + "/Image/Activity/0元购小图.png";
+        window.wxbag = {
+            gtitle: title
+            , ftitle: title
+            , gdesc: desc
+            , fdesc: desc
+            , link: shurl
+            , gimg: imgurl
+            , fimg: imgurl
+        };
+        wxready();
+    </script>
+
+    <link rel="stylesheet" href="http://resource.tuhu.cn/Css/wx/active/CityDiv.css" />
+    <link rel="stylesheet" href="http://resource.tuhu.cn/Css/jquery.mobile-1.4.2.min.css" />
+</head>
+<body class="bg-gray">
+    <input type="hidden" id="Period" value="" />
+    <input type="hidden" id="Quantity" value="">
+    <input type="hidden" id="ProductName" value="" />
+    <input type="hidden" id="provinceCode" value="0" />
+    <input type="hidden" id="cityCode" value="0" />
+    <input type="hidden" id="userid" value="" />
+    <input type="hidden" id="phone" value="" />
+    <input type="hidden" id="Channel" value="1" />
+    <div class="label">填写详细信息，增加获奖机会！</div>
+    <div class="form">
+        <div class="group">
+            <label for="">姓名：</label>
+            <input type="text" class="text" name="" id="txtusername">
+        </div>
+        <div class="group">
+            <label for="">轮胎规格：<span>(请选择爱车适配的规格，否则无法安装)</span></label>
+            <div id="ProSize">
+                <a href="javascript:void(0);" name="type" class="btn btn-red">185/60R14</a><input type='hidden' name='proid' value="TR-CS-UA603|4" />
+                <!--<a href="javascript:void(0);" name="type" class="btn btn-white">225/60R16</a><input type='hidden' name='proid' value="TR-CT-CPC2|34" />-->
+            </div>
+            <!--<input type="hidden" name="proid" value="" />-->
+        </div>
+        <div class="group">
+            <label for="">所在城市：<span>(选择城市，我们帮您免费安装)</span></label>
+            <i class="arrow"></i>
+            <input type="text" class="text" name="" readonly="readonly" id="txtcity" onclick="cityshow();" placeholder="点击选择城市">
+        </div>
+        <div class="group">
+            <label for="">申请理由：</label>
+            <textarea name="reason" id="txtreason" class="textarea" placeholder="请告知我们您的优势，如：您想要获得轮胎的强烈愿望；您对轮胎或驾驶的经验丰富；您驾驭使用报告的超强文笔"></textarea>
+        </div>
+        <div class="group">
+            <a href="javascript:void(0);" id="SubmitForm" class="btn">申请0元购</a>
+        </div>
+    </div>
+
+
+    <!--@*选择区域*@-->
+    <div id="city" style="display:none;overflow-y:scroll" data-role="page">
+        <header data-role="header">
+            <div class="top">
+                <div id="engine_info_title">选择区域</div>
+                <a href="#" data-rel="close" class="top_close" onclick="Cityhide()">
+                    <div class="top_close1"></div><div class="top_close2"></div>
+                </a>
+            </div>
+        </header>
+        <div class="city_div">
+        </div>
+        <div class="load" id="loadon" style="display: block"><img src="http://resource.tuhu.cn/Image/Activity/load.gif" alt="" />努力加载中...</div>
+    </div>
+    <!--弹出提示框-->
+    <div class="custom-popup" id="popTips">
+        <p id="tipsContent"></p>
+    </div>
+    <script type="text/javascript" src="http://resource.tuhu.cn/Scripts/jquery.mobile-1.4.2.min.js"></script>
+    <script type="text/javascript" src="http://resource.tuhu.cn/Scripts/Activity/CityDiv.js"></script>
+    <script>
+
+        window.onload = function () {
+            // alert("daili");
+            $("body").removeClass().addClass("bg-gray");
+            $("#Period").val(GetQueryString("period"));
+            $("#Quantity").val(GetQueryString("Quantity"));
+            $("#userid").val(GetQueryString("userid"));
+            $("#phone").val(GetQueryString("phone"));
+            $("#Channel").val(GetQueryString("Channel"));
+            GetProductDetail(GetQueryString("ProductID"));
+
+        }
+
+
+        $("[name=type]").click(function () {
+            $(this).removeClass().addClass("btn btn-red").siblings("a").removeClass().addClass("btn btn-white");
+        });
+
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]); return null;
+        }
+
+
+        function CheckForm() {
+            if ($.trim($("#txtusername").val()).length == 0) {
+                openTip("请输入您的姓名！");
+                return false;
+            }
+            else if ($.trim($("#provinceCode").val()).length == 0) {
+                openTip("请选择对应的省市！");
+                return false;
+            }
+            else if ($.trim($("#cityCode").val()).length == 0) {
+                openTip("请选择对应的省市！");
+                return false;
+            }
+            else if ($.trim($("#txtreason").val()).length == 0) {
+                openTip("请输入申请理由！");
+                return false;
+            }
+            return true;
+        }
+        $("#SubmitForm").click(function () {
+            if (CheckForm()) {
+                $.ajax({
+                    type: "post",
+                    url: DomainWX + '/ZeroActive/SubmitZeroForm',
+                    dataType: "json",
+                    async: false,
+                    data: { period: $("#Period").val(), userid: $("#userid").val(), username: $.trim($("#txtusername").val()), proid: $(".btn-red[name=type]").next().val(), prosize: $.trim($(".btn-red[name=type]").text()), proname: $("#ProductName").val(), quantity: $("#Quantity").val(), pid: $.trim($("#provinceCode").val()), cid: $.trim($("#cityCode").val()), reason: $.trim($("#txtreason").val()), phone: $("#phone").val(), Channel: $("#Channel").val() },
+                    beforeSend: function () {
+                        // alert("正在提交");
+                        $("#SubmitForm").html("正在提交，请稍后...");
+                    },
+                    success: function (data) {
+                        if (data.IsSuccess) {
+                            window.location.href = "http://faxian.tuhu.cn/ActivityHtml/LuxxanZero/SuccessPage.html";
+                        }
+                        else {
+                            openTip(data.Msg);
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

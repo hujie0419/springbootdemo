@@ -1,0 +1,33 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Help Cut</title>
+    @Html.Partial("~/Views/Shared/ShareHeadClean.cshtml")
+    <script type="text/javascript">
+        $(function () {
+            var pu = parseurl('helpcut.html', []);
+            var ucut = 'http://faxian.tuhu.cn/hwx/entry.html?cburl=' + cburl('play.html?aid=1&foid=' + pu.foid + '&wxinfo=');
+            var utry = 'http://faxian.tuhu.cn/hwx/entry.html?cburl=' + cburl('prejoin.html?aid=1&oid=' + pu.foid + '&wxinfo=');
+            $('#bcut').attr('href', ucut);
+            $('#btry').attr('href', utry);
+            $('#box').html(ucut + '<br/><br/>' + utry);
+        });
+    </script>
+</head>
+<body>
+    @Html.Partial("~/Views/Shared/ShareBody.cshtml")
+    <div id="box"></div>
+    <div>
+        <a id="bcut" href="#" >Help Cut</a>
+        <br /><br />
+        <a id="btry" href="#" >Let me try</a>
+    </div>
+</body>
+</html>

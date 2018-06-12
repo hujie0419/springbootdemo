@@ -1,0 +1,47 @@
+﻿@using Tuhu.WebSite.Component.Discovery.BusinessData;
+@model List<RelatedArticle>
+@if (Model.Count > 0)
+{
+    <div class='floor1'>
+        <h6 class='de-title'><a href="" class='de-active'>相关阅读</a></h6>
+    </div>
+    foreach (var item in Model)
+    {
+        <div class="floor1 relateds" aid="@item.PKID" href="/Article/Detail?Id=@item.PKID&bgColor=%2523ffffff&textColor=%2523333333">
+            <dl class='content dl-content'>
+                    @if (item.Type == 5)
+                    {
+                        if (!string.IsNullOrEmpty(item.CoverImage))
+                        {
+                            <dd class='dl-right'><img src="@item.CoverImage.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries)[0]" /></dd>
+                            <dt class='dl-left ptop10'>
+                                <div class='dt-top'><h5 class="shenglu">@(item.Title.Length > 25 ? item.Title.Substring(0, 25) + "..." : item.Title)</h5></div><span class='maoqiu'>@item.CoverTag</span>
+                            </dt>
+                        }
+                        else
+                        {
+                            <dt class='dl-left'>
+                                <div class='dt-top'><h5 class="shenglu">@(item.Title.Length > 25 ? item.Title.Substring(0, 25) + "..." : item.Title)</h5></div><span class='maoqiu'>@item.CoverTag</span>
+                            </dt>
+                        }
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(item.Image))
+                        {
+                            <dd class='dl-right'><img src="@item.Image" /></dd>
+                            <dt class='dl-left ptop10'>
+                                <div class='dt-top'><h5 class="shenglu">@(item.Title.Length > 25 ? item.Title.Substring(0, 25) + "..." : item.Title)</h5></div><span class='maoqiu'></span>
+                            </dt>
+                        }
+                        else
+                        {
+                            <dt class='dl-left'>
+                                <div class='dt-top'><h5 class="shenglu">@(item.Title.Length > 25 ? item.Title.Substring(0, 25) + "..." : item.Title)</h5></div><span class='maoqiu'></span>
+                            </dt>
+                        }
+                    }
+            </dl>
+        </div>
+    }
+}

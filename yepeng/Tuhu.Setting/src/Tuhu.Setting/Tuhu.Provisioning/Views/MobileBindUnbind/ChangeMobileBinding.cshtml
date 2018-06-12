@@ -1,0 +1,239 @@
+﻿@model IEnumerable<Tuhu.Service.UserAccount.Models.UserChangeBindMobileLog>
+    @{
+        ViewBag.Title = "用户手机号换绑";
+        Layout = "../Shared/_Layout.cshtml";
+    }
+    @section head{
+        <link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    }
+
+    <style>
+        .modal {
+            width: 400px;
+        }
+
+        .modal-body {
+            width: 400px;
+        }
+
+        .mobile-editor {
+            font-weight: bold;
+        }
+    </style>
+    <div>
+        <h1>用户手机号换绑管理</h1><br />
+        <table class="mobile-editor">
+            <tr>
+                <td>需解绑账户手机号</td>
+                <td><input type="text" id="mobileToAbandon" name="mobileToAbandon" value="" maxlength="14" oninput="this.value = this.value.replace(/\D/g, '')" />
+            </tr>
+            <tr>
+                <td>需绑定手机号</td>
+                <td><input type="text" id="mobileToBind" name="mobileToBind" value="" maxlength="14" oninput="this.value = this.value.replace(/\D/g, '')" />
+            </tr>
+            <tr>
+                <td colspan="2"><input type="button" class="btn btn-primary" value="提交" onclick="submitMobileNums()" style="width: 100%; font-weight: bold" /></td>
+            </tr>
+        </table>
+        <br />
+        <form method="post" name="mobileBindQuery" id="mobileBindQuery" enctype="multipart/form-data" action=@Url.Action("ChangeMobileBindingOnMobile")>
+            <input type="text" id="mobileToFind" name="mobileToFind" maxlength="14" value="@ViewBag.mobileToFind" style="width: 210px" oninput="this.value = this.value.replace(/\D/g, '')" />
+            <input type="submit" value="手机号查询" class="btn btn-primary" style="width:210px; font-weight: bold" />
+            <span style="float: right">
+                <input type="text" style="width: 210px; text-align: center" id="SearchStartDate" name="SearchStartDate" readonly="readonly" value="@ViewBag.SearchStartDate" placeholder="开始时间" />
+                <input type="text" style="width: 210px; text-align: center"  id="SearchEndDate" name="SearchEndDate" readonly="readonly" value="@ViewBag.SearchEndDate" placeholder="结束时间" />
+                <input type="button" id="dateInquiry" value="日期查询" class="btn btn-primary" style="width: 210px; font-weight: bold" /> <label id="searchtimehint" style="display: none; color: red; font-weight: bold">结束时间不得早于开始时间！</label>
+            </span>
+        </form>
+        <br /><br />
+        <table class="mobile-editor" style="width: 100%">
+            <tr>
+                <th style="width: 16%; text-align: center">换绑日期</th>
+                <th style="width: 16%; text-align: center">解绑手机号</th>
+                <th style="width: 16%; text-align: center">绑定手机号</th>
+                <th style="width: 16%; text-align: center">操作人</th>
+                <th style="width: 16%; text-align: center">操作结果</th>
+                <th style="width: 20%; text-align: center">失败原因</th>
+            </tr>
+            @if (Model.Any())
+            {
+                foreach (var mobileBindingLog in Model)
+                {
+                    <tr>
+                        <th style="width: 16%; text-align: center">@mobileBindingLog.CreatedTime</th>
+                        <th style="width: 16%; text-align: center">@mobileBindingLog.SourceBindMobile</th>
+                        <th style="width: 16%; text-align: center">@mobileBindingLog.TargetBindMobile</th>
+                        <th style="width: 16%; text-align: center">@mobileBindingLog.Operator</th>
+                        <th style="width: 16%; text-align: center">@(mobileBindingLog.OperateStatus ? "成功" : "失败")</th>
+                        <th style="width: 20%; text-align: center">@mobileBindingLog.FailReason</th>
+                    </tr>
+                }
+            }
+        </table>
+
+    </div>
+
+    <div class="modal fade" id="vcodeEditor" tabindex="-1" role="dialog"
+         aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <input type="button" value="发送验证码" class="btn btn-primary" id="VerificationCodeSend" onclick="sendVCode()" style="width: 178px; font-weight: bold" />&nbsp;<input type="text" id="VerificationCode" name="VerificationCode" value="" style="width: 179px" maxlength="4" oninput="this.value = this.value.replace(/\D/g, '')" />
+                    <br />
+                    <div style="float: right; font-weight: bold" id="sendVCFeedback"></div>
+                    <br />
+                    <input type="button" value="提交验证码" class="btn btn-primary" id="VerificationCodeSubmission" onclick="submitVCode()" style="width: 368px; font-weight: bold" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="Notification" tabindex="-1" role="dialog"
+         aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <span style="font-weight: bold" id="noticeContent"></span><br />
+                    <button type="button" class="btn btn-default"
+                            data-dismiss="modal" id="shutNotice">
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/Content/nfine/js/bootstrap/bootstrap.js"></script>
+    <script src="~/Content/ProductVehicleType/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#SearchStartDate").datepicker({ dateFormat: 'yy-mm-dd' });
+            $("#SearchEndDate").datepicker({ dateFormat: 'yy-mm-dd' });
+            $("#sendVCFeedback").hide();
+        });
+
+        ($("#dateInquiry").click(function () {
+            $("#mobileBindQuery").attr("action", '/MobileBindUnbind/ChangeMobileBindingOnDate');
+            $("#mobileBindQuery").submit();
+        }));
+
+        $("#SearchEndDate").focus(function () {
+            $("#searchtimehint").hide();
+            $('#dateInquiry').removeAttr("disabled");
+        });
+
+        $("#SearchStartDate").focus(function () {
+            $("#searchtimehint").hide();
+            $('#dateInquiry').removeAttr("disabled");
+        });
+
+        $("#VerificationCode").focus(function () {
+            $("#sendVCFeedback").hide();
+        });
+
+        $("#SearchStartDate").change(function () {
+            var startDate = $("#SearchStartDate").val();
+            var endDate = $("#SearchEndDate").val();
+            if (startDate.length > 0 && endDate.length > 0) {
+                var sDate = Date.parse(startDate);
+                var eDate = Date.parse(endDate);
+                if (sDate > eDate) {
+                    $("#searchtimehint").show();
+                    $("#dateInquiry").attr("disabled", "disabled");
+                }
+            }
+        });
+
+        $("#SearchEndDate").change(function () {
+            var startDate = $("#SearchStartDate").val();
+            var endDate = $("#SearchEndDate").val();
+            if (startDate.length > 0 && endDate.length > 0) {
+                var sDate = Date.parse(startDate);
+                var eDate = Date.parse(endDate);
+                if (sDate > eDate) {
+                    $("#searchtimehint").show();
+                    $("#dateInquiry").attr("disabled", "disabled");
+                }
+            }
+        });
+
+        function submitMobileNums() {
+            if ($("#mobileToAbandon").val() != "" && $("#mobileToBind").val() != "" && $("#mobileToAbandon").val() != $("#mobileToBind").val()) {
+                $.post('@Url.Action("SubmitChangeBindingRequest")', { "oldNumber": $("#mobileToAbandon").val(), "newNumber": $("#mobileToBind").val() }, function (data) {
+                    if (parseInt(data) <= 0) {
+                        if (parseInt(data) == -3) {
+                            $("#noticeContent").html('无法绑定，需绑定手机号已关联其他用户账号，且关联账号下当前有未完成的订单').width(565);
+                            $('#Notification').width(650);
+                            $('#shutNotice').width(565);
+                        }
+                        else if (parseInt(data) == -4) {
+                            $("#noticeContent").html('无法绑定，需绑定手机号已关联其他用户账号，且关联账号下有过去7天新完成订单').width(565);
+                            $('#Notification').width(650);
+                            $('#shutNotice').width(565);
+                        }
+                        else if (parseInt(data) == -1) {
+                            $("#noticeContent").html('无法解绑，需解绑手机号不存在').width(285);
+                            $('#Notification').width(320);
+                            $('#shutNotice').width(285);
+                        }
+                        else if (parseInt(data) == -2) {
+                            $("#noticeContent").html('需绑定手机号已关联永隆行账户，可能有积分，请检查').width(365);
+                            $('#Notification').width(415);
+                            $('#shutNotice').width(365);
+                        }
+                        else {
+                            $("#noticeContent").html('服务端出现未知异常').width(265);
+                            $('#Notification').width(300);
+                            $('#shutNotice').width(265);
+                        }
+                        var left = ($(document.body).width() - $("#Notification").width()) / 2;
+                        var top = ($(document.body).height() - $("#Notification").height()) / 2;
+                        $('#Notification').css({
+                            left: left,
+                            top: top
+                        }).modal('show');
+                    } else {
+                        $("#sendVCFeedback").hide();
+                        var left = ($(document.body).width() - $("#vcodeEditor").width()) / 2;
+                        var top = ($(document.body).height() - $("#vcodeEditor").height()) / 2;
+                        $('#vcodeEditor').css({
+                            left: left,
+                            top: top
+                        }).modal('show');
+                    }
+                });
+            }
+        }
+
+        function sendVCode() {
+            $("#VerificationCodeSend").attr("disabled", "disabled");
+            $("#sendVCFeedback").hide();
+            $.post('@Url.Action("SendNewVcodePerSms")', { "phoneNumber": $("#mobileToBind").val() }, function (data) {
+                if (parseInt(data) == -2) {
+                    $("#sendVCFeedback").text("验证码生成失败").css("color", "red").show();
+                } else if (parseInt(data) == -1) {
+                    $("#sendVCFeedback").text("验证码发送失败").css("color", "red").show();
+                } else {
+                    $("#sendVCFeedback").text("验证码发送成功").css("color", "black").show();
+                }
+                $("#VerificationCodeSend").removeAttr("disabled");
+            });
+        }
+
+        function submitVCode() {
+            if ($("#VerificationCode").val() != "") {
+                $.post('@Url.Action("SubmitChangeBindingAction")', { "oldNumber": $("#mobileToAbandon").val(), "newNumber": $("#mobileToBind").val(), "vCode": $("#VerificationCode").val() }, function (data) {
+                    $('#vcodeEditor').modal('hide');
+                    $("#noticeContent").html(data).width(265);
+                    $('#Notification').width(300);
+                    $('#shutNotice').width(265);
+                    var left = ($(document.body).width() - $("#Notification").width()) / 2;
+                    var top = ($(document.body).height() - $("#Notification").height()) / 2;
+                    $('#Notification').css({
+                        left: left,
+                        top: top
+                    }).modal('show');
+                    $("#VerificationCode").val('');
+                });
+            }
+        }
+    </script>

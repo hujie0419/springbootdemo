@@ -1,0 +1,266 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>评论</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <script src="http://resource.tuhu.cn/Js/WebViewJavascriptBridge.js"></script>
+    <style>
+        body {
+            font-family: "微软雅黑",Helvetica,STHeiTi,sans-serif;
+        }
+
+        #wrapper {
+            overflow: hidden;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            bottom: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .comment {
+            padding-left: 10px;
+        }
+
+            .comment .item {
+                border-bottom: 1px solid #ddd;
+                color: #333;
+                padding: 10px 0;
+            }
+
+            .comment .info {
+                float: left;
+            }
+
+        .info .hu_name {
+            width: 40px;
+            text-align: center;
+            font-size: 12PX;
+            margin-top: 5px;
+            color: #999;
+        }
+
+        .comment .info img {
+            vertical-align: middle;
+            border-radius: 20px;
+        }
+
+        .comment .name {
+            font-size: 14px;
+            color: #656565;
+        }
+
+        .comment .level {
+            display: inline-block;
+            background-color: #5060cf;
+            color: #fff;
+            font-size: 12px;
+            padding: 3px 5px;
+        }
+
+        .comment .content {
+            font-size: 15px;
+            margin: 0 0 0 50px;
+            padding-right: 16px;
+        }
+
+        .comment .title .replay {
+            float: right;
+            color: #999;
+            width: 120px;
+            text-align: right;
+        }
+
+            .comment .title .replay .goodnum {
+                background: url("/img/goodunselect.png") no-repeat;
+                background-size: 18px;
+                padding: 0 10px 0 30px;
+            }
+
+                .comment .title .replay .goodnum.selected {
+                    color: #f2384e;
+                    background: url("/img/goodselect.png") no-repeat;
+                    background-size: 18px;
+                }
+
+            .comment .title .replay .replaynum {
+                background: url("/img/info.png") no-repeat;
+                background-size: 18px;
+                padding: 0 10px 0 30px;
+            }
+
+        .comment .date {
+            color: #999;
+            font-size: 12px;
+            padding-right: 10px;
+        }
+
+        .loaddiv {
+            text-align: center;
+            line-height: 40px;
+            width: 100%;
+        }
+
+            .loaddiv a {
+                text-decoration: none;
+                color: #999;
+            }
+
+                .loaddiv a.loadmore {
+                    color: #5060cf;
+                }
+
+        .comment .com {
+            overflow: hidden;
+            max-height: 95px;
+            height: auto;
+            -ms-text-overflow: ellipsis;
+            -o-text-overflow: ellipsis;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 5;
+            -webkit-box-orient: vertical;
+            margin-top: 6px;
+            font-size: 14px;
+            line-height: 18px;
+            color: #323232;
+        }
+
+            .comment .com .replayuser {
+                color: #507daf;
+            }
+
+                .comment .com .replayuser .username {
+                    color: #676767;
+                }
+
+        .comment .arrowmore {
+            display: none;
+            width: 100%;
+            padding: 15px 0 15px 0;
+            background: url("/img/arrowdown.png") no-repeat 50% 60%;
+            background-size: 18px;
+        }
+
+        .acenter {
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 0;
+            margin-top: 50%;
+        }
+
+        .clearfix {
+            content: '';
+            display: table;
+        }
+
+        #noComment {
+            display: none;
+            text-align: center;
+            line-height: 30px;
+            height: 140px;
+            position: absolute;
+            width: 100%;
+            top: 50%;
+            margin-top: -70px;
+            color: #999999;
+            font-size: 22px;
+        }
+
+            #noComment img {
+                width: 100px;
+                height: 100px;
+                display: block;
+                margin: 0 auto;
+                margin-bottom: 15px;
+            }
+
+        .new {
+            margin: 10px 0 15px -15px;
+            color: #fff;
+            position: relative;
+        }
+
+            .new span {
+                position: absolute;
+                left: 0;
+                font-size: 14px;
+                padding: 3px 0 0 17px;
+            }
+    </style>
+</head>
+<body>
+    <div id="wrapper">
+        <div id="scroller">
+
+            <div class="newcomment" id="newcomment1" style="display:none;">
+                <div class="new">
+                    <img src="../img/tip.png" width="90" />
+                    <span>热门评论</span>
+                </div>
+            </div>
+            <div class="comment" id="comment1" style="display:none;"></div>
+
+            <div class="newcomment" id="newcomment">
+                <div class="new">
+                    <img src="../img/tip.png" width="90" />
+                    <span>最新评论</span>
+                </div>
+            </div>
+            <div class="comment" id="comment">
+
+            </div>
+            <div id="noComment">
+                <img src="~/img/comment.png" /><br>还没有评论哦，赶紧来抢沙发~
+            </div>
+            <div class="loaddiv"><a href="javascript:;" class="" id="pullUpEl">正在加载...</a></div>
+        </div>
+    </div>
+
+    <script src="http://resource.tuhu.cn/scripts/wx/zepto.min.js?v=21"></script>
+    <script src="http://resource.tuhu.cn/scripts/wx/iscroll-lite.min.js"></script>
+    <script type="text/html" id="tmplArticleComment">
+
+        <div class="item">
+            <div class="info">
+                <img src="${UserHead}" alt="图片" width="40" height="40">
+            </div>
+            <div class="content">
+                <div class="title">
+                    <span class="name" pkid="${ID}" username="${UserName}">${UserName}</span>
+                    <div class="replay">
+                        <span class="goodnum" pkid="${ID}" username="${UserName}" ispraise="${IsPraise}">${PraiseNum}</span>
+                        <span class="replaynum" pkid="${ID}" username="${UserName}">@*${CommentNum}*@</span>
+                    </div>
+                </div>
+
+                <span class="date" pkid="${ID}" username="${UserName}">${CommentTime}</span>
+                <p class="com" pkid="${ID}" username="${UserName}">${ParentName} ${CommentContent}</p>
+                <div class="arrowmore"></div>
+            </div>
+        </div>
+
+
+    </script> 
+    <script>
+        var userId = '@(Request.QueryString["UserID"])';
+        var pkid =  @(Request.QueryString["PKID"]);
+
+    </script>
+    <script src="~/js/ArticleComment.js?v=442"></script>
+
+</body>
+</html>

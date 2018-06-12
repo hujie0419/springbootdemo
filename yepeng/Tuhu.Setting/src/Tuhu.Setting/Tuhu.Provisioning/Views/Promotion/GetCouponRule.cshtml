@@ -1,0 +1,350 @@
+﻿@model  Tuple<Tuhu.Component.Common.Models.ListModel<GetPCodeModel>, GetPCodeModel,List<Tuhu.Provisioning.Models.DepartmentAndUse>>
+@using Tuhu.Provisioning.DataAccess.Entity
+@using Newtonsoft.Json
+@using Tuhu.Provisioning.Models
+@{
+    ViewBag.Title = "查看/添加优惠券领取规则";
+    PromotionFilterConditionModel Condition = new PromotionFilterConditionModel();
+    if (ViewBag.Condition is PromotionFilterConditionModel)
+    {
+        Condition = ViewBag.Condition as PromotionFilterConditionModel;
+    }
+}
+@section head{
+    <link href="~/Styles/zTreeStyle.css" type="text/css" rel="stylesheet" />
+    <link href="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.css" rel="stylesheet" />
+    <style>
+    table {
+    width: 100%;
+    margin-bottom: 20px;
+    }
+
+    table th {
+    text-align: center;
+    }
+
+    table .tableTit th {
+    background-color: #435D77;
+    }
+
+    .tip {
+    color: red;
+    font-size: 14px;
+    font-weight: bolder;
+    }
+
+    .button {
+    width: 50px;
+    height: 25px;
+    text-align: center;
+    line-height: 25px;
+    margin-top: 20px;
+    background: rgb(135, 182, 217);
+    cursor: pointer;
+    }
+
+    td div {
+    margin-bottom: 10px;
+    }
+    /*.asc, .desc {
+    display: inline-block;
+    width: 20px;
+    height: 10px;
+    background: url('../../Content/images/arrow.png') no-repeat center;
+    background-size: 20px;
+    margin-left: 4px;
+    }
+
+    .asc {
+    -webkit-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+    }
+
+    .desc {
+    -webkit-transform: rotate(90deg);
+    transform: rotate(90deg);
+    }*/
+    </style>
+}
+    <h2>&nbsp;</h2>
+    <h2>查看优惠券领取规则 | <a href="#" onclick="AddGetRule()">添加优惠券领取规则</a></h2>
+@if (Model.Item2 != null)
+{
+    <table>
+    <tr>
+    <th width="100%" style="text-align:left;" colspan="5">优惠券使用规则</th>
+    </tr>
+    <tr>
+    <td>
+    优惠券RuleID
+    </td>
+    <td>
+    备注
+    </td>
+    <td>
+    订单类型
+    </td>
+    <td>
+    操作历史
+    </td>
+    <td>
+    操作
+    </td>
+    </tr>
+    <tr>
+    <td>
+    @Model.Item2.PKID
+    </td>
+    <td>
+    @Model.Item2.Name
+    </td>
+    <td>
+    @(Model.Item2.InstallType == 0 ? "所有" : (Model.Item2.InstallType == 1 ? "仅到家" : "仅到店"))
+    </td>
+    <td>
+    <a href="#" onclick="HistoryRecord('@(Model.Item2.PKID)','SaveCouponRuleInfo')">查看历史</a>
+    </td>
+    <td>
+    <a href="/Promotion/EditPromotionNew?id=@Model.Item2.PKID" btnkey="EditPromotion" istuhuverify="1">编辑</a>
+    </td>
+    </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <th width="100%" style="text-align:left;" colspan="13">优惠券领取规则</th>
+        </tr>
+        <tr>
+            <td style="text-align:left;" colspan="13">
+                <form method="get">
+                    <div>
+                        编号(数字)：<input type="text" name="GetRuleID" value="@Condition.GetRuleID" />
+                    </div>
+                    <div>
+                        编号(GUID)：<input type="text" name="GetRuleGUID" value="@Condition.GetRuleGUID" />
+                    </div>
+                    <div>
+                        名称：<input type="text" name="PromotionName" value="@Condition.PromotionName" />
+                    </div>
+                    <div>
+                        说明：<input type="text" name="Description" value="@Condition.Description" />
+                    </div>
+                    <div>
+                        面额：<input type="text" name="Discount_Min" value="@Condition.Discount_Min" />-<input type="text" name="Discount_Max" value="@Condition.Discount_Max" />
+                    </div>
+                    <div>
+                        使用条件：<input type="text" name="Minmoney_Min" value="@Condition.Minmoney_Min" />-<input type="text" name="Minmoney_Max" value="@Condition.Minmoney_Max" />
+                    </div>
+                    <div>
+                        电销是否可发放：<select class="allowchanel" onchange="$('[name=AllowChanel]').val($(this).val())">
+                            <option value="" @(Condition.AllowChanel == null ? "selected" : null)>请选择</option>
+                            <option value="1" @(Condition.AllowChanel != null && Condition.AllowChanel.Value == 1 ? "selected" : null)>是</option>
+                            <option value="0" @(Condition.AllowChanel != null && Condition.AllowChanel.Value == 0 ? "selected" : null)>否</option>
+                        </select>
+                    </div>
+                    <div>
+                        支持用户范围：<select class="userrange" onchange="$('[name=SupportUserRange]').val($(this).val())">
+                            <option value="" @(Condition.SupportUserRange == null ? "selected" : null)>请选择</option>
+                            <option value="0" @(Condition.SupportUserRange != null && Condition.SupportUserRange.Value == 0 ? "selected" : null)>全部</option>
+                            <option value="1" @(Condition.SupportUserRange != null && Condition.SupportUserRange.Value == 1 ? "selected" : null)>新用户</option>
+                            <option value="2" @(Condition.SupportUserRange != null && Condition.SupportUserRange.Value == 2 ? "selected" : null)>老用户</option>
+                        </select>
+                    </div>
+                    <div>
+                        部门
+                        <select id="DepartMentId" name="DepartMentId"  onchange="GetUseList(@JsonConvert.SerializeObject(Model.Item3))" >
+                            <option value="" >请选择部门</option>
+                            @if (Model.Item3 != null)
+                            {
+                                foreach (var item in Model.Item3)
+                                {
+                                    if (item.Type == "0")
+                                    {
+                                        <option value="@item.SettingId" @(item.IsSelected ? "selected='selected'" : "")>@item.DisplayName</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        用途
+                        <select id="IntentionId" name="IntentionId">
+                            <option value="">请选择用途</option>
+                            @if (Model.Item3 != null)
+                            {
+                                foreach (DepartmentAndUse item in Model.Item3)
+                                {
+                                    if (item.Type == "1" && item.ParentSettingId == Condition.DepartmentId)
+                                    {
+                                        <option value="@item.SettingId" @(item.IsSelected ? "selected='selected'" : "")>@item.DisplayName</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+                    <input type="hidden" name="AllowChanel" value="@Condition.AllowChanel" />
+                    <input type="hidden" name="SupportUserRange" value="@Condition.SupportUserRange" />
+                    <input type="hidden" name="id" value="@Request.QueryString["id"]" />
+                    <input type="submit" name="button" value="搜索" />
+                </form>
+            </td>
+        </tr>
+    </table>
+    if (Model.Item1 != null && Model.Item1.All(c => c.GETPKID > 0))
+    {
+        @Html.Pager(new Tuhu.Component.Common.Models.PagerModel()
+   {
+       PageSize = Model.Item1.Pager.PageSize,
+       CurrentPage = Model.Item1.Pager.CurrentPage,
+       TotalItem = Model.Item1.Pager.TotalItem
+   }, true, id => Url.Action("GetCouponRule", new
+   {
+       Condition.AllowChanel,
+       Condition.DepartmentId,
+       Condition.Description,
+       Condition.Discount_Max,
+       Condition.Discount_Min,
+       Condition.GetRuleGUID,
+       Condition.GetRuleID,
+       Condition.IntentionId,
+       Condition.Minmoney_Max,
+       Condition.Minmoney_Min,
+       Condition.OrderType,
+       Condition.PromotionName,
+       Condition.PromotionType,
+       Condition.Remark,
+       Condition.RuleID,
+       Condition.SupportUserRange,
+       PageIndex = id,
+       Condition.PageSize,
+       id= Request.QueryString["id"]
+   }))
+        <br/>
+        <table>
+
+            <tr>
+                <td>优惠券规则编号</td>
+                <td>优惠券规则Guid</td>
+                <td>名称</td>
+                <td>说明</td>
+                <td>面额</td>
+                <td>使用条件</td>
+                <td>优惠有效期</td>
+                <td>电销可发放</td>
+                <td>支持用户范围</td>
+                <td>发行量</td>
+                <td>已领取</td>
+                <td>提前提醒</td>
+                <td>操作历史</td>
+                <td>操作</td>
+            </tr>
+            @foreach (var item in Model.Item1)
+            {
+                <tr>
+                    <td>@item.GETPKID</td>
+                    <td>@item.GetRuleGUID</td>
+                    <td>@item.PromtionName</td>
+                    <td>@item.Description</td>
+                    <td>@item.Discount.GetValueOrDefault().ToString("0.00")</td>
+                    <td>@item.Minmoney.GetValueOrDefault().ToString("0.00")</td>
+                    <td>@(item.Term == null ? item.ValiStartDate.Value.ToString("yyyy/MM/dd") + "至" + item.ValiEndDate.Value.ToString("yyyy/MM/dd") : "自领取后" + item.Term + "天")</td>
+                    <td>@(item.AllowChanel == 1 ? "是" : "否")</td>
+                    <td>@(item.SupportUserRange == 0 ? "全部" : item.SupportUserRange == 1 ? "新用户" : "老用户")</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.GetQuantity</td>
+                    <td>@(item.IsPush == 1 ? item.PushSetting : "")</td>
+                    <td><a href="#" onclick="HistoryRecord('@(item.GETPKID)', 'SaveGetRule')">查看操作历史</a></td>
+                    <td><a a href="#" onclick="AddGetRule(@item.GETPKID, 'edit')">编辑</a>|<a a href="#" onclick="AddGetRule(@item.GETPKID, 'copy')">复制</a></td>
+                </tr>
+            }
+
+        </table>
+        @Html.Pager(new Tuhu.Component.Common.Models.PagerModel()
+        {
+            PageSize = Model.Item1.Pager.PageSize,
+            CurrentPage = Model.Item1.Pager.CurrentPage,
+            TotalItem = Model.Item1.Pager.TotalItem
+        }, true, id => Url.Action("GetCouponRule", new
+        {
+            Condition.AllowChanel,
+            Condition.DepartmentId,
+            Condition.Description,
+            Condition.Discount_Max,
+            Condition.Discount_Min,
+            Condition.GetRuleGUID,
+            Condition.GetRuleID,
+            Condition.IntentionId,
+            Condition.Minmoney_Max,
+            Condition.Minmoney_Min,
+            Condition.OrderType,
+            Condition.PromotionName,
+            Condition.PromotionType,
+            Condition.Remark,
+            Condition.RuleID,
+            Condition.SupportUserRange,
+            PageIndex = id,
+            Condition.PageSize,
+            id= Request.QueryString["id"]
+        }))
+    }
+}
+
+    <div id="HistoryRule"></div>
+<div id="AddGetRule"></div>
+@section scripts{
+    <script src="~/Scripts/jquery.ztree.all-3.5.min.js"></script>
+    <script src="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.js"></script>
+    <script src="~/Scripts/Promotion/FormatJson.js?v=20180223"></script>
+    <script>
+    function HistoryRecord(activeID, type) {
+        $("#HistoryRule").load('/Promotion/HistoryActions?objectId=' + activeID + '&objectType=' + type);
+        $("#HistoryRule").dialog({
+            title: "操作历史",
+            width: 600,
+            height: 'auto',
+            modal: true,
+            buttons: {
+                "关闭": function() {
+                    $(this).dialog("close"); //当点击取消按钮时，关闭窗口
+                }
+            }
+        });
+    }
+
+    function AddGetRule(rid, iscopy) {
+        $("#AddGetRule").load('/Promotion/AddGetRule?iscopy=' + iscopy + '&id=@Request.QueryString["id"]' +
+                "&rid=" +
+                rid);
+            $("#AddGetRule").dialog({
+                title: iscopy ? (iscopy == "copy" ? "复制优惠券" : "编辑优惠券") : "添加领券规则",
+                width: 1000,
+                height: 'auto',
+                modal: true,
+                buttons: {
+                    "保存": function() {
+                        $(".button").click();
+                    },
+                    "关闭": function() {
+                        $(this).dialog("close"); //当点击取消按钮时，关闭窗口
+                    }
+                }
+            });
+        }
+
+    function GetUseList(data) {
+    var DepartMentId = $("[name=DepartMentId]").val()
+    if(!DepartMentId)
+    {
+    return;
+    }
+    var filterDiv = $("#IntentionId");
+    filterDiv.empty();
+    $.each(data, function (i, row) {
+    if(row["ParentSettingId"]==DepartMentId)
+    {
+    filterDiv.append($("<option></option>").val(row["SettingId"]).text(row["DisplayName"]))
+    }
+    });
+    };
+    </script>
+}

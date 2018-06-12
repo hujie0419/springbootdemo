@@ -1,0 +1,312 @@
+﻿@using System.Collections
+@using Tuhu.MMS.Web.Domain.UserFilter
+@{
+    var configs = ViewData["config"] as IEnumerable<UserFilterValueConfig>;
+    Func<string, IEnumerable<SelectListItem>> getselectlist = colname =>
+    {
+        var selectlists = configs.Where(x => x.ColName == colname).Select(x => new SelectListItem()
+        {
+            Text = x.Name,
+            Value = x.Value
+        }).ToList();
+        selectlists.Insert(0, new SelectListItem() { Text = "请选择", Value = "" });
+        return selectlists;
+    };
+}
+<div class="ibox-content" v-show="SecondCategorySelect=='DefaultVehicle'">
+    <form id="DefaultVehicle">
+        <div class="row">
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="exampleInputName2">默认车型品牌</label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    @*@Html.DropDownList("vehiclebrand", getselectlist("vehiclebrand"), new { @class = "form-control" })*@
+                    <select class="form-control" name="vehiclebrand" v-on:change="selectchange('vehiclebrand')">
+                        @{
+                            foreach (var selectListItem in getselectlist("vehiclebrand"))
+                            {
+                                <option value="@selectListItem.Value">@selectListItem.Text</option>
+                            }
+                        }
+                    </select>
+
+                    @*<select class="form-control" name="vehiclebrand">
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                            <option>5</option>
+                        </select>*@
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="exampleInputName2">默认车型车系</label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    @*@Html.DropDownList("vehiclename", getselectlist("vehiclename"), new { @class = "form-control" })*@
+                    <select class="form-control" name="vehiclename" v-on:change="selectchange('vehiclename')">
+                        @{
+                            foreach (var selectListItem in getselectlist("vehiclename"))
+                            {
+                                <option value="@selectListItem.Value">@selectListItem.Text</option>
+                            }
+                        }
+                    </select>
+                    @*<select class="form-control" name="vehiclename">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                    </select>*@
+                </div>
+            </div>
+
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="exampleInputName2">默认车型排量</label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    @*@Html.DropDownList("vehiclepailiang", getselectlist("vehiclepailiang"), new { @class = "form-control" })*@
+                    <select class="form-control" name="vehiclepailiang" v-on:change="selectchange('vehiclepailiang')">
+                        @{
+                            foreach (var selectListItem in getselectlist("vehiclepailiang"))
+                            {
+                                <option value="@selectListItem.Value">@selectListItem.Text</option>
+                            }
+                        }
+                    </select>
+                    @*<select class="form-control" name="vehiclepailiang">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                    </select>*@
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="exampleInputName2">默认车型生产年份</label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    @*@Html.DropDownList("vehiclenian", getselectlist("vehiclenian"), new { @class = "form-control" })*@
+                    
+                    <select class="form-control" name="vehiclenian" v-on:change="selectchange('vehiclenian')">
+                        @{
+                            foreach (var selectListItem in getselectlist("vehiclenian"))
+                            {
+                                <option value="@selectListItem.Value">@selectListItem.Text</option>
+                            }
+                        }
+                    </select>
+
+                    @*<select class="form-control" name="vehiclenian">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                    </select>*@
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="exampleInputName2">默认车型配置</label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    @*@Html.DropDownList("vehiclesalesname", getselectlist("vehiclesalesname"), new { @class = "form-control" })*@
+                    
+                    <select class="form-control" name="vehiclesalesname" v-on:change="selectchange('vehiclesalesname')">
+                        @{
+                            foreach (var selectListItem in getselectlist("vehiclesalesname"))
+                            {
+                                <option value="@selectListItem.Value">@selectListItem.Text</option>
+                            }
+                        }
+                    </select>
+
+                    @*<select class="form-control" name="vehiclesalesname">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                    </select>*@
+                </div>
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+    </form>
+</div>
+
+
+<div class="ibox-content" v-show="SecondCategorySelect=='DefaultTire'">
+    <form id="DefaultTire">
+        <div class="row">
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="exampleInputName2">默认车型轮胎规格</label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <select class="form-control" name="defaultspecifications" v-on:change="selectchange('defaultspecifications')">
+                        @{
+                            foreach (var selectListItem in getselectlist("defaultspecifications"))
+                            {
+                                <option value="@selectListItem.Value">@selectListItem.Text</option>
+                            }
+                        }
+                    </select>
+                    @*@Html.DropDownList("defaultspecifications", getselectlist("defaultspecifications"), new { @class = "form-control" })*@
+                    @*<select class="form-control" name="defaultspecifications">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                    </select>*@
+                </div>
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+    </form>
+</div>
+
+
+
+<div class="ibox-content" v-show="SecondCategorySelect=='DefaultTwoLevelPrice'">
+    <form id="DefaultTwoLevelPrice">
+        <div class="row">
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="exampleInputName2">默认二级车型均价</label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <input type="text" name="twoavgprice_start" placeholder="填写起始数字" class="form-control" />
+                </div>
+            </div>
+            @*<div class="col-sm-2">
+                    <div class="form-group">
+                        <label for="exampleInputName2">默认车型车系</label>
+                    </div>
+                </div>*@
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <input type="text" name="twoavgprice_end" placeholder="填写终止数字" class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+    </form>
+</div>
+
+<div class="ibox-content" v-show="SecondCategorySelect=='DefaultFiveLevelPrice'">
+    <form id="DefaultFiveLevelPrice">
+        <div class="row">
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="exampleInputName2">默认五级车型均价</label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <input type="text" name="fiveavgprice_start" placeholder="填写起始数字" class="form-control" />
+                </div>
+            </div>
+            @*<div class="col-sm-2">
+                    <div class="form-group">
+                        <label for="exampleInputName2">默认车型车系</label>
+                    </div>
+                </div>*@
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <input type="text" name="fiveavgprice_end" placeholder="填写终止数字" class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+    </form>
+</div>
+
+<div class="ibox-content" v-show="SecondCategorySelect=='DefaultVehicleKM'">
+    <form id="DefaultVehicleKM">
+        <div class="row">
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="exampleInputName2">默认车辆公里数</label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <input type="text" name="kilometer_start" placeholder="填写起始数字" class="form-control" />
+                </div>
+            </div>
+            @*<div class="col-sm-2">
+                    <div class="form-group">
+                        <label for="exampleInputName2">默认车型车系</label>
+                    </div>
+                </div>*@
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <input type="text" name="kilometer_end" placeholder="填写终止数字" class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+    </form>
+</div>
+
+<div class="ibox-content" v-show="SecondCategorySelect=='DefaultVehicleRoadTime'">
+    <form id="DefaultVehicleRoadTime">
+        <div class="row">
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="exampleInputName2">默认车辆上路时间</label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <div class="input-group date">
+                        <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input name="onroaddtae_start_date" type="text" class="form-control" placeholder="选择开始日期">
+                    </div>
+                    <div class="input-group clockpicker" data-autoclose="true">
+                        <input type="text" class="form-control" name="onroaddtae_start_time" placeholder="选择开始时间">
+                        <span class="input-group-addon">
+                            <span class="fa fa-clock-o"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <div class="input-group date">
+                        <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="text" name="onroaddtae_end_date" class="form-control" placeholder="选择结束日期">
+                    </div>
+                    <div class="input-group clockpicker" data-autoclose="true">
+                        <input type="text" class="form-control" name="onroaddtae_end_time" placeholder="选择结束时间">
+                        <span class="input-group-addon">
+                            <span class="fa fa-clock-o"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+    </form>
+</div>

@@ -1,0 +1,329 @@
+﻿@{
+    ViewBag.Title = "保养项目加价配置";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>保养项目加价配置</h2>
+<link href="~/Content/Public/Public.css" rel="stylesheet" type="text/css" />
+<link href="~/Content/BaoYangInstallFeeConfig/BaoYangInstallFeeConfig.css" rel="stylesheet" />
+
+<div id="div">
+    <fieldset>
+            <label>保养项目:</label>
+            <v-select style="width:40%;float:left;margin-left:10px;" placeholder="-请选择保养项目-" v-model="searchData.ServiceId" :options="allBaoYangServices"></v-select>
+            <button class="btn btn-primary" v-on:click="Search()">查询</button>
+            <button class="btn btn-basic" style="width:110px;" v-on:click="RefreshCache()">刷新服务缓存</button>
+            <label style="float:right">
+                特殊车型附加安装费开关控制:
+                <span><input type="radio" value="true" v-on:click="UpdateSwitch(true)" :checked="vehicleAdditionalPriceSwitch==true" />开启</span>
+                <span><input type="radio" value="false" v-on:click="UpdateSwitch(false)" :checked="vehicleAdditionalPriceSwitch==false" />关闭</span>
+            </label>
+</fieldset>
+    <table class="tableContainer">
+        <thead>
+            <tr>
+                <th style="width:20%;">保养服务</th>
+                <th style="width:30%;">车型价格区间<span style="color:yellow;margin-left:10px;">(左闭 右开)</span></th>
+                <th style="width:10%;">安装费加价</th>
+                <th style="width:20%;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="loading">
+                <td colspan="10"><img src="~/Images/loading.gif" /></td>
+            </tr>
+            <tr v-else-if="searchResult != []" v-for="(value,key,index) in searchResult">
+                <td>{{key}}</td>
+                <td colspan="2">
+                    <table style="width:100%">
+                        <tr v-if="value.length>0" v-for="item in value">
+                            <td style="width:37.5%">{{item.CarMinPrice}}-{{item.CarMaxPrice}} 万元</td>
+                            <td style="width:12.5%">{{item.AddInstallFee}} 元</td>
+                        </tr>
+                    </table>
+                </td>
+                <td>
+                    <button class="btn btn-basic" style="width:60px" v-on:click="OpenEditDialog(value)">编辑</button>
+                    <button class="btn btn-danger" style="width:60px;margin-left:5px" v-on:click="Delete(value)">删除</button>
+                </td>
+            </tr>
+            <tr v-else>
+                <td colspan="10">根据筛选条件未能查询到相关结果</td>
+            </tr>
+        </tbody>
+    </table>
+    <div id="kkpager" colspan="12"></div>
+    <div>
+        <div class="content">
+            <modal v-if="editDialog.show" v-on:close="editDialog.show=false">
+                <h3 slot="header">编辑</h3>
+                <div slot="body" class="dialog">
+                    <table>
+                        <tr style="white-space:nowrap;">
+                            <th>保养项目:</th>
+                            <td>
+                                <label>{{baoYangInstallFeeModel[0].ServiceName}}</label>
+                            </td>
+                        </tr>
+                        <tr style="white-space:nowrap;" v-if="baoYangInstallFeeModel.length>0" v-for="(model,index) in baoYangInstallFeeModel">
+                            <th>加价配置：</th>
+                            <td>
+                                <label>车型价格区间：</label>
+                                <input type="number" style="width:20%;" disabled="disabled" v-model.number="model.CarMinPrice" /> ~
+                                <input type="number" style="width:20%;" :disabled="index!=baoYangInstallFeeModel.length-1" v-model.number="model.CarMaxPrice" />  万元
+                                <label style="margin-left:30px;">加价:</label><input type="number" style="width:20%;" v-model.number="model.AddInstallFee" /> 元
+                                <span v-if="index==baoYangInstallFeeModel.length-1" class='ui-icon ui-icon-plus'
+                                      style="display: inline-block; margin-left: 5px; cursor: pointer" v-on:click="AddPriceArea(model)"></span>
+                                <span v-if="index==baoYangInstallFeeModel.length-1" class='ui-icon ui-icon-minus'
+                                      style="display: inline-block; margin-left: 5px; cursor: pointer" v-on:click="RemovePriceArea(model)"></span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div slot="footer">
+                    <button class="footBtn" v-on:click="closeEditDialog()">取消</button>
+                    <button class="footBtn" v-on:click="Edit()">确认</button>
+                </div>
+            </modal>
+        </div>
+    </div>
+</div>
+<script type="text/x-template" id="modal-template">
+    <transition name="modal">
+        <div class="modal-mask">
+            <div class="modal-wrapper">
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <slot name="header"></slot>
+                    </div>
+                    <div class="modal-body">
+                        <slot name="body"></slot>
+                    </div>
+                    <div class="modal-footer">
+                        <slot name="footer">
+                            <button class="modal-default-button" v-on:click="">OK</button>
+                        </slot>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</script>
+<script src="~/Scripts/vue.min.js"></script>
+<script src="~/Scripts/vue-select/vue-select.js"></script>
+<script type="text/javascript">
+    Vue.component('modal', {
+        template: '#modal-template'
+    });
+    Vue.component('v-select', VueSelect.VueSelect);
+    var vue = new Vue({
+        el: "#div",
+        data: {
+            allBaoYangServices: [],
+            searchData: {
+                ServiceId: ""
+            },
+            baoYangInstallFeeModel: [],
+            loading: false,
+            searchResult: [],
+            editDialog: {
+                show: false
+            },
+            vehicleAdditionalPriceSwitch: true
+        },
+        created: function () {
+            var self = this;
+            self.GetAllBaoYangServices();
+            self.GetSwitchStatus();
+            self.Search();
+        },
+        watch: {
+            "searchData.ServiceId": function () {
+                var self = this;
+                self.Search();
+            }
+        },
+        methods: {
+            GetAllBaoYangServices: function () {
+                var self = this;
+                $.post("GetAllBaoYangServices", function (result) {
+                    if (result.Status) {
+                        var obj = new Object();
+                        if (result.Data.length > 0) {
+                            $.each(result.Data, function (index, value) {
+                                obj = new Object();
+                                obj.value = value.ServiceId;
+                                obj.label = value.ServiceName;
+                                self.allBaoYangServices.push(obj);
+                            });
+                        }
+                        else
+                        {
+                            obj.value = "";
+                            obj.label = "-无保养项目-";
+                            self.allBaoYangServices.push(obj);
+                        }
+                    }
+                    else {
+                        alert("获取保养项目失败!" + result.Msg || "");
+                    }
+                });
+            },
+            Search: function () {
+                var self = this;
+                self.loading = true;
+                $.post("SelectBaoYangInstallFeeConfig", { serviceId: self.searchData.ServiceId.value }, function (result) {
+                    if (result.Status) {
+                        self.searchResult = result.Data;
+                    }
+                    else {
+                        alert("查询失败!" + (result.Msg || ""));
+                        self.SearchResult = [];
+                    }
+                    self.loading = false;
+                });
+            },
+            OpenEditDialog: function (item) {
+                var self = this;
+                self.baoYangInstallFeeModel = [];
+                if (item && item.length > 0) {
+                    $.each(item, function (index, value) {
+                        var obj = new Object();
+                        obj.PKID = value.PKID;
+                        obj.ServiceId = value.ServiceId;
+                        obj.ServiceName = value.ServiceName;
+                        obj.CarMinPrice = value.CarMinPrice;
+                        obj.CarMaxPrice = value.CarMaxPrice;
+                        obj.AddInstallFee = value.AddInstallFee;
+                        self.baoYangInstallFeeModel.push(obj);
+                    });
+                }
+                self.editDialog.show = true;
+            },
+            closeEditDialog: function () {
+                var self = this;
+                self.editDialog.show = false;
+            },
+            AddPriceArea: function (model) {
+                if (model.CarMaxPrice <= model.CarMinPrice) {
+                    alert("车型价格区间最大值需大于最小值");
+                    return;
+                }
+                var self = this;
+                var obj = new Object();
+                obj.PKID = 0;
+                obj.ServiceId = model.ServiceId;
+                obj.ServiceName = model.ServiceName;
+                obj.CarMinPrice = model.CarMaxPrice;
+                obj.CarMaxPrice = 0;
+                obj.AddInstallFee = 0;
+                self.baoYangInstallFeeModel.push(obj);
+            },
+            RemovePriceArea: function () {
+                var self = this;
+                if (self.baoYangInstallFeeModel.length > 1) {
+                    self.baoYangInstallFeeModel.splice(-1, 1);
+                }
+                else {
+                    self.baoYangInstallFeeModel[0].CarMinPrice = 0;
+                    self.baoYangInstallFeeModel[0].CarMaxPrice = 0;
+                    self.baoYangInstallFeeModel[0].AddInstallFee = 0;
+                }
+            },
+            Edit: function () {
+                var self = this;
+                var models = self.baoYangInstallFeeModel;
+                if (models.length < 1) {
+                    alert("请选择价格区间和加价");
+                    return;
+                }
+                if (!confirm("是否确认更新" + models[0].ServiceName + "服务加价配置 ? ")) {
+                    return;
+                }
+                for (var index = 0; index < models.length; index++) {
+                    if (!models[index].ServiceId) {
+                        alert("请选择保养项目");
+                        return;
+                    }
+                    if (models[index].CarMaxPrice <= models[index].CarMinPrice) {
+                        alert("车型最高价格需大于最低价");
+                        return;
+                    }
+                    if (models[index].AddInstallFee < 0) {
+                        alert("加价不得为负数");
+                        return;
+                    }
+                };
+                $.post("AddOrEditBaoYangInstallFeeConfig", { models: models }, function (data) {
+                    if (data && data.Status) {
+                        alert("编辑成功!" + (data.Msg || ""));
+                        self.closeEditDialog();
+                        self.Search();
+                    }
+                    else {
+                        alert("编辑失败!" + (data.Msg || ""));
+                    }
+                });
+            },
+            Delete: function (item) {
+                var self = this;
+                if (!item || item.length < 1) {
+                    return;
+                }
+                if (!confirm("确认删除 " + item[0].ServiceName + " 的活动配置?")) {
+                    return;
+                }
+                var serviceId = item[0].ServiceId;
+                if (!serviceId) {
+                    return;
+                }
+                $.post("DeleteBaoYangInstallFeeConfig", { serviceId: serviceId }, function (result) {
+                    if (result && result.Status) {
+                        alert("删除成功!" + (result.Msg || ""));
+                        self.Search();
+                    }
+                    else {
+                        alert("删除失败!" + (result.Msg || ""));
+                    }
+                });
+            },
+            RefreshCache: function () {
+                var self = this;
+                if (!confirm("确认刷新服务缓存?")) {
+                    return;
+                }
+                $.post("RefreshBaoYangInstallFeeConfigCache", function (result) {
+                    if (result && result.Status) {
+                        alert("刷新缓存成功!");
+                        self.Search();
+                    }
+                    else {
+                        alert("刷新缓存失败!");
+                    }
+                });
+            },
+            GetSwitchStatus: function () {
+                var self = this;
+                $.post("GetVehicleAdditionalPriceSwitchStatus", function (result) {
+                    self.vehicleAdditionalPriceSwitch = result.Data;
+                });
+            },
+            UpdateSwitch: function (isOpen) {
+                var self = this;
+                var swithStr = isOpen ? "开启" : "关闭";
+                if (!confirm("确认" + swithStr + "特殊车型附加安装费开关?")) {
+                    return;
+                }
+                $.post("UpdateVehicleAdditionalPriceSwitch", { isOpen: isOpen }, function (result) {
+                    if (result && result.Status) {
+                        alert(swithStr+"开关成功!");
+                        self.vehicleAdditionalPriceSwitch = isOpen;
+                    }
+                    else {
+                        alert(swithStr+"开关失败!");
+                    }
+                });
+            }
+        }
+    })
+</script>

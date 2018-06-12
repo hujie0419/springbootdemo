@@ -1,0 +1,79 @@
+﻿
+@{
+    ViewBag.Title = "手动触发执行塞券";
+}
+
+<h2>手动触发执行塞券</h2>
+<table>
+    <tr>
+        <td>RouteKey</td>
+        <td>
+            <select id="RouteKey">
+                <option value="ExecutePromotionTask.setting">Setting及时塞券</option>
+                <option value="ExecutePromotionTask.promotiontaskjob">非BI表一次性塞券</option>
+                <option value="ExecutePromotionTask.promotiontaskactivity">BI表一次性塞券</option>
+                <option value="ExecutePromotionTask.promotionordermessagedeal">触发任务（OrderNo必填）</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>ExcuteType</td>
+        <td>
+            <select id="ExcuteType">
+                <option value="0">发券并通知</option>
+                <option value="1">仅发券</option>
+                <option value="2">仅发通知</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>任务id</td>
+        <td><input id="PromotionTaskId" type="text" /></td>
+    </tr>
+    <tr>
+        <td>订单号(带TH)</td>
+        <td><input id="OrderNo" type="text" /></td>
+    </tr>
+    <tr>
+        <td>MinPkid</td>
+        <td><input id="MinPkid" type="text" /></td>
+    </tr>
+    <tr>
+        <td></td>
+        <td><input type="button" id="btnSave" value="提交" /></td>
+    </tr>
+</table>
+
+@section scripts{
+    <script>
+
+        (function() {
+            $("#btnSave").click(function() {
+                var params = ["PromotionTaskId", "RouteKey", "ExcuteType", "OrderNo", "MinPkid"];
+
+                var param = {};
+                for (var i = 0; i < params.length;i++) {
+                    param[params[i]] = $("#" + params[i]).val().trim();
+                }
+                if (param.PromotionTaskId == '') {
+                    alert("请输入任务id");
+                    return;
+                }
+                if (param.RouteKey == "ExecutePromotionTask.promotionordermessagedeal" && param.OrderNo == "") {
+                    alert("请输入订单号");
+                    return;
+                }
+                $.ajax({
+                    url: "/Promotion/PostSendPromotionTaskMQ",
+                    type: "POST",
+                    dataType: "json",
+                    data: param,
+                    success: function(data) {
+                        if (data.Code == 1) alert("执行命令发送成功");
+                    }
+                });
+
+            });
+        })();
+    </script>
+}

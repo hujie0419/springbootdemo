@@ -1,0 +1,187 @@
+﻿@{
+    ViewBag.Title = "会员特权配置";
+    Layout = "~/Views/Shared/_PersonalCenterLeft.cshtml";
+}
+<h2>会员特权配置</h2>
+
+<p>
+    <input type="button" id="addUserPermissionPage" class="btn" onclick="btnEdit()" value="新增" />
+</p>
+
+<table>
+    <tr>
+        <th>显示的名称</th>
+        <th>点亮图标</th>
+        <th>未点亮图标</th>
+        @*<th>头图</th>*@
+        <th>显示顺序</th>
+        @*<th>是否为头图</th>*@
+        <th>用户等级</th>
+        <th>描述</th>
+        <th>是否启用</th>
+        <th>是否高亮</th>
+        <th>小标题</th>
+        <th>操作</th>
+
+    </tr>
+    @if (Model != null)
+    {
+        foreach (var item in Model)
+        {
+            <tr>
+                <td> @item.Name </td>
+                <td> <img src="@item.LightImage" width="75px" height="75px" /> </td>
+                <td> <img src="@item.DarkImage" width="75px" height="75px" /></td>
+                @*<td> <img src="@item.TopImage" width="160px" height="75px" /></td>*@
+                <td> @item.Position</td>
+                @*<td>@(item.IsTopImage == 1 ?"是":"否")</td>*@
+                <td>@item.UseUserLevel</td>
+                <td>@item.Description</td>
+                <td>@(item.IsEnable == 1 ? "是" : "否")</td>
+                <td>@(item.IsLight == 1 ? "是" : "否")</td>
+                <td>@item.FootTile</td>
+                <td>
+                    <input type="button" onclick="btnEdit('@item.Id')" class="btn" value="修改" />
+                    @*<input type="button" onclick="btnDelete('@item.Id', this)" value="删除" />*@
+                </td>
+
+            </tr>
+        }
+    }
+
+    <tr>
+        <td colspan="9">
+            <div id="pp" style="align-content:center;">
+            </div>
+        </td>
+    </tr>
+</table>
+<div id="AddItem" style="display:none;"></div>
+<div id="EditItem" style="display:none;"></div>
+<script src="/Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<link href="~/Scripts/myPagination/css/page.css" rel="stylesheet" type="text/css" />
+<script src="~/Scripts/myPagination/js/jquery.myPagination.js" type="text/javascript"></script>
+<script src="~/Scripts/jquery.validate.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+    ///分页
+    $("#pp").myPagination({
+        currPage:@ViewBag.Page,
+        pageCount:@ViewBag.PageCount,
+        ajax: {
+
+            on: false,
+            onClick: function (page) {
+                $("body").html("").load('/UserPermission/Index?page=' + (page || "")+'&pageSize=5');
+            }
+        }
+    });
+
+    var mainValidateOptions = {
+        rules: {
+            Name: "required",
+            UseUserLevel: {
+                //digits: true,
+                min:-100,
+                max:1000
+            },
+            Position:{
+                digits: true,
+                min: 1
+            }
+        },
+        messages: {
+            Name: "请输入名称",
+            UseUserLevel: {
+                digits: "请输入整数或不填",
+                min: "请输入整数或不填"
+            },
+            Position:{
+                digits: "请输入大于0的整数或不填",
+                min: "请输入大于0的整数或不填"
+            }
+        }
+    };
+
+    ///新增或者编辑
+    function btnEdit(id) {
+        $("#EditItem").html("").load('/UserPermission/Edit?ID=' + (id || ""));
+        $("#EditItem").dialog({
+            title: "编辑用户等级配置",
+            width: 850,
+            height: 450,
+            modal: true,
+            resizable: false,
+            buttons: {
+                "保存": function () {
+                    var isvalid=true;
+                    if(!$("#editUserPermission>form").valid()){
+                        isvalid=false;
+                    }
+
+                    if(isvalid){
+                        var data = GetTableData();
+                        $.ajax({
+                            type: "POST",
+                            url: "/UserPermission/Edit",
+                            data: { ID: id || "", data: JSON.stringify(data) },
+                            success: function (msg) {
+                                if (msg == '0')
+                                    alert("保存失败！");
+                                else {
+                                    alert("保存成功！");
+                                    location.reload();
+                                }
+                            }
+                        });
+                    }
+
+                },
+                "取消": function () {
+                    $(this).dialog("close");
+                }
+
+            }
+        });
+    }
+
+    //添加
+    function GetTableData() {
+        return {
+            ID:'',
+            Name: $("#editUserPermission [name=Name]").val(),
+            LightImage: $("#editUserPermission [name=LightImage]").val(),
+            DarkImage: $("#editUserPermission [name=DarkImage]").val(),
+            TopImage: $("#editUserPermission [name=TopImage]").val(),
+            Position: $("#editUserPermission [name=Position]").val(),
+            IsTopImage: $("#editUserPermission [name=IsTopImage]:checked").val(),
+            UseUserLevel: $("#editUserPermission [name=UseUserLevel]").val(),
+            Description: $("#editUserPermission [name=Description]").val(),
+            IsEnable:$("#editUserPermission [name=IsEnable]:checked").val(),
+            IsLight:$("#editUserPermission [name=IsLight]:checked").val(),
+            FootTile:$("#editUserPermission [name=FootTile]").val(),
+            Version:$("#editUserPermission [name=Version]:checked").val(),
+        };
+    }
+
+    //删除活动页
+    function btnDelete(userID, target) {
+        if (confirm("确认要删除该条数据吗？")) {
+            $.ajax({
+                type: "POST",
+                timeout: 10000,
+                url: "/UserPermission/Delete",
+                data:{ID:userID},
+                success: function (result) {
+                    if (result == "1") {
+                        alert("删除成功！");
+                        $(target).closest("tr").remove();
+                    }
+                    else {
+                        alert("删除失败！");
+                    }
+                }
+            });
+        }
+    }
+</script>

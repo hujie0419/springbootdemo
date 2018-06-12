@@ -1,0 +1,1340 @@
+﻿@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.BackgroundThemeModel>
+    @{
+        ViewBag.Title = "分享砍价商品配置";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    @section head{
+        <style>
+            .title {
+                float: left;
+            }
+
+            .content {
+                clear: both;
+            }
+
+
+            .condition label {
+                font-size: 14px;
+                margin-left: 10px;
+            }
+
+            .condition > div {
+                margin-bottom: 10px;
+                position: relative;
+            }
+
+            .filterItem {
+                float: left;
+                width: 300px;
+                margin-right: 10px;
+                font-size: 16px;
+            }
+
+            #OnSale, #ProductName, #PID, #Operator {
+                float: left;
+                width: 100px;
+                height: 25px;
+            }
+
+            .filterItem > .name {
+                float: left;
+                width: 80px;
+            }
+
+            .config_title {
+                font-size: 1.2em;
+                margin-top: 2px;
+                margin-bottom: 5px;
+            }
+
+            .config_name {
+                width: 100px;
+            }
+
+            .input {
+                border-radius: 3px;
+            }
+            .mainTitle{
+                background-color:gainsboro;
+                font-size:1.4em;
+                margin-top:10px;
+            }
+        </style>
+    }
+    <div class="title">
+        <h2>分享砍价商品配置</h2>
+    </div>
+
+    <div class="content">
+        <div class="condition">
+            <div class="filterItems">
+                <div class="filterItem" style="width: 100px;">
+                    <span>筛选条件</span>
+                </div>
+                <div class="filterItem">
+                    <span class="name">状态：</span>
+                    <select id="OnSale">
+                        <option value="0" selected="selected">全部</option>
+                        <option value="1"> 上架 </option>
+                        <option value="2">下架</option>
+                        <option value="3">未上架</option>
+                    </select>
+                </div>
+                <div class="filterItem">
+                    <span class="name">商品名称:</span>
+                    <input type="text" id="ProductName" value="" style="width: 150px" />
+                </div>
+                <div class="filterItem">
+                    <span class="name">商品PID:</span>
+                    <input type="text" id="PID" value="" style="width: 150px" />
+                </div>
+                <div class="filterItem">
+                    <span class="name">操作人:</span>
+                    <input type="text" id="Operator" value="" style="width: 150px" />
+                </div>
+                <div class="filterItem">
+                    <button onclick="LoadList(1)" style="width: 200px;height: 30px;display: block;">查询</button>
+                </div>
+            </div>
+            <div style="clear: both; margin-top: 10px;">
+                <button onclick="GlobalConfig()">全局配置</button>
+                <button onclick="AddBargainProduct()">+创建</button>
+                <button onclick="AddBargainCoupon()">+创建优惠券配置</button>
+                <button onclick="RefreshCache()">刷新缓存</button>
+            </div>
+
+        </div>
+        <div style="margin-bottom:30px">
+            每页显示：
+            <select class="PageSize">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>条
+            <span class="data_count"></span>
+        </div>
+        <img class="loadimg" src="~/Scripts/layer/skin/default/loading-2.gif" style="margin:5% 50%;display:none;" />
+        <div class="list"></div>
+    </div>
+
+
+    <div id="GlobalConfig" style="display:none;">
+        <div class="mainTitle">展示配置</div>
+        <table width="100%">
+            @*<tr>
+                <td width="30%">背景风格</td>
+                <td>
+                    <select id="BackgroundStyle">
+                        <option value="1">红色舞台</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td width="30%">介绍页名称</td>
+                <td><input type="text" id="ActivityTitle" style="width: 100%"></td>
+            </tr>
+            <tr>
+                <td width="30%">介绍页背景图</td>
+                <td>
+                    <img id="backgroundImg" src='' style="width: 100px; height: 100px;" />
+                    <input type="file" onchange="UploadImage(this)" />
+                </td>
+            </tr>*@
+            <tr>
+                <td width="30%">活动规则</td>
+                <td>
+                    <button style="color:black;cursor: pointer" onclick="AddRuleItem()">添加一组问答</button><br />
+                    <div id="RulesItems">
+                        <div class="RulesItem">
+                            <label style="width: 20%; float: left;">问答组1</label>
+                            <input type="text" class="RuleItemQ" style="width: 60%; float: left;font-weight: bold" />
+                            <div style="width: 15%; float: left; margin-left: 10px;"><button style="color:black;cursor: pointer">删除</button></div>
+                            <div style="clear: both"></div>
+                            <textarea rows="5" cols="20" style="width: 100%; margin-top: 5px;"></textarea>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td width="30%">砍价成功轮播文案</td>
+                <td>
+                    <textarea rows="3" cols="20" style="width:100%;" id="SliceShowText" placeholder="填写列表页上的砍价成功轮播文案，支持{{nickname}}、{{productname}}、{{productbriefname}}参数"></textarea>
+                </td>
+            </tr>
+        </table>
+        <div class="mainTitle">列表页分享配置</div>
+        <table width="100%">
+            <tr>
+                <td width="30%">小程序列表分享文案</td>
+                <td>
+                    <textarea rows="3" cols="20" style="width:100%;" id="WXAPPListShareText" placeholder="填写分享文案，支持{{nickname}}参数"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td width="30%">小程序列表分享图片</td>
+                <td>
+                    <img id="WXAPPListShareImg" src='' style="width: 100px; height: 100px;" />
+                    <input type="file" onchange="UploadImage(this)" />
+                </td>
+            </tr>
+            <tr>
+                <td width="30%">APP列表页分享标签</td>
+                <td>
+                    <input type="text" id="APPListShareTag" style="width: 70%; float: left;height:1.6em;" placeholder="必填，填写APP分享配置中标签"/>
+                    <button style="float: left; margin-left: 5px;" onclick="window.open('https://setting.tuhu.cn/ShareConfig/Index')">APP分享配置</button>
+                    <div style="clear: both;"></div>
+                </td>
+            </tr>
+        </table>
+        <div class="mainTitle">详情页默认分享配置</div>
+        <table width="100%">
+            <tr>
+                <td width="30%">小程序详情分享文案</td>
+                <td>
+                    <textarea rows="3" cols="20" style="width:100%;" id="WXAPPDetailShareText" placeholder="填写分享文案，支持{{nickname}}、{{productname}}、{{productbriefname}}参数"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td width="30%">APP详情分享标签</td>
+                <td>
+                    <input type="text" id="AppDetailShareTag" style="width: 70%; float: left; height:1.6em;" placeholder="必填，填写APP分享配置中标签"/>
+                    <button style="float: left; margin-left: 5px;" onclick="window.open('https://setting.tuhu.cn/ShareConfig/Index')">APP分享配置</button>
+                    <div style="clear: both;"></div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    @*砍价-商品配置*@
+    <div id="AddBargainProduct" style="display:none;">
+        <div id="productconfig">
+            <div class="config_title">商品配置</div>
+            <table style="width: 100%">
+                <tr>
+                    <td class="config_name">上下架时间</td>
+                    <td>
+                        <input type="datetime-local" id="begin" style="float: left; width: 40%;" placeholder="必填" />
+                        <span style="float: left; margin-left: 1%; margin-right: 1%; width: 5%; font-size: 1.2em;">To</span>
+                        <input type="datetime-local" id="end" style="float: left; width: 40%;" placeholder="必填" />
+                        <div style="clear: both;"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">商品开始显示时间</td>
+                    <td>
+                        <input type="datetime-local" id="showBeginTime" style="float: left; width: 40%;" placeholder="必填" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">商品PID</td>
+                    <td>
+                        <input type="text" id="Pid" style="width: 100%;" onblur="CheckPid()" placeholder="必填"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">商品名称</td>
+                    <td>
+                        <input type="text" id="productName" style="width: 100%;" disabled="disabled" placeholder="填写商品/券ID后展示"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">商品简称</td>
+                    <td>
+                        <input type="text" id="simpleDisplayName" style="width: 100%;" placeholder="最多8个中文字符" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">商品售价</td>
+                    <td>
+                        <input type="text" id="originalPrice" style="width: 100%;"placeholder=" 必填，数字" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">商品活动价</td>
+                    <td>
+                        <input type="text" id="finalPrice" style="width: 100%;" placeholder="必填，数字" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">商品库存上限</td>
+                    <td>
+                        <input type="text" id="totalStockout" style="width: 100%;" placeholder="必填，数字" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">商品剩余库存</td>
+                    <td>
+                        <input type="text" id="currentStockCount" style="width: 100%;" disabled="disabled" placeholder="保存后展示" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="BargainConfig">
+            <div class="config_title">砍价配置</div>
+            <table style="width: 100%;">
+                <tr>
+                    <td class="config_name">砍价次数</td>
+                    <td>
+                        <input type="text" id="Times" style="width: 100%;" placeholder=" 必填，数字"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="ShareConfig">
+            <div class="config_title">活动分享页配置</div>
+            <table style="width: 100%;">
+                @*<tr>
+                    <td class="config_name">页面名称</td>
+                    <td>
+                        <input type="text" id="pageName" style="width: 100%;" />
+                    </td>
+                </tr>*@
+                <tr>
+                    <td class="config_name">商品显示顺序</td>
+                    <td>
+                        <input type="number" id="Sequence" style="width: 100%;" placeholder="必填数字,数字越大越靠前" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">商品宣传图片</td>
+                    <td>
+                        <img id="Image1" src='' style="width: 100px; height: 100px;" />
+                        <input type="file" id="uploadimg" onchange="UploadImage(this)" />
+                        <span style="color:grey">
+                            选填，不填时前端读取商品库第一张图,此图片也用于小程序分享
+                        </span>
+                    </td>
+                </tr>
+                @*<tr>
+                    <td class="config_name">砍价成功提示</td>
+                    <td>
+                        <input type="text" id="SuccessfulHint" style="width: 100%;" />
+                    </td>
+                </tr>*@
+                <tr>
+                    <td class="config_name">小程序分享标题</td>
+                    <td>
+                        <input type="text" id="WXShareTitle" style="width: 100%;" placeholder="必填，可以使用{{ReducePrice}}参数"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">APP分享ID</td>
+                    <td>
+                        <input type="text" id="APPShareId" style="width: 50%; float: left;" placeholder="选填，不填读取默认" />
+                        <button style="float: left; margin-left: 10px;" onclick="window.open('https://setting.tuhu.cn/ShareConfig/Index')">APP分享配置</button>
+                        <div style="clear: both;"></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    @*砍价-商品优惠券配置*@
+    <div id="AddBargainCoupon" style="display:none;">
+        <div id="c_productconfig">
+            <div class="config_title">商品配置</div>
+            <table style="width: 100%">
+                <tr>
+                    <td class="config_name">上下架时间</td>
+                    <td>
+                        <input type="datetime-local" id="c_begin" style="float: left; width: 40%;" placeholder="必填" />
+                        <span style="float: left; margin-left: 1%; margin-right: 1%; width: 5%; font-size: 1.2em;">To</span>
+                        <input type="datetime-local" id="c_end" style="float: left; width: 40%;" placeholder="必填" />
+                        <div style="clear: both;"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">商品开始显示时间</td>
+                    <td>
+                        <input type="datetime-local" id="c_showBeginTime" style="float: left; width: 40%;" placeholder="必填" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">优惠券领取规则ID</td>
+                    <td>
+                        <input type="text" id="c_Pid" style="width: 100%;" onblur="CheckCouponPid()" placeholder="必填" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">商品名称</td>
+                    <td>
+                        <input type="text" id="c_productName" style="width: 100%;" disabled="disabled" placeholder="填写商品/券ID后展示"/>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="config_name">商品简称</td>
+                    <td>
+                        <input type="text" id="c_simpleDisplayName" style="width: 100%;" placeholder="最多8个中文字符" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="config_name">商品售价</td>
+                    <td>
+                        <input type="number" id="c_originalPrice" style="width: 100%;" placeholder="必填，数字" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">商品活动价</td>
+                    <td>
+                        <input type="number" id="c_finalPrice" style="width: 100%;" placeholder="必填，数字"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">商品库存上限</td>
+                    <td>
+                        <input type="number" id="c_totalStockout" style="width: 100%;" placeholder="必填，数字"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">商品剩余库存</td>
+                    <td>
+                        <input type="text" id="c_currentStockCount" style="width: 100%;" disabled="disabled" placeholder="保存后展示" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="c_BargainConfig">
+            <div class="config_title">砍价配置</div>
+            <table style="width: 100%;">
+                <tr>
+                    <td class="config_name">砍价次数</td>
+                    <td>
+                        <input type="text" id="c_Times" style="width: 100%;" placeholder="必填"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="c_ShareConfig">
+            <div class="config_title">活动分享页配置</div>
+            <table style="width: 100%;">
+                @*<tr>
+                    <td class="config_name">页面名称</td>
+                    <td>
+                        <input type="text" id="c_pageName" style="width: 100%;" />
+                    </td>
+                </tr>*@
+                <tr>
+                    <td class="config_name">商品显示顺序</td>
+                    <td>
+                        <input type="text" id="c_Sequence" style="width: 100%;"  placeholder="必填数字,数字越大越靠前" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">商品宣传图片</td>
+                    <td>
+                        <img id="c_Image1" src='' style="width: 100px; height: 100px;" />
+                        <input type="file" id="c_uploadimg" onchange="UploadImage(this)" />
+                        <input type="file" id="uploadimg" onchange="UploadImage(this)" />
+                        <span style="color:grey">
+                            选填，不填时前端读取商品库第一张图,此图片也用于小程序分享
+                        </span>
+                    </td>
+                </tr>
+                @*<tr>
+                    <td class="config_name">砍价成功提示</td>
+                    <td>
+                        <input type="text" id="c_SuccessfulHint" style="width: 100%;" />
+                    </td>
+                </tr>*@
+                <tr>
+                    <td class="config_name">小程序分享标题</td>
+                    <td>
+                        <input type="text" id="c_WXShareTitle" style="width: 100%;" placeholder="必填，可以使用{{ReducePrice}}参数" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="config_name">APP分享ID</td>
+                    <td>
+                        <input type="text" id="c_APPShareId" style="width: 50%; float: left;" placeholder="选填，不填读取默认"/>
+                        <button style="float: left; margin-left: 10px;" onclick="window.open('https://setting.tuhu.cn/ShareConfig/Index')">APP分享配置</button>
+                        <div style="clear: both;"></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script src="~/Scripts/ajaxfileupload.js"></script>
+    <script>
+        $(function () {
+            LoadList(1);
+            $(".list").on("click",
+                ".pager>a",
+                function (event) {
+                    event.preventDefault();
+                    var url = $(this).attr("href");
+                    if (url) {
+                        $.post(url,
+                            function (html, status) {
+                                if (status === "success") {
+                                    $(".list").html(html);
+                                }
+                            });
+                    }
+                });
+        });
+        $(".PageSize").change(function () {
+            LoadList(1);
+        });
+    </script>
+
+
+    <script>
+    var LoadList = function(pageIndex) {
+        $(".loadimg").show();
+        var onSale = $("#OnSale option:selected").val();
+        var productName = $("#ProductName").val();
+        var pid = $("#PID").val();
+        var operator = $("#Operator").val();
+
+        $.post("/ShareBargain/ShareBargainList",
+            {
+                OnSale: onSale,
+                ProductName: productName,
+                Operator: operator,
+                PID: pid,
+                PageSize: $(".PageSize option:selected").val(),
+                PageIndex: pageIndex
+            },
+            function(html, status) {
+                if (status === "success") {
+                    $(".loadimg").hide();
+                    $(".list").html(html);
+                    $(".data_count").text('共' + ($(".table").length ? $(".table").attr("data-count") : 0) + '条数据');
+                }
+            });
+    }
+    var OriginalTotalStock = 0,UsedStock=0;
+    var GlobalConfig = function() {
+            $("#RulesItems").empty();
+            $.get("/ShareBargain/FetchBargainProductGlobalConfig",
+                function(data) {
+                    $("#BackgroundStyle").val(data.BackgroundTheme);
+                    $("#ActivityTitle").val(data.Title);
+                    $("#backgroundImg").attr("src", data.BackgroundImage);
+                    $("#WXAPPListShareText").val(data.WXAPPListShareText);
+                    $("#WXAPPListShareImg").attr("src", data.WXAPPListShareImg);
+                    $("#WXAPPDetailShareText").val(data.WXAPPDetailShareText);
+                    $("#APPListShareTag").val(data.APPListShareTag);
+                    $("#AppDetailShareTag").val(data.AppDetailShareTag);
+                    $("#SliceShowText").val(data.SliceShowText);
+                    $.each(data.BargainRule,
+                        function(k, v) {
+                            $("#RulesItems")
+                                .append(
+                                    '<div class="RulesItem" id="item' +
+                                    (k + 1) +
+                                    '"><label style="width: 20%; float: left;">问答组<span>' +
+                                    (k + 1) +
+                                    '</span></label><input type="text" class="RuleItemQ" style="width: 60%; float: left;font-weight: bold"/><div style="width: 15%; float: left; margin-left: 10px;"><a style="color:black;cursor: pointer" href="javascripts:void(0);" onclick="DeleteRuleItem(this)">删除</a></div><div style="clear: both"></div><textarea rows="5" cols="20" style="width: 100%; margin-top: 5px;" ></textarea></div>');
+                            $("#item" + (k + 1) + " .RuleItemQ").val(v.Question);
+                            $("#item" + (k + 1) + " textarea").val(v.Answer);
+
+                        });
+                });
+
+            $("#GlobalConfig").dialog({
+                title: "编辑",
+                width: 700,
+                height: 900,
+                modal: true,
+                buttons: {
+                    "保存": function() {
+                        var BackgroundTheme = $("#BackgroundStyle").val();
+                        var Title = $("#ActivityTitle").val();
+                        var BackgroundImage = $("#backgroundImg").attr("src");
+                        var WXAPPListShareText = $("#WXAPPListShareText ").val();
+                        var WXAPPListShareImg = $("#WXAPPListShareImg ").attr("src");
+                        var WXAPPDetailShareText = $("#WXAPPDetailShareText ").val();
+                        var APPListShareTag = $("#APPListShareTag").val();
+                        var AppDetailShareTag = $("#AppDetailShareTag ").val();
+                        var SliceShowText = $("#SliceShowText").val();
+                        var BargainRule = [];
+                        var flag = true;
+                        $(".RulesItem").each(function() {
+                            var dat1 = $(this).find(".RuleItemQ").val();
+                            var dat2 = $(this).find("textarea").val();
+                            if (dat1 == null || dat1 == '') {
+                                alert("问题不能为空,请检查");
+                                flag = false;
+                                return false;
+                            }
+                            if (dat2 == null || dat2 == '') {
+                                flag = false;
+                                alert("答案不能为空,请检查");
+                                return false;
+                            }
+                            BargainRule.push({ 'Question': dat1, 'Answer': dat2 });
+                        });
+                        if (WXAPPListShareText == "") {
+                            alert("小程序列表页分享文案不能为空!");
+                            return false;
+                        }
+                        if (WXAPPListShareImg == "") {
+                            alert("小程序列表页分享图片不能为空");
+                            return false;
+                        }
+                        if (WXAPPDetailShareText == "") {
+                            alert("小程序详情页分享文案不能为空");
+                            return false;
+                        }
+                        if (APPListShareTag == "") {
+                            alert("APP列表页分享标签不能为空");
+                            return false;
+                        }
+                        if (AppDetailShareTag == "") {
+                            alert("APP详情页分享标签不能为空");
+                            return false;
+                        }
+                        if (SliceShowText == "") {
+                            alert("砍价成功轮播文案不能为空");
+                            return false;
+                        }
+                        if (flag) {
+                            $.post("/ShareBargain/UpdateGlobalConfig",
+                                {
+                                    BackgroundTheme: BackgroundTheme,
+                                    Title: Title,
+                                    BackgroundImage: BackgroundImage,
+                                    BargainRule: BargainRule,
+                                    RulesCount: BargainRule.length,
+                                    WXAPPListShareText: WXAPPListShareText,
+                                    WXAPPListShareImg: WXAPPListShareImg,
+                                    WXAPPDetailShareText: WXAPPDetailShareText,
+                                    APPListShareTag: APPListShareTag,
+                                    AppDetailShareTag: AppDetailShareTag,
+                                    SliceShowText: SliceShowText,
+                                },
+                                function(data) {
+                                    if (data) {
+                                        alert("保存成功");
+                                    } else {
+                                        alert("保存失败,请稍后重试");
+                                    }
+                                });
+                            $(this).dialog("close");
+                        }
+                    },
+                    "取消": function() {
+                        $(this).dialog("close");
+                    }
+
+                }
+            });
+
+        },
+        AddRuleItem = function() {
+            var dat = parseInt($(".RulesItem").last().find("span").text());
+            if (isNaN(dat)) {
+                dat = 0;
+            }
+            $("#RulesItems")
+                .append(
+                    '<div class="RulesItem" id="item' +
+                    (dat + 1) +
+                    '"><label style="width: 20%; float: left;">问答组<span>' +
+                    (dat + 1) +
+                    '</span></label><input type="text" class="RuleItemQ" style="width: 60%; float: left;font-weight: bold"/><div style="width: 15%; float: left; margin-left: 10px;"><a style="color:black;cursor: pointer" href="javascripts:void(0);" onclick="DeleteRuleItem(this)">删除</a></div><div style="clear: both"></div><textarea rows="5" cols="20" style="width: 100%; margin-top: 5px;" ></textarea></div>');
+        },
+        DeleteRuleItem = function(tag) {
+            $(tag).parent().parent().remove();
+        },
+        AddBargainProduct = function () {
+            var date = new Date();
+            var dateStr = date.Format("yyyy-MM-ddThh:mm");
+            $("#originalPrice").val("");
+            $("#finalPrice").val("");
+            $("#Pid").val("");
+            $("#productName").val("");
+            $("#simpleDisplayName").val("");
+            $("#totalStockout").val("");
+            $("#currentStockCount").val("");
+            $("#Times").val("");
+            //$("#pageName").val("");
+            //$("#SuccessfulHint").val("");
+            $("#WXShareTitle").val("");
+            $("#APPShareId").val("");
+            $("#Sequence").val("");
+            $("#begin").val(dateStr);
+            $("#end").val(dateStr);
+            $("#showBeginTime").val(dateStr);
+            $("#Image1").attr("src", "");
+            $("#Pid").removeAttr("disabled");
+            $("#Times").removeAttr("disabled");
+            $("#totalStockout").removeAttr("onblur");
+            $("#AddBargainProduct").dialog({
+                title: "砍价商品配置",
+                width: 800,
+                modal: true,
+                buttons: {
+                    "添加": function () {
+                        var thi = this;
+                        AddBargainProductFunc(thi);
+                    },
+                    "取消": function() {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        },
+        AddBargainCoupon = function () {
+            var date = new Date();
+            var dateStr = date.Format("yyyy-MM-ddThh:mm");
+            $("#c_originalPrice").val("");
+            $("#c_finalPrice").val("");
+            $("#c_Pid").val("");
+            $("#c_productName").val("");
+            $("#c_totalStockout").val("");
+            $("#c_simpleDisplayName").val("");
+            $("#c_currentStockCount").val("");
+            $("#c_Times").val("");
+            //$("#c_pageName").val("");
+            //$("#c_SuccessfulHint").val("");
+            $("#c_WXShareTitle").val("");
+            $("#c_APPShareId").val("");
+            $("#c_Sequence").val("");
+            $("#c_begin").val(dateStr);
+            $("#c_end").val(dateStr);
+            $("#c_showBeginTime").val(dateStr);
+            $("#c_Image1").attr("src", "");
+            $("#c_Pid").removeAttr("disabled");
+            $("#c_Times").removeAttr("disabled");
+            $("#c_totalStockout").removeAttr("onblur");
+            $("#AddBargainCoupon").dialog({
+                title: "砍价优惠券配置",
+                width: 800,
+                modal: true,
+                buttons: {
+                    "添加": function () {
+                        var thi = this;
+                        AddBargainCouponFunc(thi);
+                    },
+                    "取消": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        },
+        CheckPid = function() {
+            var pid = $("#Pid").val();
+            var begin = $("#begin").val();
+            var end = $("#end").val();
+            if (pid == "" || begin == "" || end == '') {
+                return false;
+            };
+            $.get("/ShareBargain/CheckPid",
+                {
+                    PID: pid,
+                    BeginTime: begin,
+                    EndTime:end
+                },
+                function(data) {
+                    if (data.Code != 1) {
+                        alert(data.Info + "  请检查PID");
+                        $("#Pid").val("");
+                    } else {
+                        $("#productName").removeAttr("disabled");
+                        $("#productName").val(data.Info);
+                        $("#productName").attr("disabled", "disabled");
+                    }
+                });
+        },
+        CheckCouponPid = function () {
+
+            var pid = $("#c_Pid").val();
+            var begin = $("#c_begin").val();
+            var end = $("#c_end").val();
+            if (pid == "" || begin == "" || end == '') {
+                return false;
+            };
+            $.get("/ShareBargain/CheckCouponPid",
+                {
+                    PID: pid,
+                    BeginTime: begin,
+                    EndTime: end
+                },
+                function (data) {
+                    if (data.Code != 1) {
+                        alert(data.Info + "  请检查PID");
+                        $("#c_Pid").val("");
+                    } else {
+                        $("#c_productName").removeAttr("disabled");
+                        $("#c_productName").val(data.Info);
+                        $("#c_productName").attr("disabled", "disabled");
+                    }
+                });
+        },
+        EditBargainProduct = function(pkid) {
+            $.get("/ShareBargain/FetchBargainProductById",
+                {
+                    apId: pkid
+                },
+                function(data) {
+                    if (data.Code != 1) {
+                        alert(data.Message);
+                        return false;
+                    } else {
+                        $("#originalPrice").val(data.Result.OriginalPrice);
+                        $("#finalPrice").val(data.Result.FinalPrice);
+                        $("#Pid").val(data.Result.PID);
+                        $("#productName").val(data.Result.ProductName);
+                        $("#simpleDisplayName").val(data.Result.SimpleDisplayName);
+                        $("#totalStockout").val(data.Result.TotalStockCount);
+                        $("#currentStockCount").val(data.Result.CurrentStockCount);
+                        $("#Times").val(data.Result.Times);
+                        //$("#pageName").val(data.Result.PageName);
+                        //$("#SuccessfulHint").val(data.Result.SuccessfulHint);
+                        $("#WXShareTitle").val(data.Result.WXShareTitle);
+                        $("#APPShareId").val(data.Result.APPShareId);
+                        $("#Sequence").val(data.Result.Sequence);
+                        $("#Image1").attr("src", data.Result.Image1);
+                        $("#begin").val(FormatTime(data.Result.BeginDateTime));
+                        $("#end").val(FormatTime(data.Result.EndDateTime));
+
+                        if (data.Result.ShowBeginTime == null || data.Result.ShowBeginTime == undefined) {
+                            $("#showBeginTime").val('');
+                        } else {
+                            $("#showBeginTime").val(FormatTime(data.Result.ShowBeginTime));
+                        }
+
+                        $("#totalStockout").attr("id-count", data.Result.TotalStockCount);
+                        $("#totalStockout").attr("onblur", "ChangeStockCount()");
+                        $("#Pid").attr("disabled", "disabled");
+                        $("#Times").attr("disabled", "disabled");
+
+                        OriginalTotalStock = data.Result.TotalStockCount;
+                        UsedStock = data.Result.TotalStockCount - data.Result.CurrentStockCount;
+                    }
+                });
+            $("#AddBargainProduct").dialog({
+                title: "砍价商品配置",
+                width: 800,
+                modal: true,
+                buttons: {
+                    "保存": function() {
+
+                        var inputObj = BargainProductInputCheck(pkid);
+                        if (inputObj==null) {
+                            return true;
+                        }
+                        var thi = this;
+                        $.post("/ShareBargain/UpdateBargainProductById",
+                            inputObj,
+                            function(data) {
+                                if (data) {
+                                    alert("保存成功");
+                                    $(thi).dialog("close");
+                                    LoadList(1);
+                                } else {
+                                    alert("保存失败！");
+                                }
+                            });
+
+                    },
+                    "取消": function() {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        },
+        EditBargainCoupon = function (pkid) {
+            $.get("/ShareBargain/FetchBargainProductById",
+                {
+                    apId: pkid
+                },
+                function (data) {
+                    if (data.Code != 1) {
+                        alert(data.Message);
+                        return false;
+                    } else {
+                        $("#c_originalPrice").val(data.Result.OriginalPrice);
+                        $("#c_finalPrice").val(data.Result.FinalPrice);
+                        $("#c_Pid").val(data.Result.PID);
+                        $("#c_productName").val(data.Result.ProductName);
+                        $("#c_simpleDisplayName").val(data.Result.SimpleDisplayName);
+                        $("#c_totalStockout").val(data.Result.TotalStockCount);
+                        $("#c_currentStockCount").val(data.Result.CurrentStockCount);
+                        $("#c_Times").val(data.Result.Times);
+                        //$("#c_pageName").val(data.Result.PageName);
+                        //$("#c_SuccessfulHint").val(data.Result.SuccessfulHint);
+                        $("#c_WXShareTitle").val(data.Result.WXShareTitle);
+                        $("#c_APPShareId").val(data.Result.APPShareId);
+                        $("#c_Sequence").val(data.Result.Sequence);
+                        $("#c_Image1").attr("src", data.Result.Image1);
+                        $("#c_begin").val(FormatTime(data.Result.BeginDateTime));
+                        $("#c_end").val(FormatTime(data.Result.EndDateTime));
+
+                        if (data.Result.ShowBeginTime == null || data.Result.ShowBeginTime == undefined) {
+                            $("#c_showBeginTime").val('');
+                        } else {
+                            $("#c_showBeginTime").val(FormatTime(data.Result.ShowBeginTime));
+                        }
+
+                        $("#c_totalStockout").attr("id-count", data.Result.TotalStockCount);
+                        $("#c_totalStockout").attr("onblur", "c_ChangeStockCount()");
+                        $("#c_Pid").attr("disabled", "disabled");
+                        $("#c_Times").attr("disabled", "disabled");
+
+                        OriginalTotalStock = data.Result.TotalStockCount;
+                        UsedStock = data.Result.TotalStockCount - data.Result.CurrentStockCount;
+                    }
+                });
+            $("#AddBargainCoupon").dialog({
+                title: "砍价商品配置",
+                width: 800,
+                modal: true,
+                buttons: {
+                    "保存": function () {
+
+                        var inputObj = BargainCouponInputCheck(pkid);
+                        if (inputObj==null) {
+                            return true;
+                        }
+
+                        var thi = this;
+                        $.post("/ShareBargain/UpdateBargainCouponById",
+                            inputObj,
+                            function (data) {
+                                if (data) {
+                                    alert("保存成功");
+                                    LoadList(1);
+                                    $(thi).dialog("close");
+                                } else {
+                                    alert("保存失败！");
+                                }
+                            });
+
+                    },
+                    "取消": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        },
+        FormatTime = function(strTime) {
+            var obj = new Date(parseInt(strTime.replace("/Date(", "").replace(")/", ""), 10));
+            return obj.Format("yyyy-MM-ddThh:mm");
+        },
+        RemoveBargainProduct = function (pkid) {
+
+            var confirmContent = "确认要删除吗？";
+            if (!confirm(confirmContent)) {
+                return;
+            }
+
+            $.get("/ShareBargain/DeleteBargainProductById",
+                {
+                    PKID: pkid
+                },
+                function (data) {
+                    if (data==1) {
+                        alert("删除成功");
+                        LoadList(1);
+                    } else {
+                        alert("删除失败！");
+                    }
+                });
+        }
+        ChangeStockCount = function () {
+            var data = parseInt($("#totalStockout").val());
+            if (isNaN(data)) {
+                alert("库存必须为数字");
+                $("#totalStockout").val(OriginalTotalStock);
+                return false;
+            }
+            if (data < OriginalTotalStock) {
+                alert("库存修改只能增加不可减少！");
+                $("#totalStockout").val(OriginalTotalStock);
+                $("#currentStockCount").val(OriginalTotalStock - UsedStock);
+                return false;
+            }
+            $("#currentStockCount").val(data - UsedStock);
+        },
+            c_ChangeStockCount = function () {
+                var data = parseInt($("#c_totalStockout").val());
+                if (isNaN(data)) {
+                    alert("库存必须为数字");
+                    $("#c_totalStockout").val(OriginalTotalStock);
+                    return false;
+                }
+                if (data < OriginalTotalStock) {
+                    alert("库存修改只能增加不可减少！");
+                    $("#c_totalStockout").val(OriginalTotalStock);
+                    $("#c_currentStockCount").val(OriginalTotalStock - UsedStock);
+                    return false;
+                }
+                $("#c_currentStockCount").val(data - UsedStock);
+            },
+            UploadImage = function (target) {
+                var $target = $(target);
+                var $img = $target.prev();
+                var now = new Date().getTime();
+                $target.attr("id", now);
+                $target.attr("name", now);
+                if ($target.val().split('.')[1].toUpperCase() != "JPG" &&
+                    $target.val().split('.')[1].toUpperCase() != "JPEG" &&
+                    $target.val().split('.')[1].toUpperCase() != "GIF" &&
+                    $target.val().split('.')[1].toUpperCase() != "PNG" &&
+                    $target.val().split('.')[1].toUpperCase() != "BMP") {
+                    alert("格式错误", "支持jpg、jpeg、gif、png、bmp", "error");
+                    return false;
+                }
+                $.ajaxFileUpload(
+                    {
+                        url: '/HomePagePopup/UploadImage',
+                        secureuri: false,
+                        fileElementId: now,
+                        async: false,
+                        dataType: 'JSON',
+                        type: 'post',
+                        //data: { filepath: "/ShareBargain/ShareBargainProduct/" },
+                        success: function (src) {
+                            var result = jQuery.parseJSON(jQuery(src).text());
+                            if (result != null) {
+                                $img.attr("src", result);
+                            } else
+                                alert("上传失败！");
+                        }
+                    });
+            },
+            CopyBargainProduct = function (pkid) {
+                $.get("/ShareBargain/FetchBargainProductById",
+                    {
+                        apId: pkid
+                    },
+                    function (data) {
+                        if (data.Code != 1) {
+                            alert(data.Message);
+                            return false;
+                        } else {
+                            $("#originalPrice").val(data.Result.OriginalPrice);
+                            $("#finalPrice").val(data.Result.FinalPrice);
+                            $("#Pid").val(data.Result.PID);
+                            $("#productName").val(data.Result.ProductName);
+                            $("#simpleDisplayName").val(data.Result.SimpleDisplayName);
+                            $("#totalStockout").val(data.Result.TotalStockCount);
+                            $("#currentStockCount").val(data.Result.CurrentStockCount);
+                            $("#Times").val(data.Result.Times);
+                            //$("#pageName").val(data.Result.PageName);
+                            //$("#SuccessfulHint").val(data.Result.SuccessfulHint);
+                            $("#WXShareTitle").val(data.Result.WXShareTitle);
+                            $("#APPShareId").val(data.Result.APPShareId);
+                            $("#Sequence").val(data.Result.Sequence);
+                            $("#Image1").attr("src", data.Result.Image1);
+                            $("#begin").val(FormatTime(data.Result.BeginDateTime));
+                            $("#end").val(FormatTime(data.Result.EndDateTime));
+                            $("#showBeginTime").val(FormatTime(data.Result.ShowBeginTime));
+                            $("#totalStockout").attr("id-count", data.Result.TotalStockCount);
+                            $("#totalStockout").attr("onblur", "ChangeStockCount()");
+                            $("#Pid").removeAttr("disabled");
+                            $("#Times").removeAttr("disabled");
+                        }
+                    });
+                $("#AddBargainProduct").dialog({
+                    title: "砍价商品配置",
+                    width: 800,
+                    modal: true,
+                    buttons: {
+                        "添加": function () {
+                            var thi = this;
+                            AddBargainProductFunc(thi);
+                        },
+                        "取消": function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            },
+            CopyBargainCoupon = function (pkid) {
+                $.get("/ShareBargain/FetchBargainProductById",
+                    {
+                        apId: pkid
+                    },
+                    function (data) {
+                        if (data.Code != 1) {
+                            alert(data.Message);
+                            return false;
+                        } else {
+                            $("#c_originalPrice").val(data.Result.OriginalPrice);
+                            $("#c_finalPrice").val(data.Result.FinalPrice);
+                            $("#c_Pid").val(data.Result.PID);
+                            $("#c_productName").val(data.Result.ProductName);
+                            $("#c_totalStockout").val(data.Result.TotalStockCount);
+                            $("#c_simpleDisplayName").val(data.Result.SimpleDisplayName);
+                            $("#c_currentStockCount").val(data.Result.CurrentStockCount);
+                            $("#c_Times").val(data.Result.Times);
+                            //$("#c_pageName").val(data.Result.PageName);
+                            //$("#c_SuccessfulHint").val(data.Result.SuccessfulHint);
+                            $("#c_WXShareTitle").val(data.Result.WXShareTitle);
+                            $("#c_APPShareId").val(data.Result.APPShareId);
+                            $("#c_Sequence").val(data.Result.Sequence);
+                            $("#c_Image1").attr("src", data.Result.Image1);
+                            $("#c_begin").val(FormatTime(data.Result.BeginDateTime));
+                            $("#c_end").val(FormatTime(data.Result.EndDateTime));
+                            $("#c_showBeginTime").val(FormatTime(data.Result.ShowBeginTime));
+                            $("#c_totalStockout").attr("id-count", data.Result.TotalStockCount);
+                            $("#c_totalStockout").attr("onblur", "ChangeStockCount()");
+                            $("#c_Pid").removeAttr("disabled");
+                            $("#c_Times").removeAttr("disabled");
+                        }
+                    });
+                $("#AddBargainCoupon").dialog({
+                    title: "砍价优惠券配置",
+                    width: 800,
+                    modal: true,
+                    buttons: {
+                        "添加": function () {
+                            var thi = this;
+                            AddBargainCouponFunc(thi);
+                        },
+                        "取消": function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            },
+            RefreshCache = function () {
+                $.get("/ShareBargain/RefreshShareBargain",
+                    function (data) {
+                        if (data == 'True') {
+                            alert("缓存刷新成功");
+                        } else {
+                            alert("缓存刷新失败，请稍后重试！");
+                        }
+                    });
+            },
+            AddBargainProductFunc = function (thi) {
+
+                var inputObj = BargainProductInputCheck();
+                if (inputObj == null) {
+                    return true;
+                }
+                $.post("/ShareBargain/AddSharBargainProduct",
+                    inputObj,
+                    function (data) {
+                        alert(data.Info);
+                        if (data != 0) {
+                            $(thi).dialog("close");
+                            LoadList(1);
+                        }
+
+                    });
+            },
+            AddBargainCouponFunc = function (thi) {
+
+                var inputObj = BargainCouponInputCheck();
+                if (inputObj == null) {
+                    return true;
+                }
+
+                $.post("/ShareBargain/AddSharBargainCoupon",
+                    inputObj,
+                    function (data) {
+                        alert(data.Info);
+                        if (data.Code != 0) {
+                            $(thi).dialog("close");
+                            LoadList(1);
+                        }
+                    });
+            },
+            BargainCouponInputCheck = function (pkid) {
+                var OriginalPrice = $("#c_originalPrice").val();
+                var FinalPrice = $("#c_finalPrice").val();
+                var PID = $("#c_Pid").val();
+                var ProductName = $("#c_productName").val();
+                var TotalStockCount = $("#c_totalStockout").val();
+                var CurrentStockCount = $("#c_currentStockCount").val();
+                var Times = $("#c_Times").val();
+                var simpleDisplayName = $("#c_simpleDisplayName").val();
+                //var PageName = $("#c_pageName").val();
+                //var SuccessfulHint = $("#c_SuccessfulHint").val();
+                var WXShareTitle = $("#c_WXShareTitle").val();
+                var APPShareId = $("#c_APPShareId").val();
+                var Sequence = $("#c_Sequence").val();
+                var BeginDateTime = $("#c_begin").val();
+                var EndDateTime = $("#c_end").val();
+                var Image1 = $("#c_Image1").attr("src");
+                var fix_amountTest = /^(([1-9]\d*)|\d)(\.\d{1,2})?$/;
+                var showBeginTime = $("#c_showBeginTime").val();
+                if (fix_amountTest.test(OriginalPrice) == false) {
+                    alert("产品原价格式不符合要求！");
+                    return null;
+                }
+                if (fix_amountTest.test(FinalPrice) == null) {
+                    alert("商品活动价格式不符合要求！");
+                    return null;
+                }
+                if (PID == "") {
+                    alert("PID不符合要求！");
+                    return null;
+                }
+                if (isNaN(TotalStockCount)) {
+                    alert("库存不符合要求！");
+                    return null;
+                }
+                if (isNaN(Times)) {
+                    alert("砍价次数不符合要求！");
+                    return null;
+                }
+                //if (PageName == '') {
+                //    alert("页面名称不符合要求！");
+                //    return null;
+                //}
+                //var Hint_Test = "{{ReducePrice}}";
+                //if (SuccessfulHint.indexOf(Hint_Test) < 0) {
+                //    alert("砍价成功提示不符合要求！");
+                //    return null;
+                //}
+                if (WXShareTitle == '') {
+                    alert("小程序分享不符合要求！");
+                    return null;
+                }
+                if (APPShareId == '') {
+                    alert("APP分享ID不能为空！");
+                    return null;
+                }
+                if (isNaN(Sequence)) {
+                    alert("显示顺序不符合要求！");
+                    return null;
+                }
+                if (Image1 == '') {
+                    alert("请上传宣传图片");
+                    return null;
+                }
+                if (EndDateTime < BeginDateTime) {
+                    alert("请检查上下架时间");
+                    return null;
+                }
+                if (parseFloat(OriginalPrice) <= parseFloat(FinalPrice)) {
+                    alert("活动价格必须小于原销售价");
+                    return null;
+                }
+
+                var obj = {
+                    PKID: pkid,
+                    PID: PID,
+                    ProductName: ProductName,
+                    TotalStockCount: TotalStockCount,
+                    OriginalPrice: OriginalPrice,
+                    FinalPrice: FinalPrice,
+                    BeginDateTime: BeginDateTime,
+                    EndDateTime: EndDateTime,
+                    ShowBeginTime: showBeginTime,
+                    Sequence: Sequence,
+                    Image1: Image1,
+                    Times: Times,
+                    CurrentStockCount: CurrentStockCount,
+                    PageName: "页面名称",
+                    SuccessfulHint: "可以使用{{ReducePrice}}参数",
+                    WXShareTitle: WXShareTitle,
+                    APPShareId: APPShareId,
+                    SimpleDisplayName: simpleDisplayName
+                }
+                return obj;
+
+            },
+            BargainProductInputCheck = function (pkid) {
+                var showBeginTime = $("#showBeginTime").val();
+                var OriginalPrice = $("#originalPrice").val();
+                var FinalPrice = $("#finalPrice").val();
+                var PID = $("#Pid").val();
+                var ProductName = $("#productName").val();
+                var TotalStockCount = $("#totalStockout").val();
+                var CurrentStockCount = $("#currentStockCount").val();
+                var simpleDisplayName = $("#simpleDisplayName").val();
+                var Times = $("#Times").val();
+                //var PageName = $("#pageName").val();
+                //var SuccessfulHint = $("#SuccessfulHint").val();
+                var WXShareTitle = $("#WXShareTitle").val();
+                var APPShareId = $("#APPShareId").val();
+                var Sequence = $("#Sequence").val();
+                var BeginDateTime = $("#begin").val();
+                var EndDateTime = $("#end").val();
+                var Image1 = $("#Image1").attr("src");
+                var fix_amountTest = /^(([1-9]\d*)|\d)(\.\d{1,2})?$/;
+                if (fix_amountTest.test(OriginalPrice) == false) {
+                    alert("产品原价格式不符合要求！");
+                    return null;
+                }
+                if (fix_amountTest.test(FinalPrice) == false) {
+                    alert("商品活动价格式不符合要求！");
+                    return null;
+                }
+                if (PID == "") {
+                    alert("PID不符合要求！");
+                    return null;
+                }
+                if (simpleDisplayName == "") {
+                    alert("商品简称不能为空");
+                    return;
+                }
+                if (isNaN(TotalStockCount)) {
+                    alert("库存不符合要求！");
+                    return null;
+                }
+            if (isNaN(Times)) {
+                alert("砍价次数不符合要求！");
+                return null;
+            }
+                //if (PageName == '') {
+                //    alert("页面名称不符合要求！");
+                //    return null;
+                //}
+                //var Hint_Test = "{{ReducePrice}}";
+                //if (SuccessfulHint.indexOf(Hint_Test) < 0) {
+                //    alert("砍价成功提示不符合要求！");
+                //    return null;
+                //}
+                if (WXShareTitle == '') {
+                    alert("小程序分享不符合要求！");
+                    return null;
+                }
+                if (APPShareId == '') {
+                    alert("APP分享ID不能为空！");
+                    return null;
+                }
+                if (isNaN(Sequence)) {
+                    alert("显示顺序不符合要求！");
+                    return null;
+                }
+                //if (Image1 == '') {
+                //    alert("请上传宣传图片");
+                //    return null;
+                //}
+                if (EndDateTime < BeginDateTime) {
+                    alert("请检查上下架时间");
+                    return null;
+                }
+                if (parseFloat(OriginalPrice) <= parseFloat(FinalPrice)) {
+                    alert("活动价格必须小于原销售价");
+                    return null;
+                }
+
+                var obj = {
+                    PKID: pkid,
+                    PID: PID,
+                    ProductName: ProductName,
+                    TotalStockCount: TotalStockCount,
+                    OriginalPrice: OriginalPrice,
+                    FinalPrice: FinalPrice,
+                    BeginDateTime: BeginDateTime,
+                    EndDateTime: EndDateTime,
+                    ShowBeginTime: showBeginTime,
+                    Sequence: Sequence,
+                    Image1: Image1,
+                    Times: Times,
+                    CurrentStockCount: CurrentStockCount,
+                    PageName: "分享砍价",
+                    SuccessfulHint: "可以使用{{ReducePrice}}参数",
+                    WXShareTitle: WXShareTitle,
+                    APPShareId: APPShareId,
+                    SimpleDisplayName: simpleDisplayName
+                };
+
+                return obj;
+            }
+    </script>

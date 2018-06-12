@@ -1,0 +1,90 @@
+﻿@using Newtonsoft.Json
+@model List<ForumReplyModel>
+@helper GetShowTime(string time)
+{
+DateTime orginalDateTime = DateTime.Parse(time);
+string resultTime = "";
+//1分钟之内
+if ((DateTime.Now - orginalDateTime).TotalSeconds <= 59)
+{
+    resultTime = Math.Floor((DateTime.Now - orginalDateTime).TotalSeconds).ToString() + "秒前";
+}
+//1小时之内
+else if ((DateTime.Now - orginalDateTime).TotalHours < 1)
+{
+    resultTime = Math.Floor((DateTime.Now - orginalDateTime).TotalMinutes).ToString() + "分钟前";
+}
+//1天之内
+else if ((DateTime.Now - orginalDateTime).TotalDays < 1)
+{
+    resultTime = Math.Floor((DateTime.Now - orginalDateTime).TotalHours).ToString() + "小时前";
+}
+//1天之外
+else
+{
+    resultTime = time;
+}
+@(resultTime)
+}
+@{ int i = 0;}
+@foreach (var item in Model)
+{
+    ++i;
+    bool isReply = item.source_id != 0 ? true : false;
+    string userInfo = item.user.data.ToString();
+    ForumUserModel userModel = JsonConvert.DeserializeObject<ForumUserModel>(userInfo);
+    <div class="commentCon">
+        <div class="reviewer">
+            <img src="@userModel.avatar">
+        </div>
+        <div class="commentConR">
+            <div class="commentConTop">
+                <div class="reviewerName">@userModel.name</div>
+                <div class="commentFloor">@(i.ToString())楼</div>
+            </div>
+            @if (isReply)
+            {
+                string replyInfo = item.replyto.data.ToString();
+                if (replyInfo != "[]")
+                {
+                    ForumReplyModel replyModel = JsonConvert.DeserializeObject<ForumReplyModel>(replyInfo);
+                    <div class="original">
+                        <div class="originalComment">
+                            <div class="originalTop">
+                                <div class="originalName">@replyModel.user_name</div>
+                                <div class="originalTime">@GetShowTime(replyModel.created_at)</div>
+                            </div>
+                            <div class="originalBlock">
+                                <p>@replyModel.body_original</p>
+                                @if (replyModel.image_urls != null && replyModel.image_urls.Length > 0)
+                                {
+                                    <div class="originalImg">
+                                        @foreach (string img in replyModel.image_urls)
+                                        {
+                                            <div>
+                                                <img src="@img" />
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            <div class="commentBlock">
+                <p>@item.body_original</p>
+                @if (item.image_urls != null && item.image_urls.Length > 0)
+                {
+                    foreach (string path in item.image_urls)
+                    {
+                        <p>
+                            <img src="@path" />
+                        </p>
+                    }
+                }
+            </div>
+            <div class="commentTime">@GetShowTime(item.created_at)</div>
+        </div>
+    </div>
+}

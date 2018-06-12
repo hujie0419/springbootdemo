@@ -1,0 +1,352 @@
+﻿
+@{
+    ViewBag.Title = "ConfigList";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+
+<div class="topPanel">
+    <div class="toolbar">
+        <div class="btn-group">
+            <a class="btn btn-primary" onclick="$.reload()"><span class="glyphicon glyphicon-refresh"></span></a>
+        </div>
+        <div class="btn-group">
+            <a class="btn btn-primary" onclick="betn_searchlog()">
+                <span class="fa fa-search">查看日志</span>
+            </a>
+        </div>
+
+        <div class="btn-group">
+            <a class="btn btn-primary" id="NF-BigHome" onclick="btn_bigHome()"><i class="fa fa-plugs"></i>会场信息配置</a>
+        </div>
+        <div class="btn-group">
+            <a class="btn btn-primary" id="NF-trieSize" onclick="btn_addTrieSize()"  > <i class="fa fa-plus"></i>车型适配信息</a>
+        </div>
+        <div class="btn-group">
+            <a id="NF-add" class="btn btn-primary dropdown-text" onclick="btn_add()"><i class="fa fa-plus"></i>新增行数据</a>
+            <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+            <ul class="dropdown-menu pull-right">
+                <li><a id="NF-btnmenu"  authorize="yes"  onclick="btn_menu()" ><i class="fa fa-plus"></i>新增菜单</a></li>
+            </ul>
+        </div>
+        <div class="operate">
+            <ul class="nav nav-pills">
+                <li class="first">已选中<span>1</span>项</li>
+                <li><a id="NF-copy" onclick="btn_copy()"><i class="fa fa-pencil-square-o"></i>复 制</a></li>
+                <li><a id="NF-edit" onclick="btn_update()"><i class="fa fa-pencil-square-o"></i>修 改</a></li>
+                <li><a id="NF-delete" onclick="btn_delete()"><i class="fa fa-trash-o"></i>删 除</a></li>
+                <li>
+                    <a id="NF-setGroup" onclick="btn_setGroup()"><i class="fa fa-pencil-square-o"></i>设置组号</a>
+                </li>
+            </ul>
+            <a href="javascript:;" class="close"></a>
+        </div>
+    </div>
+</div>
+<div class="gridPanel">
+    <table id="gridList"></table>
+    <div id="gridPager"></div>
+</div>
+
+<script type="text/javascript">
+    var keyValue = $.request("keyValue");
+   // console.log(keyValue);
+    function gridList() {
+        var $gridList = $('#gridList');
+        $gridList.dataGrid({
+            grouping: true,
+            groupingView: {
+                groupField: ["GROUP"]
+            },
+            height: $(window).height() - 128,
+            url: "/Activity/ActivityUnity/GetGridTreeJson?keyValue="+keyValue,
+            colModel: [
+                { label: "PKID", name: "PKID", width:50, key: true },
+                { label: "活动ID", name: "FKActiveID", hidden: true },
+                {label:"行类型",name:"RowType",hidden:true},
+                { label: "组 号", name: "GROUP", width: 150, align: "center" },
+                {
+                    label: "活动类型", name: "Type", width: 120, align: "left",
+                    formatter: function (cellValue) {
+                        if (cellValue == 0 || cellValue ==6)
+                            return "轮 胎"
+                        else if (cellValue == 1 || cellValue == 7)
+                            return "车 品";
+                        else if (cellValue == 2)
+                            return "链 接";
+                        else if (cellValue == 3)
+                            return "图 片";
+                        else if (cellValue == 4)
+                            return "优惠券";
+                        else if (cellValue == 5)
+                            return "保 养";
+                        else if (cellValue == 8)
+                            return "活动规则";
+                        else if (cellValue == 9)
+                            return "秒 杀";
+                        else if (cellValue == 10 || cellValue == 11)
+                            return "轮 毂";
+                        else if (cellValue == 12)
+                            return "其 它";
+                        else if (cellValue == 13)
+                            return "大翻盘";
+                        else if (cellValue == -2)
+                            return "导航栏";
+                        else if (cellValue == 16)
+                            return "保养定价";
+                        else if (cellValue == 18)
+                            return "优惠券礼包";
+                        else if (cellValue == 20)
+                            return "新大翻牌";
+                        else if (cellValue == 21)
+                            return "答题抽奖";
+                        else if (cellValue == 17)
+                            return "视 频";
+                        else if (cellValue == 19)
+                            return "商品池";
+                        else if (cellValue == 22)
+                            return "红包抽奖";
+                        else if (cellValue == 23)
+                            return "拼团";
+                        else if (cellValue == 24)
+                            return "文案";
+                        else
+                            return "";
+                    }
+                },
+                {
+                    label: "渠 道", name: "Channel", width: 120, align: "left",
+                    formatter: function (cellValue) {
+                        if (cellValue == "all")
+                            return "全 部"
+                        else if (cellValue == "wap")
+                            return "移动端";
+                        else if (cellValue == "www")
+                            return "官 网"
+                        else
+                            return "";
+                    }
+                },
+                {
+                    label: "图 片", name: "Image", width: 120, align: "left",
+                    formatter: function (cellValue) {
+                        if (cellValue) {
+                            return `<img width="30" height="30" src="${cellValue}" />`;
+                        } else
+                            return "";
+                    }
+                },
+                { label: "PID", name: "PID", width: 120, align: "left" },
+                { label: "产品名称", name: "ProductName", width: 280, align: "left" },
+                { label: "排序", name: "OrderBy", width: 80, align: "center" },
+                { label: "创建时间", name: "CreateDateTime", width: 120, align: "left",
+                    formatter: "date", formatoptions: { srcformat: 'Y-m-d H:i:s', newformat: 'Y-m-d H:i:s' }
+                }
+            ],
+            caption: "配置信息列表",
+            rowNum:1000
+        });
+    }
+
+    function btn_add() {
+        $.modalOpen({
+            id: "SelectRowType",
+            title: "选择行类型",
+            url: "/Activity/ActivityUnity/SelectRowType?keyValue="+keyValue,
+            width: "960px",
+            height:"120px",
+            btn:null
+        })
+    }
+
+    function btn_update() {
+        var pkid = $("#gridList").jqGridRowValue().PKID;
+        var group = $("#gridList").jqGridRowValue().GROUP;
+        var keyValue = $("#gridList").jqGridRowValue().FKActiveID;
+        var rowType = $("#gridList").jqGridRowValue().RowType;
+        var type = $("#gridList").jqGridRowValue().Type;
+        if (group && type != "导航栏") {
+            $.modalOpen({
+                id: "ContentFormList",
+                title: "行明细表单",
+                url: "/Activity/ActivityUnity/ContentForm?FKActiveID=" + keyValue + "&RowType=" + rowType + "&keyValue=" + group + "&copy=false&PKID="+pkid,
+                width: "600px",
+                height: "780px",
+                callBack: function (iframeId) {
+                    top.frames["ContentFormList"].submitForm();
+                }
+            });
+
+        } else {
+            var pkid = $("#gridList").jqGridRowValue().PKID;
+          
+            if (pkid) {
+                $.modalOpen({
+                    id: "MenuForm",
+                    title: "编辑菜单信息",
+                    url: "/Activity/Menu/MenuForm?keyValue=" + keyValue + "&pkid=" + pkid+"&group="+group,
+                    width: "1280px",
+                    height: "320px",
+                    callBack: function (iframeId) {
+                        top.frames[iframeId].submitForm();
+                    }
+                });
+            }
+        }
+    }
+
+    function btn_copy() {
+        var group = $("#gridList").jqGridRowValue().GROUP;
+        var keyValue = $("#gridList").jqGridRowValue().FKActiveID;
+        var rowType = $("#gridList").jqGridRowValue().RowType;
+        var type = $("#gridList").jqGridRowValue().Type;
+        if (group && type != "导航栏") {
+            $.modalOpen({
+                id: "ContentFormList",
+                title: "行明细表单",
+                url: "/Activity/ActivityUnity/ContentForm?FKActiveID=" + keyValue + "&RowType=" + rowType + "&keyValue=" + group + "&copy=true",
+                width: "600px",
+                height: "780px",
+                callBack: function (iframeId) {
+                    top.frames["ContentFormList"].submitForm();
+                }
+            });
+
+        }
+    }
+
+    function btn_delete() {
+        var group = $("#gridList").jqGridRowValue().GROUP;
+        var keyValue = $("#gridList").jqGridRowValue().FKActiveID;
+        var rowType = $("#gridList").jqGridRowValue().RowType;
+        var type = $("#gridList").jqGridRowValue().Type;
+        if (group && keyValue && type != "导航栏") {
+            $.deleteForm({
+                url: "/Activity/ActivityUnity/DeleteContent",
+                param: { group: group, fkActivityID: keyValue },
+                success: function () {
+                    $.currentWindow().$("#gridList").resetSelection();
+                    $.currentWindow().$("#gridList").trigger("reloadGrid");
+                }
+            })
+        } else {
+            var pkid = $("#gridList").jqGridRowValue().PKID;
+            if (pkid) {
+                $.deleteForm({
+                    url: "/Activity/Menu/Delete",
+                    param: { group: group, pkid: keyValue },
+                    success: function () {
+                        $.currentWindow().$("#gridList").resetSelection();
+                        $.currentWindow().$("#gridList").trigger("reloadGrid");
+                    }
+                });
+            }
+        }
+
+    }
+
+    function btn_menu() {
+        if (keyValue) {
+            $.modalOpen({
+                id: "MenuForm",
+                title: "新增菜单信息",
+                url: "/Activity/Menu/MenuForm?keyValue=" + keyValue,
+                width: "1280px",
+                height: "320px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].submitForm();
+                }
+            });
+        }
+    }
+
+    function btn_addTrieSize() {
+        if (keyValue) {
+            $.modalOpen({
+                id: "TrieSizeForm",
+                title: "车型适配信息",
+                url: "/Activity/TrieSize/Form?keyValue=" + keyValue,
+                width: "680px",
+                height: "320px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].submitForm();
+                }
+            })
+        }
+    }
+
+    function btn_bigHome() {
+        if (keyValue) {
+            $.modalOpen({
+                id: "ActivePageList",
+                title: "会场信息列表",
+                url: "/Activity/ActivePage/Index?keyValue=" + keyValue,
+                width: "1080px",
+                height: "600px",
+                btn: null
+            })
+        }
+    }
+
+    function betn_searchlog() {
+        $.modalOpen({
+            id: "Form",
+            title: "查看日志",
+            url: "/Logger/ListLoger?objectType=AUCAct",
+            width: "1500px",
+            height: "600px",
+            btn: null
+        });
+    }
+
+    function btn_setGroup() {
+        var group = $("#gridList").jqGridRowValue().GROUP;
+        var keyValue = $("#gridList").jqGridRowValue().FKActiveID;
+        if (group && keyValue ) {
+            top.layer.prompt({
+                title: "请输入",
+                formType: 0,
+                value: group,
+                btn: ['确认', '取消'],
+                icon: "fa-exclamation-circle",
+                btnclass: ['btn btn-primary', 'btn btn-danger']
+            }, function (input, index) {
+                if (input == group) {
+                    $.modalMsg("没有重新设置选中行的组号，无需保存", "warning")
+                    return;
+                }
+                if (!input) {
+                    $.modalMsg("请输入要新设置的组号", "warning")
+                    return;
+                }
+                $.ajax({
+                    url: "/Activity/ActivityUnity/UpdateGroup",
+                    type: "post",
+                    async: false,
+                    dataType:"json",
+                    data: {
+                        keyValue: keyValue,
+                        group: group,
+                        input:input
+                    },
+                    success: function (res) {
+                        if (res.Code == 1) {
+                            $.modalMsg("设置组号成功", "success");
+                            $.reload();
+                        } else {
+                            $.modalMsg(res.Msg, "error")
+                        }
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                })
+                top.layer.close(index);
+            });
+        }
+       
+    }
+
+    $(function () {
+        gridList();
+    });
+</script>

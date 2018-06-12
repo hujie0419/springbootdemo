@@ -1,0 +1,71 @@
+﻿
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.RelateProductModel>
+@{
+    Layout = null;
+}
+<link href="~/Content/kkpager/kkpager_orange.css" rel="stylesheet" />
+<script src="~/Content/kkpager/kkpager.js"></script>
+
+@if (Model.Any())
+{
+    <table style="width:100%;margin:0 auto;">
+        <tr>
+            <th><input type="checkbox" name="SelectAll" value="" />选择</th>
+            <th>商品名称</th>
+            <th>商品PID</th>
+            <th>商品类别</th>
+            <th>上下架</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr class="page_content" style="display:@(Model.ToList().IndexOf(item)<ViewBag.PageSize?"":"none")">
+                <td><input type="checkbox" name="Selected" value="@item.PID" /></td>
+                <td class="ProductName">@item.ProductName</td>
+                <td class="PID">@item.PID</td>
+                <td class="ProductType">@item.ProductType</td>
+                <td class="OnSale">@item.OnSale </td>
+            </tr>
+        }
+    </table>
+    <div style="width:800px;margin:0 auto;">
+        <div id="kkpager"></div>
+    </div>
+}
+<script type="text/javascript">
+    //init
+    $(function () {
+        $(".data_count").text("共" + '@Model.Count()' + "条数据");
+        var totalPage = '@(Math.Ceiling((Model.Count() * 1.0) / ViewBag.PageSize))';//一共多少页
+        var totalRecords = '@Model.Count()';//一共多少条
+        var pageSize = '@ViewBag.PageSize';//每页多少条
+        var pageNo = 1;
+
+        //生成分页
+        //有些参数是可选的，比如lang，若不传有默认值
+        kkpager.generPageHtml({
+            pno: pageNo,
+            //总页码
+            total: totalPage,
+            //总数据条数
+            totalRecords: totalRecords,
+            mode: 'click',//默认值是link，可选link或者click
+            click: function (n) {
+                //TODO
+
+                $(".list tr.page_content").hide();
+                //alert($(".list tr.page_content").length);
+                $(".list tr.page_content").each(function (i, v) {
+                    if ((i + 1) > (n - 1) * pageSize && (i + 1) <= n * pageSize)
+                        $(v).show();
+                });
+
+                //手动选中按钮
+                this.selectPage(n);
+                return false;
+            }
+        });
+    });
+    $("[name=SelectAll]").change(function () {
+        $("[name=Selected]").prop("checked", $(this).prop("checked"));
+    })
+</script>

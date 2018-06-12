@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;">
+    <title>评论</title>
+    <link href="~/Content/detailCss/common.css" rel="stylesheet" />
+    <link href="~/Content/detailCss/comment-list.css" rel="stylesheet" />
+</head>
+<body>
+    <div style="margin:0 auto" class="maxwidth">
+        @*<div class="header">
+            <a href="javascript:history.go(-1)" class="goBack">
+                <img src="/Content/images/arrow.png" alt="arrow">
+            </a>
+            评论
+        </div>*@
+        <div class="body layout">
+                <input type="hidden" name="DeviceId" value="" />
+                <textarea name="content" id="comment" class="commentArea" placeholder="有评论有昵称，评论会更亮~"></textarea>
+                <span id="subBtn">发表</span>
+        </div>
+    </div>
+    <input type="hidden" id="_hdArticleId" value="@ViewData["ArticleId"]" />
+    <input type="hidden" id="_hdUserId" value="@ViewData["UserID"]" />
+    <input type="hidden" id="_hdReplyId" value="@ViewData["ReplyID"]" />
+    <input type="hidden" id="_hdNickName" value="@ViewData["NickName"]" />
+    <script src="http://resource.tuhu.cn/Scripts/jquery-2.1.0.min.js" type="text/javascript"></script>
+    <script src="http://resource.tuhu.cn/Js/WebViewJavascriptBridge.js" type="text/javascript"></script>
+    <script src="http://file.tuhu.cn/activity/scripts/zepto.min.js" type="text/javascript"></script>
+    <script src="~/Scripts/CommentFile/common.js"></script>
+    <script type="text/javascript">
+        var user = null;
+        var isFirstEnter = true;
+        var userAgentInfo = navigator.userAgent;
+        $(document).ready(function () {
+            //判断用户是否登录
+            if (userAgentInfo.indexOf("Android") >= 0) {
+                getAndroidUserInfo('loginBridge', userInfoForAndroid);
+            }
+            else if (userAgentInfo.indexOf("iPhone") > 0) {
+                getIOSUserInfo(0, 'userInfoCallback');
+            }
+            if ($("#_hdReplyId").val() != "" && $("#_hdNickName").val() != "") {
+                $("#comment").attr("placeholder", "回复" + $("#_hdNickName").val());
+            }
+            $("#comment").focus();
+            //$('#comment').click(function (e) {
+            //    $(this).focus();
+            //});
+
+            //$('button').click(function (e) {
+            //    $('#comment').focus();
+            //    $('#comment').click();
+            //    $('#comment').val('hha');
+            //});
+
+            //setTimeout(function () {
+            //    $('button').trigger('click');
+            //}, 3000)
+           
+            $('#subBtn').click(function () {
+                if ($(this).hasClass("act")) {
+                    if ($('#comment').val().length > 2000) {
+                        alert("评论不能超过两千字"); return;
+                    }
+                    var articleId = $("#_hdArticleId").val();
+                    var userId = user.userid;
+                    var content = $('#comment').val();
+                    var model = {
+                        Id: articleId,
+                        userId: userId,
+                        commentId: $("#_hdReplyId").val(),
+                        content: content,
+                        DeviceId: ""
+                    };
+                    $.ajax({
+                        type: "post",
+                        url: "/Article/AddComment",
+                        data: model,
+                        success: function (result) {
+                            if (result.success == true) {
+                                if (userAgentInfo.indexOf("tuhuAndroid") >= 0) {
+                                    var android = {};
+                                    window.WebViewJavascriptBridge.callHandler('Close', encodeURIComponent(encodeURIComponent(JSON.stringify(android))));
+                                } else if (userAgentInfo.indexOf("tuhuIOS") > 0) {
+                                    window.location.href = 'tuhuaction://back';
+                                } else {
+                                    location.href = "/Article/CommentList?Aid=" + $("#_hdArticleId").val();
+                                }
+                                var date=new Date();
+                                var domain=".tuhu.cn";
+                                if (/\.tuhu\.(\w+)$/.test(location.host))
+                                    domain = ".tuhu." + RegExp.$1;
+                                TuhuCookie.Set("CommentTag", "true", date.setDate(date.getSeconds() + 30), domain);
+                            }
+                        }
+                    });
+                }
+
+            });
+
+            var comment = document.getElementById('comment');
+            comment.oninput = function () {
+                if (comment.value.length > 0) {
+                    $('#subBtn').addClass('act');
+                } else {
+                    $('#subBtn').removeClass('act');
+                }
+            }
+        });
+        ///校验表单
+        function checkComment(obj) {
+            if ($(obj).hasClass("act")) {
+                if ($('#comment').val().length > 2000) {
+                    alert("评论不能超过两千字"); return false;
+                } else {
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        }
+        function getAndroidUserInfo(type, callback) {
+            var android = {};
+            window.WebViewJavascriptBridge.callHandler(type, encodeURIComponent(encodeURIComponent(JSON.stringify(android))), callback);
+        }
+        function getIOSUserInfo(type, callback) {
+            window.location.href = 'tuhuaction://getuserinfo#' + type + '#' + callback;
+        }
+        function userInfoCallback(userInfo) {
+            user = userInfo;
+            if (isFirstEnter) {
+                getIsFavoriate();
+                isFirstEnter = false;
+            }
+        }
+        function userInfoForAndroid(responseData) {
+            var userInfo = $.parseJSON(responseData);
+            user = userInfo;
+            if (isFirstEnter) {
+                getIsFavoriate();
+                isFirstEnter = false;
+            }
+        }
+        function connectWebViewJavascriptBridge(callback) {
+            if (window.WebViewJavascriptBridge) {
+                callback(WebViewJavascriptBridge)
+            } else {
+                document.addEventListener(
+                    'WebViewJavascriptBridgeReady'
+                    , function () {
+                        callback(WebViewJavascriptBridge)
+                    },
+                    false
+                );
+            }
+        }
+        connectWebViewJavascriptBridge(function (bridge) {
+            bridge.init(function (message, responseCallback) {
+                var data = {
+                    'Javascript Responds': 'Wee!'
+                };
+                responseCallback(data);
+            });
+            bridge.registerHandler("functionInJs", function (data, responseCallback) {
+                var responseData = "Javascript Says Right back aka!";
+                responseCallback(responseData);
+            });
+        });
+    </script>
+</body>
+
+</html>

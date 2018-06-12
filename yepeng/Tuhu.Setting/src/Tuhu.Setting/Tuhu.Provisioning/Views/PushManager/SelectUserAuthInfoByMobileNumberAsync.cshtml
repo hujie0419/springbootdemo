@@ -1,0 +1,74 @@
+﻿@using Tuhu.Provisioning.Business.Push;
+@using Tuhu.Service.Push.Models.WeiXinPush;
+@model IEnumerable<UserAuthInfo>
+@{
+    ViewBag.Title = "SelectUserAuthInfoByMobileNumberAsync";
+    var configs = ViewBag.configs as IEnumerable<WxConfig>;
+    Func<string, string> getwxchannelname = channel =>
+    {
+        if (channel == "wxopen") {
+            return "微信公众号";
+        }
+        if (configs != null && configs.Any())
+        {
+            var config = configs.FirstOrDefault(x => x.channel == channel);
+            if (config != null)
+            {
+                return config.name;
+            }
+        }
+        return channel;
+    };
+}
+@section head{
+    <link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+}
+<div class="content">
+    <h3>
+        根据手机号搜索用户openid
+    </h3>
+    <div class="container">
+        @using (Html.BeginForm("SelectUserAuthInfoByMobileNumberAsync", "PushManager", FormMethod.Post, new { @class = "form-inline" }))
+        {
+            @Html.AntiForgeryToken()
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            <div class="form-group">
+                <label>手机号:</label>
+                <input type="text" id="number" name="number" class="form-control" value="@ViewBag.number" />
+            </div>
+            <div class="form-group">
+                <input type="submit" value="搜索" class="btn btn-default" />
+
+            </div>
+        }
+        <br />
+        <table class="table" style="background: #ffffff; font-size: 12px; width: 100%; text-align: center" border="1">
+            <tr>
+                <th>
+                    openid
+                </th>
+                <th>渠道</th>
+                <th>unionid</th>
+            </tr>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @item.OpenId
+                        </td>
+                        <td>
+                            @getwxchannelname(item.Channel.ToString())
+                        </td>
+                        <td>
+                            @item.UnionId
+                        </td>
+                    </tr>
+                }
+            }
+        </table>
+    </div>
+</div>

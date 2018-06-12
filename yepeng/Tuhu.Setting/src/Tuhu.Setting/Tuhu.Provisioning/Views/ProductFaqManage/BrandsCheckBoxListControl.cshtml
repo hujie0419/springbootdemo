@@ -1,0 +1,14 @@
+﻿@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.FilterConditionModel>
+
+    @{
+        Layout = null;
+    }
+
+    @{
+        foreach (var item in Model)
+        {
+            <label style="display:inline-block;width:150px;margin:2px 0;">
+                <input class="cpBrand" value="@item.Name" type="checkbox">@item.Name
+            </label>
+        }
+    }

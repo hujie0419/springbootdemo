@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>途虎豪礼抽不停</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<link href="css/css.css" rel="stylesheet">
+<link href="css/style.css" rel="stylesheet" />
+    <script type="text/javascript" src="js/zepto.min.js"></script>
+    <script type="text/javascript" src="js/jiaYou.js"></script>
+</head>
+<body>
+	
+   	<div class="container">
+		<img src="images/banner.png" alt="" class="banner" width="100%">
+		<div class="form">
+			<div class="filed">
+                <input type="text" class="text" placeholder="输入您的手机号" id="tel_phone" />
+			</div>
+			<div class="filed">
+                <input type="text" class="text" placeholder="输入验证码" id="tel_code" />
+				<!--按钮状态样式 置灰class="checkcode disabled"-->
+                <!--<input type="button" class="checkcode" value="获取验证码" id="getCode" />-->
+                <div class="checkcode" id="getCode">获取验证码</div>
+			</div>
+			<div class="errmsg">
+                <span style="display:none;">请输入手机号</span>
+			</div>
+			<div class="filed">
+				<div class="btn-bg">
+					<!--按钮状态样式 已领添加class="btn has"  马上领取class="btn disabled"-->
+                    <!--<input type="button" class="btn" value="马上领取" id="getCoupon" />-->
+                    <div class="btn" id="getCoupon">马上领取</div>
+				</div>
+				
+			</div>
+		</div>
+           <div class="result">
+               <img src="images/title.png" width="100%">
+               <h2>中奖名单</h2>
+               <p style="text-align:center;">
+                   目前共有
+                   <b id="list_count" style="font-size:0.9rem;color:#ffe51f;">0</b> 人领取了优惠券
+               </p>
+                   <div id="list_lh">
+                        <ul>
+                            <!--<li><span>134****6787</span><span>加油卡一张</span></li>-->
+                        </ul>
+                 </div>
+           </div>
+          
+		<div class="rule-label" id="rule"><img src="images/rule.png" alt="">活动规则</div>
+		<div class="rule">
+			<div class="content">
+				<img src="images/close.png" alt="" class="close" id="close">
+				<p class="tit"><img src="images/rule.png" alt="">活动规则</p>
+				<ul>
+					<li>输入手机号即可参与抽奖</li>
+					<li>参与抽奖获取优惠券登录APP即可在【我的优惠券】中查看并使用</li>
+					<li>每个手机号只可参与一次抽奖</li>
+					<li>优惠券有效期：自领取起30天内有效</li>
+					<li>活动时间：2015年9月11日 - 2015年9月18日</li>
+				</ul>
+			</div> 
+		</div> 
+   </div>
+    <div class="jy_layer"></div>
+    <div class="layer"></div>
+</body>
+</html>

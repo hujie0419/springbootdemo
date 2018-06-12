@@ -1,0 +1,30 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>ShareBargain</title>
+    @Html.Partial("~/Views/Shared/ShareHeadClean.cshtml")
+    <script type="text/javascript">
+
+        $(function () {
+            var swxinfo = $('#viewbag')[0].html;
+            var info = JSON.parse(swxinfo);
+            alert(info.openid);
+        });
+    </script>
+</head>
+<body>
+    @Html.Partial("~/Views/Shared/ShareBody.cshtml")
+    <div id="viewbag">@ViewBag.wxinfo</div>
+    <div id="details"></div>
+    <div> 
+        <input type="button" id="bshare" value="Ask for help" />
+    </div>
+</body>
+</html>

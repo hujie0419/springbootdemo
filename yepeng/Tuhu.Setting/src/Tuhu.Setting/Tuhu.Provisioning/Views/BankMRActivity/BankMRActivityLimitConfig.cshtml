@@ -1,0 +1,377 @@
+﻿@{
+    ViewBag.Title = "美容服务包";
+}
+@section head{
+<link href="~/css/bankMRActivity.css" rel="stylesheet" type="text/css" />
+}
+
+<div id="div" v-cloak>
+    <h2>编辑限购</h2>
+    <div>
+            <div>
+                <div>
+                    <label>场次限购:</label>
+                    <input type="text" v-model="BankMRActivityLimitConfig.RoundLimit" />
+                </div>
+                <div>
+                    <label>每日限购:</label>
+                    <input type="text" v-model="BankMRActivityLimitConfig.DayLimit" />
+                </div>
+                <div>
+                    <label>限制购买日期:</label>
+                    <label><input type="radio" name="roundLimitType" v-model="LimitDateType" v-bind:value="'month'" />按月</label>
+                    <label><input type="radio" name="roundLimitType" v-model="LimitDateType" v-bind:value="'week'" />按周</label>
+                    <br />
+                    <div style="">
+                        <span v-if="ShowDaysOfMonth" v-for="item in DaysOfMonth"><input type="checkbox" v-bind:value="item" v-model="DaysOfMonthArray" />{{item}}</span>
+                        <span v-if="ShowDaysOfWeek" v-for="item in DaysOfWeek"><input type="checkbox" v-bind:value="item" v-model="DaysOfWeekArray" />{{item}}</span>
+                    </div>
+                </div>
+                <div>
+                    <label>限购地区:</label>
+                    <div>
+                        <table style="width:100%">
+                            <thead style="width:100%">
+                                <tr style="width:100%">
+                                    <th style="width:33%">
+                                        /省/自治区/直辖市
+                                    </th>
+                                    <th style="width:33%">
+                                        市
+                                    </th>
+                                    <th style="width:33%">
+                                        <label><button v-on:click="AddRegion">添加</button></label>
+                                    </th>
+                                </tr>
+                            </thead>                           
+                            <tr is="region"  v-for="province in ProvinceCityList"  v-bind:Region="province" v-on:modifyregion="MergeRegion" v-on:removeregion="RemoveRegion" ></tr>
+                        </table>                                         
+                    </div>
+                </div>
+            </div>
+            <div slot="footer">
+                <button class="modal-default-button" v-on:click="UpsertBankMRActivityLimitConfig()">确认</button>
+                <button class="modal-default-button" v-on:click="CloseBankMRActivityLimitConfigDialog()">取消</button>
+            </div>
+    </div>
+</div>
+<script type="text/x-template" id="region-template">
+        <tr>
+            <td>
+                <select v-on:change="ChangeProvince()" v-model="CurrentProvinceId">
+                    <option v-for="item in AllProvince" v-bind:value="item.RegionId">{{ item.RegionName }}</option>
+                </select>
+            </td>
+            <td>
+                <label v-for="city in Citys">
+                    <span><input type="checkbox" name="cityName" v-bind:value="city.RegionId" v-model="CityIds" />{{city.RegionName}}</span>
+                </label>
+            </td>
+            <td>
+                <button v-on:click="RemoveSelf">删除</button>
+            </td>
+        </tr>    
+</script>
+
+@section scripts{
+
+<script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+<script type="text/javascript">
+    Vue.component("region", {
+        template: '#region-template',
+        props: ['Region'],
+        data: function () {
+            return {
+                AllProvince: [],
+                Citys: [],
+                CityIds: [],
+                CurrentProvinceId: 0,
+                RegionUniqueIndex: 0
+            }
+        },
+        watch: {
+            "CityIds": function () {
+                var self = this;
+                if (self.CurrentProvinceId > 0) {
+                    self.$emit('modifyregion', { ProvinceId: self.CurrentProvinceId, CityIds: self.CityIds, RegionUniqueIndex: self.RegionUniqueIndex });
+                }                
+            },
+            "CurrentProvinceId": function () {
+                var self = this;
+                if (self.CurrentProvinceId > 0) {
+                    self.$emit('modifyregion', { ProvinceId: self.CurrentProvinceId, CityIds: self.CityIds, RegionUniqueIndex: self.RegionUniqueIndex });
+                }                
+            }
+        },
+        created: function () {
+            this.Load();
+        },
+        methods: {
+            Load: function () {
+                var self = this;
+                self.AllProvince = self.Region.AllProvince;
+                self.CurrentProvinceId = self.Region.ProvinceId;
+                self.Citys = self.Region.CityList;
+                self.CityIds = self.Region.CityIds;
+                self.RegionUniqueIndex = self.Region.RegionUniqueIndex;
+            },
+            ChangeProvince: function () {
+                var self = this;
+                if (self.CurrentProvinceId && self.CurrentProvinceId > 0) {
+                    self.GetRegionByRegionId(self.CurrentProvinceId, function (region) {
+                        self.Citys = region.ChildRegions;
+                    });
+                }              
+            },
+            GetRegionByRegionId: function (regionId, callBack) {
+                $.get("GetRegionByRegionId", { regionId: regionId }, function (region) {
+                    return callBack(region);
+                });
+            },
+            RemoveSelf: function () {
+                var self = this;
+                self.$emit('removeregion', { ProvinceId: self.CurrentProvinceId, CityIds: self.CityIds, RegionUniqueIndex: self.RegionUniqueIndex });
+            }
+        }
+    })
+    var RegionUniqueIndex = 0;
+    var vue = new Vue({
+        el: "#div",
+        data: {       
+            BankMRActivityLimitConfig: {
+                PKID: 0,
+                ActivityId: "",
+                DaysOfMonth: "",
+                DaysOfWeek: "",
+                DayLimit: 0,
+                RoundLimit: 0,
+                ProvinceIds: "",
+                CityIds: "",
+                CreateTime: "",
+                UpdateTime: ""
+            },
+            DaysOfMonthArray: [],
+            DaysOfWeekArray: [],
+            ProvinceCityList: [],
+            ProvinceCity: {
+                ProvinceId: 0,
+                CityList: [],
+            },
+            ProvinceIds: [],
+            CityIds: [],
+            LimitDateType: "",
+            DaysOfMonth: [],
+            DaysOfWeek: [],
+            ShowDaysOfMonth: false,
+            ShowDaysOfWeek: false,
+            IsChooseAllLimitDate: "checked",
+            LimitRegion: [],
+            AllProvince:[]
+        },
+        created: function () {
+            this.load();
+        },
+        watch: {
+            "LimitDateType": function () {
+                var self = this;
+                switch (self.LimitDateType) {
+                    case "month":
+                        self.ShowDaysOfMonth = true;
+                        self.ShowDaysOfWeek = false;
+                        break;
+                    case "week":
+                        self.ShowDaysOfMonth = false;
+                        self.ShowDaysOfWeek = true;
+                        break;
+                }
+            }
+        },
+        methods: {
+            load: function (callback) {
+                var self = this;
+                var activityId = window.location.search.split('=')[1];
+                self.FetchBankMRActivityLimitConfig(activityId);
+                for (var i = 1; i <= 31; i++) {
+                    self.DaysOfMonth.push(i);
+                }
+                for (var j = 1; j <= 7; j++) {
+                    self.DaysOfWeek.push(j);
+                }
+            },
+            FetchBankMRActivityLimitConfig: function (activityId) {
+                var self = this;
+                $.get("FetchBankMRActivityLimitConfig", { activityId: activityId }, function (data) {
+                    self.GetAllProvince(function () {
+                        if (data && data.PKID > 0) {
+                            self.BankMRActivityLimitConfig = data;
+                            if (data.DaysOfMonth)
+                                self.DaysOfMonthArray = data.DaysOfMonth.split(',');
+                            if (data.DaysOfWeek)
+                                self.DaysOfWeekArray = data.DaysOfWeek.split(',');
+                            if (data.ProvinceIds && data.ProvinceIds != "null") {
+                                var provinceIds = data.ProvinceIds.split(',');
+                                if (provinceIds && provinceIds.length > 0) {
+                                    for (var i = 0; i < provinceIds.length; i++) {
+                                        var provinceId = provinceIds[i];
+                                        if (provinceId && provinceId != "") {
+                                            self.GetRegionByRegionId(provinceId, function (region) {
+                                                var childRegionIds = GetChildRegionIdsByRegion(region);                                                
+                                                var cityIds = [];
+                                                if (data.CityIds) {
+                                                    var dataCityId = data.CityIds.split(',');
+                                                    if (dataCityId && dataCityId.length > 0) {
+                                                        cityIds = childRegionIds.filter(function (v) { return dataCityId.indexOf("" + v + "") > -1 })
+                                                    } 
+                                                } 
+                                                RegionUniqueIndex++;
+                                                self.ProvinceCityList.push({
+                                                    ProvinceId: region.RegionId,
+                                                    CityIds: cityIds,
+                                                    CityList: region.ChildRegions,
+                                                    AllProvince: self.AllProvince,
+                                                    RegionUniqueIndex: RegionUniqueIndex
+                                                })
+                                            })
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            self.BankMRActivityLimitConfig.PKID = 0;
+                            self.BankMRActivityLimitConfig.ActivityId = activityId;
+                            self.BankMRActivityLimitConfig.DaysOfMonth = "";
+                            self.BankMRActivityLimitConfig.DaysOfWeek = "";
+                            self.BankMRActivityLimitConfig.DayLimit = data ? data.RoundLimit : 0;
+                            self.BankMRActivityLimitConfig.RoundLimit = 0;
+                            self.BankMRActivityLimitConfig.ProvinceIds = "";
+                            self.BankMRActivityLimitConfig.CityIds = "";
+                            self.DaysOfMonthArray = [];
+                            for (var i = 1; i <= 31; i++) {
+                                self.DaysOfMonthArray.push(i);
+                            }
+                            self.DaysOfWeekArray = [];
+                            for (var i = 1; i <= 7; i++) {
+                                self.DaysOfWeekArray.push(i);
+                            }
+                        }
+                        self.LimitDateType = "month";
+                    })
+                })
+            },
+            UpsertBankMRActivityLimitConfig: function () {
+                var self = this;
+                self.BankMRActivityLimitConfig.DaysOfMonth = ArrayToStringJoin(self.DaysOfMonthArray, ',');
+                self.BankMRActivityLimitConfig.DaysOfWeek = ArrayToStringJoin(self.DaysOfWeekArray, ',');
+                var provinceIds = [];
+                var cityIds = [];
+                if (self.LimitRegion) {
+                    for (var i = 0; i < self.LimitRegion.length; i++) {
+                        if (self.LimitRegion[i]) {
+                            provinceIds.push(self.LimitRegion[i].ProvinceId);
+                            for (var j = 0; j < self.LimitRegion[i].CityIds.length; j++) {
+                                if (self.LimitRegion[i].CityIds[j]) {
+                                    cityIds.push(self.LimitRegion[i].CityIds[j]);
+                                }
+                            }
+                        }
+                    }
+                }             
+                self.BankMRActivityLimitConfig.ProvinceIds = ArrayToStringJoin(provinceIds, ',');
+                self.BankMRActivityLimitConfig.CityIds = ArrayToStringJoin(cityIds, ',');
+                $.post("UpsertBankMRActivityLimitConfig", { config: self.BankMRActivityLimitConfig }, function (result) {
+                    if (result) {
+                        window.location.reload();
+                        alert("成功");
+                    } else {
+                        alert("失败");
+                    }
+                })
+            },
+            AddRegion: function () {
+                var self = this;
+                RegionUniqueIndex++;
+                self.ProvinceCityList.push({
+                    ProvinceId: -1,
+                    CityIds: [],
+                    CityList: [],
+                    AllProvince: self.AllProvince,
+                    RegionUniqueIndex: RegionUniqueIndex
+                })
+            },
+            GetRegionByRegionId: function (regionId, callBack) {
+                $.get("GetRegionByRegionId", { regionId: regionId }, function (region) {
+                    return callBack(region);
+                });
+            },     
+            MergeRegion: function (data) {
+                console.log(data);
+                var self = this;
+                if (self.LimitRegion && self.LimitRegion.length > 0) {
+                    var isExist = false;
+                    for (var i = 0; i < self.LimitRegion.length; i++) {
+                        if (data.RegionUniqueIndex == self.LimitRegion[i].RegionUniqueIndex) {
+                            self.LimitRegion[i].CityIds = data.CityIds;
+                            self.LimitRegion[i].ProvinceId = data.ProvinceId
+                            isExist = true;
+                            break;
+                        }
+                    }
+                    if (!isExist) {
+                        self.LimitRegion.push(data);
+                    }
+                } else {
+                    self.LimitRegion.push(data);
+                }
+            },
+            RemoveRegion: function (data) {
+                var self = this;
+                if (self.ProvinceCityList) {
+                    self.ProvinceCityList = self.ProvinceCityList.filter(function (v) {
+                        return v.RegionUniqueIndex != data.RegionUniqueIndex;
+                    })
+                }
+                if (self.LimitRegion) {
+                    self.LimitRegion = self.LimitRegion.filter(function (v) {
+                        return v.ProvinceId != data.ProvinceId;
+                    })
+                }
+            },
+            GetAllProvince: function (callback) {
+                var self = this;
+                $.get("GetAllProvince", function (data) {
+                    self.AllProvince.push({
+                        RegionId: -1,
+                        RegionName: ""
+                    });
+                    self.AllProvince = data;
+                    self.AllProvince.unshift({
+                        RegionId: -1,
+                        RegionName: "请选择"
+                    });
+                    return callback();
+                });
+            }
+        }
+    })
+    function ArrayToStringJoin(array, separate) {
+        var result = "";
+        for (var i = 0; i < array.length; i++) {
+            result += array[i] + separate;
+        }
+        if (result) {
+            result = result.substring(0, result.length - separate.length);
+        }     
+        return result;
+    }
+    function GetChildRegionIdsByRegion(region) {
+        var childRegionIds = [];
+        if (region.ChildRegions && region.ChildRegions.length > 0) {
+            for (var j = 0; j < region.ChildRegions.length; j++) {
+                childRegionIds.push(region.ChildRegions[j].RegionId);
+            }
+        }
+
+        return childRegionIds;
+    }
+</script>
+}

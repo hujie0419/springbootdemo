@@ -1,0 +1,179 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="cache-control" content="no-cache">
+    <title>今日特价</title>
+    <link rel="stylesheet" href="css/jrtj.min.css?v=20150727" />
+    <link rel="dns-prefetch" href="http://resource.tuhu.cn">
+    <link rel="dns-prefetch" href="http://image.tuhu.cn">
+    <link rel="dns-prefetch" href="//api.tuhu.cn">
+    <style type="text/css">
+        .progress {
+            width: 60%;
+            height: 20px;
+            overflow: hidden;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-left: -30%;
+            margin-top: -10px;
+        }
+
+        .progress-bar {
+            position: absolute;
+            width: 40px;
+            height: 100%;
+            font-size: 12px;
+            line-height: 20px;
+            color: #fff;
+            background-color: #337ab7;
+            -webkit-box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+            box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+            -webkit-animation: bar 2s linear infinite;
+            -moz-animation: bar 2s linear infinite;
+            animation: bar 2s linear infinite;
+        }
+
+        @-webkit-keyframes bar {
+            from {
+                left: 0;
+            }
+
+            to {
+                left: 100%;
+            }
+        }
+
+        @-moz-keyframes bar {
+            from {
+                left: 0;
+            }
+
+            to {
+                left: 100%;
+            }
+        }
+
+        @keyframes bar {
+            from {
+                left: 0;
+            }
+
+            to {
+                left: 100%;
+            }
+        }
+    </style>
+
+</head>
+<body style="padding: 0px 0px 40px;">
+    <!-- loading -->
+    <div class="progress">
+        <div class="progress-bar"></div>
+    </div>
+    <!-- 计时 -->
+    <div v-component="countDown" v-show="ShowCountDown"></div>
+    <img id="bannerImg" v-style="margin-top:(ShowCountDown?40:0)+'px'" />
+    <div v-component="{{currentView}}"></div>
+    <!--弹出提示框-->
+    <div class="custom-popup" id="popTips">
+        <p id="tipsContent"></p>
+    </div>
+    <div class="EndMask" v-style="display:(isEnd?'block':'none')">
+        <div class="bgMask"></div>
+        <img src="img/huodongEnd.png" alt="" class="endImg" />
+    </div>
+    <!--<script>window.onerror = function (err) { alert(err) }</script>-->
+    <script src="http://resource.tuhu.cn/Scripts/wx/zepto.min.js"></script>
+    <script src="http://resource.tuhu.cn/Js/TuhuWebViewBridge.min.js"></script>
+    <script src="http://resource.tuhu.cn/scripts/wx/vue.min.js"></script>
+    <script type="text/x-template" id="tmpl_list">
+        <!-- 列表 -->
+        <div class="lists" v-if="Products">
+            <label v-repeat="p:Products">
+                <div class="list clearfix">
+                    <div>
+                        <div class="bk" v-if="p.Label" v-text="p.Label"></div>
+                        <img v-attr="src:p.Image" alt="图片" v-on="click:toDetail(p)" />
+                        <div class="remian" v-if="p.surplusQuantity>=0&&p.TotalQuantity>0">{{p.surplusQuantity>0?'正在热卖':'售罄'}}</div>
+                    </div>
+                    <div>
+                        <div v-on="click:toDetail(p)">{{p.DisplayName}}</div>
+                        <div>
+                            <label>&yen;</label>{{p.Price}}  <small>&yen;{{p.MarketingPrice}}</small>
+                            <span v-if="p.MaxQuantity>0">限购 {{p.MaxQuantity}} 件</span>
+                        </div>
+                        <div class="count_container">
+                            <span class="sub" v-class="active:p.enSub" v-on="touchstart:sub(p)"></span>
+                            <span><input type="text" readonly placeholder="0" v-on="keyup:input(p)" v-model="p.Quantity" /></span>
+                            <span class="add" v-class="active:p.enAdd" v-on="touchstart:add(p)"></span>
+
+                        </div>
+                    </div>
+
+                </div>
+                <div class="tags" style="display:{{p.IsUsePcode ? 'none' : 'inline-block'}}">
+                    <div style="display:{{p.IsUsePcode?  'none' :'inline-block'}}">不可用券</div>
+                </div>
+            </label>
+        </div>
+
+        <!-- 底部 -->
+        <div class="footer" v-cloak>
+            <div class="price">
+                &yen;{{TotalPrice}}
+                <span style="display: block;font-size: 12px;line-height: 12px;">
+                    (共{{TotalQuantity}}件)
+                </span>
+            </div>
+            <a href="#" class="pay" v-on="touchstart:submit">去结算</a>
+        </div>
+    </script>
+    <script type="text/template" id="tmpl_single">
+        <img v-if="bannerImg" src="img/jrms.png" style="width:100%" />
+        <div class="tire_container" v-if="Products">
+            <img v-attr="src:Products.Image" class="tire" v-on="click:toDetail(Products)">
+            <div class="tire_title" v-on="click:toDetail(Products)">{{Products.DisplayName}}</div>
+            <div class="tire_price">
+                <span>&yen;</span><span>{{Products.Price}}</span><span>&yen;{{Products.MarketingPrice}}</span>
+                <span v-if="Products.MaxQuantity>0">限购 {{Products.MaxQuantity}} 件</span>
+            </div>
+            <div class="count_container">
+                <span class="sub" v-class="active:Products.enSub" v-on="touchstart:sub(Products)"></span>
+                <span><input type="text" readonly placeholder="0" v-on="change:input(Products)" v-model="Products.Quantity"></span>
+                <span class="add" v-class="active:Products.enAdd" v-on="touchstart:add(Products)"></span>
+            </div>
+
+            <div class="payBtn" style="height:30px;" v-on="touchstart:submit">立即购买</div>
+        </div>
+        <div style="height:25px;background-color:white">
+            <div class="tags" style="float: right; margin-right: 10px;padding: 2px 5px; background-color: #9c5bdf;margin-top:2px;
+        color: #f3eefb;display:{{Products.IsUsePcode ? 'none' : 'inline-block'}}">
+                <div style="margin-right:5px;display:{{Products.IsUsePcode?  'none' :'inline-block'}}">不可用券</div>
+            </div>
+        </div>
+    </script>
+
+    <script src="js/login.js"></script>
+    <img id="endImg" style="margin-top:0px" />
+
+    <script type="text/javascript">
+        window.onload = function () {
+            window.onscroll = function () {
+                var timeDown = document.getElementById("time-down"),
+                    logoHei = document.getElementById("top-logo").height,
+                    scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+                scrollTop > logoHei ? timeDown.style.position = "fixed" : timeDown.style.position = "static";
+            }
+        }
+    </script>
+
+</body>
+</html>
+<script src="js/index.js?v=1"></script>

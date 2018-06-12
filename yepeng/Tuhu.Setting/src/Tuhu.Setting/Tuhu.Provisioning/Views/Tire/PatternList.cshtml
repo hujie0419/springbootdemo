@@ -1,0 +1,73 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@using Tuhu.Provisioning;
+@model Tuhu.Component.Common.Models.ListModel<TirePatternModel>
+@{
+    Layout = null;
+    var selectModel = ViewBag.Select as TirePatternModel;
+}
+@if (Model.Source.Any())
+{
+    <table data-count="@Model.Pager.TotalItem" width="100%">
+        <tr>
+            <th>品牌</th>
+            <th>花纹</th>
+            <th>图片</th>
+            <th>标题</th>
+            <th>描述</th>
+            <th>作者</th>
+            <th>时间</th>
+            <th>链接</th>
+            <th>是否详情页展示</th>
+            <th>是否启用</th>
+            <th>操作</th>
+            <th>操作历史</th>
+        </tr>
+        @foreach (var item in Model.Source)
+        {
+            var json = new
+            {
+                PKID = item.PKID,
+                Image = item.Image ?? "",
+                Title = item.Title ?? "",
+                Describe = item.Describe ?? "",
+                Author = item.Author ?? "",
+                Date = item.Date == null ? "" : item.Date.Value.ToString("yyyy-MM-dd"),
+                ArticleLink = item.ArticleLink ?? "",
+                Brand = item.Brand,
+                Pattern = item.Pattern,
+                IsActive = item.IsShow == null ? 1 : item.IsActive,
+                IsShow = item.IsShow ?? false ? 1 : 0
+            };
+            <tr>
+                <td>@item.Brand</td>
+                <td>@item.Pattern</td>
+                @if (String.IsNullOrWhiteSpace(item.Image))
+                {
+                    <td>-</td>
+                }
+                else
+                {
+                    <td><img src="@("https://image.tuhu.cn" + item.Image)" width="100" height="100" /></td>
+                }
+                <td>@(string.IsNullOrWhiteSpace(item.Title) ? "-" : item.Title)</td>
+                <td>@(string.IsNullOrWhiteSpace(item.Describe) ? "-" : item.Describe)</td>
+                <td>@(string.IsNullOrWhiteSpace(item.Author) ? "-" : item.Author)</td>
+                <td>@(item.Date == null ? "-" : item.Date.Value.ToString("yyyy-MM-dd"))</td>
+                <td>@(string.IsNullOrWhiteSpace(item.ArticleLink) ? "-" : item.ArticleLink)</td>
+                <td>@(item.IsShow == null ? "-" : (item.IsShow.Value ? "是" : "否"))</td>
+                <td>@(item.IsShow == null ? "-" : (item.IsActive == 1 ? "是" : "否"))</td>
+                <td>
+                    <a href="javascript:void(0)" onclick="Func.UpdateOrAdd('@(Newtonsoft.Json.JsonConvert.SerializeObject(json))')">修改</a>
+                    @if (item.PKID > 0)
+                    {
+                        <a href="javascript:void(0)" onclick="Func.Delete('@item.PKID')">删除</a>
+                    }
+                </td>
+                <td><a href="/Tire/PatternLog?key=@(item.Brand+"|"+item.Pattern)" target="_blank">查看</a></td>
+            </tr>
+        }
+
+    </table>
+    @Html.Pager(Model.Pager, true, id => Url.Action("PatternList", new { Brand = selectModel.Brand, Pattern = selectModel.Pattern, Title = selectModel.Title, Author = selectModel.Author, Count = selectModel.Count, ShowCount = selectModel.ShowCount, pageSize = Model.Pager.PageSize, pageIndex = id }))
+}
+

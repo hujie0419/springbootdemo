@@ -1,0 +1,33 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Join Bargain</title>
+    @Html.Partial("~/Views/Shared/ShareHeadClean.cshtml")
+    @Html.Partial("~/Views/Shared/CfgLoader.cshtml", "http://faxian.tuhu.cn/configs/bargain/new9.js")
+    <script type="text/javascript">
+        function cfgready(c) {
+            $('#bjoin').click(function () {
+                var sphone = $('#tphone').val();
+                if (vphone('#tphone')) {
+                    location.href = 'http://faxian.tuhu.cn/hwx/entry.html?cburl=' + cburl('myturn.html?aid='+c.aid+'&phone=' + sphone + '&wxinfo=');
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    @Html.Partial("~/Views/Shared/ShareBody.cshtml")
+    <div id="box"></div>
+    <div> 
+        <input type="text" id="tphone" value="13774352220" />
+        <br /><a id="bjoin" href="#">Join</a>
+    </div>
+</body>
+</html>

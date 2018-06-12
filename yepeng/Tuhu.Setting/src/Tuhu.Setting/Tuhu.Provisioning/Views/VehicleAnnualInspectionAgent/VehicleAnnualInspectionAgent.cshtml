@@ -1,0 +1,607 @@
+﻿@{
+    ViewBag.Title = "年检代办城市配置";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>年检代办城市配置</h2>
+<link href="~/Content/iview/iview.css" rel="stylesheet" />
+<link href="~/Content/Public/Public.css" rel="stylesheet" type="text/css" />
+<link href="~/Content/BaoYangActivitySetting/Vue.css" rel="stylesheet" type="text/css" />
+<style>
+    fieldset {
+        height: auto;
+        margin: 5px 0px 15px 0px;
+        padding: 15px 20px;
+    }
+
+        fieldset > label {
+            display: inline-block;
+            height: 30px;
+            max-width: 100%;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    textarea{
+        resize:none;
+    }
+</style>
+<div id="div" v-cloak>
+    <fieldset>
+        <label>选择产品:</label>
+        <i-select style="width:10%" v-model="searchData.servicePid" filterable>
+            <i-option value="" key="">-请选择-</i-option>
+            <i-option v-for="service in services" :value="service.ServicePid" :key="service.ServicePid">{{service.ServiceName}}</i-option>
+        </i-select>
+        <label>车牌前缀:</label>
+        <i-select style="width:10%;" v-model="searchData.carNoPrefix" filterable>
+            <i-option value="" key="">-请选择-</i-option>
+            <Option-Group v-for="(value,key,index) in carNoPrefixes" :label="key">
+                <i-option v-for="item in value" :value="item" :key="item">{{item}}</i-option>
+            </Option-Group>
+        </i-select>
+        <Button type="button" class="btn btn-basic" v-on:click="Search(1)">查询</Button>
+        <Button type="button" class="btn btn-basic" v-on:click="OpenAddDialog()">添加</Button>
+        <Button type="button" class="btn btn-basic" v-on:click="RefreshCache()">刷新服务缓存</Button>
+        <Tooltip style="margin-left:15px;" placement="right">
+            <Icon type="alert"></Icon>
+            <div style="width:300px;" slot="content">
+                <p>1.同Pid、同车牌前缀 只允许启用一个</p>
+                <p>2.同Pid、同车牌前缀、同手机号</p>
+                <p><i>只允许存在一条记录</i></p>
+            </div>
+        </Tooltip>
+    </fieldset>
+    <table class="tableContainer">
+        <thead>
+            <tr>
+                <th>编号</th>
+                <th>PID</th>
+                <th>商品名称</th>
+                <th>车牌前缀</th>
+                <th>售价</th>
+                <th>成本</th>
+                <th>供应商简称</th>
+                <th>办理人</th>
+                <th>联系电话</th>
+                <th>证件邮寄地址</th>
+                <th>备注</th>
+                <th>状态</th>
+                <th>操作</th>
+                <th>操作历史</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="loading">
+                <td colspan="20"><img src="~/Images/loading.gif" /></td>
+            </tr>
+            <tr v-else-if="searchResult != []" v-for="(value,index) in searchResult">
+                <td>{{(pager.pageIndex-1)*pager.pageSize+index+1}}</td>
+                <td>{{value.ServicePid}}</td>
+                <td>{{value.ServiceName}}</td>
+                <td>{{value.CarNoPrefix}}</td>
+                <td>{{value.SalePrice}}</td>
+                <td>{{value.CostPrice}}</td>
+                <td>{{value.VenderShortName}}</td>
+                <td>{{value.Contact}}</td>
+                <td>{{value.TelNum}}</td>
+                <td>{{value.OfficeAddress}}</td>
+                <td>{{value.Remarks}}</td>
+                <td v-if="value.IsEnabled==true"><Tag color="blue">启用</Tag></td>
+                <td v-else><Tag color="red">禁用</Tag></td>
+                <td>
+                    <Button type="button" class="btn btn-basic" style="width:60px" v-on:click="OpenEditDialog(value)">编辑</Button>
+                    <Button type="button" class="btn btn-danger" style="width:60px;margin-left:5px" v-on:click="Delete(value)">删除</Button>
+                </td>
+                <td>
+                    <Button type="button" class="btn btn-basic" style="width:60px" v-on:click="WatchHistroy(value)">查看</Button>
+                </td>
+            </tr>
+            <tr v-else>
+                <td colspan="20">根据筛选条件未能查询到相关结果</td>
+            </tr>
+        </tbody>
+    </table>
+    <Page style="margin:10px;" :total="pager.totalCount" :current.sync="pager.pageIndex" :page-size="pager.pageSize" show-total></Page>
+    @*添加或编辑的对话框*@
+    <Modal v-model="addOrEditDialog.show" :mask-closable="false" width="40%">
+        <p slot="header" style="color:#f60;text-align:center">
+            <span v-if="addOrEditDialog.type==='Add'">添加</span>
+            <span v-if="addOrEditDialog.type==='Edit'">编辑</span>
+        </p>
+        <div style="text-align:center">
+            <table>
+                <tr>
+                    <th>选择产品:</th>
+                    <td v-if="addOrEditDialog.type==='Add'">
+                        <i-select style="width:95%" v-model="model.ServicePid" filterable>
+                            <i-option v-for="service in services" :value="service.ServicePid" :key="service.ServicePid">{{service.ServiceName}}</i-option>
+                        </i-select>
+                    </td>
+                    <td v-else-if="addOrEditDialog.type==='Edit'">
+                        {{model.ServicePid}}
+                    </td>
+                    <th>售价:</th>
+                    <td>
+                        <i-input style="width:95%" type="number" placeholder="请输入售价" v-model.number="model.SalePrice"></i-input>
+                    </td>
+                </tr>
+                <tr>
+                    <th>供应商简称:</th>
+                    <td v-if="addOrEditDialog.type==='Add'">
+                        <i-select style="width:95%" v-model="model.VenderShortName" filterable>
+                            <i-option v-for="vender in venders" :value="vender" :key="vender">{{vender}}</i-option>
+                        </i-select>
+                    </td>
+                    <td v-else="addOrEditDialog.type==='Edit'">
+                        {{model.VenderShortName}}
+                    </td>
+                    <th>成本:</th>
+                    <td>
+                        <i-input style="width:95%" type="number" placeholder="请输入成本价" v-model.number="model.CostPrice"></i-input>
+                    </td>
+                </tr>
+                <tr>
+                    <th>车牌前缀:</th>
+                    <td v-if="addOrEditDialog.type==='Add'">
+                        <i-select style="width:95%;" v-model="model.CarNoPrefix" filterable>
+                            <Option-Group v-for="(value,key,index) in carNoPrefixes" :label="key">
+                                <i-option v-for="item in value" :value="item" :key="item">{{item}}</i-option>
+                            </Option-Group>
+                        </i-select>
+                    </td>
+                    <td v-else-if="addOrEditDialog.type==='Edit'">
+                        {{model.CarNoPrefix}}
+                    </td>
+                    <th>
+                        状态:
+                    </th>
+                    <td>
+                        <i-Switch size="large" v-model="model.IsEnabled">
+                            <span slot="open">启用</span>
+                            <span slot="close">禁用</span>
+                        </i-Switch>
+                    </td>
+                </tr>
+                <tr>
+                    <th>办理人:</th>
+                    <td><i-input style="width:95%" v-model="model.Contact" placeholder="请输入办理人姓名"></i-input></td>
+                    <th>联系电话:</th>
+                    <td v-if="addOrEditDialog.type==='Add'">
+                        <i-input style="width:95%" v-model="model.TelNum" placeholder="请输入联系电话"></i-input>
+                    </td>
+                    <td v-else="addOrEditDialog.type==='Edit'">{{model.TelNum}}</td>
+                </tr>
+                <tr>
+                    <th>证件邮寄地址:</th>
+                    <td>
+                        <i-input type="textarea" style="resize:none;height:95%;width:95%" v-model="model.OfficeAddress" placeholder="请输入邮寄地址"></i-input>
+                    </td>
+                    <th>备注:</th>
+                    <td>
+                        <i-input type="textarea" style="resize:none;height:95%;width:95%" v-model="model.Remarks" placeholder="请输入备注"></i-input>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div slot="footer">
+            <Button v-if="addOrEditDialog.type==='Add'" type="button" class="btn btn-basic" v-on:click="Add()">保存</Button>
+            <Button v-else-if="addOrEditDialog.type==='Edit'" type="button" class="btn btn-basic" v-on:click="Edit()">保存</Button>
+            <Button type="button" class="btn btn-basic" v-on:click="addOrEditDialog.show=false">取消</Button>
+        </div>
+    </Modal>
+
+    @*查看日志对话框*@
+    <Modal v-model="showLog.show" :mask-closable="false" width="40%">
+        <p slot="header">
+            <span>操作历史</span>
+        </p>
+        <div style="text-align:center">
+            <table>
+                <thead>
+                    <tr>
+                        <th>操作人</th>
+                        <th>操作类型</th>
+                        <th>时间</th>
+                        <th>操作</th>
+                        <th>查看前后值对比</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-show="showLog.logs.length>0" v-for="log in showLog.logs">
+                        <td>{{log.Operator}}</td>
+                        <td>{{log.OperationType}}</td>
+                        <td>{{log.CreateDateTime | DatePrase}}</td>
+                        <td>{{log.Remarks}}</td>
+                        <td>
+                            <Button type="button" class="btn btn-basic" style="width:60px" v-on:click="WatchLogDetail(log.OldValue,log.NewValue)">查看</Button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div slot="footer">
+            <Button type="button" class="btn btn-basic" v-on:click="showLog.show=false">关闭</Button>
+        </div>
+    </Modal>
+
+    @*日志详情对话框*@
+    <Modal v-model="showLog.detail.show" :mask-closable="false" width="40%">
+        <p slot="header">
+            <span>日志详情</span>
+        </p>
+        <div style="text-align:center">
+            <table>
+                <thead>
+                    <tr>
+                        <th>列名</th>
+                        <th>操作前值</th>
+                        <th>操作后值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-show="showLog.detail.logProperty.length>0" v-for="property in showLog.detail.logProperty">
+                        <td>{{property}}</td>
+                        <td v-if="showLog.detail.oldValue!=null">{{showLog.detail.oldValue[property]}}</td>
+                        <td v-else></td>
+                        <td v-if="showLog.detail.newValue!=null">{{showLog.detail.newValue[property]}}</td>
+                        <td v-else></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div slot="footer">
+            <Button type="button" class="btn btn-basic" v-on:click="showLog.detail.show=false">关闭</Button>
+        </div>
+    </Modal>
+</div>
+<script src="~/Scripts/vue.min.js"></script>
+<script src="~/Scripts/iview/iview.js"></script>
+<script type="text/javascript">
+    function DatePrase(value) {
+        if (value) {
+            return eval('new ' + eval(value).source).Format('yyyy-MM-dd hh:mm:ss');
+        }
+    };
+    Vue.filter('DatePrase', DatePrase);
+    var vue = new Vue({
+        el: "#div",
+        data: {
+            services: [],
+            carNoPrefixes: [],
+            venders: [],
+            searchData: {
+                servicePid: "",
+                carNoPrefix: ""
+            },
+            pager: {
+                pageIndex: 1,
+                pageSize: 20,
+                totalPage: 0,
+                totalCount: 0
+            },
+            model: {
+                PKID: 0,
+                ServicePid: "",
+                ServiceName: "",
+                VenderShortName: "",
+                CarNoPrefix: "",
+                Contact: "",
+                TelNum: "",
+                OfficeAddress: "",
+                SalePrice: 0,
+                CostPrice: 0,
+                IsEnabled: false,
+                Remarks: ""
+            },
+            loading: false,
+            searchResult: [],
+            addOrEditDialog: {
+                show: false,
+                type: ""
+            },
+            showLog: {
+                show: false,
+                logs: [],
+                detail: {
+                    show: false,
+                    oldValue: "",
+                    newValue: "",
+                    logProperty: []
+                }
+            }
+        },
+        created: function () {
+            var self = this;
+            self.GetAllCarNoPrefix();
+            self.GetAllAnnualInspectionService();
+            self.Search(self.pager.pageIndex);
+            self.$Notice.config({
+                top: 180,
+                duration: 5
+            });
+        },
+        watch: {
+            "pager.pageIndex": function () {
+                var self = this;
+                self.Search(self.pager.pageIndex);
+            },
+            "model.ServicePid": function () {
+                var self = this;
+                var service = self.services.find(function (item) { return item.ServicePid == self.model.ServicePid }) || [];
+                self.model.ServiceName = service.ServiceName || "";
+            },
+        },
+        methods: {
+            //获取所有产品
+            GetAllAnnualInspectionService: function () {
+                var self = this;
+                $.post("GetAllAnnualInspectionService", function (result) {
+                    if (result.Status) {
+                        self.services = result.Data;
+                    }
+                });
+            },
+            //获取所有车牌前缀
+            GetAllCarNoPrefix: function () {
+                var self = this;
+                $.post("GetAllCarNoPrefix", function (result) {
+                    if (result.Status) {
+                        self.carNoPrefixes = result.Data;
+                    }
+                });
+            },
+            //获取所有供应商
+            GetAllAnnualInspectionVender: function () {
+                var self = this;
+                $.post("GetAllAnnualInspectionVender", function (result) {
+                    if (result.Status) {
+                        self.venders = result.Data;
+                    }
+                });
+            },
+            //查询配置
+            Search: function (pagerIndex) {
+                var self = this;
+                self.loading = true;
+                self.pager.pageIndex = pagerIndex;
+                $.post("SelectAgentConfig", {
+                    servicePid: self.searchData.servicePid, carNoPrefix: self.searchData.carNoPrefix
+                    , pageIndex: self.pager.pageIndex, pageSize: self.pager.pageSize
+                }, function (result) {
+                    if (result.Status) {
+                        self.searchResult = result.Data;
+                        self.pager.totalCount = result.TotalCount;
+                    }
+                    else {
+                        alert("查询失败!" + (result.Msg || ""));
+                        self.SearchResult = [];
+                    }
+                    self.loading = false;
+                });
+            },
+            //打开添加对话框
+            OpenAddDialog: function (item) {
+                var self = this;
+                self.GetAllAnnualInspectionVender();
+                self.model = {
+                    PKID: 0,
+                    ServicePid: "",
+                    ServiceName: "",
+                    VenderShortName: "",
+                    CarNoPrefix: "",
+                    Contact: "",
+                    TelNum: "",
+                    OfficeAddress: "",
+                    SalePrice: 0,
+                    CostPrice: 0,
+                    IsEnabled: false,
+                    Remarks: ""
+                };
+                self.addOrEditDialog.type = "Add";
+                self.addOrEditDialog.show = true;
+            },
+            //打开编辑对话框
+            OpenEditDialog: function (item) {
+                var self = this;
+                self.model = JSON.parse(JSON.stringify(item));
+                self.addOrEditDialog.type = "Edit";
+                self.addOrEditDialog.show = true;
+            },
+            //关闭对话框
+            CloseAddOrEditDialog: function () {
+                var self = this;
+                self.addOrEditDialog.show = false;
+            },
+            //添加配置
+            Add: function () {
+                var self = this;
+                var model = self.model;
+                if (!model.ServicePid) {
+                    self.$Notice.warning({
+                        title: '警告',
+                        desc: "请选择产品",
+                        duration: 0
+                    });
+                    return;
+                }
+                if (!model.CarNoPrefix) {
+                    self.$Notice.warning({
+                        title: '警告',
+                        desc: "请选择车牌前缀",
+                        duration: 0
+                    });
+                    return;
+                }
+                if (!confirm("是否确认添加 " + model.CarNoPrefix + "的" + model.ServiceName + " 配置 ? ")) {
+                    return;
+                }
+                if (!self.CheckAgentConfig(model)) {
+                    return;
+                }
+                $.post("AddAgentConfig", { model: model }, function (result) {
+                    if (result && result.Status) {
+                        self.$Notice.success({
+                            title: '添加成功',
+                            desc: ("添加成功!" + (result.Msg || "")),
+                            duration: 0
+                        });
+                        self.CloseAddOrEditDialog();
+                        setTimeout(function () { self.Search(self.pager.pageIndex) }, 2000);
+                    }
+                    else {
+                        self.$Notice.error({
+                            title: '添加失败',
+                            desc: ("添加失败!" + (result.Msg || "")),
+                            duration: 0
+                        });
+                    }
+                });
+            },
+            //编辑配置
+            Edit: function () {
+                var self = this;
+                var model = self.model;
+                if (!confirm("是否确认更新 " + model.CarNoPrefix + "的" + model.ServiceName + " 配置 ? ")) {
+                    return;
+                }
+                if (!self.CheckAgentConfig(model)) {
+                    return;
+                }
+                $.post("UpdateAgentConfig", { model: model }, function (result) {
+                    if (result && result.Status) {
+                        self.$Notice.success({
+                            title: '编辑成功',
+                            desc: ("编辑成功!" + (result.Msg || "")),
+                            duration: 0
+                        });
+                        self.CloseAddOrEditDialog();
+                        setTimeout(function () { self.Search(self.pager.pageIndex) }, 2000);
+                    }
+                    else {
+                        self.$Notice.error({
+                            title: '编辑失败',
+                            desc: ("编辑失败!" + (result.Msg || "")),
+                            duration: 0
+                        });
+                    }
+                });
+            },
+            //删除配置
+            Delete: function (item) {
+                var self = this;
+                if (!item || !item.ServicePid || !item.TelNum || !item.CarNoPrefix) {
+                    return;
+                }
+                if (!confirm("确认删除 " + item.CarNoPrefix + "的" + item.ServiceName + " 配置?")) {
+                    return;
+                }
+                $.post("DeleteAgentConfig",
+                    { servicePid: item.ServicePid, telNum: item.TelNum, carNoPrefix: item.CarNoPrefix }, function (result) {
+                        if (result && result.Status) {
+                            self.$Notice.success({
+                                title: '删除成功',
+                                desc: ("删除成功!" + (result.Msg || "")),
+                                duration: 0
+                            });
+                            setTimeout(function () { self.Search(self.pager.pageIndex) }, 2000);
+                        }
+                        else {
+                            self.$Notice.error({
+                                title: '删除失败',
+                                desc: ("删除失败!" + (result.Msg || "")),
+                                duration: 0
+                            });
+                        }
+                    });
+            },
+            //查看操作记录
+            WatchHistroy: function (item) {
+                var self = this;
+                if (item && item.CarNoPrefix && item.ServicePid && item.TelNum) {
+                    $.post("GetAnnualInspectionOprLog", { carNoPrefix: item.CarNoPrefix, servicePid: item.ServicePid, telNum: item.TelNum }, function (result) {
+                        if (result && result.Status) {
+                            self.showLog.logs = result.Data;
+                            self.showLog.show = true;
+                        }
+                    });
+                }
+            },
+            //查看单条日志详情
+            WatchLogDetail: function (oldValue, newValue) {
+                var self = this;
+                var oldObj = /^\s*$/.test(oldValue) ? null : JSON.parse(oldValue);
+                var newObj = /^\s*$/.test(newValue) ? null : JSON.parse(newValue);
+                var obj = oldObj || newObj;
+                var keys = [];
+                for (var property in obj) {
+                    if (obj.hasOwnProperty(property)) {
+                        keys[keys.length] = property;
+                    }
+                }
+                self.showLog.detail.oldValue = oldObj;
+                self.showLog.detail.newValue = newObj;
+                self.showLog.detail.logProperty = keys;
+                self.showLog.detail.show = true;
+            },
+            //刷新服务缓存
+            RefreshCache: function () {
+                var self = this;
+                $.post("RefreshAnnualInspectionAgentCache", {}, function (result) {
+                    if (result && result.Status) {
+                        self.$Notice.info({
+                            title: '缓存提示',
+                            desc: "刷新服务缓存成功!<br/>此消息将自动关闭"
+                        });
+                    }
+                    else {
+                        self.$Notice.error({
+                            title: '缓存提示',
+                            desc: "刷新服务缓存失败",
+                            duration: 0
+                        });
+                    }
+                });
+            },
+            //添加或编辑是数据校验
+            CheckAgentConfig: function (model) {
+                var self = this;
+                var errorMessage = "";
+                if (!model) {
+                    errorMessage = "未知的对象";
+                }
+                else if (!model.ServicePid) {
+                    errorMessage = "请选择产品";
+                }
+                else if (!model.VenderShortName) {
+                    errorMessage = "请选择供应商";
+                }
+                else if (!model.TelNum) {
+                    errorMessage = "联系电话不能为空";
+                }
+                else if (!model.Contact) {
+                    errorMessage = "办理人不能为空";
+                }
+                else if (!model.OfficeAddress) {
+                    errorMessage = "证件邮寄地址不能为空";
+                }
+                else if (!model.CarNoPrefix) {
+                    errorMessage = "请选择车牌前缀";
+                }
+                else if (model.CostPrice < 0 || model.SalePrice < 0) {
+                    errorMessage = "成本售价不能为负数";
+                }
+                if (errorMessage) {
+                    self.$Notice.warning({
+                        title: '警告',
+                        desc: errorMessage,
+                        duration: 0
+                    });
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            }
+        }
+    })
+</script>

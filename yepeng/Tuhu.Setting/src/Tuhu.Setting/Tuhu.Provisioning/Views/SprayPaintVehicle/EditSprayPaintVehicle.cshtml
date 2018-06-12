@@ -1,0 +1,725 @@
+﻿
+@{
+    ViewBag.Title = "喷漆车型编辑";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model Tuhu.Provisioning.DataAccess.Entity.VehicleLevelModel
+<script src="~/Content/ProductVehicleType/js/angular.min.js"></script>
+<link href="~/Content/ProductVehicleType/css/detail.css" type="text/css" rel="stylesheet" />
+<link href="~/Content/ProductVehicleType/css/bootstrap.v3.css" type="text/css" rel="stylesheet" />
+<style type="text/css">
+    #filter {
+        width: 100%;
+        height: auto;
+        /*margin-left: auto;
+        margin-right: auto;*/
+        float: left;
+        font-size: 12px;
+    }
+
+        #filter dl {
+            padding: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+            clear: both;
+            padding: 4px 0;
+        }
+
+        #filter dt, dd {
+            display: block;
+            float: left;
+            width: auto;
+            padding: 0;
+            margin: 3px 0;
+        }
+
+        #filter dt {
+            height: 14px;
+            padding-bottom: 4px;
+            font-weight: bold;
+            color: #333333;
+        }
+
+        #filter dd {
+            color: #005AA0;
+            margin-right: 8px;
+        }
+
+        #filter a {
+            cursor: pointer;
+        }
+
+    .seling {
+        background-color: gray;
+        color: #FFFFFF;
+    }
+
+    .seled {
+        background-color: #005AA0;
+        color: #FFFFFF;
+    }
+    table th {
+        width: auto;
+        height: auto;
+        background: #66ABEF;
+        color: #F3F7FA;
+        border: 1px solid #559BD0;
+        font-weight: 600;
+        font-family: "Microsoft Yahei";
+        text-align: center;
+        min-width: 20%;
+        font-size: larger;
+    }
+
+    table td {
+        font-size: 75%;
+        padding: 8px 3px 8px 3px;
+        font-family: "Microsoft Yahei";
+        text-align: center;
+        border: 1px solid #eee;
+        min-width: 20px;
+    }
+</style>
+<div>
+    <div style="width: 300px;">
+        <a href="/SprayPaintVehicle/SprayPaintVehicle">
+            <h2>返回喷漆车型档次分类</h2>
+        </a>
+    </div>
+    <span style="font-size: larger; font-weight: bolder">车型档次：@ViewBag.VehicleLevel</span><p>
+    <span style="font-size: larger; font-weight: bolder; margin-top: 10px; display: inline-block;">车型：</span>
+    <div style="float: left;width: 100%">
+            @{
+               var itemCount = 0;
+               if (Model != null && Model.VehicleInfo.Any())
+               {
+                 foreach (var item in Model.VehicleInfo)
+                 {
+                    if (!string.IsNullOrWhiteSpace(item.VehicleSeries))
+                    {
+                        itemCount++;
+                        var isDisplay = itemCount > 45 ? "none" : "";
+                        <span style="white-space: nowrap; float: left; display: @isDisplay; font-size: small; margin-top:5px;">@item.VehicleSeries；&nbsp;&nbsp;</span>
+                    }
+                 }
+                 if (Model.VehicleInfo.Count > 45)
+                 {
+                    <div>
+                        <a style="margin-top: 20px; float: right; cursor: pointer;" onclick="showAllVehicle(this)">显示全部</a>
+                        <a style="margin-top: 20px; float: right; cursor: pointer; display: none;" onclick="hideVehicle(this)">隐藏部分车型</a>
+                    </div>
+                 }
+               }
+            }
+    </div><p>
+    <div style="display: inline-block; margin-top: 10px;">
+        <span style="font-size: larger; font-weight: bolder;">喷漆服务：</span>
+        <select id="PaintService" data-placeholder="选择需要的服务" onchange="ChooseServices(this)">
+            <option value="">请选择</option>
+            @foreach (var item in ViewBag.ServiceInfo)
+            {
+                if (Model != null && Model.PaintService.Any(p => p.ServiceId.Equals(item.ServiceId)))
+                {
+                    continue;
+                }
+                <option value="@item.ServiceId">@item.ServersName</option>
+            }
+        </select>
+    </div>
+    <p>
+        @{
+            var show = Model != null && Model.PaintService.Any() ? "" : "none";
+            <table id="ServiceTable" style="display: @show;">
+                <tr>
+                    <th>序号</th>
+                    <th>PID</th>
+                    <th>服务名称</th>
+                    <th>编辑</th>
+                </tr>
+                @if (Model != null && Model.PaintService.Any())
+                {
+                    foreach (var item in Model.PaintService.OrderBy(p => p.DisplayIndex))
+                    {
+                        <tr>
+                            <td>@item.DisplayIndex</td>
+                            <td>@item.ServiceId</td>
+                            <td>@item.ServiceName</td>
+                            <td><a onclick='DropTable(this)' style='cursor: pointer'>删除</a></td>
+                        </tr>
+                    }
+                }
+            </table><br>
+        }
+        <button class="btn btn-success" id="btnSaveService">保存喷漆服务</button>
+        <div ng-app="NodeApp">
+            <div ng-controller="SprayPaintVehicleController">
+                <div id="filter">
+                    <dl>
+                        <dt>品牌车型：</dt>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>A</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>B</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>C</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>D</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>E</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>F</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>G</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>H</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>I</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>J</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>K</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>L</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>M</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>N</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>O</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>P</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>Q</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>R</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>S</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>T</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>U</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>V</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>W</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>X</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>Y</a>
+                            </div>
+                        </dd>
+                        <dd>
+                            <div style="font-size: larger; margin-left: 10px;">
+                                <a>Z</a>
+                            </div>
+                        </dd>
+                    </dl>
+                </div>
+                <div class="search-result" style="margin-top: 20px">
+                    <div id="divNoSearchResult" class="search-no hidden">您好，未查到相关车型数据，请重新筛选！</div>
+                    <div class="search-list" ng-repeat="item in apiInfoList">
+                        <ul class="car-menu">
+                            <li>
+                                <div class="car-item">
+                                    <i class="triangle-icon" ng-click="showNext($event.target)"></i>
+                                    <div class="car-type">
+                                        <label><input type="checkbox" id="level1" ng-disabled="{{item.disabled}}" name="{{item.id}}" ng-checked="{{item.check}}" ng-click="checkNext($event.target)" /></label>
+
+                                        <span>{{item.name}}</span>
+                                    </div>
+                                </div>
+                                <div class="car-item-sub">
+                                    <ul ng-repeat="subitem in item.children">
+                                        <li>
+                                            <div class="car-item">
+                                                <div class="car-type">
+                                                    <label><input type="checkbox" id="level2" ng-disabled="{{subitem.disabled}}" name="{{subitem.id}}" ng-checked="{{subitem.check}}" ng-click="checkNext($event.target)" /></label>
+                                                    <span>{{subitem.name}}</span>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row" ng-show="showTable">
+                    <button class="btn btn-info" id="btnCancel">取消修改</button>
+                    <button class="btn btn-success" id="btnSave" style="margin-left: 50px">保存修改</button>
+                </div>
+            </div>
+        </div>
+</div>
+<script>
+    var Messenger = {
+        alert: function (data) {
+            var dialog = "<div id='dialog-info' style='display:none; margin 0 auto;' title='提示'><p style='font-size:125%;'>" + data.msg + "</p></div>";
+            $('body').append(dialog);
+            $('#dialog-info').dialog({
+                modal: true,
+                width: 300,
+                close: function (event, ui) {
+                    $(this).remove();
+                },
+                buttons: [
+                    { text: "确定", click: function() {
+                        $('#dialog-info').dialog("close");
+                        data.result = true;
+                    } },
+                    { text: "取消", click: function() {
+                        $('#dialog-info').dialog("close");
+                        data.result = false;
+                    } }
+                ]
+            });
+        }
+    };
+    var VehicleLevel = '@ViewBag.VehicleLevel';
+    var Condition = "";
+    var app = angular.module('NodeApp', []);
+    app.controller('SprayPaintVehicleController', [
+        '$scope', 'BusinessService', function($scope, businessService) {
+            $scope.apiInfoList = [];
+            $scope.showTable = false;
+            $scope.initalWord = "A";
+            $scope.getAllApiInfo = function() {
+                businessService.list(VehicleLevel, 'A').success(function(response) {
+
+                    $scope.apiInfoList = response.items;
+                    if ($scope.apiInfoList.length < 1) { //|| $scope.apiInfoList[0].Id == null
+                        $scope.showTable = false;
+                    } else {
+                        $scope.showTable = true;
+                    }
+
+                    console.log("apiInfoList长度：" + $scope.apiInfoList.length + $scope.showTable);
+                });
+            };
+            //控制箭头方向
+            $scope.showNext = function(target) {
+                if ($(target).hasClass("triangle-icon-dowm")) {
+                    //如果当前元素箭头向下，则收起
+                    $(target).removeClass("triangle-icon-dowm");
+                    $(target).parent().siblings().removeClass("show");
+                } else {
+                    $(target).addClass("triangle-icon-dowm");
+                    $(target).parent().siblings().addClass("show");
+                }
+            }
+
+            $scope.checkNext = function(target) {
+                var isChecked = true;
+                var siblingItems;
+                var level = $(target).attr("id");
+                if ($(target).is(":checked")) {
+                    //如果当前元素处于选中状态，则选中下一级所有的checkbox
+                    if (level === "level1") { //当前元素level1且选中则下面所有的都选中
+                        $(target).parent().parent().parent().parent().parent().find("input[type='checkbox']").not("[disabled='disabled']").prop("checked", true);
+                        var childrenNode = $(target).parent().parent().parent().parent().parent().find("input[type='checkbox']");
+                        var vehicleIds = "";
+                        for (var i = 0; i < childrenNode.length; i++) {
+                            var vehicleId = $(childrenNode[i]).attr("name");
+                            if ($(childrenNode[i]).attr("id") !== "level1")
+                                vehicleIds += vehicleId + ";";
+                        }
+                        //验证其他车型等级中是否有当前选中的车型
+                        //businessService.check(VehicleLevel, vehicleIds).success(function (response) {
+                        //    var sp = "";
+                        //    data = response.data;
+                        //    console.log(data);
+                        //    if (data.length > 0) {
+                        //        $.each(data, function (index) {
+                        //            sp += "车型等级" + data[index].Item1 + "下已配置车型" + data[index].Item2 + "\n";
+                        //            for (var i = 0; i < childrenNode.length; i++) {
+                        //                var vehicleId = $(childrenNode[i]).attr("name");
+                        //                var vehicleName = $(childrenNode[i]).parent().next().text();
+                        //                if (vehicleName === data[index].Item2) {
+                        //                    $(target).parent().parent().parent().parent().parent().find("input[name='" + vehicleId + "']").prop("checked", false);
+                        //                }
+                        //            }
+                        //        });
+                        //        $(target).prop("checked", false);
+                        //    }
+                        //    if (sp) {
+                        //        alert(sp);
+                        //    }
+                        //});
+                    }
+                    if (level === "level2") {
+                        var vehicleId = $(target).attr("name");
+                        //验证其他车型等级中是否有当前选中的车型
+                        //businessService.check(VehicleLevel, vehicleId).success(function (response) {
+                        //    var sp = "";
+                        //    data = response.data;
+                        //    console.log(data);
+                        //    if (data.length > 0) {
+                        //        $.each(data, function (index) {
+                        //            sp += "车型等级" + data[index].Item1 + "下已配置车型" + data[index].Item2 + "\n";
+                        //            $(target).prop("checked", false);
+                        //        });
+                        //    }
+                        //    if (sp) {
+                        //        alert(sp);
+                        //        return false;
+                        //    }
+                        //});
+
+                        siblingItems = $(target).parent().parent().parent().parent().parent().siblings().find("input[type='checkbox']"); //获取所有兄弟节点下的所有子节点
+                        for (var i = 0; i < siblingItems.length; i++) {
+                            if ($(siblingItems[i]).is(":checked") === false) {
+                                isChecked = false;
+                                break;
+                            }
+                        }
+                        if (isChecked) {
+                            $(target).parent().parent().parent().parent().parent().parent().siblings().find("input[type='checkbox']").prop("checked", true);
+                        } else {
+                            $(target).parent().parent().parent().parent().parent().parent().siblings().find("input[type='checkbox']").prop("checked", false);
+                        }
+                    }
+                } else {
+                    if (level === "level1") { //当前元素level1且选中则下面所有的都不选中
+                        $(target).parent().parent().parent().parent().parent().find("input[type='checkbox']").prop("checked", false);
+                    }
+                    if (level === "level2") {
+                        $(target).parent().parent().parent().siblings().find("input[type='checkbox']").prop("checked", false); //当前节点下级所有都取消选中
+                        $(target).parent().parent().parent().parent().parent().parent().siblings().find("input[type='checkbox']").prop("checked", false);
+                    }
+                }
+            }
+
+            $("#filter a").hover(
+                function() {
+                    $(this).addClass("seling");
+                },
+                function() {
+                    $(this).removeClass("seling");
+                }
+            );
+
+            //为filter下的所有a标签添加单击事件
+            $("#filter a").click(function() {
+                if ($scope.showTable) {
+                    var r = confirm("切换编辑车型前，请确定先保存当前修改的数据");
+                    if (r === true) {
+                    } else {
+                        return false;
+                    }
+                }
+                $(this).parents("dl").children("dd").each(function() {
+                    $('a', this).removeClass("seled");
+                });
+
+                $(this).attr("class", "seled");
+                //当筛选条件中的 字母 选中状态变化时，向后台重新请求车型数据
+
+                var brandChar = $(this).html();
+                console.log(brandChar);
+                $scope.initalWord = brandChar;
+                Condition = brandChar; //默认传 A
+                businessService.list(VehicleLevel, Condition).success(function(response) {
+                    if (response.Status)
+                        $scope.apiInfoList = response.items;
+                    else
+                        $scope.apiInfoList = [];
+                    if ($scope.apiInfoList.length < 1) {
+                        $scope.showTable = false;
+                        $("#divNoSearchResult").removeClass("hidden");
+                    } else {
+                        $scope.showTable = true;
+                        $("#divNoSearchResult").addClass("hidden");
+                    }
+
+                    console.log("apiInfoList长度：" + $scope.apiInfoList.length + $scope.showTable);
+                });
+            });
+
+            $("#btnCancel").click(function () {
+                var r = confirm("确认取消修改吗？");
+                if (r === true) {
+                    //var checkBoxArray = $(".search-list").find("input[type='checkbox']:checked");
+                    //for (var i = 0; i < checkBoxArray.length; i++) {
+                    //    $(checkBoxArray[i]).prop("checked", false);
+                    //}
+                    Condition = $scope.initalWord;
+                    businessService.list(VehicleLevel, Condition).success(function (response) {
+                        if (response.Status)
+                            $scope.apiInfoList = response.items;
+                        else
+                            $scope.apiInfoList = [];
+                        if ($scope.apiInfoList.length < 1) {
+                            $scope.showTable = false;
+                            $("#divNoSearchResult").removeClass("hidden");
+                        } else {
+                            $scope.showTable = true;
+                            $("#divNoSearchResult").addClass("hidden");
+                        }
+
+                        console.log("apiInfoList长度：" + $scope.apiInfoList.length + $scope.showTable);
+                    });
+                } else {
+                    return false;
+                }
+
+            });
+        }
+    ]);
+
+    app.factory('BusinessService', [
+        '$http', function($http) {
+            var list = function(vehicleLevel, initalWord) {
+                return $http.post('/SprayPaintVehicle/GetVehicleInfo', { vehicleLevel, initalWord });
+            };
+            //var check = function(vehicleLevel, vehicleIds) {
+            //    return $http.post('/SprayPaintVehicle/IsVehicleExistsInAnotherLevel', { vehicleLevel, vehicleIds });
+
+            //};
+            return {
+                list: function(vehicleLevel, initalWord) {
+                    return list(vehicleLevel, initalWord);
+                },
+                //check: function(vehicleLevel, vehicleIds) {
+                //    return check(vehicleLevel, vehicleIds);
+                //}
+            };
+        }
+    ]);
+
+    $("#btnSave").click(function() {
+        var checkBoxArray = $(".search-list").find("input[type='checkbox']:checked");
+        var vehicleIds = "";
+        for (var i = 0; i < checkBoxArray.length; i++) {
+            var vehicleId = $(checkBoxArray[i]).attr("name");
+            if ($(checkBoxArray[i]).attr("id") !== "level1")
+                vehicleIds += vehicleId + ",";
+        }
+        //if (vehicleIds == "") {
+        //    alert("请勾选车型！");
+        //    return;
+        //}
+        var dialog = "<div id='dialog-info' style='display:none; margin 0 auto;' title='提示'><p style='font-size:125%;'>确认保存修改吗？</p></div>";
+        $('body').append(dialog);
+        $('#dialog-info').dialog({
+            modal: true,
+            width: 300,
+            close: function (event, ui) {
+                $(this).remove();
+            },
+            buttons: [
+                {
+                    text: "确定",
+                    click: function() {
+                        $('#dialog-info').dialog("close");
+                        $.post("UpdatePaintVehicleLevel", { vehicleLevel: VehicleLevel, initalWord: Condition, vehicleIds: vehicleIds }, function (data) {
+                            if (data.Status) {
+                                alert("修改成功！");
+                                RefreshCache("Vehice2Level", VehicleLevel);
+                                window.location.href = "/SprayPaintVehicle/EditSprayPaintVehicle?vehicleLevel=" + VehicleLevel;
+                            } else {
+                                alert("修改失败！");
+                            }
+                        });
+                    }
+                },
+                {
+                    text: "取消",
+                    click: function() {
+                        $('#dialog-info').dialog("close");
+                    }
+                }
+            ]
+        });             
+    });
+
+
+    $("#btnSaveService").click(function() {
+        var rowCount = $("#ServiceTable tr:not(:first)").length;
+        var serviceData ="";
+        if (rowCount > 0) {
+            var serviceList = [];
+            $("#ServiceTable tr:not(:first)").each(function() {
+                var item = new Object();
+                item.ServiceId = $(this).find("td").eq(1).text();
+                item.DisplayIndex = $(this).find("td").eq(0).text();
+                item.VehicleLevel = VehicleLevel;
+                serviceList.push(item);
+            });
+            serviceData = JSON.stringify(serviceList);
+        } 
+        var dialog = "<div id='dialog-info' style='display:none; margin 0 auto;' title='提示'><p style='font-size:125%;'>确认保存修改吗？</p></div>";
+        $('body').append(dialog);
+        $('#dialog-info').dialog({
+            modal: true,
+            width: 300,
+            close: function (event, ui) {
+                $(this).remove();
+            },
+            buttons: [
+                {
+                    text: "确定",
+                    click: function() {
+                        $('#dialog-info').dialog("close");
+                        $.post("UpdatePaintService", { vehicleLevel: VehicleLevel, paintService: serviceData }, function (data) {
+                            if (data.Status) {
+                                alert("修改成功！");
+                                RefreshCache("Level2Service", VehicleLevel);
+                                window.location.href = "/SprayPaintVehicle/EditSprayPaintVehicle?vehicleLevel=" + VehicleLevel;
+                            } else {
+                                alert("修改失败！");
+                            }
+                        });
+                    }
+                },
+                {
+                    text: "取消",
+                    click: function() {
+                        $('#dialog-info').dialog("close");
+                    }
+                }
+            ]
+        });        
+    });
+
+    function ChooseServices(o) {
+        var option = $(o);
+        var pid = option.find("option:selected").val();
+        if (pid == null || pid == "") {
+            return;
+        }
+        var serviceName = option.find("option:selected").text();
+        var rowCount = $("#ServiceTable tr:not(:first)").length + 1;
+        var html = "<tr><td>" + rowCount + "</td><td>" + pid + "</td><td>" + serviceName + "</td><td><a onclick='DropTable(this)' style='cursor:pointer'>删除</a></td></tr>";
+        $("#ServiceTable").append(html);
+        $("#ServiceTable").show();
+        $("#PaintService").find("option:selected").remove();
+    }
+
+    function DropTable(o) {
+        var item = $(o);
+        item.parent().parent().remove();
+        var pid = item.parent().parent().find("td").eq(1).text();
+        var serviceName = item.parent().parent().find("td").eq(2).text();
+        $("#PaintService").append("<option value='" + pid + "'>" + serviceName + "</option>");
+        var rowCount = $("#ServiceTable tr:not(:first)").length;
+        
+        if (rowCount == 0) {
+            $("#ServiceTable").hide();
+        } else {
+            for (var i = 0; i < rowCount; i ++) {
+                $("#ServiceTable tr:not(:first)").eq(i).find("td").eq(0).text(i + 1);
+            }
+        }
+    }
+
+    function showAllVehicle(o) {
+        var item = $(o);
+        item.parent().parent().find("span").show();
+        item.hide();
+        item.next().show();
+    }
+
+    function hideVehicle(o) {
+        var item = $(o);
+        var td = item.parent().parent().find("span");
+        var i = 0;
+        td.each(function () {
+            i++;
+            if (i > 45) {
+                $(this).hide();
+            }
+        });
+        item.hide();
+        item.prev().show();
+    }
+
+    function RefreshCache(type, data) {
+        $.ajax({
+            type: "post",
+            url: "/SprayPaintVehicle/UpdatePaintVehicleCache",
+            data: { type: type, data: data },
+            async: false,
+            dataType: "json",
+            success: function (response) {
+                if (response.Status) {
+                    alert("刷新缓存成功");
+                } else {
+                    alert(response.Msg);
+                }
+            }
+        });
+    }
+</script>

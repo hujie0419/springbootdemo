@@ -1,0 +1,57 @@
+﻿
+@{
+    ViewBag.Title = "SelectRowType";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<style type="text/css">
+    .itemRow {
+    width: 120px;
+    height: 60px;
+    background-color: #F0FFF0;
+    margin-top: 10px;
+    margin-left: 10px;
+    text-align: center;
+    cursor:pointer;
+    border: 1px solid;
+    }
+    span {
+        margin-top: 20px;
+        display: inline-block;
+        font-size: 16px;
+        font-weight: 700;
+    }
+</style>
+<ul class="nav">
+    <li class="itemRow" data-id="0"><span>一行一列</span></li>
+    <li class="itemRow" data-id="1"><span>一行两列</span></li>
+    <li class="itemRow" data-id="2"><span>一行三列</span></li>
+    <li class="itemRow" data-id="3"><span>(网站)一行一列</span></li>
+    <li class="itemRow" data-id="4"><span>一行四列</span></li>
+    <li class="itemRow" data-id="6"><span>一行五列</span></li>
+    <li class="itemRow" data-id="7"><span>一图三产品</span></li>
+</ul>
+
+<script type="text/javascript">
+    var keyValue = $.request("keyValue");
+
+    $(function () {
+        $('li').on("click", function () {
+
+            var type = $(this).data("id");
+           
+           parent.$.modalOpen({
+                id: "ContentFormList",
+                title: "行明细表单",
+                url: "/Activity/ActivityUnity/ContentForm?FKActiveID=" + keyValue + "&RowType=" + type + "&copy=false",
+                width: "600px",
+                height: "780px",
+                callBack: function (iframeId) {
+                    top.frames["ContentFormList"].submitForm();
+                }
+            });
+          // self.$.modalClose();
+
+        });
+    })
+</script>
+

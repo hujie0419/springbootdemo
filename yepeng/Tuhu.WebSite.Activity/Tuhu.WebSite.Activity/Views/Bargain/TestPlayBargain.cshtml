@@ -1,0 +1,42 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Play Bargain</title>
+    @Html.Partial("~/Views/Shared/ShareHeadClean.cshtml")
+    @Html.Partial("~/Views/Shared/CfgLoader.cshtml", "http://faxian.tuhu.cn/configs/bargain/new9.js")
+    <script type="text/javascript">
+        function cfgready(c) {
+            var pu = parseurl('play.html', []);
+            var cuturl = "http://faxian.tuhu.cn/bargain/cut.html?aid=" + c.aid + "&foid=" + pu.foid;
+            $('#url').html(cuturl);
+
+            $('#box').html(JSON.stringify(c));
+            $('.acut').click(function () {
+                var typ = $(this).attr('type');
+                var weapon = c.weapons[typ] || c.weapons['knife'];
+                var n = parseInt(Math.random() * 100) % weapon.length;
+                location.href = cuturl;
+            });
+        }
+    </script>
+</head>
+<body>
+    @Html.Partial("~/Views/Shared/ShareBody.cshtml")
+    <div id="box"></div>
+    <div id="url"></div>
+    <div> 
+        <a href="#" class="acut" type="knife">knife</a>
+        <a href="#" class="acut" type="gun">gun</a>
+        <a href="#" class="acut" type="stick">stick</a>
+        <a href="#" class="acut" type="cannon">cannon</a>
+        <a href="#" class="acut" type="special">special</a>
+    </div>
+</body>
+</html>

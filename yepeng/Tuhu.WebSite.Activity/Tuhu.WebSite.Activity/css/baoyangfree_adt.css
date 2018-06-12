@@ -1,0 +1,292 @@
+body{
+	padding: 0;
+	margin: 0;
+	font-family: "微软雅黑";
+	font-size: 12px;
+}
+
+.free-top{
+	background-color: #27292e;
+	text-align: center;
+	height: 90px;
+}
+
+.free-top > div:first-child{
+	color: #ffc600;
+	font-weight: bold;
+	font-family: "宋体";
+	height: 50%;
+	line-height: 45px;
+	font-size: 16px;
+}
+
+.free-top span{
+	display: inline-block;
+	width: 33.3%;
+	height: 50%;
+	line-height: 45px;
+	float:left;
+	color: #a7d5f3;
+    text-align:center;
+}
+#dhours span.active{
+    /*background-color:#FAD852;
+    color:black;*/
+}
+.free-top span:nth-child(even){
+	background-color: #323e5b;
+}
+
+.free-mid-bg .nextAction{
+	width: 100%;
+	height: 30px;
+	position: absolute;
+	text-align: center;
+	line-height: 30px;
+	bottom: 80px;
+}
+
+.free-mid-bg{
+	background: url(http://resource.tuhu.cn/hd/byfree/img/0-midBg.png) no-repeat;
+	background-color: #fad852;
+	background-size: contain;
+	position: relative;
+	width: 100%;
+	height: 340px;
+}
+
+.free-mid-bg .nextAction span{
+	display: inline-block;
+	background-color: #fad852;
+	color: #374363;
+	padding: 0;
+	font-weight: normal;
+	padding: 0 6px;
+	height: 30px;
+	margin-left: 1px;
+	font-size: 14px;
+}
+
+.free-mid-bg .nextAction > span:first-child{
+	margin-right: 10px;
+}
+
+.free-mid-bg .nextAction > span:last-child{
+	margin-left: 10px;
+}
+
+.free-mid-bg .nextAction  span.time{
+	background-color: #0d2837;
+	color: #fff678;
+	font-weight: bold;
+}
+
+.free-mid-bg .yykq{
+	width: 100%;
+	height: 70px;
+	position: absolute;
+	bottom: 10px;
+	background: url(http://resource.tuhu.cn/hd/byfree/img/0-yyqq.png) no-repeat center; 
+	background-size: contain;
+	background-color: #fad852;
+}
+
+.free-mid-bg .dwqq{
+	width: 100%;
+	height: 105px;
+	bottom: 5px;
+	position: absolute;
+	background: url(http://resource.tuhu.cn/hd/byfree/img/0-clickme.png) no-repeat center; 
+	background-size: contain;
+	background-color: #fad852;
+}
+
+.free-mid-bg .mskq{
+	width: 100%;
+	height: 70px;
+	line-height: 70px;
+	position: absolute;
+	bottom: 0px;
+	font-size: 27px;
+	font-weight: bold;
+	color: #de4039;
+	text-align: center;
+}
+
+.free-zjmd-top{
+	height: 60px;
+	background: url(http://resource.tuhu.cn/hd/byfree/img/0-zjmd.png) no-repeat center;
+	background-size: cover;
+}
+
+.free-zjmd-content{
+	background-color: #ade0ef; 
+	padding: 10px 0 5px;
+	position: relative;
+}
+
+.free-zjmd{
+	width: 90%;
+	height: 85px;
+	margin: 0 auto;
+	border: 3px solid #87c5d7;
+	border-radius: 10px;
+	background-color: #ffffff;
+	overflow: hidden;
+}
+
+.free-zjmd > div > div{
+	overflow: hidden;
+}
+
+.free-zjmd > div > div{
+	width: 50%;
+	height: 42px;
+	line-height: 42px;
+	float: left;
+}
+
+.free-zjmd > div > div > span:first-child{
+	margin:0 5px;
+}
+
+.free-zjmd > div > div > span > span{
+	color: red;
+} 
+	
+.free-workflow{
+	background: url(http://resource.tuhu.cn/hd/byfree/img/0-workFlow.png) no-repeat center;
+	background-size: cover;
+	background-color: #ade0ef;	
+}
+
+.free-useInfo{
+	background-color: #fad852;
+	color: #ed870e;
+	margin: 0;
+	padding-right: 15px;
+	padding: 10px 15px 30px 35px;
+}
+
+.free-useInfo li{
+	line-height: 16px;
+	padding: 5px 0;
+}
+
+
+@media only screen and (min-width: 100px) and (max-width: 320px) {
+	.free-workflow{
+		height: 110px;
+	}
+}
+
+@media only screen and (min-width: 321px) and (max-width: 413px){
+	.free-workflow{
+		height: 123px;
+	}
+}
+
+@media only screen and (min-width: 414px){
+	.free-mid-bg{
+		height: 360px;
+	}
+	
+	.free-mid-bg .nextAction{
+		bottom: 75px;
+	}
+	
+	.free-mid-bg .yykq{
+		bottom: 0px;
+	}
+	
+	.free-workflow{
+		height: 141px;
+	}
+}
+
+        #infobox{
+            padding-top:10px;
+        }
+        #infobox div{
+            padding:0px 0px 6px 4px;
+            margin:0px;
+            border:solid 0px blue;
+            width:45%;
+            float:left;
+            text-align:left;
+            font:10px arial;
+            font-weight:bolder;
+        }
+        #infobox div .price, #infobox div .right_jin{
+            color:red;
+        }
+        #infobox div *{
+            line-height:16px;
+        }
+        .deng_qiang_tips, .no_qiang_tips, .qiang_tips, .kai_qiang_tips{
+            position:absolute;
+            top:50%;
+            left:10%;
+            width: 80%;
+            height: 267px;
+            border:solid 0px blue;
+            display:none;
+        }
+        .deng_qiang_tips .close, .no_qiang_tips .close, .qiang_tips .close, .kai_qiang_tips .close{
+            border:solid 0px red;
+            display: block;
+            width: 30px;
+            height: 30px;
+            position: absolute;
+            right: 10%;
+            top: 15%; 
+        }
+        .deng_qiang_tips{
+            background:url(http://resource.tuhu.cn/Image/Activity/kaishi_qiang.png) no-repeat;
+            background-size:contain;
+        }
+        .deng_qiang_tips .close {
+        }
+        .no_qiang_tips {
+            background: url(http://resource.tuhu.cn/Image/Activity/noqiangdao.png) no-repeat;
+            background-size:contain;
+        }
+        .no_qiang_tips .close {
+        }
+        .qiang_tips {
+            background: url(http://resource.tuhu.cn/Image/Activity/qiangdao.png) no-repeat;
+            background-size:contain;
+        }
+        .qiang_tips .close {
+        }
+        .qiang_tips .go_buy {
+            position:absolute;
+            display: block;
+            width: 50%;
+            height: 65px;
+            background: url(http://resource.tuhu.cn/Image/Activity/go_buy.png) no-repeat;
+            background-size:contain;
+            bottom:30%;
+            left:35%;
+        }
+        .qiang_tips .Look_free {
+            position:absolute;
+            text-align: center;
+            font-size: 14px;
+            color: #005de8;
+            text-decoration:none;
+            font-family: 微软雅黑;
+            width: 100%;
+            display: block; 
+            bottom:45%;
+            left:10%;
+            display:none;
+        }   
+        .kai_qiang_tips {
+            background: url(http://resource.tuhu.cn/Image/Activity/tixing.png) no-repeat;
+            background-size:contain;
+        }
+        .kai_qiang_tips .close {
+            top: 18%;
+            right:7%;
+        } 

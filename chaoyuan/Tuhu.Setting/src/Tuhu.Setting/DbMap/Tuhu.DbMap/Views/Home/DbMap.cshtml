@@ -1,0 +1,433 @@
+﻿@model List<string>
+@{
+    ViewBag.Title = "数据库字段描述";
+}
+
+<div>
+    <div class="row" style="margin-top: 20px;">
+        <div class="col-md-9">
+            <form class="form-inline" role="form" style="font-size: 20px;">
+                <div class="form-group col-md-6">
+                    <label for="dbList" class="col-md-3">数据库名称:</label>
+                    <div class="col-md-9">
+                        <select class="form-control selectpicker" id="dbList" data-live-search="true" width="60%">
+                            <option value="0">请选择</option>
+                            @if (Model.Any())
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <option value="@item">@item</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="tableList" class="control-label col-md-3">数据表名:</label>
+                    <div class="col-md-9">
+                        <select class="form-control selectpicker" id="tableList" data-live-search="true" style="width: 60%;">
+                            <option value="0">请选择</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-primary" style="width:100px;" onclick="Func.ModalTraggle()" data-placement="bottom" title="添加一个表的描述信息" style="margin-right: 20px;">新增</button>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 20px;">
+        <div class="col-sm-1">
+            <button class="btn btn-primary" style="width:100px;" onclick="Func.FetchTableDetail()" data-placement="bottom" title="获取该表描述信息" style="margin-right: 20px;">查询</button>
+        </div>
+        <div class="col-sm-1">
+            <button class="btn btn-primary" style="width:100px;" onclick="Func.AddTableMap(false)" data-placement="bottom" title="同步该表字段信息" style="margin-right: 20px;">同步</button>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 20px;margin-bottom:20px;">
+        <div class="col-md-1" onclick="Func.FetchTableDescription(true)">
+            <strong style="font-size:1.3em;cursor:pointer;">描述&nbsp;<span class="glyphicon glyphicon-pencil" />:</strong>
+        </div>
+        <div class="col-md-10" id="tabledesc" style="font-size:1.2em;cursor:pointer;"></div>
+    </div>
+
+    <div id="DetailBox">
+
+    </div>
+</div>
+
+
+<div class="modal fade" id="AddModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">增加数据库描述信息</h4>
+            </div>
+            <div class="modal-body">
+                <form role="form">
+                    <div class="form-group">
+                        <label for="newDbList">数据库名称</label>
+                        <select class="form-control selectpicker" id="newDbList" data-live-search="true">
+                            <option value="0">请选择</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="newTableList" class="control-label">表名</label>
+                        <select class="form-control selectpicker" id="newTableList" data-live-search="true"> 
+                            <option value="0">请选择</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="Func.AddTableMap()">提交更改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="UpdateDescModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabe2" aria-hidden="true">
+    <div class="modal-dialog" style="width: 500px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabe2">修改字段描述</h4>
+            </div>
+            <div class="modal-body">
+                <form role="form">
+                    <div class="form-group">
+                        <label for="newDescription" id="FieldInfo" data1="" data2="">数据库名称</label>
+                        <textarea class="form-control" id="newDescription" rows="5">
+                        </textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="Func.UpdateDescription()">提交更改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="SetDescModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabe2" aria-hidden="true">
+    <div class="modal-dialog" style="width: 500px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabe3">Table描述信息</h4>
+            </div>
+            <div class="modal-body">
+                <form role="form">
+                    <div class="form-group">
+                        <label for="newDescription" id="TableNameInfo" data1="" data2="">数据库名称</label>
+                        <textarea class="form-control" id="TableDescription" rows="5">
+                        </textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="Func.UpdateTableDescription()">提交更改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $("#dbList").change(function () {
+            var dbname = $("#dbList option:selected").val();
+            if (dbname === '0' || dbname === '') {
+                return;
+            }
+            Func.FetchTableList(dbname);
+        });
+        $("#newDbList").change(function () {
+            var dbname = $("#newDbList option:selected").val();
+            if (dbname === '0' || dbname === '') {
+                return;
+            }
+            Func.FetchTableList(dbname, false);
+        });
+        $("#newDescription").focus(function () {
+            var data = $(this).val().trim();
+            if (data === '暂无描述') {
+                $(this).val("");
+            }
+        });
+        $("#newDescription").blur(function () {
+            var data = $(this).val().trim();
+            if (data === '') {
+                $(this).val("暂无描述");
+            }
+        });
+    })
+</script>
+<script>
+    var Func = {
+        FetchTableList: function (dbName, isCurrent = true, selected = '0') {
+            var target = isCurrent ? $("#tableList") : $("#newTableList");
+            target.html('<option value="0">请选择</option>');
+            if (dbName === '0') {
+                alert("请重新选择DB");
+                return false;
+            }
+            $.post("/Home/SelectTablesByDbName",
+                {
+                    DbName: dbName,
+                    isCurrent: isCurrent
+                },
+                function (data) {
+                    if (data.Code === 1) {
+                        var html = '<option value="0">请选择</option>';
+                        $.each(data.Data,
+                            function (k, v) {
+                                html += '<option value="' + v + '">' + v + '</option>';
+                            });
+                        target.html(html);
+                        target.val(selected);
+                        target.selectpicker('refresh');
+                    }
+                }
+            );
+            return false;
+        },
+        FetchTableDetail: function (isCurrent = true) {
+            var dbname, tablename;
+            if (isCurrent) {
+                dbname = $("#dbList option:selected").val();
+                tablename = $("#tableList option:selected").val();
+            } else {
+                dbname = $("#newDbList option:selected").val();
+                tablename = $("#newTableList option:selected").val();
+            }
+            if (dbname === '0' || tablename === '0') {
+                alert("请重新选择Table");
+                return false;
+            }
+            Func.FetchTableDescription(false);
+            $.post("/Home/FetchTableMap",
+                {
+                    DbName: dbname,
+                    TableName: tablename
+                },
+                function (data) {
+                    if (data.Code === 1) {
+                        var html = '<table class="table table-striped">\
+                            <thead><tr>\
+                            <th>字段编号</th>\
+                            <th>数据库名称</th>\
+                            <th>表名称</th>\
+                            <th>字段名</th>\
+                            <th>字段类型</th>\
+                            <th>字节数</th>\
+                            <th>字段长度</th>\
+                            <th>小数长度</th>\
+                            <th>是否可空</th>\
+                            <th>默认值</th>\
+                            <th>是否主键</th>\
+                            <th>是否标记</th>\
+                            <th>描述说明</th>\
+                            <th></th>\
+                            </tr></thead>\
+                            <tbody>';
+                        $.each(data.Data,
+                            function (k, v) {
+                                html += '<tr><td>' +
+                                    v.FieldId +
+                                    '</td><td>' +
+                                    v.DbName +
+                                    '</td><td>' +
+                                    v.TableName +
+                                    '</td><td>' +
+                                    v.FieldName +
+                                    '</td><td>' +
+                                    v.FieldType +
+                                    '</td><td>' +
+                                    (v.ByteCount === -1 ? 'MAX' : v.ByteCount) +
+                                    '</td><td>' +
+                                    (v.FieldSize === -1 ? 'MAX' : v.FieldSize) +
+                                    '</td><td>' +
+                                    v.DecimalSize +
+                                    '</td><td>' +
+                                    v.IsNullable +
+                                    '</td><td>' +
+                                    v.DefaultValue +
+                                    '</td><td>' +
+                                    v.IsPk +
+                                    '</td><td>' +
+                                    v.IsIdentity +
+                                    '</td><td>' +
+                                    v.Description +
+                                    '</td><td><button class="btn btn-default" onclick="Func.DescModalTraggle(\'' +
+                                    v.DbName +
+                                    '\',\'' +
+                                    v.TableName +
+                                    '\',' +
+                                    v.TableId +
+                                    ',' +
+                                    v.FieldId +
+                                    ',\'' +
+                                    (v.Description == null || v.Description.trim() === '' ? "暂无描述" : v.Description.replace(/[\b\f\n\r\t]/g, ' ')) +
+                                    '\')">修改</button></td></tr>';
+                            });
+                        html += '</tbody></table>';
+                        $("#DetailBox").html(html);
+                    }
+                });
+            return false;
+        },
+        ModalTraggle: function () {
+            $.post("/Home/DbMapList",
+                function (data) {
+                    var html = '<option value="0">请选择</option>';
+                    $("#newTableList").html(html);
+                    $.each(data,
+                        function (k, v) {
+                            html += `<option value="${v}">${v}</option>`;
+                        });
+                    $("#newDbList").html(html);
+                    $("#AddModal").modal('show');
+                    $("#newDbList").selectpicker('refresh');
+                });
+            return false;
+        },
+        AddTableMap: function (isCurrent = true) {
+            var dbname, tablename;
+            if (isCurrent) {
+                dbname = $("#newDbList option:selected").val();
+                tablename = $("#newTableList option:selected").val();
+            } else {
+                dbname = $("#dbList option:selected").val();
+                tablename = $("#tableList option:selected").val();
+            }
+
+            if (dbname === '0' || tablename === '0') {
+                alert("请重新选择Table");
+                return false;
+            }
+            $.post("/Home/AddTableMap",
+                {
+                    DbName: dbname,
+                    TableName: tablename
+                },
+                function (data) {
+                    if (data.Code === 1) {
+                        alert(isCurrent ? "添加成功" : "同步成功");
+                        Func.FetchTableDetail(!isCurrent);
+                        if (isCurrent) {
+                            $("#AddModal").modal('hide');
+                            Func.InitDbList(dbname, tablename);
+                        }
+                    }
+                });
+            return false;
+        },
+        UpdateDescription: function () {
+            const tableId = $("#FieldInfo").attr("data1");
+            const fieldId = $("#FieldInfo").attr("data2");
+            const description = $("#newDescription").val().trim();
+            if (tableId < 1 || fieldId < 1) {
+                alert("请重新选择字段");
+                return false;
+            }
+            if (description === '暂无描述' || description === '') {
+                return false;
+            }
+            $.post("/Home/UpdateDescription",
+                {
+                    TableId: tableId,
+                    FieldId: fieldId,
+                    Description: description
+                },
+                function (data) {
+                    if (data.Code === 1) {
+                        $("#UpdateDescModal").modal("hide");
+                        alert(data.Info);
+                        Func.FetchTableDetail();                      
+                    } else {
+                        alert(data.Info);
+                    }
+                });
+            return false;
+        },
+        DescModalTraggle: function (dbName, tableName, tableId, fieldId, description) {
+            $("#FieldInfo").text(dbName + "/" + tableName);
+            $("#FieldInfo").attr("data1", tableId);
+            $("#FieldInfo").attr("data2", fieldId);
+            $("#newDescription").val(description);
+            $("#UpdateDescModal").modal("show");
+            return false;
+        },
+        InitDbList: function (dbName, tableName) {
+            $.post("/Home/DbMapList",
+                {
+                    isCurrent: true
+                },
+                function (data) {
+                    var html = '<option value="0">请选择</option>';
+                    $.each(data,
+                        function (k, v) {
+                            html += `<option value="${v}">${v}</option>`;
+                        });
+                    $("#dbList").html(html);
+                    $("#dbList").val(dbName);
+                    Func.FetchTableList(dbName, true, tableName);
+                });
+            return false;
+        },
+        FetchTableDescription: function (isModal = false) {
+            const dbname = $("#dbList option:selected").val();
+            const tablename = $("#tableList option:selected").val();
+            $("#TableDescription").val("");
+            $.post("/Home/FetchTableDescruption",
+                {
+                    DbName: dbname,
+                    TableName: tablename
+
+                },
+                function (data) {
+                    if (data.Code === 1) {
+                        $("#TableNameInfo").text(`${dbname}/${tablename}`);
+                        $("#TableNameInfo").attr("data1", dbname);
+                        $("#TableNameInfo").attr("data2", tablename);
+                        $("#TableDescription").val(data.Info);
+                        $("#tabledesc").text(data.Info);
+                        if (isModal) {
+                            $("#SetDescModal").modal("show");
+                        }
+                    } else {
+                        if (data.Info != null) {
+                            alert(data.Info);
+                        }
+                    }
+                    return false;
+                });
+        },
+        UpdateTableDescription: function () {
+            const data = $("#TableDescription").val().trim();
+            const dbname = $("#TableNameInfo").attr("data1");
+            const tablename = $("#TableNameInfo").attr("data2");
+            if (data === '') {
+                return false;
+            }
+            $.post("/Home/SetTableDescription",
+                {
+                    DbName: dbname,
+                    TableName: tablename,
+                    Description: data
+                },
+                function (result) {
+                    $("#SetDescModal").modal("hide");
+                    alert(result.Info);
+                    $("#tabledesc").text(data);
+                    return false;
+                });
+            return false;
+        }
+    }
+</script>

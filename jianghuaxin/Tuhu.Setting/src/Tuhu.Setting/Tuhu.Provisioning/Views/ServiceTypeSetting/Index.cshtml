@@ -1,0 +1,110 @@
+﻿@model List<Tuhu.Provisioning.DataAccess.Entity.ServiceTypeSetting>
+@{
+    ViewBag.Title = "服务类型配置";
+}
+
+<h2>服务类型配置</h2>
+
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: #0088cc;
+        border-color: #0088cc;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: #0088cc;
+        border: solid 1px #0088cc;
+    }
+</style>
+<div>
+    <a href="javascript:void(0)" class="btn" onclick="ServiceTypeSetting.Add()">添加</a>
+</div>
+<div>
+    <table style="width:100%;margin-top:20px;">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>服务类型</th>
+                <th>服务类型名称</th>
+                <th>创建时间</th>
+                <th>更新时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.ServiceType</td>
+                    <td>@item.ServiceTypeName</td>
+                    <td>@item.CreateTime</td>
+                    <td>@item.UpdateTime</td>
+                    <td>
+                        <a href="javascript:void(0);" onclick="ServiceTypeSetting.Update('@item.Id','@item.ServiceType','@item.ServiceTypeName')">编辑</a>
+                        &nbsp;&nbsp;
+                        <a href="javascript:;" onclick="ServiceTypeSetting.Delete('@item.Id')">删除</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<div id="AddItem"></div>
+<script>
+
+    var ServiceTypeSetting = {
+        "Add": function () {
+            $("#AddItem").load('/ServiceTypeSetting/Edit');
+            $("#AddItem").dialog({
+                title: "添加",
+                width: 400,
+                height: 200,
+                modal: true
+            });
+        },
+        "Update": function (id, type, name) {
+            $("#AddItem").load('/ServiceTypeSetting/Edit?Id=' + id + "&ServiceType=" + type + "&ServiceTypeName=" + name);
+            $("#AddItem").dialog({
+                title: "编辑",
+                width: 400,
+                height: 200,
+                modal: true
+            });
+        },
+        "Delete": function (id) {
+            if (window.confirm("您确定要删除吗？")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/ServiceTypeSetting/Delete",
+                    data: { "Id": id },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/ServiceTypeSetting/Index";
+                        }
+                        else {
+                            alert("删除失败！");
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        }
+    }
+</script>

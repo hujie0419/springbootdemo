@@ -1,0 +1,755 @@
+﻿@{
+    ViewBag.Title = "区域营销活动配置";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.RegionMarketingModel
+<h2 style="font-size:2em;color:#000;padding:0 0 10px 0;width:250px">区域营销活动配置</h2>
+<link rel="stylesheet" href="/Scripts/artDialog6.0.4/css/ui-dialog.css" />
+<style type="text/css">
+    .buttonStyle { background: #50c16a; border: none; color: azure; box-shadow: 1px 1px 1px #eee8aa; width: 50px; height: 26px; border-radius: 3px; outline: none; cursor: pointer; font-size: 15px; font-family: "Microsoft Yahei"; }
+        .buttonStyle:hover { background-color: #008b8b; border-color: #008b8b; }
+    .buttonStyleHidden { background: #808080; }
+        .buttonStyleHidden:hover { background: #808080; }
+    .ui-dialog { width: auto; }
+</style>
+
+<div>
+    @{
+        var imgList = Model.ImgList;
+        var flag = imgList != null && imgList.Any();
+        var headImg = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "HeadImg")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+        var noproductImg = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "NoProductImg")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+        var img12 = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "Img12")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+        var img13 = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "Img13")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+        var img14 = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "Img14")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+        var img15 = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "Img15")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+        var img16 = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "Img16")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+        var img17 = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "Img17")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+        var img18 = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "Img18")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+        var img19 = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "Img19")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+        var img20 = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "Img20")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+        var img21 = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "Img21")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+        var img22 = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "Img22")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+        var img13C = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "Img13C")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+        var img14C = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "Img14C")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+        var img15C = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "Img15C")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+        var img16C = flag ? imgList.Where(x => String.Equals(x.Type.ToString(), "Img16C")).FirstOrDefault() : new Tuhu.Provisioning.DataAccess.Entity.RegionMarketing.ActivityImageConfig();
+
+        <fieldset>
+            <legend>车型适配</legend>
+            <div style="margin-top:10px">
+                @if (Model.IsAdaptationVehicle)
+                {
+                    <label class="checkbox-inline"> <input type="radio" value="false" id="radioDisShow" name="IsAdaptationVehicle" checked="checked">开启 </label>
+                    <label class="checkbox-inline"><input type="radio" value="true" id="radioShow" name="IsAdaptationVehicle"> 关闭 </label>
+                }
+                else
+                {
+                    <label class="checkbox-inline"> <input type="radio" value="false" id="radioDisShow" name="IsAdaptationVehicle">开启 </label>
+                    <label class="checkbox-inline"><input type="radio" value="true" id="radioShow" name="IsAdaptationVehicle" checked="checked"> 关闭 </label>
+                }
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>基本信息</legend>
+            <div style="margin-top:10px;">
+                <label>活动Id: &nbsp; &nbsp;</label>
+                @if (Model.ActivityId == Guid.Empty)
+                {
+                    <input class="activity-Id" style="width:20%;line-height:25px" placeholder="活动Id" value="" />
+                }
+                else
+                {
+                    <input class="activity-Id" style="width:20%;line-height:25px" placeholder="活动Id" disabled="disabled" value="@Model.ActivityId.ToString()" />
+                }
+                &nbsp; &nbsp; &nbsp;
+                <label>名称:</label>
+                <input class="activity-Name" style="width:20%;line-height:25px" disabled="disabled" placeholder="活动名称" value="@Model.ActivityName" />&nbsp;&nbsp;&nbsp;
+                <label>开始时间:</label>
+                <input class="activity-start" style="line-height:25px" disabled="disabled" placeholder="开始时间" value="@Model.StartTime" onclick="WdatePicker({ dateFmt :'yyyy/MM/dd HH:mm:ss'})" />&nbsp;&nbsp;&nbsp;
+                <label>结束时间:</label>
+                <input class="activity-End" style="line-height:25px" disabled="disabled" placeholder="结束时间" value="@Model.EndTime" onclick="WdatePicker({ dateFmt :'yyyy/MM/dd HH:mm:ss'})" /><br />
+                <label>活动规则:</label>
+                <textarea style="margin-top:10px" class="activity-rules" rows="10" cols="100" placeholder="活动规则  注意：换行请用标准换行符  <br />  来代替">@Model.ActivityRules</textarea>
+                <label> 活动规则图:</label>
+                <input id="_TireActivityRulesImg" name="ColumnImage" type="hidden" value="@Model.ActivityRulesImg" />
+                <input style="width:160px;" type="file" id="ActivityRulesImg" name="tireImg" onchange="uploadPic('ActivityRulesImg', HandlerPicResult);" />
+                @if (!string.IsNullOrEmpty(Model.ActivityRulesImg))
+                {
+                    <img src="@Model.ActivityRulesImg" id="tireActivityRulesImg" width="75" height="75" />
+                }
+                else
+                {
+                    <img src="" id="tireActivityRulesImg" width="75" height="75" style="display:none" />
+                }
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>分享参数</legend>
+            <div style="margin-top:10px">
+                <label>微信URL:</label>
+                <input class="activity-WXUrl" style="width:20%;line-height:25px" value="@Model.WXUrl" placeholder="微信URL" />&nbsp;&nbsp;&nbsp;
+                <label>APP内URL:</label>
+                <input class="activity-AppUrl" style="width:20%;line-height:25px" value="@Model.AppUrl" placeholder="APP内URL" />&nbsp;&nbsp;&nbsp;
+                <label> 分享图:</label>
+                <input id="_TireShareImg" name="ColumnImage" type="hidden" value="@Model.ShareImg" />
+                <input style="width:160px;" type="file" id="ShareImg" name="tireImg" onchange="uploadPic('ShareImg', HandlerPicResult);" />
+                @if (!string.IsNullOrEmpty(Model.ShareImg))
+                {
+                    <img src="@Model.ShareImg" id="tireShareImg" width="75" height="75" />
+                }
+                else
+                {
+                    <img src="" id="tireShareImg" width="75" height="75" style="display:none" />
+                }
+                <input type="button" class="clear_img" data-key="ShareImg" value="清空" />
+            </div>
+            <div style="margin-top:10px">
+                <label> 分享标题:</label>
+                <input class="activity-title" style="width:20%;line-height:25px" value="@Model.ShareTitle" placeholder="分享标题" />&nbsp;&nbsp;&nbsp;
+                <label> 分享描述:&nbsp;&nbsp;</label>
+                <input class="activity-des" style="width:20%;line-height:25px" value="@Model.ShareDes" placeholder="分享描述" />
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>图片池</legend>
+            <div style="margin-top:10px">
+                <div>
+                    <label>头图:&nbsp;</label>
+                    <input id="_TireHeadImg" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(headImg.ImgUrl)? headImg.ImgUrl:"")" />
+                    <input style="width:160px;" type="file" id="HeadImg" name="tireImg" onchange="uploadPic('HeadImg', HandlerPicResult);" />
+                    @if (headImg != null && !string.IsNullOrEmpty(headImg.ImgUrl))
+                    {
+                        <img src="@headImg.ImgUrl" id="tireHeadImg" width="75" height="75" />
+                    }
+                    else
+                    {
+                        <img src="" id="tireHeadImg" width="75" height="75" style="display:none" />
+                    }
+                    <input type="button" class="clear_img" data-key="HeadImg" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+                    <label>无商品:</label>
+                    <input id="_TireNoProductImg" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(noproductImg.ImgUrl)?noproductImg.ImgUrl:"")" />
+                    <input style="width:160px;" type="file" id="NoProductImg" name="tireImg" onchange="uploadPic('NoProductImg', HandlerPicResult);" />
+                    @if (noproductImg != null && !string.IsNullOrEmpty(noproductImg.ImgUrl))
+                    {
+                        <img src="@noproductImg.ImgUrl" id="tireNoProductImg" width="75" height="75" />
+                    }
+                    else
+                    {
+                        <img src="" id="tireNoProductImg" width="75" height="75" style="display:none" />
+                    }
+                    <input type="button" class="clear_img" data-key="NoProductImg" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </div>
+                <br />
+                <div>
+                    <label>12寸:</label>
+                    <input id="_TireImg12" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(img12.ImgUrl)? img12.ImgUrl:"")" />
+                    <input style="width:160px;" type="file" id="Img12" name="tireImg" onchange="uploadPic('Img12', HandlerPicResult);" />
+                    @if (img12 != null && !string.IsNullOrEmpty(img12.ImgUrl))
+                    {
+                        <img src="@img12.ImgUrl" id="tireImg12" width="75" height="75" />
+                    }
+                    else
+                    {
+                        <img src="" id="tireImg12" width="75" height="75" style="display:none" />
+                    }
+                    <input type="button" class="clear_img" data-key="Img12" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <label>13寸:&nbsp;&nbsp;</label>
+                    <input id="_TireImg13" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(img13.ImgUrl)? img13.ImgUrl:"")" />
+                    <input style="width:160px;" type="file" id="Img13" name="tireImg" onchange="uploadPic('Img13', HandlerPicResult);" />
+                    @if (img13 != null && !string.IsNullOrEmpty(img13.ImgUrl))
+                    {
+                        <img src="@img13.ImgUrl" id="tireImg13" width="75" height="75" />
+                    }
+                    else
+                    {
+                        <img src="" id="tireImg13" width="75" height="75" style="display:none" />
+                    }
+                    <input type="button" class="clear_img" data-key="Img13" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <label>14寸:&nbsp;&nbsp;</label>
+                    <input id="_TireImg14" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(img14.ImgUrl)? img14.ImgUrl:"")" />
+                    <input style="width:160px;" type="file" id="Img14" name="tireImg" onchange="uploadPic('Img14', HandlerPicResult);" />
+                    @if (img14 != null && !string.IsNullOrEmpty(img14.ImgUrl))
+                    {
+                        <img src="@img14.ImgUrl" id="tireImg14" width="75" height="75" />
+                    }
+                    else
+                    {
+                        <img src="" id="tireImg14" width="75" height="75" style="display:none" />
+                    }
+                    <input type="button" class="clear_img" data-key="Img14" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <label>15寸:</label>
+                    <input id="_TireImg15" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(img15.ImgUrl)? img15.ImgUrl:"")" />
+                    <input style="width:160px;" type="file" id="Img15" name="tireImg" onchange="uploadPic('Img15', HandlerPicResult);" />
+                    @if (img15 != null && !string.IsNullOrEmpty(img15.ImgUrl))
+                    {
+                        <img src="@img15.ImgUrl" id="tireImg15" width="75" height="75" />
+                    }
+                    else
+                    {
+                        <img src="" id="tireImg15" width="75" height="75" style="display:none" />
+                    }
+                    <input type="button" class="clear_img" data-key="Img15" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </div>
+                <br />
+                <div>
+                    <label>16寸:</label>
+                    <input id="_TireImg16" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(img16.ImgUrl)? img16.ImgUrl:"")" />
+                    <input style="width:160px;" type="file" id="Img16" name="tireImg" onchange="uploadPic('Img16', HandlerPicResult);" />
+                    @if (img16 != null && !string.IsNullOrEmpty(img16.ImgUrl))
+                    {
+                        <img src="@img16.ImgUrl" id="tireImg16" width="75" height="75" />
+                    }
+                    else
+                    {
+                        <img src="" id="tireImg16" width="75" height="75" style="display:none" />
+                    }
+                    <input type="button" class="clear_img" data-key="Img16" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <label>17寸:&nbsp;&nbsp;</label>
+                    <input id="_TireImg17" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(img17.ImgUrl)? img17.ImgUrl:"")" />
+                    <input style="width:160px;" type="file" id="Img17" name="tireImg" onchange="uploadPic('Img17', HandlerPicResult);" />
+                    @if (img17 != null && !string.IsNullOrEmpty(img17.ImgUrl))
+                    {
+                        <img src="@img17.ImgUrl" id="tireImg17" width="75" height="75" />
+                    }
+                    else
+                    {
+                        <img src="" id="tireImg17" width="75" height="75" style="display:none" />
+                    }
+                    <input type="button" class="clear_img" data-key="Img17" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <label>18寸:&nbsp;&nbsp</label>
+                    <input id="_TireImg18" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(img18.ImgUrl)? img18.ImgUrl:"")" />
+                    <input style="width:160px;" type="file" id="Img18" name="tireImg" onchange="uploadPic('Img18', HandlerPicResult);" />
+                    @if (img18 != null && !string.IsNullOrEmpty(img18.ImgUrl))
+                    {
+                        <img src="@img18.ImgUrl" id="tireImg18" width="75" height="75" />
+                    }
+                    else
+                    {
+                        <img src="" id="tireImg18" width="75" height="75" style="display:none" />
+                    }
+                    <input type="button" class="clear_img" data-key="Img18" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+                    <label>19寸:</label>
+                    <input id="_TireImg19" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(img19.ImgUrl)? img19.ImgUrl:"")" />
+                    <input style="width:160px;" type="file" id="Img19" name="tireImg" onchange="uploadPic('Img19', HandlerPicResult);" />
+                    @if (img19 != null && !string.IsNullOrEmpty(img19.ImgUrl))
+                    {
+                        <img src="@img19.ImgUrl" id="tireImg19" width="75" height="75" />
+                    }
+                    else
+                    {
+                        <img src="" id="tireImg19" width="75" height="75" style="display:none" />
+                    }
+                    <input type="button" class="clear_img" data-key="Img19" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </div>
+            </div>
+            <br />
+            <div>
+                <label>20寸:</label>
+                <input id="_TireImg20" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(img20.ImgUrl)? img20.ImgUrl:"")" />
+                <input style="width:160px;" type="file" id="Img20" name="tireImg" onchange="uploadPic('Img20', HandlerPicResult);" />
+                @if (img20 != null && !string.IsNullOrEmpty(img20.ImgUrl))
+                {
+                    <img src="@img20.ImgUrl" id="tireImg20" width="75" height="75" />
+                }
+                else
+                {
+                    <img src="" id="tireImg20" width="75" height="75" style="display:none" />
+                }
+                <input type="button" class="clear_img" data-key="Img20" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <label>21寸:&nbsp;&nbsp;</label>
+                <input id="_TireImg21" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(img21.ImgUrl)? img21.ImgUrl:"")" />
+                <input style="width:160px;" type="file" id="Img21" name="tireImg" onchange="uploadPic('Img21', HandlerPicResult);" />
+                @if (img21 != null && !string.IsNullOrEmpty(img21.ImgUrl))
+                {
+                    <img src="@img21.ImgUrl" id="tireImg21" width="75" height="75" />
+                }
+                else
+                {
+                    <img src="" id="tireImg21" width="75" height="75" style="display:none" />
+                }
+                <input type="button" class="clear_img" data-key="Img21" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <label>22寸:&nbsp;&nbsp;</label>
+                <input id="_TireImg22" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(img22.ImgUrl)? img22.ImgUrl:"")" />
+                <input style="width:160px;" type="file" id="Img22" name="tireImg" onchange="uploadPic('Img22', HandlerPicResult);" />
+                @if (img22 != null && !string.IsNullOrEmpty(img22.ImgUrl))
+                {
+                    <img src="@img22.ImgUrl" id="tireImg22" width="75" height="75" />
+                }
+                else
+                {
+                    <img src="" id="tireImg22" width="75" height="75" style="display:none" />
+                }
+                <input type="button" class="clear_img" data-key="Img22" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </div>
+            <br />
+            <div>
+                <label>13C:&nbsp;</label>
+                <input id="_TireImg13C" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(img13C.ImgUrl)? img13C.ImgUrl:"")" />
+                <input style="width:160px;" type="file" id="Img13C" name="tireImg" onchange="uploadPic('Img13C', HandlerPicResult);" />
+                @if (img13C != null && !string.IsNullOrEmpty(img13C.ImgUrl))
+                {
+                    <img src="@img13C.ImgUrl" id="tireImg13C" width="75" height="75" />
+                }
+                else
+                {
+                    <img src="" id="tireImg13C" width="75" height="75" style="display:none" />
+                }
+                <input type="button" class="clear_img" data-key="Img13C" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <label>14C:&nbsp;&nbsp;&nbsp;</label>
+                <input id="_TireImg14C" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(img14C.ImgUrl)? img14C.ImgUrl:"")" />
+                <input style="width:160px;" type="file" id="Img14C" name="tireImg" onchange="uploadPic('Img14C', HandlerPicResult);" />
+                @if (img14C != null && !string.IsNullOrEmpty(img14C.ImgUrl))
+                {
+                    <img src="@img14C.ImgUrl" id="tireImg14C" width="75" height="75" />
+                }
+                else
+                {
+                    <img src="" id="tireImg14C" width="75" height="75" style="display:none" />
+                }
+                <input type="button" class="clear_img" data-key="Img14C" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <label>15C:&nbsp;&nbsp;</label>
+                <input id="_TireImg15C" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(img15C.ImgUrl)? img15C.ImgUrl:"")" />
+                <input style="width:160px;" type="file" id="Img15C" name="tireImg" onchange="uploadPic('Img15C', HandlerPicResult);" />
+                @if (img15C != null && !string.IsNullOrEmpty(img15C.ImgUrl))
+                {
+                    <img src="@img15C.ImgUrl" id="tireImg15C" width="75" height="75" />
+                }
+                else
+                {
+                    <img src="" id="tireImg15C" width="75" height="75" style="display:none" />
+                }
+                <input type="button" class="clear_img" data-key="Img15C" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <label>16C:&nbsp;</label>
+                <input id="_TireImg16C" name="ColumnImage" type="hidden" value="@(!string.IsNullOrEmpty(img16C.ImgUrl)? img16C.ImgUrl:"")" />
+                <input style="width:160px;" type="file" id="Img16C" name="tireImg" onchange="uploadPic('Img16C', HandlerPicResult);" />
+                @if (img16C != null && !string.IsNullOrEmpty(img16C.ImgUrl))
+                {
+                    <img src="@img16C.ImgUrl" id="tireImg16C" width="75" height="75" />
+                }
+                else
+                {
+                    <img src="" id="tireImg16C" width="75" height="75" style="display:none" />
+                }
+                <input type="button" class="clear_img" data-key="Img16C" value="清空" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>尺寸排序池</legend>
+            <div style="padding-top:10px">
+                <label>12寸：</label>
+                <input placeholder="请输入数字" class="sort 12tires" value="@(img12!=null?img12.Position:0)" />
+            </div>
+            <div style="padding-top:10px">
+                <label>13寸：</label>
+                <input placeholder="请输入数字" class="sort 13tires" value="@(img13!=null?img13.Position:0)" />
+            </div>
+            <div style="padding-top:10px">
+                <label>14寸：</label>
+                <input placeholder="请输入数字" class="sort 14tires" value="@(img14!=null?img14.Position:0)" />
+            </div>
+            <div style="padding-top:10px">
+                <label>15寸：</label>
+                <input placeholder="请输入数字" class="sort 15tires" value="@(img15!=null?img15.Position:0)" />
+            </div>
+            <div style="padding-top:10px">
+                <label>16寸：</label>
+                <input placeholder="请输入数字" class="sort 16tires" value="@(img16!=null?img16.Position:0)" />
+            </div>
+            <div style="padding-top:10px">
+                <label>17寸：</label>
+                <input placeholder="请输入数字" class="sort 17tires" value="@(img17!=null?img17.Position:0)" />
+            </div>
+            <div style="padding-top:10px">
+                <label>18寸：</label>
+                <input placeholder="请输入数字" class="sort 18tires" value="@(img18!=null?img18.Position:0)" />
+            </div>
+            <div style="padding-top:10px">
+                <label>19寸：</label>
+                <input placeholder="请输入数字" class="sort 19tires" value="@(img19!=null?img19.Position:0)" />
+            </div>
+            <div style="padding-top:10px">
+                <label>20寸：</label>
+                <input placeholder="请输入数字" class="sort 20tires" value="@(img20!=null?img20.Position:0)" />
+            </div>
+            <div style="padding-top:10px">
+                <label>21寸：</label>
+                <input placeholder="请输入数字" class="sort 21tires" value="@(img21!=null?img21.Position:0)" />
+            </div>
+            <div style="padding-top:10px">
+                <label>22寸：</label>
+                <input placeholder="请输入数字" class="sort 22tires" value="@(img22!=null?img22.Position:0)" />
+            </div>
+            <div style="padding-top:10px">
+                <label>13C：</label>
+                <input placeholder="请输入数字" class="sort 13Ctires" value="@(img13C!=null?img13C.Position:0 )" />
+            </div>
+            <div style="padding-top:10px">
+                <label>14C：</label>
+                <input placeholder="请输入数字" class="sort 14Ctires" value="@(img14C!=null?img14C.Position:0)" />
+            </div>
+            <div style="padding-top:10px">
+                <label>15C：</label>
+                <input placeholder="请输入数字" class="sort 15Ctires" value="@(img15C!=null?img15C.Position:0 )" />
+            </div>
+            <div style="padding-top:10px">
+                <label>16C：</label>
+                <input placeholder="请输入数字" class="sort 16Ctires" value="@(img16C!=null?img16C.Position:0)" />
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>商品池</legend>
+            <div style="margin-top:10px">
+                <table class="activity-productList" style="width:100%">
+                    <tr>
+                        <th>PID</th>
+                        <th>名称</th>
+                        <th>尺寸</th>
+                        <th>规格</th>
+                        <th>促销价</th>
+                        <th>每人限购</th>
+                        <th>总限购</th>
+                        <th>广告语</th>
+                        <th>是否展示<input type="checkbox" id="check_all" onclick="GetAllOrder()" /></th>
+                        <th>隐藏条件&nbsp;&nbsp;<a href="javascript:void(0)" onclick="BatchSelect()">编辑</a></th>
+                    </tr>
+                    @if (Model.ProductList != null && Model.ProductList.Any())
+                    {
+                        foreach (var item in Model.ProductList)
+                        {
+                            <tr>
+                                <td>@item.ProductId</td>
+                                <td>@item.ProductName</td>
+                                <td>@item.Size</td>
+                                <td>@item.Specification</td>
+                                <td>@item.Price</td>
+                                <td>@item.MaxQuantity</td>
+                                <td>@item.TotalQuantity</td>
+                                <td><textarea name="advertiseTitle" value="" @(item.IsShow ? "" : "disabled=disabled")>@item.AdvertiseTitle</textarea> </td>
+                                <td>
+                                    @if (item.IsShow)
+                                    {
+                                        <input type="checkbox" name="check_child" checked="checked" />
+                                    }
+                                    else
+                                    {
+                                        <input type="checkbox" name="check_child" />
+                                    }
+                                </td>
+                                <td>
+                                    <select class='special'>
+                                        <option value="0" selected="@(item.SpecialCondition==0?true:false)">安全库存</option>
+                                        <option value="1" selected="@(item.SpecialCondition==1?true:false)">小于等于一条</option>
+                                        <option value="2" selected="@(item.SpecialCondition==2?true:false)">小于等于四条</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="10" style="text-align:center">无</td></tr>
+                    }
+                </table>
+            </div>
+        </fieldset>
+        <div style="margin-bottom:10px;margin-left:50%">
+            <input type="button" value="保存" class="activity-save" />
+            <input type="button" value="返回" class="activity-back" />
+        </div>
+    }
+</div>
+<input value="@ViewBag.OptionType" class="config-optionType" type="hidden" />
+<script type="text/javascript" src="~/Content/My97DatePicker/WdatePicker.js"></script>
+<script src="/Scripts/ajaxfileupload.js"></script>
+<script src="/Scripts/artDialog6.0.4/dist/dialog-min.js"></script>
+<script src="/Scripts/artDialog6.0.4/dist/dialog-plus-min.js"></script>
+<script type="text/javascript">
+    $(".activity-back").click(function () {
+        location.href = "/RegionMarketing/RegionMarketing";
+    });
+    var changeData = {};
+    changeData.ImgList = [];
+    function uploadPic(_fileElementId, _callback) {
+        $.ajaxFileUpload({
+            url: '/ArticleManage/ImageUploadToAli',
+            secureuri: false,
+            fileElementId: _fileElementId || '',
+            dataType: 'json',
+            async: false,
+            success: function (result) {
+                _callback(result, _fileElementId);
+            }
+        });
+    }
+
+    $(".sort").change(function () {
+        var sortNum = $(this).val();
+        if (isNaN(sortNum)) {
+            $(this).val("0")
+        }
+    })
+
+    function GetAllOrder() {
+        if ($("#check_all")[0].checked) {
+            $("[name='check_child']").attr("checked", 'true');
+            $("[name='advertiseTitle']").prop("disabled", false);
+        }
+        else {
+            $("[name='advertiseTitle']").val("");
+            $("[name='advertiseTitle']").prop("disabled", true);
+            $("[name='check_child']").removeAttr("checked");
+        }
+    }
+    //function EditProduct(o, pid, isShow, special) {
+    //    var $item = $(o).parent().parent();
+    //    var activityId = $(".activity-Id").val();
+    //    var html = "<table style='width:100%;height:100%'><tr><th>广告语</th><td><textarea class='advertiseTitle' style='width:100%'>" + $item.find("textarea").val() + "</textarea></td></tr><tr><th>隐藏条件</th><td><select class='special'><option value='0'>安全库存</option><option value='1'>小于等于一条</option><option value='2'>小于等于四条</option></select></td></tr></table>";
+    //    var d = dialog({
+    //        title: "修改",
+    //        width: 600,
+    //        height: 200,
+    //        fixed: true,
+    //        button: [
+    //            {
+    //                value: "修改",
+    //                callback: function () {
+    //                    var advertiseTitle = $(".advertiseTitle").val();
+    //                    $item.find("textarea").val(advertiseTitle)
+    //                    $item.find("td").eq(8).html(ConvertMsg(parseInt($(".special").val())));
+    //                    var optionType = $(".config-optionType").val();
+    //                    if (optionType == "Edit") {
+    //                        alert("修改");
+    //                    }
+    //                    //$.post("EditRegionProductsByIdAndPID", { activityId: activityId, productId: pid, slogan: advertiseTitle, specialCondition: special }, function (result) {
+
+    //                    //});
+    //                }
+    //            },
+    //            {
+    //                value: "取消"
+    //            }
+    //        ]
+    //    });
+    //    d.content(html);
+    //    d.showModal();
+    //    $(".special").val(special);
+    //}
+
+    function HandlerPicResult(result, elementId) {
+        $("#tire" + elementId).attr("src", result.BImage);
+        $("#tire" + elementId).show();
+        $("#_Tire" + elementId).val(result.BImage);
+        //var optionType = $(".config-optionType").val();
+        //if (optionType == "Edit") {
+        //    changeData.ImgList.push({ ActivityId: $(".activity-Id").val(), Type: elementId, ImgUrl: $("#_Tire" + elementId).val() })
+        //}
+    }
+
+    $(".clear_img").on("click", function () {
+        var elementId = $(this).attr("data-key");
+        $("#tire" + elementId).attr("src", "");
+        $("#tire" + elementId).hide();
+        $("#_Tire" + elementId).val("");
+    });
+
+    $(".activity-Id").change(function () {
+        var activityId = $(".activity-Id").val();
+        $(".activity-productList tr:not(:first)").empty();
+
+        $.get("GetRegionActivityConfigByActivityId", { activityId: activityId }, function (result) {
+            if (result.ActivityId == "00000000-0000-0000-0000-000000000000") {
+                $("#radioDisShow").prop("checked", result.IsAdaptationVehicle);
+                //$(".activity-Id").val(result.ActivityId);
+                $(".activity-Name").val(result.ActivityName);
+                $(".activity-start").val(formatTime(result.StartTime));
+                $(".activity-End").val(formatTime(result.EndTime));
+                var html = "";
+                if (result.ProductList.length > 0) {
+                    var data = result.ProductList;
+                    $.each(data, function (index) {
+                        var checkeInput = "";
+                        var items = [{ "key": 0, "value": "安全库存" }, { "key": 1, "value": "小于等于一条" }, { "key": 2, "value": "小于等于四条" }];
+                        var options = items.map(function (it) {
+                            var option = data[index].SpecialCondition === it.key ?
+                                "<option value='$key$' selected='selected'>$value$</option>" :
+                                "<option value='$key$'>$value$</option>";
+                            return option.replace("$key$", it.key).replace("$value$", it.value);
+                        }).join('');
+                        var selectInput = "<select>$options$<lect>".replace("$options$", options);
+                        if (data[index].IsShow) {
+                            checkeInput = "<input type='checkbox' name='check_child' checked='checked'/>";
+                        } else {
+                            checkeInput = "<input type='checkbox' name='check_child'/>";
+                        }
+
+                        html += "<tr><td>" + data[index].ProductId + "</td><td>" + data[index].ProductName + "</td><td>" + data[index].Size + "</td><td>" + data[index].Specification + "</td><td>" + data[index].Price + "</td><td>" + data[index].MaxQuantity + "</td><td>" + data[index].TotalQuantity + "</td><td><textarea name='advertiseTitle' disabled=" + (data[index].IsShow ? "" : "disabled") + "  >" + (data[index].AdvertiseTitle == null ? "" : data[index].AdvertiseTitle) + "</textarea></td><td>" + checkeInput + "</td><td>" + selectInput + "</td></tr>";
+                    });
+                } else {
+                    html = "<tr><td colspan='11' style='text- align:center'>无</td></tr>";
+                }
+                $(".activity-productList").append(html);
+                $("input[name='check_child']").click(function () {
+                    if (this.checked) {
+                        $(this).parent().parent().find("textarea").prop("disabled", false);
+                    } else {
+                        //$(this).parent().parent().find("textarea").val("");
+                        $(this).parent().parent().find("textarea").prop("disabled", true);
+                    }
+                })
+            } else {
+                alert("活动已存在");
+            }
+        });
+    });
+
+    $(".activity-save").on("click", function () {
+        var activityId = $(".activity-Id").val();
+        var data = {};
+        //config
+        data.IsAdaptationVehicle = $("#radioDisShow").prop("checked");
+        data.ActivityName = $(".activity-Name").val();
+        data.ActivityId = activityId;
+        data.StartTime = $(".activity-start").val();
+        data.EndTime = $(".activity-End").val();
+        data.WXUrl = $(".activity-WXUrl").val();
+        data.AppUrl = $(".activity-AppUrl").val();
+        data.ShareImg = $("#_TireShareImg").val();
+        data.ShareTitle = $(".activity-title").val();
+        data.ShareDes = $(".activity-des").val();
+        data.ActivityRules = encodeURIComponent($(".activity-rules").val());
+        data.ActivityRulesImg = $("#_TireActivityRulesImg").val();
+        data.ImgList = [];
+        data.ProductList = [];
+        if (data.ActivityId == "") {
+            alert("请输入活动ID");
+            return false;
+        }
+        if (data.ActivityName == "") {
+            alert("活动Id无效");
+            return false;
+        }
+        //img
+        var headImg = $("#_TireHeadImg").val();
+        var noProductImg = $("._TireNoProductImg").val();
+
+        if (headImg == "" || noProductImg == "") {
+            alert("头图和无商品图片不能为空");
+            return false;
+        }
+        //sortNum
+        var sortNumArray = [];
+        $(".sort").each(function (index) {
+            if (parseInt($(this).val()) != 0) {
+                sortNumArray.push($(this).val());
+            }
+        });
+        var newPositionArray = sortNumArray.sort();
+        for (var i = 0; i < newPositionArray.length - 1; i++) {
+            if (sortNumArray[i] == newPositionArray[i + 1]) {
+                alert("尺寸位置存在重复值，请检查后重新输入");
+                return;
+            }
+        }
+        data.ImgList.push({ ActivityId: activityId, Type: "HeadImg", ImgUrl: $("#_TireHeadImg").val(), Position: 0 });
+        data.ImgList.push({ ActivityId: activityId, Type: "NoProductImg", ImgUrl: $("#_TireNoProductImg").val(), Position: 0 });
+        data.ImgList.push({ ActivityId: activityId, Type: "Img12", ImgUrl: $("#_TireImg12").val(), Position: parseInt($(".12tires").val()) });
+        data.ImgList.push({ ActivityId: activityId, Type: "Img13", ImgUrl: $("#_TireImg13").val(), Position: parseInt($(".13tires").val()) });
+        data.ImgList.push({ ActivityId: activityId, Type: "Img14", ImgUrl: $("#_TireImg14").val(), Position: parseInt($(".14tires").val()) });
+        data.ImgList.push({ ActivityId: activityId, Type: "Img15", ImgUrl: $("#_TireImg15").val(), Position: parseInt($(".15tires").val()) });
+        data.ImgList.push({ ActivityId: activityId, Type: "Img16", ImgUrl: $("#_TireImg16").val(), Position: parseInt($(".16tires").val()) });
+        data.ImgList.push({ ActivityId: activityId, Type: "Img17", ImgUrl: $("#_TireImg17").val(), Position: parseInt($(".17tires").val()) });
+        data.ImgList.push({ ActivityId: activityId, Type: "Img18", ImgUrl: $("#_TireImg18").val(), Position: parseInt($(".18tires").val()) });
+        data.ImgList.push({ ActivityId: activityId, Type: "Img19", ImgUrl: $("#_TireImg19").val(), Position: parseInt($(".19tires").val()) });
+        data.ImgList.push({ ActivityId: activityId, Type: "Img20", ImgUrl: $("#_TireImg20").val(), Position: parseInt($(".20tires").val()) });
+        data.ImgList.push({ ActivityId: activityId, Type: "Img21", ImgUrl: $("#_TireImg21").val(), Position: parseInt($(".21tires").val()) });
+        data.ImgList.push({ ActivityId: activityId, Type: "Img22", ImgUrl: $("#_TireImg22").val(), Position: parseInt($(".22tires").val()) });
+        data.ImgList.push({ ActivityId: activityId, Type: "Img13C", ImgUrl: $("#_TireImg13C").val(), Position: parseInt($(".13Ctires").val()) });
+        data.ImgList.push({ ActivityId: activityId, Type: "Img14C", ImgUrl: $("#_TireImg14C").val(), Position: parseInt($(".14Ctires").val()) });
+        data.ImgList.push({ ActivityId: activityId, Type: "Img15C", ImgUrl: $("#_TireImg15C").val(), Position: parseInt($(".15Ctires").val()) });
+        data.ImgList.push({ ActivityId: activityId, Type: "Img16C", ImgUrl: $("#_TireImg16C").val(), Position: parseInt($(".16Ctires").val()) });
+        //product
+        $("input[name='check_child']").each(function () {
+            var productId = $(this).parent().parent().find("td").eq(0).html();
+            var special = $(this).parent().parent().find("select").val();
+            if (this.checked) {
+                var advertise = $(this).parent().parent().find("textarea").val();
+                data.ProductList.push({ ActivityId: activityId, ProductId: productId, AdvertiseTitle: advertise, SpecialCondition: special })
+            } else {
+                data.ProductList.push({ ActivityId: activityId, ProductId: productId, AdvertiseTitle: "", SpecialCondition: special })
+            }
+        });
+
+        if (confirm("是否确认保存")) {
+            $.post("SaveRegionarketingConfig", { data: JSON.stringify(data) }, function (result) {
+                if (result.status == true) {
+                    alert("操作成功");
+                    var optionType = $(".config-optionType").val();
+                    if (optionType == "Edit") {
+                        location.reload()
+                    } else {
+                        location.href = "/RegionMarketing/RegionMarketing";
+                    }
+                } else {
+                    alert("操作失败");
+                }
+            });
+        }
+    });
+
+    $("input[name='check_child']").click(function () {
+        if (this.checked) {
+            $(this).parent().parent().find("textarea").prop("disabled", false);
+        } else {
+            //$(this).parent().parent().find("textarea").val("");
+            $(this).parent().parent().find("textarea").prop("disabled", true);
+        }
+    })
+
+    function ConvertMsg(data) {
+        var msg = "安全库存";
+        switch (data) {
+            case 0:
+                msg = "安全库存";
+                break;
+            case 1:
+                msg = "小于等于一条";
+                break;
+            case 2:
+                msg = "小于等于四条";
+                break;
+        }
+        return msg;
+    }
+
+    function formatTime(val) {
+        if (val != null) {
+            return eval('new ' + eval(val).source).Format('yyyy-MM-dd hh:mm:ss');
+        } else {
+            return "无";
+        }
+    }
+
+    function BatchSelect() {
+        var html = "<table style='width:100%;margin-top:30px'><tr><td>隐藏条件：</td><td><select class='dialog-special'> <option value='0' selected='selected'>安全库存</option> <option value='1'>小于等于一条</option> <option value='2'>小于等于四条</option> </select></td></tr></table>";
+        var d = dialog({
+            title: "批量选择",
+            width: 300,
+            height: 100,
+            fixed: true,
+            button: [{
+                value: "确定",
+                callback: function () {
+                    $(".special").val($(".dialog-special").val());
+                }
+            },
+            {
+                value: "取消"
+            }]
+        });
+        d.content(html);
+        d.showModal();
+    };
+</script>

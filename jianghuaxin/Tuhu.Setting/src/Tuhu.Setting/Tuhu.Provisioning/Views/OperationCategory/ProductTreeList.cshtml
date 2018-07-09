@@ -1,0 +1,128 @@
+﻿@{
+    //Layout = "../Shared/_Layout.cshtml";
+    Layout = null;
+    ViewBag.Title = "产品类目列表";
+}
+
+<style type="text/css">
+    .button1 {border-radius: 5px;padding: 5px 25px;border: none;color: #F0F0F0;font-size: 12px;font-family: "Microsoft Yahei";outline: none;cursor: pointer;background: #0088cc;border-color: #0088cc;}
+    /*#listTable td {
+        width:auto;
+    }*/
+</style>
+<link href="~/Scripts/zTree/css/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+
+@*<script src="~/Scripts/TableTree/jquery-1.7.2.min.js"></script>*@
+<script src="~/Scripts/zTree/js/jquery.ztree.core-3.5.min.js"></script>
+<script src="~/Scripts/zTree/js/jquery.ztree.excheck-3.5.min.js"></script>
+
+<input class="button1" id="treeCheck" onclick="zTreeSetting.checkAllTree(true);" type="button" value="全选" />
+<input class="button1" id="treeUnCheck" onclick="zTreeSetting.checkAllTree(false);" type="button" value="反选" />
+<input class="button1" id="treeCheck" onclick="zTreeSetting.expandAll(true);" type="button" value="展开全部" />
+<input class="button1" id="treeUnCheck" onclick="zTreeSetting.expandAll(false);" type="button" value="折叠全部" />
+<input class="button1" id="saveSetting" type="button" onclick="zTreeSetting.saveArticle();"  value="保存设置"/>
+<input type="hidden" id="vid" value="@(ViewBag.id)" />
+<input type="hidden" id="vtype" value="@(ViewBag.type)" />
+<br /><br />
+<input class="button1" id="searchBtn" type="button" onclick="TableListSetting.LoadData()" value="搜索勾选类目产品" />
+<div style="margin:10px 0 0 0;">
+    <ul id="CategoryTagTree" style="float:left;width:25%;" class="ztree"></ul>
+    <div id="listTable" style="float:left;width:70%;"></div>
+</div>
+<script type="text/javascript">
+    var vid=$("#vid").val(),vtype=$("#vtype").val();
+
+    var zTreeSetting = {
+        setting :{
+            check: {
+                enable: true,
+                chkboxType:{ "Y" : "", "N" : "" }
+            },
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            },
+            callback: {
+                onCheck:function(event, treeId, treeNode){
+                    //zTreeSetting.saveArticle();
+                }
+            }
+        },
+        zTreeJson:@Html.Raw(ViewBag.CategoryTagManager),
+        zTreeInit:function(){
+            $.fn.zTree.init($("#CategoryTagTree"), zTreeSetting.setting,zTreeSetting.zTreeJson);
+        },
+        model:function(){
+            this.key,
+            this.value,
+            this.isShow
+        },
+        getItems:function()
+        {
+            var treeObj=$.fn.zTree.getZTreeObj("CategoryTagTree"),
+                nodes=treeObj.getCheckedNodes(true),
+                itemsJson=[];
+            for(var i=0;i<nodes.length;i++)
+            {
+                var _model = new zTreeSetting.model();
+                _model.key = nodes[i].id;
+                _model.value = nodes[i].name;
+                _model.isShow = 0;
+                itemsJson.push(_model);
+            }
+            var _json = JSON.stringify(itemsJson) || "";
+            return _json;
+        },
+        saveArticle:function()
+        {
+            var id = $("#vid").val(),type = $("#vtype").val();
+            if(id > 0)
+            {
+                $.ajax({
+                    type: "POST",
+                    url: "/OperationCategory/SaveProductTreeList",
+                    data: {"id": id,"type": type,"data": type == 0 ? zTreeSetting.getItems():(SearchProductCategoriesConfig.GetCheck()||"") },
+                    success: function (result) 
+                    {
+                        var resultMsg = result == 1 ? "设置成功！" : "设置失败！";
+                        if(result == 1){
+                            alert(resultMsg);
+                            $("#AddOrEditProduct").dialog("close");
+                        }
+                        else{
+                            alert(resultMsg);
+                        }
+                    }
+                });
+            }
+            else{
+                alert("操作异常");
+            }
+        },
+        checkAllTree:function(ischecks){
+            $.fn.zTree.getZTreeObj("CategoryTagTree").checkAllNodes(ischecks || false);
+        },
+        expandAll:function(isExpandAll){
+            $.fn.zTree.getZTreeObj("CategoryTagTree").expandAll(isExpandAll || false);
+        }
+    };
+    zTreeSetting.zTreeInit();
+    zTreeSetting.expandAll(true);
+    setTimeout(zTreeSetting.expandAll,500);
+    
+    var TableListSetting = {
+        LoadData:function(isOld){
+            var id = $("#vid").val(),type = $("#vtype").val();
+            $("#listTable").html("").load("/OperationCategory/SearchProductCategories?data="+zTreeSetting.getItems()+"&id="+id+"&type="+type);
+        },
+        InitSetting:function(){
+            if(vtype == 0){
+                $("#listTable").hide();
+                $("#searchBtn").hide();
+            }
+        }
+    };
+    TableListSetting.InitSetting();
+    TableListSetting.LoadData();
+</script>

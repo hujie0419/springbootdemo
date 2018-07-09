@@ -1,0 +1,33 @@
+﻿@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.ConfigHistory>
+@{
+    ViewBag.Title = "安装费加价日志";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Model != null && Model.Any())
+{
+
+    <table style="width:100%;margin-top:20px">
+        <tr>
+            <th>PID</th>
+            <th>加价</th>
+            <th>操作人</th>
+            <th>操作时间</th>
+            <th>操作内容</th>
+        </tr>
+        @foreach (var opr in Model)
+        {
+            <tr>
+                <td>@opr.AfterValue.Replace(",","")</td>
+                <td>@opr.BeforeValue</td>
+                <td>@opr.Author</td>
+                <td>@opr.ChangeDatetime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@opr.Operation</td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <h1>无操作</h1>
+}
+

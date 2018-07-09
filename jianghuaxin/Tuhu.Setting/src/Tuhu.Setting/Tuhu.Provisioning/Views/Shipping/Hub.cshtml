@@ -1,0 +1,560 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.ShippingModel>
+    @{
+        ViewBag.Title = "轮毂运费配置";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+        var freeCitys = "";
+        foreach (var item in Model.Where(m => (m.Types & 1) == 0 && (m.Types & 8) == 8))
+        {
+            freeCitys += item.StrCityIDs + "|";
+        }
+        var nofreeCitys = "";
+        foreach (var item in Model.Where(m => (m.Types & 1) == 0 && (m.Types & 8) == 0))
+        {
+            nofreeCitys += item.StrCityIDs + "|";
+        }
+    }
+
+    <style>
+        table th {
+            width: auto;
+            height: auto;
+            background: #66ABEF;
+            color: #F3F7FA;
+            border: 1px solid #559BD0;
+            font-weight: 600;
+            font-family: "Microsoft Yahei";
+            text-align: center;
+            min-width: 20%;
+            font-size: larger;
+        }
+
+        table td {
+            font-size: 75%;
+            padding: 8px 3px 8px 3px;
+            font-family: "Microsoft Yahei";
+            text-align: center;
+            border: 1px solid #eee;
+            min-width: 20px;
+        }
+
+        .no-free td {
+            font-size: 75%;
+            padding: 8px 3px 8px 3px;
+            font-family: "Microsoft Yahei";
+            text-align: center;
+            border: 1px solid #eee;
+            min-width: 20px;
+            max-width: 200px;
+        }
+
+        a {
+            cursor: pointer;
+        }
+
+        .title > h3 > label {
+            font-weight: normal;
+        }
+
+        input {
+            width: 50px;
+        }
+
+        .bottom {
+            font-size: 30px;
+            margin-top: 40px;
+            text-align: center;
+        }
+
+            .bottom > a {
+                color: black;
+            }
+
+                .bottom > a:hover {
+                    text-decoration: none;
+                    font-weight: bold;
+                }
+
+                .bottom > a:first-of-type {
+                    background-color: aquamarine;
+                    padding: 10px 20px;
+                    margin-right: 20px;
+                }
+
+        .btn-primary {
+            font-weight: bold;
+            color: #fff;
+            background-color: #5cb85c;
+            border-color: #4cae4c;
+            width: 80px;
+        }
+
+        button {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.42857143;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            -ms-touch-action: manipulation;
+            touch-action: manipulation;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background-image: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.42857143;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            -ms-touch-action: manipulation;
+            touch-action: manipulation;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background-image: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+
+        .btn-danger {
+            font-weight: bold;
+            color: #fff;
+            background-color: #d9534f;
+            border-color: #d43f3a;
+            width: 80px;
+        }
+
+
+        .correctPos {
+            margin-left: 10px;
+        }
+    </style>
+
+    <div style="clear:both;"></div>
+
+    <div style="float:left;" class="title">
+        <h2>
+            <span>@(ViewBag.Where == "home" ? "配送到家轮毂订单 运费规则" : "配送到店轮毂订单 运费规则")</span>
+        </h2>
+        <h3>
+            <span>&nbsp;&nbsp;商品类别：</span><label>轮胎/轮毂</label>
+        </h3>
+        <h3>
+            <span>&nbsp;&nbsp;配送方式：</span><label>@(ViewBag.Where == "home" ? "配送到家" : "配送到店")</label>
+        </h3>
+        <h3>
+            <span style="color: red;">*</span><span>默认运费：</span>
+            @{
+                var defaultValue = Model.Where(m => (m.Types & 1) == 1);
+                var userType = 1;
+                <label>
+                    每条
+                    @if (defaultValue.Any())
+                    {
+                        <input type="text" name="default" data-pkid="@(defaultValue.FirstOrDefault().PKID)" value="@(defaultValue.FirstOrDefault().Value )" />
+                        userType = defaultValue.FirstOrDefault().UserType;
+                    }
+                    else
+                    {
+                        <input type="text" name="default" data-pkid="0" value="" />
+                    }
+                    元
+                </label>
+            }
+
+            <label style="font-size:12px;color:#696969;">（除指定地区外,其余地区的运费采用"默认运费"）</label>
+        </h3>
+    </div>
+    <div style="float:left;clear:both;">
+        <h3>
+            为指定地区城市设置运费:
+        </h3>
+    </div>
+    <table style="width:100%;" class="no-free" data-cityids="@nofreeCitys">
+        <tr>
+            <th width="30%">地区和城市</th>
+            <th width="13%">编辑</th>
+            <th width="13%">运费规则</th>
+            <th width="13%">包邮规则</th>
+            <th width="13%">人群</th>
+            <th width="13%">操作</th>
+        </tr>
+        @{
+            var data = new Dictionary<Tuple<string, int, string>, IEnumerable<ShippingModel>>();
+            if (Model.Any(m => (m.Types & 1) == 0 && !string.IsNullOrWhiteSpace(m.StrCityIDs)))
+            {
+                data = Model.Where(m => (m.Types & 1) == 0 && !string.IsNullOrWhiteSpace(m.StrCityIDs)).GroupBy(p => new { p.StrCityIDs, p.UserType, p.StrCityNames }).
+                    ToDictionary(t => Tuple.Create(t.Key.StrCityIDs, t.Key.UserType, t.Key.StrCityNames), t => t.Select(o => o));
+            }
+            foreach (var item in data)
+            {
+                var noFreeData = item.Value.FirstOrDefault(p => (p.Types & 8) == 0) ?? new ShippingModel();
+                var freeData = item.Value.FirstOrDefault(p => (p.Types & 8) == 8) ?? new ShippingModel();
+                <tr class="rule">
+                    <td data-cityids="@(item.Key.Item1 + "|")" id="@("no-free_" + new Random().Next(0, 10000000) + noFreeData.PKID)" style="text-align: -webkit-auto;">
+                        @item.Key.Item3
+                    </td>
+                    <td><a href="javascript:void(0);" onclick="javascript:ShowRegionDialog(this)">编辑</a></td>
+                    <td data-pkid="@noFreeData.PKID">每条<input type="text" name="name" value="@noFreeData.Value" />元</td>
+                    @if (ViewBag.Where != "home")
+                {
+                    if ((freeData.Types & 16) == 16)
+                    {
+                            <td data-pkid="@freeData.PKID">
+                                订单满<input type="text" name="name" value="@(freeData.Value > 0 ? freeData.Value.ToString() : "")" /><select onchange="ShowIncludeInstallFee(this)"><option value="0">元</option><option value="16" selected="selected">条</option></select>包邮
+                                <label style="display: none;">
+                                    , <select>
+                                        <option value="0" @(((freeData.Types & 32) == 0) ? "selected" : "")>不包含</option>
+                                        <option value="1" @(((freeData.Types & 32) == 32) ? "selected" : "")>包含</option>
+                                    </select>安装费
+                                </label>
+                            </td>
+                        }
+                        else
+                        {
+                            <td data-pkid="@freeData.PKID">
+                                订单满<input type="text" name="name" value="@(freeData.Value > 0 ? freeData.Value.ToString() : "")" /><select onchange="ShowIncludeInstallFee(this)"><option value="0" selected="selected">元</option><option value="16">条</option></select>包邮
+                                <label>
+                                    , <select>
+                                        <option value="0" @(((freeData.Types & 32) == 0) ? "selected" : "")>不包含</option>
+                                        <option value="1" @(((freeData.Types & 32) == 32) ? "selected" : "")>包含</option>
+                                    </select>安装费
+                                </label>
+                            </td>
+                        }
+                    }
+                    else
+                    {
+                        if ((freeData.Types & 16) == 16)
+                        {
+                            <td data-pkid="@freeData.PKID">
+                                订单满<input type="text" name="name" value="@(freeData.Value > 0 ? freeData.Value.ToString() : "")" /><select><option value="0">元</option><option value="16" selected="selected">条</option></select>包邮
+                            </td>
+                        }
+                        else
+                        {
+                            <td data-pkid="@freeData.PKID">
+                                订单满<input type="text" name="name" value="@(freeData.Value > 0 ? freeData.Value.ToString() : "")" /><select><option value="0" selected="selected">元</option><option value="16">条</option></select>包邮
+                            </td>
+                        }
+                    }
+                    <td>
+                        <label>
+                            <select>
+                                <option value="1" @(item.Key.Item2 == 1 ? "selected" : "")>全部</option>
+                                <option value="2" @(item.Key.Item2 == 2 ? "selected" : "")>未下单</option>
+                            </select>
+                        </label>
+                    </td>
+                    <td><a href="javascript:void(0);" onclick="javascript:DelRule(this)">删除</a></td>
+                </tr>
+            }
+        }
+        <tr>
+            <td colspan="6"><a href="javascript:void(0);" onclick="javascript:AddDeliveryFeeRule(this)" style="float: left;">+新增规则</a></td>
+        </tr>
+    </table>
+
+
+    <div class="bottom">
+        <button type="button" class="btn-primary correctPos" onclick="javascript: Save()">保存</button>
+        <button type="button" class="btn-danger correctPos" onclick="javascript: Cancel()">取消</button>
+    </div>
+    <div id="AddItem" style="display: none"></div>
+    @section scripts{
+
+        <script>
+        Array.prototype.S = String.fromCharCode(2);
+        Array.prototype.in_array = function(e) {
+            var r = new RegExp(this.S + e + this.S);
+            return (r.test(this.S + this.join(this.S) + this.S));
+        };
+        var ShowRegionDialog = function(target) {
+            var id = "";
+            if (typeof ($(target).parent().prev().attr("id")) == "undefined") {
+                id = $(target).parent().parent().parent().parent().prop("class") + "_" + new Date().getTime();
+                $(target).parent().prev().prop("id", id);
+            } else {
+                id = $(target).parent().prev().prop("id");
+            }
+            $("#AddItem").load('/Shipping/Regions?id=' + id);
+
+            $("#AddItem").dialog({
+                title: "选择地区",
+                width: 750,
+                height: 700,
+                modal: true
+            });
+        }
+
+        function ShowIncludeInstallFee(o) {
+            var item = $(o);
+            var value = item.val();
+            if (parseInt(value) == 16) {
+                item.next().hide();
+            } else {
+                item.next().show();
+            }
+        }
+
+
+        var AddDeliveryFeeRule = function(target) {
+            var html = '<tr class="rule">' +
+                '<td data-cityids="" style="text-align: -webkit-auto;"></td>' +
+                '<td><a href="javascript:void(0);" onclick="javascript:ShowRegionDialog(this)" >编辑</a></td>' +
+                '<td>每条<input type="text" name="name" value=" " />元</td>';
+            if ("@ViewBag.Where" != "home") {
+                html += '<td>订单满<input type="text" name="name" value=" " /><select onchange="ShowIncludeInstallFee(this)"><option value="0">元</option><option value="16">条</option></select>包邮' +
+                    '<label>，<select><option value="0">不包含</option><option value="1">包含</option></select>安装费</label></td>';
+            } else {
+                html += '<td>订单满<input type="text" name="name" value=" " /><select><option value="0">元</option><option value="16">条</option></select>包邮</td>';
+            }
+            html += "<td><label><select><option value='1'>全部</option><option value='2' >未下单</option></select></label></td>" +
+                '<td><a href="javascript:void(0);" onclick="javascript:DelRule(this)">删除</a></td>' +
+                "</tr>";
+            $(target).parent().parent().before(html);
+        }
+
+
+        //删除
+        var DelRule = function(target) {
+            var IsShopInstall = true;
+            if ("@ViewBag.Where" == "home")
+                IsShopInstall = false;
+            if (!confirm("确认删除这条规则?"))
+                return;
+            var $tr = $(target).parent().parent();
+            var cityids = $tr.find("td:first").attr("data-cityids");
+
+            if (cityids) {
+                var allcityids = $("." + $tr.find("td:first").prop("id").split("_")[0]).attr("data-cityids");
+                var cityarr = cityids.substr(0, cityids.length - 1).split("|");
+                var citysarr = allcityids.substr(0, allcityids.length - 1).split("|");
+                var temp = [];
+                for (var i = 0; i < citysarr.length; i++) {
+                    if (!cityarr.in_array(citysarr[i]))
+                        temp.push(citysarr[i]);
+                }
+                var str = "";
+                if (temp.length) {
+                    str = temp.join("|") + "|";
+                }
+                $("." + $tr.find("td:first").prop("id").split("_")[0]).attr("data-cityids", str);
+            }
+
+            var $noFreeData = $tr.find("td").eq(2);
+            var $freeData = $tr.find("td").eq(3);
+            if ($noFreeData.attr("data-pkid") && $freeData.attr("data-pkid")) {
+                $.post("/Shipping/DelRule", { pkid: parseInt($noFreeData.attr("data-pkid")) }, function(result) {
+                    if (result < 0) {
+                        alert("删除失败");
+                        return;
+                    } else {
+                        $.get("/Shipping/InsertOprLog", { ObjectType: "SetYunFei", ObjectID: IsShopInstall ? 1 : 2, Operation: "删除规则" }, function(data) {});
+                        $tr.remove();
+                    }
+                });
+                $.post("/Shipping/DelRule", { pkid: parseInt($freeData.attr("data-pkid")) }, function(result) {
+                    if (result < 0) {
+                        alert("删除失败");
+                        return;
+                    } else {
+                        $.get("/Shipping/InsertOprLog", { ObjectType: "SetYunFei", ObjectID: IsShopInstall ? 1 : 2, Operation: "删除规则" }, function(data) {});
+                        $tr.remove();
+                    }
+                });
+            } else {
+                $tr.remove();
+            }
+        }
+
+        //取消
+        var Cancel = function() {
+            window.location.href = "/Shipping/Index";
+        }
+
+        //保存
+        var Save = function() {
+
+            //到店到家
+            var IsShopInstall = true;
+            if ("@ViewBag.Where" == "home")
+                IsShopInstall = false;
+
+            var sb = "";
+            var arrdata = [];
+            //默认规则
+            var defaultFee = $('input[name="default"]').val();
+            if (parseFloat(defaultFee) + "" == "NaN" || defaultFee == "") {
+                alert("默认运费不符合规范");
+                return false;
+            }
+            var oo = {};
+            if (IsShopInstall)
+                oo.Types = 1 ^ 0 ^ 4 ^ 0 ^ 16 ^ 0 ^ 64;
+            else
+                oo.Types = 1 ^ 0 ^ 0 ^ 0 ^ 16 ^ 0 ^ 64;
+            oo.Value = parseFloat(defaultFee);
+            var pkid = $('input[name="default"]').attr("data-pkid");
+            if (pkid)
+                oo.PKID = parseInt(pkid);
+            oo.UserType = 1;
+            if (parseInt(oo.Value) >= 0) {
+                arrdata.push(oo);
+            }
+
+
+            //运费
+            var yf_rule = $(".no-free").find(".rule");
+            if (yf_rule.length) {
+                //校验
+                var cityIds = [];
+                yf_rule.each(function(i) {
+                    var ids = $(this).find("td:eq(0)").attr("data-cityids");
+                    if (!ids) {
+                        sb += "指定地区运费：第" + (i + 1) + "条规则未选地区与城市\n";
+                    }
+                    var value = $(this).find("td:eq(2)>input").val();
+                    if (parseFloat(value) + "" == "NaN" || value == "") {
+                        sb += "第" + (i + 1) + "条规则运费规则不符合规范\n";
+                    }
+                    var freePkid = $(this).find("td:eq(3)").attr("data-pkid");
+                    var freeValue = $(this).find("td:eq(3)>input").val();
+                    if (!freePkid || freePkid == 0) {
+                        if (freeValue != null && freeValue != "" && !/^[ ]+$/.test(freeValue)) {
+                            if (parseFloat(freeValue) + "" == "NaN") {
+                                sb += "第" + (i + 1) + "条规则包邮规则不符合规范\n";
+                            }
+                        }
+                    } else {
+                        if (parseFloat(freeValue) + "" == "NaN" || freeValue == "") {
+                            sb += "不能单独删除已有包邮规则\n";
+                        }
+                    }
+                    var strCityIds = $(this).find("td:eq(0)").attr("data-cityids").substr(0, $(this).find("td:eq(0)").attr("data-cityids").length - 1);
+                    //$.each(arrdata, function(index) {
+                    //    if (arrdata[index].StrCityIDs === strCityIds) {
+                    //        sb += "第" + (i + 1) + "条规地区与其他规则有重复\n";
+                    //    }
+                    //});
+                    var userType = $(this).find("td:eq(4)>label>select").val();
+                    try {
+                        strCityIds.split("|").map(function (e) {
+                            var obj = {};
+                            obj.UserType = userType;
+                            obj.CityId = e;
+                            var flag = true;
+                            cityIds.map(function (o) {
+                                if (o.CityId == e && o.UserType == obj.UserType) {
+                                    sb += "第" + (i + 1) + "条规地区与其他规则有重复\n";
+                                    flag = false;
+                                    throw "";
+                                }
+                            });
+                            if (flag) {
+                                cityIds.push(obj);
+                            } 
+                        });
+                    }
+                    catch (e) {}                    
+                });
+                if (sb) {
+                    alert(sb);
+                    return false;
+                }
+                //封装保存
+                yf_rule.each(function(i) {
+                    //运费规则
+                    var o = {};
+                    o.StrCityIDs = $(this).find("td:eq(0)").attr("data-cityids").substr(0, $(this).find("td:eq(0)").attr("data-cityids").length - 1);
+                    o.Value = parseFloat($(this).find("td:eq(2)>input").val());
+                    if ($(this).find("td:eq(2)").attr("data-pkid"))
+                        o.PKID = parseInt($(this).find("td:eq(2)").attr("data-pkid"));
+                    if (IsShopInstall)
+                        o.Types = 0 ^ 0 ^ 4 ^ 0 ^ 0 ^ 0 ^ 64;
+                    else
+                        o.Types = 0 ^ 0 ^ 0 ^ 0 ^ 0 ^ 0 ^ 64;
+                    o.UserType = $(this).find("td:eq(4)>label>select").val();
+                    if (parseInt(o.Value) > 0) {
+                        arrdata.push(o);
+                    }
+
+                    //包邮规则
+                    var oo = {}
+                    oo.StrCityIDs = $(this).find("td:eq(0)").attr("data-cityids").substr(0, $(this).find("td:eq(0)").attr("data-cityids").length - 1);
+                    var value = $(this).find("td:eq(3)>input").val();
+                    if ($(this).find("td:eq(3)").attr("data-pkid"))
+                        oo.PKID = parseInt($(this).find("td:eq(3)").attr("data-pkid"));
+                    var unit = parseInt($(this).find("td:eq(3)>select").val());
+                    if (unit == 16) {
+                        oo.Value = parseInt(value);
+                        if (IsShopInstall) {
+                            oo.Types = 0 ^ 0 ^ 4 ^ 8 ^ 16 ^ 0 ^ 64;
+                        } else {
+                            oo.Types = 0 ^ 0 ^ 0 ^ 8 ^ 16 ^ 0 ^ 64;
+                        }
+                    } else {
+                        oo.Value = parseFloat(value);
+                        if (IsShopInstall) {
+                            if ($(this).find("td:eq(3)>label>select").val() === "1") {
+                                oo.Types = 0 ^ 0 ^ 4 ^ 8 ^ 0 ^ 32 ^ 64;
+                            } else {
+                                oo.Types = 0 ^ 0 ^ 4 ^ 8 ^ 0 ^ 0 ^ 64;
+                            }
+                        } else {
+                            oo.Types = 0 ^ 0 ^ 0 ^ 8 ^ 0 ^ 0 ^ 0 ^ 64;
+                        }
+                    }
+                    oo.UserType = $(this).find("td:eq(4)>label>select").val();
+                    if (oo.Value > 0) {
+                        arrdata.push(oo);
+                    }
+                });
+            }
+
+            if (arrdata.length > 0) {
+                $.ajax(
+                {
+                    url: "/Shipping/InsertAndUpdateaRule",
+                    type: "post",
+                    datatype: "json",
+                    data: {
+                        data: JSON.stringify(arrdata),
+                        "status": false,
+                        "IsShopInstall": false,
+                        "ProductType": 0,
+                        "rank": ""
+                    },
+                    success: function(result) {
+                        if (result > 0) {
+                            $.get("/Shipping/InsertOprLog", { ObjectType: "SetYunFei", ObjectID: IsShopInstall ? 5 : 6, Operation: "保存规则" }, function(data) {});
+                            location.href = "/Shipping/Index";
+                        } else {
+                            console.log(result);
+                            alert("保存失败");
+                        }
+                    }
+                });
+            }
+        }
+
+        </script>
+    }
+

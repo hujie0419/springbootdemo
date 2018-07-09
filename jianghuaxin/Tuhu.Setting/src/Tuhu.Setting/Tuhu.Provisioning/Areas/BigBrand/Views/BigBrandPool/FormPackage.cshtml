@@ -1,0 +1,348 @@
+﻿
+@{
+    ViewBag.Title = "FormPackage";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+
+<div>
+    <form id="form1">
+        <table class="form">
+            <tr>
+                <th class="formTitle">礼包名称</th>
+                <td class="formValue">
+                    <input type="text" id="Name" name="Name" class="form-control required" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">奖励类型</th>
+                <td class="formValue">
+                    <select id="RewardType" name="RewardType" class="form-control">
+                        <option value="1">优惠券</option>
+                        <option value="2">积 分</option>
+                        <option value="4">实物奖励</option>
+                        <option value="5">微信红包</option>
+                        <option value="3" selected="selected">无奖励</option>
+                    </select>
+                </td>
+            </tr>
+            <tr RewardType="2" class="hidden">
+                <th class="formTitle">积分额度</th>
+                <td class="formValue">
+                    <input type="number" id="Integral" name="Integral" min="1" class="form-control" />
+                </td>
+            </tr>
+            <tr RewardType="1" class="hidden">
+                <th class="formTitle">优惠券</th>
+                <td class="formValue">
+                    @*<input type="text"  name="CouponGuids" class="form-control" placeholder="优惠券GUID" />*@
+                    <input type="button" id="btnCoupon" name="btnCoupon" value="添加优惠券" />
+                </td>
+            </tr>
+            <tr RewardType="4" class="hidden">
+                <th class="formTitle">实物奖励名称</th>
+                <td class="formValue">
+                    <input type="button" id="btnRealProductName" name="btnRealProductName" value="添加奖励名称"/>
+                </td>
+            </tr>
+            <tr RewardType="5" class="hidden">
+                <th class="formTitle">红包金额</th>
+                <td class="formValue">
+                    <input type="number" id="WxRedBagAmount" name="WxRedBagAmount" min="1" max="200" class="form-control" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">奖励数量</th>
+                <td class="formValue">
+                    <input type="number" id="Number" name="Number" class="form-control required"/>
+                </td>
+            </tr>
+            <tr>
+                <th colspan="2" style="text-align:center">
+                    <span>抽中奖励提示配置</span>
+                </th>
+            </tr>
+            <tr>
+                <th class="formTitle">提示类型</th>
+                <td class="formValue">
+                    <select id="PromptType" name="PromptType" class="form-control">
+                        <option value="1">弹窗</option>
+                        <option value="2">链接</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">提示文案:</th>
+                <td class="formValue">
+                    <textarea id="PromptMsg" name="PromptMsg" class="form-control required"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">提示图片</th>
+                <td class="formValue">
+                    <input type="hidden" id="PromptImg" value="PromptImg"  />
+                    <img id="imgPromptImg" width="30" height="30" />
+                    <input type="file" id="fileUpload" name="fileUpload" style="display: inline;"/>
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">按钮提示文案</th>
+                <td class="formValue">
+                    <input type="text" id="RedirectBtnText" name="RedirectBtnText" class="form-control required"/>
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">APP链接</th>
+                <td class="formValue">
+                    <input type="text" id="RedirectAPP" name="RedirectAPP" class="form-control required" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">移动站链接</th>
+                <td class="formValue">
+                    <input type="text" id="RedirectH5" name="RedirectH5" class="form-control required" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">华为轻应用链接</th>
+                <td class="formValue">
+                    <input type="text" id="RedirectHuaWei" name="RedirectHuaWei" class="form-control required" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">小程序</th>
+                <td class="formValue">
+                    <select id="WxAppId" name="WxAppId" class="form-control"></select>
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">小程序链接</th>
+                <td class="formValue">
+                    <input type="text" id="RedirectWXAPP" name="RedirectWXAPP" class="form-control" />
+                </td>
+            </tr>
+        </table>
+        <input type="hidden" id="PKID" name="PKID" value="0" />
+        <input type="hidden" id="FKPKID" name="FKPKID" value=""/>
+        <input type="hidden" id="ParentPKID" name="ParentPKID" />
+    </form>
+</div>
+<script type="text/javascript">
+    var fkpkid = $.request("keyValue");
+    var parentPKID = $.request("parentPKID");
+    var pkid = $.request("pkid");
+
+    function fileImage() {
+        $.uploadFile({
+            id: $("#fileUpload").attr("id"),
+            preBack: function () {
+                var size = $("#fileUpload")[0].files[0].size / 1024 * 1.0;
+                if (size > 500) {
+                    $.modalMsg("上传的图片过大", "warning");
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            callBack: function (res) {
+                $('#imgPromptImg').attr("src", res.BImage);
+                $("#PromptImg").val(res.BImage);
+            },
+            complete: function () {
+                $("#fileUpload").on("change", fileImage);
+            }
+        });
+    }
+
+    function submitForm(iframe) {
+        if (!$("#form1").formValid()) {
+            return false;
+        }
+        var array = [];
+        var formData = $('#form1').formSerialize();
+        if (formData.RewardType == 2) {
+            debugger;
+            var item = {};
+            item.FKPKID = fkpkid;
+            item.Integral = formData.Integral;
+            if (!item.Integral || item.Integral =='&nbsp;') {
+                alert("积分额度不能为空");
+                return false;
+            }
+            item.RewardType = -1;
+            array.push(item);
+        } 
+        else if (formData.RewardType == 1) {
+            debugger;
+            if ($('input[name="CouponGuids"]').length == 0) {
+                alert("请添加优惠券");
+                return false;
+            }
+            $('input[name="CouponGuids"]').each(function () {
+                var value = $(this).val();
+                if (value) {
+                    var item = {};
+                    item.FKPKID = fkpkid;
+                    item.CouponGuid = value;
+                    item.RewardType = -1;
+                    array.push(item);
+                }
+            });
+            if (array.length == 0) {
+                alert("优惠券GUID不能为空");
+            }
+
+        } else if (formData.RewardType == 4) {
+            debugger;
+            var RealProductNames = $('input[name="RealProductNames"]');
+            if (RealProductNames.length == 0) {
+                alert("请添加实物奖励名称");
+                return false;
+            }
+            $('input[name="RealProductNames"]').each(function () {
+                var value = $(this).val();
+                if (value) {
+                    var item = {};
+                    item.FKPKID = fkpkid;
+                    item.RealProductName = value;
+                    item.RewardType = -1;
+                    array.push(item);
+                }
+            });
+
+            if (array.length == 0) {
+                alert("实物奖励名称不能为空");
+                return false;
+            }
+
+        } else if (formData.RewardType == 5) {
+            var Number = $('#Number').val();
+            if (!Number) {
+                alert("微信红包奖励数量不能为空");
+                return false;
+            }
+            $('input[name="WxRedBagAmount"]').each(function () {
+                var value = $(this).val();
+                if (value) {
+                    var item = {};
+                    item.FKPKID = fkpkid;
+                    item.WxRedBagAmount = value;
+                    item.RewardType = -1;
+                    array.push(item);
+                }
+            })
+            if (array.length == 0) {
+                alert("微信红包奖励金额不能为空");
+                return false;
+            }
+        } else { }
+
+        $.submitForm({
+            url: "/BigBrand/BigBrandPool/SubmitFormPackage",
+            param: { entityString: JSON.stringify(formData), data: JSON.stringify(array) },
+            success: function () {
+                iframe.$('#gridPoolList').jqGrid("setGridParam", {}).trigger("reloadGrid");
+            }
+        });
+
+    }
+
+    function init() {
+        console.log("pkid", pkid);
+        if (pkid) {
+            //GetFormPackageJson
+            $.ajax({
+                url: "/BigBrand/BigBrandPool/GetFormPackageJson",
+                type: "post",
+                data: {
+                    pkid:pkid
+                },
+                dataType: "json",
+                async: false,
+                success: function (res) {
+                   
+                    $('#form1').formSerialize(res.PackageModel);
+                    if (res.PackageModel.PromptImg) {
+                        $('#imgPromptImg').attr("src", res.PackageModel.PromptImg);
+                    }
+
+                    if (res.PackageModel.RewardType == 1) {
+                        //优惠券
+                        for (var key in res.Child) {
+                            console.log("key", key);
+                            $('#btnCoupon').before(` <input type="text"  name="CouponGuids" class="form-control" placeholder="优惠券GUID" value="${res.Child[key].CouponGuid}" onblur="CouponValid(this)"  />`);
+
+                           
+                        }
+                    } else if (res.PackageModel.RewardType == 4) {
+                        for (var key in res.Child) {
+                            $('#btnRealProductName').before(` <input type="text"  name="RealProductNames" class="form-control" placeholder="实物奖励名称" value="${res.Child[key].RealProductName}"   />`);
+                        }
+                    } else if (res.PackageModel.RewardType == 2) {
+                        //积分
+                        if (res.Child.length > 0) {
+                            $('#Integral').val(res.Child[0].Integral);
+                        }
+                    } else if (res.PackageModel.RewardType == 5) {
+                        //微信红包
+                        if (res.Child.length > 0) {
+                            $('#WxRedBagAmount').val(res.Child[0].WxRedBagAmount);
+                        }
+                    }else {
+
+                    }
+                    $("tr[RewardType=" + res.PackageModel.RewardType + "]").removeClass("hidden");
+
+                }
+            })
+        }
+    }
+
+    function CouponValid(obj) {
+        var value = $(obj).val();
+        if (value) {
+            $.ajax({
+                type: 'post',
+                url: '/ActivityV2/CouponVlidate',
+                dataType: 'json',
+                data: { "couponRulePKID": value },
+                success: function (result) {
+                    if (result.Name != "") {
+                        $.modalMsg("优惠:" + result.Name,"success");
+                    } else {
+                        $.modalMsg("优惠券GUID不存在", "error");
+                        $(obj).val("");
+                    }
+                }
+            })
+        }
+    }
+
+    $(function () {
+        $('#FKPKID').val(fkpkid);
+        $('#ParentPKID').val(parentPKID);
+
+        $("#fileUpload").on("change", fileImage);
+        $("#RewardType").on("change",
+            function () {
+                var val = $(this).val();
+                $("tr[RewardType]").addClass("hidden");
+                $("tr[RewardType=" + val + "]").removeClass("hidden");
+            });
+        $('#btnCoupon').on('click', function () {
+            $(this).before(` <input type="text"  name="CouponGuids" class="form-control" placeholder="优惠券GUID"  onblur="CouponValid(this)"  />`);
+        });
+
+        $('#btnRealProductName').on('click', function () {
+            $(this).before(` <input type="text"  name="RealProductNames" class="form-control" placeholder="实物奖励名称"   />`);
+        }); 
+
+        $('#WxAppId').bindSelect({
+            url: "/bigbrandpool/SelectWxApp",
+            id: "appId",
+            text:"name"
+        });
+
+        init();
+
+    });
+</script>

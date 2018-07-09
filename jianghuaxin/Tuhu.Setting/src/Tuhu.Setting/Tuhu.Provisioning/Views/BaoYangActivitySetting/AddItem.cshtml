@@ -1,0 +1,213 @@
+﻿@{
+    ViewBag.Title = "保养活动关联配置";
+}
+
+<link href="~/Content/iview/iview.css" rel="stylesheet" />
+<link href="~/Content/BaoYangActivitySetting/Vue.css" rel="stylesheet" type="text/css" />
+<h2 class="title">添加</h2>
+<template>
+    <div id="div">
+        <table style="width:100%;margin-top:10px;">
+            <thead>
+                <tr>
+                    <th>保养活动Id</th>
+                    <th>ServicePackagesName</th>
+                    <th>ServiceCatalogName</th>
+                    <th>关联品牌</th>
+                    <th>关联系列</th>
+                    <th>机油等级</th>
+                    <th>关联产品</th>
+                    <th>缺货信息</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(item,index) in correctList">
+                    <td>{{model.ActivityId}}</td>
+                    <td>{{item.Package.Name}}</td>
+                    <td>{{item.Name}}</td>
+                    <td>
+                        <i-select v-model="ModelList[index].Brand">
+                            <i-option value="">-请选择-</i-option>
+                            <i-option v-for="brand in item.BrandList" :value="brand" :key="brand">{{brand}}</i-option>
+                        </i-select>
+                    </td>
+                    <td>
+                        <i-select v-model="ModelList[index].Serie" placeholder="全部系列">
+                            <i-option value="">全部系列</i-option>
+                            <i-option v-for="serie in item.SerieList" :value="serie" :key="serie">{{serie}}</i-option>
+                        </i-select>
+                    </td>
+                    <td>
+                        <i-select v-if="item.CatalogName==='Oil'" v-model="ModelList[index].Grades" placeholder="全部等级">
+                            <i-option value="">全部等级</i-option>
+                            <i-option value="矿物油">矿物油</i-option>
+                            <i-option value="半合成">半合成</i-option>
+                            <i-option value="全合成">全合成</i-option>
+                        </i-select>
+                    </td>
+                    <td>
+                        <i-input type="text" class="Products" v-model="ModelList[index].Product"></i-input>
+                    </td>
+                    <td>
+                        <i-input type="text" class="InAdapteTipPrefix" v-model="ModelList[index].InAdapteTipPrefix"></i-input>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <i-button type="primary" v-on:click="Save">保存</i-button>
+    </div>
+</template>
+<script src="~/Scripts/vue.min.js"></script>
+<script src="~/Scripts/iview/iview.js"></script>
+<script type="text/javascript">
+    var vue = new Vue({
+        el: "div",
+        data: function () {
+            return {
+                ModelList: [],
+                model: {},
+                brand_series: []
+            }
+        },
+        created: function () {
+            var vm = this;
+            vm.GetIdByUrl();
+            vm.$Message.config({
+                top: 150,
+                duration: 3
+            });
+        },
+        computed: {
+            correctList: function () {
+                var vm = this;
+                return vm.ModelList.map(s => {
+                    if (s.CatalogName === 'Oil') {
+                        s.BrandList = Object.keys(vm.brand_series);
+                        s.SerieList = vm.brand_series[s.Brand] || [];
+                    }
+                    return s;
+                });
+            },
+            hasOil: function () {
+                return ((this.ModelList || []).findIndex(s => s.CatalogName === 'Oil') > -1) || false;
+            }
+        },
+        watch: {
+            "hasOil": function () {
+                var vm = this;
+                if (vm.hasOil) {
+                    vm.GetOilBrandAndSeries();
+                } else {
+                    vm.brand_series = [];
+                }
+            }
+        },
+        methods: {
+            Serach: function () {
+                var vm = this;
+                $.post("/BaoYangActivitySetting/GetActivitySettingItemForAdd",
+                    {
+                        type: vm.model.Type,
+                        id: vm.model.Id,
+                        ActivityNum: vm.model.ActivityNum
+                    }, function (result) {
+                        if (result && result.Status) {
+                            vm.ModelList = result.Data;
+                        }
+                    });
+            },
+            GetIdByUrl: function () {
+                var vm = this;
+                vm.model.Type = vm.GetPara("type");
+                vm.model.ActivityId = vm.GetPara("id");
+                vm.model.ActivityNum = vm.GetPara("ActivityNum");
+                vm.Serach();
+            },
+            GetPara: function (name) {
+                var vm = this;
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null) {
+                    return unescape(r[2]);
+                } else {
+                    return null;
+                }
+            },
+            GetOilBrandAndSeries: function () {
+                var vm = this;
+                $.post("/BaoYangActivitySetting/GetOilBrandAndSeries", {}, function (result) {
+                    if (result && result.Status) {
+                        vm.brand_series = result.Data;
+                    }
+                });
+            },
+            Save: function () {
+                var vm = this;
+                var dataArray = new Array();
+                if (vm.model.ActivityId <= 0) {
+                    return;
+                }
+                if (vm.ModelList && vm.ModelList.length > 0) {
+                    for (var i = 0; i < vm.ModelList.length; i++) {
+                        var value = vm.ModelList[i];
+                        var jsonData = {
+                            "BaoYangActivityId": "",
+                            "ServicePackagesType": "",
+                            "ServicePackagesItems": "",
+                            "ServicePackagesName": "",
+                            "ServiceType": "",
+                            "ServiceCatalog": "",
+                            "ServiceCatalogName": "",
+                            "Brands": "",
+                            "Series": "",
+                            "Products": "",
+                            "InAdapteTipPrefix": "",
+                            "Grades": ""
+                        };
+                        jsonData.BaoYangActivityId = vm.model.ActivityId || 0;
+                        jsonData.ServicePackagesType = value.Package.Type || "";
+                        jsonData.ServicePackagesItems = value.Package.Items || "";
+                        jsonData.ServicePackagesName = value.Package.Name || "";
+                        jsonData.ServiceType = value.Type || "";
+                        jsonData.ServiceCatalog = value.CatalogName || "";
+                        jsonData.ServiceCatalogName = value.Name || "";
+                        jsonData.Brands = value.Brand || "";
+                        jsonData.Series = value.Serie || "";
+                        jsonData.Products = value.Products || "";
+                        jsonData.InAdapteTipPrefix = value.InAdapteTipPrefix || "";
+                        jsonData.Grades = value.Grades || "";
+                        if (value.CatalogName === 'Oil') {
+                            if (jsonData.Products) {
+                                vm.$Message.warning("机油不能关联产品");
+                                return;
+                            }
+                        } else if ((jsonData.Series && jsonData.Products && jsonData.Brands)
+                            || (jsonData.Brands && jsonData.Series)
+                            || (jsonData.Brands && jsonData.Products)
+                            || (jsonData.Series && jsonData.Products)) {
+                            vm.$Message.warning(jsonData.ServiceCatalogName + "品牌，系列，产品只能选一个！");
+                            return
+                        }
+                        dataArray[i] = jsonData;
+                    }
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "/BaoYangActivitySetting/EditItem",
+                    data: {
+                        "str": JSON.stringify(dataArray),
+                        "ActivityNum": vm.model.ActivityNum
+                    },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/BaoYangActivitySetting/ItemList?id=" + vm.model.ActivityId + "&ActivityNum=" + vm.model.ActivityNum;
+                        }
+                    },
+                    error: function (result) {
+                    }
+                });
+            }
+        }
+    })
+</script>

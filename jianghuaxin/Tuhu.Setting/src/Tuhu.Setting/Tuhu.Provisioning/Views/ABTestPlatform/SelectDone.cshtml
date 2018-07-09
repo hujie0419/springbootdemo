@@ -1,0 +1,23 @@
+﻿
+@{
+    ViewBag.Title = "测试结束";
+    Layout = null;
+}
+@model Tuhu.Service.Config.Models.ABTestDetail
+
+<form id="FormSelectDone" method="post" action="">
+    </p>
+    <div>
+        <span>状态：</span>
+        <span>测试结束</span>
+    </div>
+    </p>
+    <div>
+        <span>最终结果：</span>
+        @if (Model.GroupList != null)
+        {
+            <span>@Model.GroupList[0].GroupId @Model.GroupList[0].GroupName</span>
+        }
+    </div>
+</form>
+

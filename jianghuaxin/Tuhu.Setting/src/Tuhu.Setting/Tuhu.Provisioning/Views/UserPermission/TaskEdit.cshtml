@@ -1,0 +1,70 @@
+﻿@{
+    ViewBag.Title = "TaskEdit";
+    Layout = null;
+}
+@model Tuhu.Provisioning.DataAccess.Entity.tbl_UserTask
+
+<style>
+    table {
+        width: 100%;
+    }
+</style>
+<input type="hidden" value="@Model.ID" name="ID" id="ID" />
+<table>
+    <tr>
+        <td>
+            名称:
+        </td>
+        <td>
+            <input type="text" value="@Model.TaskName" name="TaskName"  id="TaskName" />
+        </td>
+    </tr>
+    <tr>
+       <td>描述:</td>
+        <td>
+            <textarea name="Description" id="Description">@Model.Description</textarea>
+        </td>
+    </tr>
+    <tr>
+        <td>APP版本:</td>
+        <td>
+            <select id="APPType" style="width:120px;">
+                @if (Model.APPType == 1)
+                {
+                    <option value="1" selected="selected">Android</option>
+                    <option value="0">IOS</option>
+                }
+                else
+                {
+                    <option value="1">Android</option>
+                    <option value="0" selected="selected">IOS</option>
+                }
+
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>APP处理值:</td>
+        <td>
+            <input type="text" name="APPHandler" value="@Model.APPHandler" id="APPHandler"  />
+        </td>
+    </tr>
+    <tr>
+        <td>APP通信值:</td>
+        <td>
+            <input type="text" name="APPConnect" value="@Model.APPConnect" id="APPConnect"  />
+        </td>
+    </tr>
+</table>
+<script type="text/javascript">
+    function GetForm() {
+        var data = {};
+        data.ID = $('#ID').val();
+        data.TaskName = $('#TaskName').val();
+        data.Description = $('#Description').val();
+        data.APPType = $('#APPType').val();
+        data.APPHandler = $('#APPHandler').val();
+        data.APPConnect = $('#APPConnect').val();
+        return data;
+    }
+</script>

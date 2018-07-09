@@ -1,0 +1,244 @@
+﻿@model  Tuple<List<YearCardConfig>, List<string>>
+@using Tuhu.Provisioning.DataAccess.Entity
+@{
+    ViewBag.Title = "年卡推荐机油配置";
+}
+<link href="/Content/BaoYangYearCard/BaoYangYearCard.css" rel="stylesheet"/>
+<script type="text/javascript" src="/Scripts/controls/ajaxfileupload.js"></script>
+<div>
+    <h2>年卡推荐机油配置</h2>
+    <table class="tableContainer" id="configTable">
+        <tr id="Category">
+            <th></th>
+            <th>钻石卡</th>
+            <th>铂金卡</th>
+            <th>黄金卡</th>
+            <th>保养3送1</th>
+        </tr>
+        @for (var i = 0; i < 3; i++)
+        {
+            var Num = "";
+            switch (i)
+            {
+                case 0:
+                    Num = "一";
+                    break;
+                case 1:
+                    Num = "二";
+                    break;
+                case 2:
+                    Num = "三";
+                    break;
+            }
+            <tr id="Brand@(i)">
+                <td>优先品牌@(Num):</td>
+                @for (var j = 0; j < 4; j++)
+                {
+                    var category = "";
+                    switch (j)
+                    {
+                        case 0:
+                            category = "钻石卡";
+                            break;
+                        case 1:
+                            category = "铂金卡";
+                            break;
+                        case 2:
+                            category = "黄金卡";
+                            break;
+                        case 3:
+                            category = "保养3送1";
+                            break;
+                    }
+                    <td>
+                        <select class="oil">
+                            <option value="">-请选择机油品牌-</option>
+                            @foreach (var item in Model.Item2)
+                            {
+                                foreach (var config in Model.Item1)
+                                {
+                                    if (string.IsNullOrWhiteSpace(config.Brands))
+                                    {
+                                        config.Brands = ",,";
+                                    }
+                                }
+                                <option value="@item" selected="@(Model.Item1.Any(C => C.YearCardType == category && C.Brands.Split(',')[i] == item) ? "selected" : null)">@item</option>
+                            }
+                        </select>
+                    </td>
+                }
+            </tr>
+        }
+        <tr id="Icon">
+            <td>年卡图标：</td>
+            @for (var i = 0; i < 4; i++)
+            {
+                var category = "";
+                switch (i)
+                {
+                    case 0:
+                        category = "钻石卡";
+                        break;
+                    case 1:
+                        category = "铂金卡";
+                        break;
+                    case 2:
+                        category = "黄金卡";
+                        break;
+                    case 3:
+                        category = "保养3送1";
+                        break;
+                }
+                <td>
+                    <img id="Icon_@category" 
+                         src="@{ var firstOrDefault = Model.Item1.FirstOrDefault(p => p.YearCardType == category);
+                                 if (firstOrDefault != null)
+                                 {
+                                  @firstOrDefault.Icon
+                                 }
+                              }"
+                         style="width: 150px; height: 150px;
+                         display: @{ var yearCardConfig = Model.Item1.FirstOrDefault(p => p.YearCardType == category);
+                                     @(yearCardConfig != null && yearCardConfig.Icon != "" ? null : "none")
+                                  }" /><br>
+                    <input style='width: 150px;' type='file' class='UploadImg' name='UploadIcon_@category' onchange="ShowImg(this)" id="UploadIcon_@category"/>
+                </td>
+            }
+        </tr>
+        <tr id="PanelImage">
+            <td>年卡背景图：</td>
+            @for (var i = 0; i < 4; i++)
+            {
+                var category = "";
+                switch (i)
+                {
+                    case 0:
+                        category = "钻石卡";
+                        break;
+                    case 1:
+                        category = "铂金卡";
+                        break;
+                    case 2:
+                        category = "黄金卡";
+                        break;
+                    case 3:
+                        category = "保养3送1";
+                        break;
+                }
+                <td>
+                    <img id="PanelImage_@category" 
+                         src="@{ var firstOrDefault = Model.Item1.FirstOrDefault(p => p.YearCardType == category);
+                                 if (firstOrDefault != null)
+                                 {
+                                   @firstOrDefault.PanelImage
+                                 }
+                              }" 
+                         style="width: 150px; height: 150px; 
+                         display: @{ var yearCardConfig = Model.Item1.FirstOrDefault(p => p.YearCardType == category);
+                                     @(yearCardConfig != null && yearCardConfig.PanelImage != "" ? null : "none")
+                                   }"/><br>
+                    <input style='width: 150px;' type='file' class='UploadImg' name='UploadPanelImage_@category' onchange="ShowImg(this)" id="UploadPanelImage_@category"/>
+                </td>
+            }
+        </tr>
+    </table>
+    <div><input type="button" value="保存" onclick="SaveYearCardConfig()" style="cursor: pointer; margin: 20px auto 18px auto; display: inherit;"></div>
+</div>
+<script type="text/javascript">
+    function ShowImg(o) {
+        var item = $(o);
+        var newFileUpload = "<input style='width: 150px;' type='file' class='UploadImg' name='" + item.attr("name")
+            + "' onchange='ShowImg(this)' id='" + item.attr("id") + "'/>";
+        if (!confirm("是否确认上传图片?")) {
+            item.parent().append(newFileUpload);
+            item.remove();
+            return false;
+        }
+        //var filePath = $e.val();
+        var filePath = item.val();
+        // 获取“.”位置
+        var extStart = filePath.lastIndexOf(".");
+        // 获取文件格式后缀，并全部大写
+        var ext = filePath.substring(extStart, filePath.length).toUpperCase();
+        // 判断文件格式
+        if (ext != ".BMP" && ext != ".PNG" && ext != ".JPG" && ext != ".JPEG") {
+            alert("图片仅限于.BMP .PNG .JPG .JPEG文件。");
+            item.parent().append(newFileUpload);
+            item.remove();
+            return false;
+        } else if (filePath.length >= 20) {
+            alert("上传的图片名称过长，请修改。");
+            item.parent().append(newFileUpload);
+            item.remove();
+            return false;
+        } else {
+            $.ajaxFileUpload({
+                url: '/BaoYangYearCard/ImageUploadToAli',
+                secureuri: false,
+                fileElementId: item.attr("id"),
+                dataType: 'json',
+                success: function(result) {
+                    if (result.Image !== "" && result.Image !== null) {
+                        alert(result.Msg);
+                        var imgId = item.attr("name").replace("Upload", "");
+                        $("#" + imgId).show();
+                        $("#" + imgId).attr("src", result.Image);
+                    } else {
+                        alert(result.Msg);
+                        return;
+                    }
+                }
+            });
+        }
+    }
+
+    function SaveYearCardConfig() {
+        var parameters = new Array();
+        var tableId = document.getElementById("configTable");
+        var cellLength = tableId.rows.item(0).cells.length;
+        for (var i = 1; i < cellLength; i++) {
+            var tableObj = new Object();
+            tableObj.YearCardType = $("#Category").children().eq(i).text();
+            var brand1 = $("#Brand0").children().eq(i).children().val();
+            var brand2 = $("#Brand1").children().eq(i).children().val();
+            var brand3 = $("#Brand2").children().eq(i).children().val();
+            if (brand1 == "" || brand2 == "" || brand3 == "") {
+                alert("机油品牌不能为空！");
+                return;
+            }
+            tableObj.Brands = brand1 + "," + brand2 + "," + brand3;
+            var icon = $("#Icon").children().eq(i).children().attr("src");
+            var panelImage = $("#PanelImage").children().eq(i).children().attr("src");
+            if (icon == null || icon == "") {
+                alert("请上传年卡图标！");
+                return;
+            }
+            if (panelImage == null || panelImage == "") {
+                alert("请上传年卡背景图！");
+                return;
+            }
+            tableObj.Icon = icon;
+            tableObj.PanelImage = panelImage;
+            parameters.push(tableObj);
+        }
+        var configObj = JSON.stringify(parameters);
+        if (!confirm("是否确认提交？")) {
+            return;
+        }
+        $.post("AddOrUpdateYearCardConfig", { configObj: configObj }, function(data) {
+            if (data.Status) {
+                alert("保存成功！");
+                RefreshData();
+            } else {
+                alert("保存失败！");
+            }
+        });
+    }
+
+    function RefreshData() {
+        $.post("UpdateBaoYangYearcardConfig", function(data) {
+            alert(data.Msg);
+        });
+    }
+</script>
+

@@ -1,0 +1,192 @@
+﻿    .workspace *{
+        line-height:24px;
+        margin:0px;
+        padding:0px;
+    }
+    .workspace .title{
+        font-weight:bolder;
+        font:24px arial;
+    }
+    .workspace {
+        border: solid 0px blue;
+        position: relative;
+        display: block;
+        margin: 16px;
+    }
+    table.workspace {
+        display:table;
+        margin: 0px;
+    }
+    .workspace .opt{
+        margin:2px 12px 2px 12px;
+    }
+    .workspace textarea{
+        width:100%;
+        height:200px;
+    }
+    .workspace input{
+        line-height:12px;
+    }
+    .workspace table{
+        border:solid 1px silver;
+    }
+    .workspace tr{
+        height:32px;
+    }
+    .workspace td{
+        border:solid 1px silver;
+        padding:4px;
+        height:32px;
+    }
+    .workspace td.col{
+        color:white;
+        line-height:24px;
+        background:#5C87B2;
+        min-width:100px;
+    }
+    input[type=button]{
+        padding:4px;
+    }
+/****************************************************************************************************/
+    .overlay{
+        position:fixed;
+        top:0px;
+        left:0px;
+        right:0px;
+        bottom:0px;
+        opacity:0.3;
+        background-color:black;
+    }
+    .overlaybox{
+        position:fixed;
+        bottom:5%;
+        left:200px;
+        right:200px;
+        max-height:600px;
+        border:solid 1px lightblue;
+        border-radius:12px;
+        background:white;
+        overflow-x:hidden;
+        overflow-y:auto;
+        padding:0;
+        margin:0;
+    }
+/****************************************************************************************************/
+    .formeditor{
+        position:relative;
+        width:100%;
+        
+    }
+    .formeditor form{
+        margin:0;
+        padding:0;
+    }
+    .formeditor table,.formeditor tr,.formeditor td{
+        border:solid 0px blue;
+    }
+    .formeditor .editors{
+        position:relative;
+        top:5%;
+        left:5%;
+        width:90%;
+        line-height:24px;
+    }
+    .formeditor .title{
+        font-weight:bolder;
+        margin-bottom:24px;
+        border:solid 0px blue;
+        background:#5C87B2;
+        width:100%;
+    }
+    .formeditor .title .content{
+        font:24px arial;
+        font-weight:bold;
+        line-height:40px;
+        color:white;
+        margin-left:6px;
+    }
+    .formeditor .title .toolbar{
+        float:right;
+        border:solid 0px red;
+        padding:0;
+        margin:0;
+        line-height:40px;
+    }
+    .formeditor .title .toolbar a{
+        padding:6px 12px;
+        background:white;
+        font:12px arial;
+        line-height:24px;
+        color:black;
+        margin:0px 6px 0px 6px;
+        border:solid 1px lightblue;
+        border-radius:12px;
+    }
+    .formeditor .formbody{
+        position:relative;
+        max-height:500px;
+        overflow:auto;
+        border:solid 0px red;
+    }
+    .formeditor .editors{
+        height:90%;
+    }
+    .formeditor .editors table{
+        width:100%;
+    }
+    .formeditor .editors table .label{
+        text-align:right;
+        width:100px;
+        font-weight:bolder;
+    }
+    .formeditor .editors table input{
+        width:100%;
+        border:solid 1px silver;
+        outline:none;
+        outline-width:0px;
+        line-height:18px;
+        padding:4px;
+        border-radius:12px;
+    }
+    .formeditor .editors table input[type=file]{
+        width:86px;
+    }
+    .formeditor .editors table input.urlbox{
+        width:50%;
+    }
+    .formeditor .editors table .short input{
+        width:200px;
+        margin-right:6px;
+    }
+
+     .formeditor .editors table .shorth5 input{
+        width:700px;
+        margin-right:6px;
+    }
+      .formeditor .editors table .shorth5 input[type=button]{
+        width:150px;
+        margin-right:6px;
+    }
+
+    .formeditor .editors table .short input[type=button] {
+        width:50px;
+    }
+    .formeditor .editors table .hint{
+        color:darkred;
+    }
+    .formeditor .editors table .error{
+        border:solid 1px red;
+    }
+    .formeditor .cmd{
+        text-align:center;
+        margin-top:12px;
+    }
+    .formeditor .cmd a{
+        padding:12px;
+        margin-right:12px;
+        margin-left:12px;
+        text-decoration:none;
+        color:black;
+        border:solid 1px gray;
+        background:silver;
+    }

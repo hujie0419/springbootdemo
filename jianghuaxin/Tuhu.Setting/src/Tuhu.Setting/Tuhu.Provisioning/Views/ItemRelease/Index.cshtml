@@ -1,0 +1,803 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@model List<string>
+    @{
+        ViewBag.Title = "途虎发布管理平台";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+
+    @section head{
+        <link href="~/Content/sweetalert/sweetalert.css" rel="stylesheet" />
+        <style>
+            .title {
+                float: left;
+            }
+
+            .content {
+                clear: both;
+            }
+
+            .condition .name {
+                font-size: 16px;
+                font-weight: bold;
+                left: 0;
+            }
+
+            .right {
+                margin-left: 35px;
+            }
+
+            .condition {
+                margin-bottom: 10px;
+            }
+
+                .condition > div {
+                    margin-bottom: 10px;
+                }
+
+
+
+                    .condition > div label input[type=text] {
+                        width: 50px;
+                    }
+
+            button.select, button.add {
+                width: 200px;
+                height: 30px;
+            }
+
+            table td, table th {
+                text-align: center;
+            }
+
+            #AddItem p, #UpdateOrAddItem p {
+                font-size: 17px;
+                font-weight: bolder;
+            }
+
+            #AddItem div, #UpdateOrAddItem div {
+                margin-bottom: 15px;
+            }
+
+            #AddItem span, #UpdateOrAddItem span {
+                font-weight: bolder;
+            }
+
+            #AddItem input[type=text], #UpdateOrAddItem input[type=text] {
+                width: 400px;
+            }
+
+            .pattern_list {
+                list-style-type: none;
+            }
+
+            .brand_t {
+                color: red;
+                font-size: 17px;
+            }
+
+            .pattern_t {
+                margin-left: 12px;
+                font-size: 17px;
+            }
+
+            .error {
+                color: red;
+                display: none;
+            }
+
+            .overlay {
+                display: block;
+                position: fixed;
+                width: 100%;
+                height: 100%;
+                background-color: #999;
+                opacity: 0.3;
+                top: 0px;
+                left: 0px;
+                right: 0px;
+                bottom: 0px;
+            }
+
+            .faild-dialog-container {
+                width: 360px;
+                border: 1px solid #ccc;
+                border-radius: 20px;
+                background-color: #eee;
+                margin: auto;
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                right: 0;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .faild-dialog-container {
+                height: 240px;
+            }
+
+                .faild-dialog-container > div {
+                    padding: 10px;
+                }
+
+                .faild-dialog-container a {
+                    display: block;
+                    width: 50px;
+                    height: 30px;
+                    text-align: center;
+                    line-height: 30px;
+                    color: #666;
+                    text-decoration: none;
+                    cursor: pointer;
+                }
+
+                .faild-dialog-container textarea {
+                    width: 100%;
+                    height: 50px;
+                    resize: none;
+                }
+        </style>
+    }
+    <div class="title">
+        <h2>途虎发布管理平台</h2>
+    </div>
+    <div class="content">
+        <div class="condition">
+            <div>
+                <span class="name">
+                    发布项：
+                </span>
+                <span class="ItemList">
+
+
+                    @foreach (var item in @Model)
+                    {
+                        <label><input type="checkbox" value="@item" />@item</label>
+                    }
+
+                </span>
+
+
+            </div>
+            <div>
+                <span class="name">开发者：</span>
+                <input type="text" name="Developer" value="" />
+            </div>
+            <div>
+                <span class="name">测试者：</span>
+                <input type="text" name="Tester" value="" />
+            </div>
+            <div>
+                <span class="name">验收者：</span>
+                <input type="text" name="Checker" value="" />
+            </div>
+            <div>
+                <span class="name">发布时间：</span>
+                <input type="text" class="Wdate" name="Date" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd'})" onfocus="$(this).next().hide()" id="Date" readonly value="" />
+            </div>
+
+            <div>
+                <span>发布状态：</span>
+                <select class="releasestatus">
+                    <option value="-1">全部</option>
+                    <option value="0">进行中</option>
+                    <option value="1">已完成</option>
+                    <option value="2">取消发布</option>
+                </select>
+            </div>
+            <button class="select" onclick="Func.LoadList(1)">查询</button>
+            <button class="add" style="float:right;" onclick="Func.AddArticle()">增加</button>
+        </div>
+        <div class="beforetable">
+            每页显示：
+            <select class="PageSize">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>条
+            <span class="data_count"></span>
+        </div>
+        <img class="loadimg" src="~/Scripts/layer/skin/default/loading-2.gif" style="margin:5% 50%;display:none;" />
+        <div class="list">
+        </div>
+
+    </div>
+    <div id="AddItem" style="display:none;">
+        <p>发布信息</p>
+        <div>
+            <span class="ItemList">
+                发布项：
+
+                @foreach (var item in @Model)
+            {
+                    <label><input type="checkbox" value=@item />@item</label>
+                }
+            </span>
+            <span class="error">请填写发布项</span>
+        </div>
+        <div>
+            <span>发布内容：</span>
+            <textarea class="des-add" onfocus="$(this).next().hide()"></textarea>
+            <span class="error">请填写发布内容</span>
+        </div>
+        <div>
+            <span>开发者：</span>
+            <input type="text" name="name" onfocus="$(this).next().hide()" class="developer-add" value="" />
+            <span class="error">请填写开发者</span>
+        </div>
+        <div>
+            <span>测试者：</span>
+            <input type="text" name="name" onfocus="$(this).next().hide()" class="tester-add" value="" />
+            <span class="error">请填写测试者</span>
+        </div>
+        <div>
+            <span>验收者：</span>
+            <input type="text" name="name" onfocus="$(this).next().hide()" class="checker-add" value="" />
+            <span class="error">请填写验收者</span>
+        </div>
+        <div>
+            <span>发布时间：</span>
+            <input type="text" class="Wdate" name="Date" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd'})" onfocus="$(this).next().hide()" id="Date1" readonly value="" />
+            <span class="error">请选择发布时间</span>
+        </div>
+
+
+
+    </div>
+
+    <div id="UpdateOrAddItem" style="display:none;">
+        <p>发布信息</p>
+
+        <div>
+            <div>
+                <span>
+                    发布项：
+                </span>
+                <input type="text" name="name" onfocus="$(this).next().hide()" class="checkedItems" value="" disabled="disabled" />
+            </div>
+            <span class="error">请填写发布项</span>
+        </div>
+        <div>
+            <span>发布内容：</span>
+            <textarea class="des-update" onfocus="$(this).next().hide()"></textarea>
+            <span class="error">请填写发布内容</span>
+        </div>
+        <div>
+            <span>开发者：</span>
+            <input type="text" class="developer-update" onfocus="$(this).next().hide()" />
+            <span class="error">请填写开发者</span>
+        </div>
+        <div>
+            <span>测试者：</span>
+            <input type="text" name="name" onfocus="$(this).next().hide()" class="tester-update" value="" />
+            <span class="error">请填写测试者</span>
+        </div>
+        <div>
+            <span>验收者：</span>
+            <input type="text" name="name" onfocus="$(this).next().hide()" class="checker-update" value="" />
+            <span class="error">请填写验收者</span>
+        </div>
+        <div>
+            <span>发布时间：</span>
+            <input type="text" class="Wdate" name="Date2" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd'})" onfocus="$(this).next().hide()" id="Date2" readonly value="" />
+            <span class="error">请选择发布时间</span>
+        </div>
+        <div>
+            <span>不发布原因：</span>
+            <textarea class="des-concel" onfocus="$(this).next().hide()"></textarea>
+            <span class="error">请填写不发布原因</span>
+        </div>
+
+    </div>
+    @section scripts{
+        <div id="faildDialog" style="display: none;">
+            <div class="overlay">
+
+            </div>
+
+            <div class="faild-dialog-container">
+                <div>温馨提醒</div>
+                <div>
+                    请填写无需发布的原因。
+                </div>
+                <div>
+                    <textarea id="reason"></textarea>
+                </div>
+                <div>
+                    <a id="btnFaildOk" style="float: left">确认</a><a id="btnFaildCannel" style="float: right">取消</a>
+                    <div class="clear"></div>
+                </div>
+            </div>
+        </div>
+        <script src="~/Content/sweetalert/sweetalert.js"></script>
+        <script src="~/Scripts/ajaxfileupload.js"></script>
+        <script type="text/javascript" src="~/Scripts/My97DatePicker/WdatePicker.js"></script>
+        <script>
+            Array.prototype.in_array = function (e) {
+                for (i = 0; i < this.length && this[i] != e; i++);
+                return !(i == this.length);
+            }
+            $(function () {
+                //var datetime = Date.now.toString("yyyy-MM-dd");
+                //$("#Date.Wdate").val(datetime);
+
+                // SetDateTime();
+                $('#Date').val(Func.SetDateTime());
+
+                Func.LoadList(1);
+
+                $(".brand").on("change", function () {
+                    var $target = $(this);
+                    var brand = $target.find("option:selected").val();
+                    $(".pattern").html('<option value="">所有</option>');
+                    if (brand.length) {
+                        $.get("/Tire/GetPatternsByBrand", { brand: brand }, function (data) {
+                            if (data && data.length) {
+                                $.each(data, function (i, v) {
+                                    $(".pattern").append('<option value="' + v + '">' + v + '</option>');
+                                });
+                            }
+                        });
+                    }
+                });
+                $(".dialog_brand").on("change", function () {
+                    var $target = $(this);
+                    var $list = $target.prev();
+                    var brand = $target.find("option:selected").val();
+                    var patterns = [];
+                    if ($list.length) {
+                        $list.find("li").each(function () {
+                            if ($(this).find(".brand_t").text() == brand)
+                                patterns = $(this).find(".pattern_t").text().split(',');
+
+                        });
+                    }
+                    $(".pattern_pool").empty();
+                    if (brand.length) {
+                        $.get("/Tire/GetPatternsByBrand", { brand: brand }, function (data) {
+                            if (data && data.length) {
+                                $.each(data, function (i, v) {
+                                    if (patterns.length && patterns.in_array(v))
+                                        $(".pattern_pool").append('<label><input type="checkbox" name="name" checked value="' + v + '" />' + v + '</label>');
+                                    else
+                                        $(".pattern_pool").append('<label><input type="checkbox" name="name" value="' + v + '" />' + v + '</label>');
+                                });
+                                $(".pattern_pool").append('<button onclick="Func.SelectPattern(this)">确定</button>')
+                            }
+                        });
+                    }
+                });
+                //浏览其他页
+                $(".list").on("click", ".pager>a", function (event) {
+                    event.preventDefault();
+                    var url = $(this).attr("href");
+                    if (url) {
+                        $.post(url, function (html, status) {
+                            if (status === "success") {
+                                $(".list").html(html);
+                            }
+                        });
+                    }
+                })
+                //时间选择控件
+                //$("#Date").datepicker({
+                //    dateFormat: "yy-mm-dd",
+                //    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+                //});
+                //$("#Date2").datepicker({
+                //    dateFormat: "yy-mm-dd",
+                //    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+                //});
+                //$('#Date').dateSelect();
+                //$('#Date2').dateSelect();
+                //每页条数切换
+                $(".PageSize").change(function () {
+                    Func.LoadList(1);
+                });
+
+                var ids = ["faildDialog", "reason", "btnFaildOk", "btnFaildCannel"];
+                var elements = {
+                };
+                for (var key in ids) {
+                    elements[ids[key]] = $("#" + ids[key]);
+                }
+                var events = {
+                    Audit: function (el, reason) {
+                        var pkid = el.data("pkid");
+                        var status = el.data("status");
+                        $.ajax({
+                            url: "/ItemRelease/ItemReleaseAudit",
+                            type: "POST",
+                            data: {
+                                pkid: pkid,
+                                status: status,
+                                reason: reason
+                            },
+                            dataType: 'json',
+                            success: function (data) {
+                                if (data.Code === 1) {
+                                    alert("操作成功");
+                                    Func.LoadList(1);
+                                } else {
+                                    alert("操作失败");
+                                }
+                            }
+                        });
+                    },
+                    toggleDialog: function () {
+                        elements.reason.val('');
+                        if (elements.faildDialog.is(":visible")) {
+                            elements.faildDialog.hide();
+                        } else if (elements.faildDialog.is(":hidden")) {
+                            elements.faildDialog.show();
+                        }
+                    }
+                };
+
+                $("div.list").delegate("a[name=operate]",
+                    "click",
+                    function () {
+                        var el = $(this);
+                        var status = el.data("status");
+                        //需要填写原因
+                        if (status == 2) {
+                            elements.btnFaildOk.unbind().bind("click",
+                                function () {
+                                    var resonText = elements.reason.val();
+                                    if (resonText === '') {
+                                        alert("请输入原因");
+                                    } else {
+                                        events.Audit(el, resonText);
+                                        events.toggleDialog();
+                                    }
+
+                                });
+                            events.toggleDialog();
+                        } else {
+                            if (confirm("是否确认已完成发布")) {
+                                events.Audit(el, '');
+                            }
+                        }
+                    });
+                elements.btnFaildCannel.on("click", events.toggleDialog);
+            });
+
+        </script>
+        <script>
+            var Func = {
+                SetDateTime: function () {
+                    var now = new Date();
+
+                    var day = ("0" + now.getDate()).slice(-2);
+                    var month = ("0" + (now.getMonth() + 1)).slice(-2);
+
+                    var today = now.getFullYear() + "-" + (month) + "-" + (day);
+
+                    return today;
+
+                },
+
+                LoadList: function (index) {
+                    var ItemList = '',
+                        $checkeds = $(".ItemList").find("[type=checkbox]:checked");
+                    if ($checkeds.length) {
+                        $checkeds.each(function () {
+                            ItemList += $(this).val() + '|';
+                        })
+                    }
+
+
+
+                    var Name = ItemList.trim('|'),
+                        Developer = $("[name=Developer]").val().trim(),
+                        Tester = $("[name=Tester]").val().trim(),
+                        Checker = $("[name=Checker]").val().trim(),
+                        ReleaseTime = $("[name=Date]").val().trim(),
+
+                        Status = $("select.releasestatus>option:selected").val(),
+                        pageSize = $(".PageSize>option:selected").val();
+
+
+                    $.get("/ItemRelease/ReleaseItemList", {
+                        Name: Name,
+                        Developer: Developer,
+                        Tester: Tester,
+                        Checker: Checker,
+
+                        Status: Status,
+                        ReleaseTime: ReleaseTime,
+                        pageSize: pageSize,
+                        pageIndex: index
+                    }, function (html, status) {
+                        if (status === "success") {
+                            $(".loadimg").hide();
+                            $(".list").html(html);
+                            $(".data_count").text('共' + ($("table").length ? $("table").attr("data-count") : 0) + '条数据');
+                        }
+                    });
+                },
+                AddArticle: function () {
+                    $("#AddItem").dialog({
+                        title: "添加",
+                        width: 800,
+                        height: 700,
+                        modal: true,
+                        buttons: {
+                            "保存": function () {
+                                var dialog = $(this);
+                                var ItemList = '',
+                                    $checkeds = $(".ItemList").find("[type=checkbox]:checked");
+                                if ($checkeds.length) {
+                                    $checkeds.each(function () {
+                                        ItemList += $(this).val() + '|';
+                                    })
+                                }
+                                Name = ItemList,
+                                    Content = dialog.find(".des-add").val().trim(),
+                                    Developer = dialog.find(".developer-add").val().trim(),
+                                    Tester = dialog.find(".tester-add").val().trim(),
+                                    Checker = dialog.find(".checker-add").val().trim(),
+                                    ReleaseTime = dialog.find("#Date1").val(),
+                                    Reason = 0,
+                                    flag = true
+
+
+                                if (!Name.length) {
+                                    dialog.find(".ItemList").parent().find(".error").show();
+                                    flag = false;
+                                }
+                                if (!Content.length) {
+                                    dialog.find(".des-add").parent().find(".error").show();
+                                    flag = false;
+                                }
+                                if (!Developer.length) {
+                                    dialog.find(".developer-add").parent().find(".error").show();
+                                    flag = false;
+                                }
+                                if (!Tester.length) {
+                                    dialog.find(".tester-add").parent().find(".error").show();
+                                    flag = false;
+                                }
+                                if (!Checker.length) {
+                                    dialog.find(".checker-add").parent().find(".error").show();
+                                    flag = false;
+                                }
+                                if (!ReleaseTime.length) {
+                                    dialog.find("#Date1").parent().find(".error").show();
+                                    flag = false;
+                                }
+
+                                if (flag) {
+                                    $.post("/ItemRelease/SaveAddReleaseItemModel", {
+                                        Name: Name,
+                                        Content: Content,
+                                        Developer: Developer,
+                                        Tester: Tester,
+                                        Checker: Checker,
+                                        Reason: '',
+                                        ReleaseTime: ReleaseTime,
+                                        Status: 0
+                                    }, function (result) {
+                                        if (result > 0) {
+                                            swal({
+                                                title: "保存成功！"
+                                            },
+                                                function () {
+                                                    // dialog.dialog("close");
+                                                    // Func.LoadList($(".list .pager>a.current").text());
+                                                    window.location.reload();
+                                                });
+                                        }
+                                        else
+                                            swal("保存失败!");
+                                    });
+
+
+                                }
+
+                            },
+                            "关闭": function () {
+                                $(this).dialog("close"); //当点击取消按钮时，关闭窗口
+                            }
+                        }
+                    });
+                },
+                SelectPattern: function (target) {
+                    var $target = $(target),
+                        $parent = $target.parent(),
+                        $list = $parent.parent().find(".pattern_list"),
+                        $lis = $list.find("li"),
+                        $checkeds = $parent.find("input:checked");
+                    var brand = $parent.parent().find(".dialog_brand option:selected").val(),
+                        patterns = [];
+                    $checkeds.each(function () {
+                        patterns.push($(this).val());
+                    });
+                    if (patterns.length)
+                        $(".pattern-error").hide();
+                    if ($lis.length) {
+                        var $temp;
+                        $lis.each(function () {
+                            if ($(this).find(".brand_t").text() == brand)
+                                $temp = $(this);
+                        })
+                        if ($temp && $temp.length) {
+                            if (patterns.length)
+                                $temp.find(".pattern_t").text(patterns.join(','));
+                            else
+                                $temp.remove();
+                        }
+                        else {
+                            if (patterns.length)
+                                $list.append('<li><span class="brand_t">' + brand + '</span><span class="pattern_t">' + patterns.join(',') + '</span></li>');
+                        }
+                    }
+                    else {
+                        if (patterns.length)
+                            $list.append('<li><span class="brand_t">' + brand + '</span><span class="pattern_t">' + patterns.join(',') + '</span></li>')
+                    }
+                },
+                UploadImage: function (target) {
+                    var $target = $(target);
+                    var $img = $target.prev();
+                    var now = new Date().getTime();
+                    $target.attr("id", now);
+                    $target.attr("name", now);
+                    if ($target.val().split('.')[1].toUpperCase() != "JPG"
+                        && $target.val().split('.')[1].toUpperCase() != "JPEG"
+                        && $target.val().split('.')[1].toUpperCase() != "GIF"
+                        && $target.val().split('.')[1].toUpperCase() != "PNG"
+                        && $target.val().split('.')[1].toUpperCase() != "BMP") {
+                        swal("格式错误", "支持jpg、jpeg、gif、png、bmp", "error");
+                        return false;
+                    }
+                    $target.next().hide();
+                    $.ajaxFileUpload(
+                        {
+                            url: '/WebSiteHomeAd/ImageUploadToAli',
+                            secureuri: false,
+                            fileElementId: now,
+                            async: false,
+                            dataType: 'text',
+                            data: { filepath: "/Tire/PatternArticle/" },
+                            success: function (src) {
+                                if (src != null) {
+                                    $img.attr("src", "http://image.tuhu.cn" + src).attr("data-src", src);
+                                }
+                                else
+                                    swal("上传失败！");
+                            }
+                        });
+
+                },
+                UpdateOrAdd: function (json) {
+                    json = JSON.parse(json);
+
+                    //赋值
+
+                    $("#UpdateOrAddItem").find(".checkedItems").val(json.Name);
+
+                    $("#UpdateOrAddItem").find(".des-update").val(json.Content);
+                    $("#UpdateOrAddItem").find(".developer-update").val(json.Developer);
+                    $("#UpdateOrAddItem").find(".tester-update").val(json.Tester);
+
+                    $("#UpdateOrAddItem").find(".checker-update").val(json.Checker);
+                    $("#UpdateOrAddItem").find("#Date2").val(json.ReleaseTime);
+                    $("#UpdateOrAddItem").find(".des-concel").val(json.Reason);
+
+
+
+                    $("#UpdateOrAddItem").dialog({
+                        title: "修改",
+                        width: 800,
+                        height: 600,
+                        modal: true,
+                        buttons: {
+                            "保存": function () {
+                                var dialog = $(this);
+
+                                var Name = json.Name,
+                                    PKID = json.PKID,
+                                    Status = json.Status,
+                                    Content = dialog.find(".des-update").val().trim(),
+                                    Developer = dialog.find(".developer-update").val().trim(),
+                                    Tester = dialog.find(".tester-update").val().trim(),
+                                    Checker = dialog.find(".checker-update").val().trim(),
+                                    ReleaseTime = dialog.find("#Date2").val(),
+                                    Reason = dialog.find(".des-concel").val().trim()
+
+                                flag = true;
+
+
+
+                                if (!Content.length) {
+                                    dialog.find(".des-update").parent().find(".error").show();
+                                    flag = false;
+                                }
+                                if (!Developer.length) {
+                                    dialog.find(".developer-update").parent().find(".error").show();
+                                    flag = false;
+                                }
+                                if (!Tester.length) {
+                                    dialog.find(".tester-update").parent().find(".error").show();
+                                    flag = false;
+                                }
+                                if (!Checker.length) {
+                                    dialog.find(".checker-update").parent().find(".error").show();
+                                    flag = false;
+                                }
+                                if (!ReleaseTime.length) {
+                                    dialog.find("#Date2").parent().find(".error").show();
+                                    flag = false;
+                                }
+
+                                if (flag) {
+                                    $.post("/ItemRelease/UpdateReleaseItemModel", {
+                                        PKID: PKID,
+                                        Name: Name,
+                                        Content: Content,
+                                        Developer: Developer,
+                                        Tester: Tester,
+                                        Checker: Checker,
+
+                                        Reason: Reason,
+                                        ReleaseTime: ReleaseTime
+                                    }, function (result) {
+                                        if (result > 0) {
+                                            swal({
+                                                title: "更新成功！"
+                                            },
+                                                function () {
+                                                    // dialog.dialog("close");
+                                                    // Func.LoadList($(".list .pager>a.current").text());
+                                                    window.location.reload();
+                                                });
+                                        }
+                                        else
+                                            swal("更新失败!");
+                                    });
+
+
+                                }
+
+                            },
+                            "关闭": function () {
+                                $(this).dialog("close"); //当点击取消按钮时，关闭窗口
+                            }
+                        }
+                    });
+                },
+                Delete: function (pkid) {
+                    if (pkid > 0) {
+                        swal({
+                            title: "确认删除？",
+                            type: "warning",//图标
+                            showCancelButton: true,//是否展示取消按钮
+                            confirmButtonColor: "#DD6B55",//确认按钮颜色
+                            confirmButtonText: "确认!",//确认按钮的文本
+                            cancelButtonText: "取消",//取消按钮的文本
+                            closeOnConfirm: true,//点击确认按钮后是否关闭窗口
+                            closeOnCancel: true,//点击取消按钮后是否关闭窗口
+                        },
+                            function () {
+                                $.post("/ItemRelease/DeleteReleaseItemModel", { PKID: pkid }, function (result) {
+                                    if (result > 0) {
+                                        swal("删除成功！");
+                                        window.location.reload();
+                                    }
+                                    else {
+                                        swal("删除失败！");
+                                    }
+                                });
+                            });
+                    }
+
+                },
+            };
+
+        </script>
+    }

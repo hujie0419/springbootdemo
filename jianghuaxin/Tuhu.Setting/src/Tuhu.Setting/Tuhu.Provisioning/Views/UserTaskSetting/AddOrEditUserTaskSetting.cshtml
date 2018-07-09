@@ -1,0 +1,459 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@model Tuple<UserTaskSettingModel,List<TaskCompleteCondition>>
+@{
+    Layout = null;
+}
+<form id="form1" name="form1" enctype="multipart/form-data" method="post" action=UserInfo.html>
+    <input type="file" id="file" name="file" style="display:none" />
+</form>
+<table>
+    <tr>
+        <th width="100%" style="text-align:left;" colspan="2">任务编辑</th>
+    </tr>
+    <tr>
+        <td>
+            <table>
+                <tr>
+                    <td>*任务名称:</td>
+                    <td><input type="text" name="TaskName" maxlength="8" placeholder="8个字以内" value="@Model.Item1.TaskName" /></td>
+                    </tr>
+                    <tr>
+                    <td>*任务说明:</td>
+                    <td><input type="text" name="TaskDescription" maxlength="18" placeholder="18个字以内" value="@Model.Item1.TaskDescription" style="width:500px;" /></td>
+                    </tr>
+
+                    <tr>
+                    <td>按钮链接:</td>
+                    <td><input type="text" name="TargetButtonUrl" value="@Model.Item1.TargetButtonUrl" style="width:500px;" /></td>
+                    </tr>
+                    <tr>
+                    <td>按钮文案:</td>
+                    <td><input type="text" name="TargetButtonDescription" maxlength="6" placeholder="6个字以内" value="@Model.Item1.TargetButtonDescription" /></td>
+                    </tr>
+                    <tr>
+                    <td>任务图片：</td>
+                    <td>
+                    <img height="40" src="@Model.Item1.ImageUrl" id="ImageUrl"  style="width:200px;height:100px;" /><br/>
+                    <input  type="button" value="上传图片" onclick="UploadImage()"/>
+                    <span class="errormsg headimgerror"></span>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>完成条件Condition_1:</td>
+                    <td>
+                    <select name="Condition_1">
+                    <option >请选择条件</option>
+                    @foreach (var temp in Model.Item2)
+                    {
+                        if (temp.PKID == Model.Item1.Condition_1)
+                        {
+                            <option value="@temp.PKID" selected="selected">@temp.ConditionName</option>
+                        }
+                        else
+                        {
+                            <option value="@temp.PKID">@temp.ConditionName</option>
+                        }
+                    }
+                    </select>
+                    <input type="text" name="Condition_1_Value" value="@Model.Item1.Condition_1_Value" />
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>完成条件Condition_2:</td>
+                    <td>
+                    <select name="Condition_2" disabled>
+                    <option >请选择条件</option>
+                    @foreach (var temp in Model.Item2)
+                    {
+                        if (@temp.PKID == Model.Item1.Condition_2)
+                        {
+                                <option value="@temp.PKID" selected="selected">@temp.ConditionName</option>
+                        }
+                        else
+                        {
+                                <option value="@temp.PKID">@temp.ConditionName</option>
+                        }
+                    }
+                    </select>
+                    <input type="text" name="Condition_2_Value" value="@Model.Item1.Condition_2_Value" disabled/>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>完成条件Condition_3:</td>
+                    <td>
+                    <select name="Condition_3" disabled>
+                    <option>请选择条件</option>
+                    @foreach (var temp in Model.Item2)
+                    {
+                        if (@temp.PKID == Model.Item1.Condition_3)
+                        {
+                                <option value="@temp.PKID" selected="selected">@temp.ConditionName</option>
+                        }
+                        else
+                        {
+                                <option value="@temp.PKID">@temp.ConditionName</option>
+                        }
+                    }
+                    </select>
+                    <input type="text" name="Condition_3_Value" value="@Model.Item1.Condition_3_Value" disabled />
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>完成条件Condition_4:</td>
+                    <td>
+                    <select name="Condition_4" disabled>
+                    <option >请选择条件</option>
+                    @foreach (var temp in Model.Item2)
+                    {
+                        if (@temp.PKID == Model.Item1.Condition_4)
+                        {
+                                <option value="@temp.PKID" selected="selected">@temp.ConditionName</option>
+                        }
+                        else
+                        {
+                                <option value="@temp.PKID">@temp.ConditionName</option>
+                        }
+                    }
+                    </select>
+                    <input type="text" name="Condition_4_Value" value="@Model.Item1.Condition_4_Value"  disabled/>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>完成条件Condition_5:</td>
+                    <td>
+                    <select name="Condition_5" disabled>
+                    <option >请选择条件</option>
+                    @foreach (var temp in Model.Item2)
+                    {
+                        if (@temp.PKID == Model.Item1.Condition_5)
+                        {
+                                <option value="@temp.PKID" selected="selected">@temp.ConditionName</option>
+                        }
+                        else
+                        {
+                                <option value="@temp.PKID">@temp.ConditionName</option>
+                        }
+                    }
+                    </select>
+                    <input type="text" name="Condition_5_Value" value="@Model.Item1.Condition_5_Value"  disabled/>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>*任务进度条件</td>
+                    <td><input type="text" name="ConditionCountValue" value="@Model.Item1.ConditionCountValue"/></td>
+                    </tr>
+                    <tr>
+                    <td>奖励1:</td>
+                    @if (Model.Item1.CouponId_1_Num <= 0 || Model.Item1.CouponId_1 <= 0)
+                    {
+                        <td>优惠券Id:<input type="text" name="CouponId1" />优惠券数量:<input type="text" name="Quantity1" /></td>
+                    }
+                    else
+                    {
+                        <td>优惠券Id:<input type="text" name="CouponId1" value="@Model.Item1.CouponId_1" />优惠券数量:<input type="text" name="Quantity1" value="@Model.Item1.CouponId_1_Num" /></td>
+                    }
+                    </tr>
+                    <tr>
+                    <td>奖励2:</td>
+                    @if (Model.Item1.CouponId_2_Num <= 0 || Model.Item1.CouponId_2 <= 0)
+                    {
+                            <td>优惠券Id:<input type="text" name="CouponId2" />优惠券数量:<input type="text" name="Quantity2" /></td>
+                    }
+                    else
+                    {
+                            <td>优惠券Id:<input type="text" name="CouponId2" value="@Model.Item1.CouponId_2" />优惠券数量:<input type="text" name="Quantity2" value="@Model.Item1.CouponId_2_Num" /></td>
+                    }
+                    </tr>
+                    <tr>
+                    <td>奖励3</td>
+                    @if (Model.Item1.CouponId_3_Num <= 0 || Model.Item1.CouponId_3 <= 0)
+                    {
+                            <td>优惠券Id:<input type="text" name="CouponId3" />优惠券数量:<input type="text" name="Quantity3"  /></td>
+                    }
+                    else
+                    {
+                            <td>优惠券Id:<input type="text" name="CouponId3" value="@Model.Item1.CouponId_3" />优惠券数量:<input type="text" name="Quantity3" value="@Model.Item1.CouponId_3_Num" /></td>
+                    }
+                    </tr>
+                    <tr>
+                    <td>奖励4:</td>
+                    @if (Model.Item1.CouponId_4_Num <= 0 || Model.Item1.CouponId_4 <= 0)
+                    {
+                            <td>优惠券Id:<input type="text" name="CouponId4" />优惠券数量:<input type="text" name="Quantity4" /></td>
+                    }
+                    else
+                    {
+                            <td>优惠券Id:<input type="text" name="CouponId4" value="@Model.Item1.CouponId_4" />优惠券数量:<input type="text" name="Quantity4" value="@Model.Item1.CouponId_4_Num" /></td>
+                    }
+                    </tr>
+                    <tr>
+                    <td>奖励5:</td>
+                    @if (Model.Item1.CouponId_5_Num <= 0 || Model.Item1.CouponId_5 <= 0)
+                    {
+                            <td>优惠券Id:<input type="text" name="CouponId5" />优惠券数量:<input type="text" name="Quantity5" /></td>
+                    }
+                    else
+                    {
+                            <td>优惠券Id:<input type="text" name="CouponId5" value="@Model.Item1.CouponId_5" />优惠券数量:<input type="text" name="Quantity5" value="@Model.Item1.CouponId_5_Num" /></td>
+                    }
+                    </tr>
+                    <tr>
+                    <td>有效期:</td>
+                    <td>
+                    <label><input type="radio" name="ValidTimeType" value="fixed_time" readonly="readonly" checked="checked" />固定有效期</label>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>开始结束时间:</td>
+                    <td><input type="text" style="width:150px" id="BeginTime" readonly="readonly" value="@Model.Item1.StartTime" />-<input type="text" style="width:150px" id="EndTime" readonly="readonly" value="@Model.Item1.EndTime" /><button class="detail_clear" onclick="$(this).prev().val('').prev().val('')">清空</button></td>
+                    </tr>
+                    <tr>
+                    <td>任务标签:</td>
+                    <td>
+                    <label>①<input type="text" name="tag1" value="@Model.Item1.Tag_1" maxlength="2" placeholder="2个字以内" /></label>
+                    <label>②<input type="text" name="tag2" value="@Model.Item1.Tag_2" maxlength="2" placeholder="2个字以内" /></label>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>显示设置:</td>
+                    <td>
+                    <label><input type="radio" name="DisplayType" value="display_within_valid_time" checked="checked" readonly="readonly" />任务有效期内显示</label>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>是否有效:</td>
+                    <td>
+                    <select name="status">
+                    <option value="enable" @(Model.Item1.Status == "enable" ? "selected" : null) >启用</option>
+                    <option value="disable" @(Model.Item1.Status == "disable" ? "selected" : null)>停用</option>
+                    </select>
+                    </td>
+                    </tr>
+                    </table>
+                    </td>
+                    </tr>
+                    </table>
+                    <div class="button" style="display:none;">保存</div>
+                    <input  type="hidden" name="PKID" value="@Model.Item1.PKID"/>
+                    <script>
+                    $(function () {
+                    //时间控件
+                    $("#BeginTime").datetimepicker({
+                    timeFormat: "HH:mm:ss",
+                    dateFormat: "yy-mm-dd",
+                    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+                    });
+                    $("#EndTime").datetimepicker({
+                    timeFormat: "HH:mm:ss",
+                    dateFormat: "yy-mm-dd",
+                    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+                    });
+                    //信息保存
+                    $(".button").click(function () {
+                    $(".tip").remove();
+                    var button = $(this);
+                    button.css("pointer-events", "none");
+
+                    var TaskName = $("[name=TaskName]").val(),//任务名字
+                    TaskDescription = $("[name=TaskDescription]").val(),//任务描述
+                    TargetButtonUrl = $("[name=TargetButtonUrl]").val(),//按钮链接
+                    TargetButtonDescription = $("[name=TargetButtonDescription]").val(),//按钮文案
+                    ValidTimeType = $("[name=ValidTimeType]").val(),//有效期类型暂时都是固定
+                    DisplayType = $("[name=DisplayType]").val(),//任务显示设置
+                    status = $("[name=status]").val(),//是否有效
+                    tag1 = $("[name=tag1]").val(),//标签1
+                    tag2 = $("[name=tag2]").val(),//标签2
+                    BeginTime = $("#BeginTime").val(),
+                    EndTime = $("#EndTime").val(),
+                    Condition_1 = $("[name=Condition_1]").val(),
+                    Condition_2 = $("[name=Condition_2]").val(),
+                    Condition_3 = $("[name=Condition_3]").val(),
+                    Condition_4 = $("[name=Condition_4]").val(),
+                    Condition_5 = $("[name=Condition_5]").val(),
+                    Condition_1_Value = $("[name=Condition_1_Value]").val(),
+                    Condition_2_Value = $("[name=Condition_2_Value]").val(),
+                    Condition_3_Value = $("[name=Condition_3_Value]").val(),
+                    Condition_4_Value = $("[name=Condition_4_Value]").val(),
+                    Condition_5_Value = $("[name=Condition_5_Value]").val(),
+                    CouponId1 = $("[name=CouponId1]").val(),
+                    CouponId2 = $("[name=CouponId2]").val(),
+                    CouponId3 = $("[name=CouponId3]").val(),
+                    CouponId4 = $("[name=CouponId4]").val(),
+                    CouponId5 = $("[name=CouponId5]").val(),
+                    Quantity1 = $("[name=Quantity1]").val(),
+                    Quantity2 = $("[name=Quantity2]").val(),
+                    Quantity3 = $("[name=Quantity3]").val(),
+                    Quantity4 = $("[name=Quantity4]").val(),
+                    Quantity5 = $("[name=Quantity5]").val(),
+                    PKID=$("[name=PKID]").val(),
+                    ImageUrl =$("#ImageUrl").attr("src"),
+                    ConditionCountValue=$("[name=ConditionCountValue]").val()
+                    //校验数据
+                    var tip = "";
+                    var flag = true;//是否可以提交信息
+                    if (!TaskName)
+                    ShowWrongTit($("[name=TaskName]"), '必填');
+                    if (!TaskDescription)
+                    ShowWrongTit($("[name=TaskDescription]"), '必填');
+                    if (!ConditionCountValue)
+                    ShowWrongTit($("[name=ConditionCountValue]"), '必填');
+                    if (!BeginTime)
+                    ShowWrongTit($("#BeginTime"), '必填');
+                    if (!EndTime)
+                    ShowWrongTit($("#EndTime"), '必填');
+                    if (!isNaN(Condition_1)){
+                    if(!Condition_1_Value)
+                    ShowWrongTit($("[name=Condition_1_Value]"), '必填');
+                    }
+                    if (!isNaN(Condition_2)){
+                    if(!Condition_2_Value)
+                    ShowWrongTit($("[name=Condition_2_Value]"), '必填');
+                    }
+                    if (!isNaN(Condition_3)) {
+                    if (!Condition_3_Value)
+                    ShowWrongTit($("[name=Condition_3_Value]"), '必填');
+                    }
+                    if (!isNaN(Condition_4)) {
+                    if (!Condition_4_Value)
+                    ShowWrongTit($("[name=Condition_4_Value]"), '必填');
+                    }
+                    if (!isNaN(Condition_5)) {
+                    if (!Condition_5_Value)
+                    ShowWrongTit($("[name=Condition_5_Value]"), '必填');
+                    }
+                    if (isNaN(Condition_1)&& isNaN(Condition_2)&&isNaN(Condition_3)&&isNaN(Condition_4)&&isNaN(Condition_5)) {
+                    ShowWrongTit($("[name=Condition_1_Value]"), '至少填写一个条件');
+                    }
+
+                    if (!!CouponId1) {
+                    if (!Quantity1)
+                    ShowWrongTit($("[name=Quantity1]"), '必填');
+                    }
+                    if (!!CouponId2) {
+                    if (!Quantity2)
+                    ShowWrongTit($("[name=Quantity2]"), '必填');
+                    }
+                    if (!!CouponId3) {
+                    if (!Quantity3)
+                    ShowWrongTit($("[name=Quantity3]"), '必填');
+                    }
+                    if (!!CouponId4) {
+                    if (!Quantity4)
+                    ShowWrongTit($("[name=Quantity4]"), '必填');
+                    }
+                    if (!!CouponId5) {
+                    if (!Quantity5)
+                    ShowWrongTit($("[name=Quantity5]"), '必填');
+                    }
+                    if (!CouponId1&&!CouponId2&&!CouponId3&&!CouponId4&&!CouponId5) {
+                    ShowWrongTit($("[name=Quantity1]"), '至少填写一个条件');
+                    }
+                    ConditionCountValueCheck = $("[name="+ConditionCountValue+"_Value]").val()
+                    if (!ConditionCountValue||!ConditionCountValueCheck)
+                    ShowWrongTit($("[name=ConditionCountValue]"), '请选择一个已经选择的条件');
+
+                    function ShowWrongTit(target, titText) {
+                    flag = false;
+                    target.after('<span class="tip">' + titText + '</span>');
+                    button.css("pointer-events", "all");
+                    }
+
+                    //信息提交之前的验证
+                    if (flag) {
+                    var r = confirm("是否确定保存信息？");
+                    if (r) {
+                    $.ajax({
+                    url: "/UserTaskSetting/SaveUserTaskSetting",
+                    type: "post",
+                    data: {
+                    PKID:PKID,
+                    TaskName:TaskName,
+                    TaskDescription:TaskDescription,
+                    TargetButtonUrl:TargetButtonUrl,
+                    TargetButtonDescription:TargetButtonDescription,
+                    Condition_1: Condition_1,
+                    Condition_1_Value: Condition_1_Value,
+                    Condition_2: Condition_2,
+                    Condition_2_Value: Condition_2_Value,
+                    Condition_3: Condition_3,
+                    Condition_3_Value: Condition_3_Value,
+                    Condition_4: Condition_4,
+                    Condition_4_Value: Condition_4_Value,
+                    Condition_5: Condition_5,
+                    Condition_5_Value: Condition_5_Value,
+                    CouponId_1: CouponId1,
+                    CouponId_1_Num: Quantity1,
+                    CouponId_2: CouponId2,
+                    CouponId_2_Num: Quantity2,
+                    CouponId_3: CouponId3,
+                    CouponId_3_Num: Quantity3,
+                    CouponId_4: CouponId4,
+                    CouponId_4_Num: Quantity4,
+                    CouponId_5: CouponId5,
+                    CouponId_5_Num: Quantity5,
+                    Tag_1: tag1,
+                    Tag_2: tag2,
+                    ValidTimeType: ValidTimeType,
+                    StartTime: BeginTime,
+                    EndTime: EndTime,
+                    Status: status,
+                    DisplayType: DisplayType,
+                    ImageUrl:ImageUrl,
+                    ConditionCountValue:ConditionCountValue
+                    },
+                    success: function (result) {
+                    if (result.Item1) {
+                    alert("保存成功！");
+                    window.location.reload();
+                    }else {
+                    alert(result.Item2);
+                    }
+                    }
+                    });
+                    }
+                    else {
+                    button.css("pointer-events", "all");
+                    }
+                    }
+                    })
+                    });
+                    function UploadImage() {
+                    var ie = navigator.appName == "Microsoft Internet Explorer" ? true : false;
+                    if (ie) {
+                    document.getElementById("file").click();
+                    } else {
+                    var a = document.createEvent("MouseEvents"); //FF的处理
+                    a.initEvent("click", true, true);
+                    document.getElementById("file").dispatchEvent(a);
+                    }
+                    };
+                    $("#file").change(function () {
+                    up()
+                    })
+                    function up() {
+                    $.ajaxFileUpload(
+                    {
+                    url: 'UploadTaskImage', //需要链接到服务器地址
+                    secureuri: false,
+                    fileElementId: 'file', //文件选择框的id属性
+                    dataType: 'text', //服务器返回的格式，可以是json
+                    success: function(data, status) //相当于java中try语句块的用法
+                    {
+                    $("#file").change(function() {
+                    up()
+                    })
+                    console.log(data);
+                    if (data == -1)
+                    $(".headimgerror").text("仅支持jpg, gif, png, jpeg格式");
+                    else if (data == -2 || data == -99)
+                    $(".headimgerror").text("上传失败");
+                    else if (data == -3)
+                    $(".headimgerror").text("图片限制100kb以内");
+                    else {
+                    $(".headimgerror").text("");
+                    $("#ImageUrl").attr("src", data);
+                    }
+                    }
+                    })
+                    }
+                    </script>

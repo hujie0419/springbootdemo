@@ -1,0 +1,452 @@
+﻿@using Newtonsoft.Json
+@using Tuhu.Provisioning.Models
+@using Tuhu.Service.Product.Models
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.SE_GiftManageConfigModel>
+    @{
+        ViewBag.Title = "途虎赠品管理";
+        var request = (GiftManageConfigRequest)ViewBag.GiftManageConfigRequest ?? new GiftManageConfigRequest();
+        Layout = "../Shared/_Layout.cshtml";
+    }
+    <style type="text/css">
+        td {
+            text-align: center;
+        }
+
+        th {
+            text-align: center;
+        }
+    </style>
+    <link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="~/Scripts/My97DatePicker/WdatePicker.js"></script>
+    @helper  CaseType(int type)
+{
+string outPut = "";
+switch (type)
+{
+    case 1: outPut = "按轮胎尺寸"; break;
+    case 2: outPut = "按轮毂尺寸"; break;
+    case 3: outPut = "按品类"; break;
+    case 4: outPut = "按PID"; break;
+    case 5: outPut = "按轮胎类型"; break;
+}
+    @outPut
+}
+    <body>
+        <p>
+            @*@Html.ActionLink("创建全网活动", "Create", new { }, new { target = "_blank", style = "height: 25px;line-height: 25px;padding: 5px 10px;background-color: #00BFFF;color:#fff;border:1px #000 solid;display:inline-block;text-decoration: none;font-size: 20px;font-weight:900;" })*@
+            <button type="button" class="btn btn-primary" onclick="Create(this);" aria-label="Left Align" style="margin-top: 10px;">
+                创建全网活动
+                <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#LevelModal" aria-label="Left Align" style="margin-top: 10px;">
+                创建互斥关系
+                <span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="btn btn-warning" onclick="RefreshCache(this);" aria-label="Left Align" style="margin-top: 10px;">
+                刷新缓存(15秒后生效)
+                <span class="glyphicon glyphicon glyphicon-refresh" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="btn btn-warning" onclick="SetDisabled(this);" aria-label="Left Align" style="margin-top: 10px;">
+                禁用过期配置(针对过期七天以上的)
+                <span class="glyphicon glyphicon glyphicon-alert" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="btn btn-danger" onclick="SearchGiftLevel();" aria-label="Left Align" style="margin-top: 10px;">
+                查询已经创建过互斥关系的规则
+                <span class="glyphicon glyphicon glyphicon-search" aria-hidden="true"></span>
+            </button>
+        </p>
+        <form id="searchArguments" method="post" action="/SE_GiftManageConfig/Index">
+            <label>状态</label>
+            <select id="State" name="State" value="@request.state" style="width: 80px; padding: 5px; border: solid 1px #000; margin-bottom: 10px">
+                <option value="1">启用</option>
+                <option value="0">禁用</option>
+                <option value="2">全部</option>
+                <option value="3">已过期</option>
+                <option value="4">进行中</option>
+            </select>
+            <input id="pageIndex" name="pageIndex" value="@request.pageIndex" type="hidden" style="width: 100px; padding: 5px; border: solid 1px #000; margin-bottom: 10px" />
+            <input id="productPid" name="productPid" value="@request.productPid" type="text" placeholder="产品PID" style="width: 100px; padding: 5px; border: solid 1px #000; margin-bottom: 10px" />
+            <input id="giftPid" name="giftPid" value="@request.giftPid" type="text" placeholder="赠品PID" style="width: 100px; padding: 5px; border: solid 1px #000; margin-bottom: 10px" />
+            <input id="giftName" name="giftName" value="@request.giftName" type="text" placeholder="赠品名称" style="width: 100px; padding: 5px; border: solid 1px #000; margin-bottom: 10px" />
+            <input id="channel" name="channel" value="@request.channel" type="text" placeholder="渠道" style="width: 100px; padding: 5px; border: solid 1px #000; margin-bottom: 10px" />
+            <input id="Name" name="Name" value="@request.Name" type="text" placeholder="活动名称" style="width: 100px; padding: 5px; border: solid 1px #000; margin-bottom: 10px" />
+            <input id="ValidTimeBegin" name="ValidTimeBegin" value="@request.ValidTimeBegin" type="text" placeholder="开始时间" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd '})" style="width: 100px; padding: 5px; border: solid 1px #000; margin-bottom: 10px" />
+            <input id="ValidTimeEnd" name="ValidTimeEnd" value="@request.ValidTimeEnd" type="text" placeholder="结束时间" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd '})" style="width: 100px; padding: 5px; border: solid 1px #000; margin-bottom: 10px" />
+            <input id="Creater" name="Creater" value="@request.Creater" type="text" placeholder="创建人" style="width: 80px; padding: 5px; border: solid 1px #000; margin-bottom: 10px" />
+            <input id="Mender" name="Mender" value="@request.Mender" type="text" placeholder="更新人" style="width: 80px; padding: 5px; border: solid 1px #000; margin-bottom: 10px" />
+            <input id="Group" name="Group" value="@request.Group" type="text" placeholder="组号" style="width: 80px; padding: 5px; border: solid 1px #000; margin-bottom: 10px" />
+            <label>套装</label>
+            <select id="IsPackage" name="IsPackage" value="@request.IsPackage" style="width: 60px; padding: 5px; border: solid 1px #000; margin-bottom: 10px">
+                <option value="1">套装</option>
+                <option value="0">非套装</option>
+                <option value="2">全部</option>
+            </select>
+            <input type="submit" value="搜索" style="background-color: #b0232a; color: #fff; border: 1px #000 solid; font-size: 16px; font-weight: 900;" />
+            <input type="reset" value="重置" style="background-color: #b0232a; color: #fff; border: 1px #000 solid; font-size: 16px; font-weight: 900;" />
+        </form>
+        <table>
+            <tr>
+                <th>
+                    PKID
+                </th>
+                <th>
+                    组号
+                </th>
+                <th>
+                    活动名称
+                </th>
+                <th>
+                    类别
+                </th>
+                <th>
+                    赠品名称
+                </th>
+                <th>
+                    赠品描述
+                </th>
+                <th>
+                    是否禁用
+                </th>
+                <th>
+                    开始时间
+                </th>
+                <th>
+                    结束时间
+                </th>
+                <th>
+                    创建人
+                </th>
+                <th>
+                    更新人
+                </th>
+                <th style="width: 200px">
+                    操作
+                </th>
+            </tr>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Id)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Group)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @CaseType(item.Type)
+                    </td>
+                    <td>
+                        @{
+                            var gifts = item.GiftProducts == null ? new List<string>() : JsonConvert.DeserializeObject<List<GiftProdctModel>>(item.GiftProducts).Select(r => r.Name).ToList();
+                            for (var name = 0; name < gifts.Count(); name++)
+                            {
+                                if (name != gifts.Count() - 1)
+                                {
+                                    @(gifts[name] + ";")<br />
+                                }
+                                else
+                                {
+                                    @(gifts[name])
+                                }
+                            }
+                        }
+                    </td>
+                    <td>
+                        @{
+                            var describs = item.GiftProducts == null ? new List<string>() : JsonConvert.DeserializeObject<List<GiftProdctModel>>(item.GiftProducts).Select(r => r.Describe).ToList();
+                            for (var i = 0; i < describs.Count(); i++)
+                            {
+                                if (i != describs.Count() - 1 && describs[i] != "")
+                                {
+                                    @(describs[i] + ";")<br />
+                                }
+                                else
+                                {
+                                    @(describs[i])
+                                }
+                            }
+                        }
+                    </td>
+                    <td>
+                        @(item.State ? "启用" : "禁用")
+                    </td>
+                    <td>
+                        @(item.ValidTimeBegin)
+                    </td>
+                    <td>
+                        @(item.ValidTimeEnd)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Creater)
+                        <br />
+                        @Html.DisplayFor(modelItem => item.CreateTime)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Mender)
+                        <br />
+                        @Html.DisplayFor(modelItem => item.UpdateTime)
+                    </td>
+                    <td>
+                        @Html.ActionLink("编辑", "Edit", new { id = item.Id }, new { target = "_blank" }) |
+                        @Html.ActionLink("删除", "Delete", new { id = item.Id }, new { onclick = "return confirm('确认删除？')", style = "display: none" })
+                        @Html.ActionLink("查看日志", "OperateLogs", new { id = item.Id }, new { target = "_blank" })|
+                        <a href="javascript:void(0)" onclick="Copy('@item.Id') ">复制新增</a>|
+                        @*@Html.ActionLink("修改互斥关系", "UpdateGiftLevel", new { id = item.Group }, new { target = "_blank" })*@
+                        <a href="javascript:void(0)" onclick="UpdateGiftLevel('@item.Group') ">修改互斥关系</a>
+
+                    </td>
+                </tr>
+                            }
+            <tr>
+                <td id="kkpager" colspan="8"></td>
+            </tr>
+        </table>
+    </body>
+    <div class="modal fade " tabindex="-1" role="dialog" id="LevelModal">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h3 class="modal-title" style="color: blueviolet;" id="myModalLabel">创建互斥关系</h3>
+                </div>
+                <table class="table table-striped table-bordered table-hover" id="Products" style="width:800px; margin-left: 10px;">
+                    <thead>
+                        <tr class="danger">
+                            <th style="text-align: center">赠品活动ID</th>
+                            <th style="text-align: center">活动名称</th>
+                            <th style="text-align: center">优先级</th>
+                            <th style="text-align: center"><input type="button" value="添加" onclick="Add_GiftLevel();" /> </th>
+                        </tr>
+                    </thead>
+                    <tbody id="GiftLevelbody"></tbody>
+                </table>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="SaveGiftLevel()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="~/Scripts/jquery.cookie.js"></script>
+    <script src="~/Scripts/jquery-1.10.2.js"></script>
+    <script src="~/Content/nfine/js/bootstrap/bootstrap.js"></script>
+    <script src="~/Content/ProductVehicleType/js/bootstrap.min.js"></script>
+    <script src="~/Scripts/kkpager/kkpager.min.js"></script>
+    <link href="~/Scripts/kkpager/kkpager_blue.css" rel="stylesheet" />
+    <script type="text/javascript">
+
+    var totalPage = @(ViewBag.totalPage),
+        totalRecords = @(ViewBag.totalRecords),
+        pageIndex = @(ViewBag.pageIndex),
+        pageNo = pageIndex || 1;
+
+    //生成分页
+    kkpager.generPageHtml({
+        pno: pageNo,
+        //总页码
+        total: totalPage,
+        //总数据条数
+        totalRecords: totalRecords,
+        mode:'click',
+        click: function (_pageIndex) {
+            $("#pageIndex").attr("value", _pageIndex);
+            $("#searchArguments").submit();
+            //window.location.href =  '/SE_GiftManageConfig/Index?pageIndex='+ (_pageIndex||1) +"&"+(pageManage.GetSearchArguments() || "");
+        },
+        isGoPage: false,
+        getLink: function (n) {
+            return 'javascript:void(0);';
+        }
+    });
+    kkpager.selectPage(pageIndex);
+
+    var pageManage={
+        GetUrl:function(){
+            return window.location.href.split('?')[0]
+        },
+        GetSearchArguments: function () {
+            console.log($("#searchArguments").serialize());
+            return $("#searchArguments").serialize();
+        },
+        SetSearchArguments:function(){
+            var arguments = (window.location.href.split('?')[1] || "").split('&');
+            for (var i = 0; i < arguments.length; i++) {
+                var item = arguments[i].split('=');
+                $("#" + item[0]).val(decodeURI(item[1]));
+            }
+        },
+        Search:function(){
+            pageIndex = 1;
+            window.location.href =decodeURI('/SE_GiftManageConfig/Index?pageIndex=' + (pageIndex || 1) + "&" + (pageManage.GetSearchArguments() || ""));
+            console.log(window.location.href);
+        }
+    }
+    pageManage.SetSearchArguments();
+
+    function RefreshCache(e){
+        $(e).attr("disabled","disabled");
+        $.ajax({
+            type: "POST",
+            url: "/SE_GiftManageConfig/RefreshCache",
+            success: function(r){
+                r= JSON.parse(r);
+                if(r.state)
+                    alert("刷新成功");
+                else
+                    alert("刷新失败\r\n"+ r.msg);
+
+                $(e).removeAttr("disabled");
+            }
+        })
+    }
+    function Create(e) {
+        window.location.href = decodeURI('/SE_GiftManageConfig/Create');
+        }
+        function Get_GiftLevels() {
+            var items = [];
+            $("#Products tbody tr").each(function (i, e) {
+                var _pkid = $(e).find("td").eq(0).find("input").val() || "",
+                    _sort = $(e).find("td").eq(2).find("input").val() || 0;
+                //_stock = $(e).find("td").eq(4).find("input").val() || "";
+
+                if (_pkid.length > 0)
+                    items.push({ pkid: _pkid, sort: _sort});
+            });
+            return items.length > 0 ? JSON.stringify(items) : null;
+        }
+        $("#LevelModal").on("hidden.bs.modal", function () {
+            $(this).removeData("bs.modal");
+            $("#GiftLevelbody").html('');
+        });
+        function SaveGiftLevel() {
+            var value = Get_GiftLevels();
+            $.ajax({
+                type: "POST",
+                url: "/SE_GiftManageConfig/CreateMultistage",
+                data: { value: value },
+                success: function(r) {
+                    if (r.state) {
+                        alert("保存成功");
+                        window.location.href = decodeURI('/SE_GiftManageConfig/Index');
+                    } else {
+                        alert("保存失败\r\n");
+                    }
+
+
+                }
+            });
+            $('#LevelModal').modal('hide');
+        }
+        function UpdateGiftLevel(group) {
+            var flag = true;
+          var  source =  [];
+              $.ajax({
+                    type: "POST",
+                    url: "/SE_GiftManageConfig/UpdateGiftLevel",
+                    async: false,
+                    data: { group: group },
+                    success: function (v) {
+                        if (v.Status > 0) {
+                            source = v.Data;
+                        } else {
+                            flag = false;
+                            alert(v.Message);
+                        }
+                    }
+          });
+            if (!flag) {
+                return false;
+            }
+            var $template = $("#GiftLevelTemplate").html();
+            for (var i = 0; i < source.length; i++) {
+                $("#GiftLevelbody").append($template
+                    .replace(/{{PKid}}/ig, source[i].Id)
+                    .replace(/{{Name}}/ig, source[i].Name)
+                    .replace(/{{Sort}}/ig, source[i].Sort)
+                );
+            }
+            $("#LevelModal").modal("show");
+        }
+    function onblur_PKid(el) {
+        var val = $.trim($(el).val()),
+            _parentElement = $(el).closest("table[id='Products']").attr("id");
+
+        if (val.length > 0) {
+            $.ajax({
+                type: "POST",
+                url: "/SE_GiftManageConfig/GetGiftModel",
+                data: { id: val },
+                success: function (r) {
+                    if (r.Status <= 0) {
+                        $(el).val("");
+                        alert("PKID:『" + val + "』不存在！");
+                    }
+                    else {
+                        if (_parentElement != 'undefined') {
+                            $(el).parents("td").next().find("input[type='text']").val(r.Name);
+                        }
+                    }
+                }
+            });
+        }
+        }
+        function Add_GiftLevel() {
+            $("#GiftLevelbody").append($("#GiftLevelTemplate").html()
+                .replace(/{{PKid}}/ig, "")
+                .replace(/{{Name}}/ig, "")
+                .replace(/{{Sort}}/ig, ""));
+        }
+    function Del_GiftLevel(obj) {
+        if (confirm("确认删除？"))
+            $(obj).parents("tr").remove();
+    }
+    function SetDisabled(e){
+        $(e).attr("disabled","disabled");
+        $.ajax({
+            type: "POST",
+            url: "/SE_GiftManageConfig/SetDisabled",
+            success: function(r){
+                r= JSON.parse(r);
+                if(r.state)
+                    alert("设置成功，更新"+r.result+"条记录");
+                else
+                    alert("设置失败\r\n"+ r.msg);
+
+                $(e).removeAttr("disabled");
+            }
+        })
+    }
+function SearchGiftLevel() {
+    window.location.href = decodeURI('/SE_GiftManageConfig/SearchGiftLevel');
+}
+    $(function(){
+               $("#State Option").each(function() {
+           if ($(this).val() == @ViewBag.Status) {
+                $(this).attr("selected", "selected");
+                   }
+        });
+                      $("#IsPackage Option").each(function() {
+           if ($(this).val() == @ViewBag.IsPackage) {
+                $(this).attr("selected", "selected");
+                          }
+                      });
+        });
+        function Copy(id) {
+            if (confirm("确定复制新增吗？")) {
+                window.location.href = decodeURI('/SE_GiftManageConfig/Copy?id=' + id);
+                }            
+        };
+    </script>
+    <script type="text/template" id="GiftLevelTemplate">
+        <tr class="success">
+            <td><input onblur="onblur_PKid(this);" type="text" style="width:200px;" name="PKid" value="{{PKid}}" /></td>
+            <td><input type="text" value="{{Name}}" style="width:300px;" name="Name" /></td>
+            <td><input type="number" min="1" value="{{Sort}}" style="width:100px;" name="Sort" /></td>
+            <td><input type="button" value="删除" onclick="Del_GiftLevel(this);" /></td>
+        </tr>
+    </script>

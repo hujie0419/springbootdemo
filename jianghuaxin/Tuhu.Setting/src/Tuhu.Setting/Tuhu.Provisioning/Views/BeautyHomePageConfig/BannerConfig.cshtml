@@ -1,0 +1,274 @@
+﻿
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>iview example</title>
+    <link href="~/Content/iview/iview.css" rel="stylesheet" />
+    <script src="~/Scripts/vue.min.js"></script>
+    <script src="~/Scripts/iview/iview.min.js"></script>
+    <style>
+    .ivu-table .demo-table-info-row td {
+        background-color: #2db7f5;
+        color: #fff;
+    }
+
+    .ivu-table .demo-table-error-row td {
+        background-color: #ff6600;
+        color: #fff;
+    }
+
+    .ivu-table td.demo-table-info-column {
+        background-color: #2db7f5;
+        color: #fff;
+    }
+
+    .ivu-table .demo-table-info-cell-name {
+        background-color: #2db7f5;
+        color: #fff;
+    }
+
+    .ivu-table .demo-table-info-cell-age {
+        background-color: #ff6600;
+        color: #fff;
+    }
+
+    .ivu-table .demo-table-info-cell-address {
+        background-color: #187;
+        color: #fff;
+    }
+
+    [v-cloak] {
+        display: none;
+    }
+</style>
+
+
+
+</head>
+<body>
+    <br /><br />
+    <div id="APP" v-cloak>
+        <div>
+            Banner名称:<i-input v-model="keyWord" placeholder="请输入名称" style="width: 200px"></i-input>
+            Banner状态:<i-select v-model="modelStatus" style="width:200px">
+                <i-option v-for="item in status" :value="item.value" :key="item.value">{{ item.label }}</i-option>
+            </i-select>
+            <i-button type="primary" icon="ios-search" v-on:click="searchPage">查询</i-button>
+            <i-button type="info" v-on:click="add()">新建</i-button>
+        </div><br />
+        <i-table border :columns="columns" :data="tableDatas"></i-table>
+        <div style="margin: 10px;overflow: hidden">
+            <div style="float: right;">
+                <Page :total="totalCount" :current="currentPage" :page-size="pageSize" show-total v-on:on-change="changePage"></Page>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+    <script>
+        var vu = new Vue({
+            el: '#APP',
+            data() {
+                return {
+                    columns: [
+                        {
+                            title: 'Id',
+                            key: 'Id',
+                            width: '100px'
+                        },
+                        {
+                            title: '排序',
+                            key: 'Sort',
+                            width: '100px'
+                        },
+                        {
+                            title: 'Banner名称',
+                            key: 'Name'
+                        },
+                        {
+                            title: '配置活动',
+                            key: 'ActivityId'
+                        },
+                        {
+                            title: '渠道',
+                            key: 'Channel',
+                            width: '100px'
+                        },
+                        {
+                            title: '开始版本',
+                            key: 'StartVersion'
+                        },
+                        {
+                            title: '结束版本',
+                            key: 'EndVersion'
+                        },
+                        {
+                            title: '是否启用',
+                            key: 'Status',
+                            width: '100px'
+                        },
+                        {
+                            title: '是否指定城市',
+                            key: 'IsRegion',
+                            width: '120px'
+                        },
+                        {
+                            title: 'Banner小图',
+                            key: 'Icon',
+                            render: (h, params) => {
+                                return h('div', [
+                                    h('img', {
+                                        attrs: {
+                                            src: params.row.Icon
+                                        },
+                                        style: {
+                                            height: '40px',
+                                            width: 'auto'
+                                        }
+                                    })
+                                ]);
+                            }
+                        },
+                        {
+                            title: 'Banner大图',
+                            key: 'Banner',
+                            render: (h, params) => {
+                                return h('div', [
+                                    h('img', {
+                                        attrs: {
+                                            src: params.row.Banner
+                                        },
+                                        style: {
+                                            height: '50px',
+                                            width: 'auto'
+                                        }
+                                    })
+                                ]);
+                            }
+                        },
+                        {
+                            title: '操作',
+                            key: 'action',
+                            width: 150,
+                            align: 'center',
+                            render: (h, params) => {
+                                return h('div', [
+                                    h('Button', {
+                                        props: {
+                                            type: '',
+                                            size: 'small'
+                                        },
+                                        style: {
+                                            marginRight: '5px'
+                                        },
+                                        on: {
+                                            click: () => {
+                                                this.editBannerConfig(params.index);
+                                            }
+                                        }
+                                    }, '编辑')
+                                ]);
+                            }
+                        }
+                    ],
+                    tableDatas: [],
+                    currentPage: 1,
+                    pageSize: 15,
+                    keyWord: '',
+                    totalCount: 0,
+                    status: [
+                        {
+                            value: -1,
+                            label: '所有'
+                        },
+                        {
+                            value: 1,
+                            label: '启用中'
+                        },
+                        {
+                            value: 0,
+                            label: '禁用中'
+                        }],
+                    modelStatus: -1,
+                }
+            },
+            mounted: function () {
+                this.getBannerConfig();
+            },
+            methods: {
+                getBannerConfig() {
+                    var _this = this;
+                    _this.totalCount = 0;
+                    var datatable = [];
+
+                    var currentPage = _this.currentPage;
+                    if (!currentPage) {
+                        currentPage = 1;
+                    }
+                    var keyword = _this.keyWord;
+                    if (!keyword) {
+                        keyword = '';
+                    }
+                    var statu = _this.modelStatus;
+                    if (!statu && statu != 0) {
+                        statu = -1;
+                    }
+                    var postData = {
+                        'currentPage': currentPage,
+                        'keyWords': keyword,
+                        'status': statu
+                    };
+                    $.ajax({
+                        url: '/BeautyHomePageConfig/SelectBeautyBannerConfigs',
+                        type: 'Post',
+                        data: postData,
+                        success: function (data) {
+                            _this.tableDatas = [];
+                            if (data.total > 0) {
+                                $(data.result).each(function (i, o) {
+                                    _this.tableDatas.push({
+                                        'Id': o.Id,
+                                        'Sort': o.Sort,
+                                        'Name': o.Name,
+                                        'ActivityId': o.ActivityId,
+                                        'Channel': o.Channel,
+                                        'StartVersion': o.StartVersion,
+                                        'EndVersion': o.EndVersion,
+                                        'Status': o.Status ? '是' : '否',
+                                        'IsRegion': o.IsRegion ? '是' : '否',
+                                        'Icon': o.Icon,
+                                        'Banner': o.Banner
+                                    });
+                                });
+                                _this.totalCount = data.total;
+                            }
+                            else {
+                                _this.tableDatas = [];
+                            }
+                        },
+                        error: function () {
+                            _this.$Notice.warning({
+                                title: '获取列表数据异常',
+                                desc: '服务端异常'
+                            });
+                        }
+                    });
+                },
+                changePage(page) {
+                    this.currentPage = page;
+                    this.datatables = this.getBannerConfig();
+                },
+                searchPage() {
+                    this.getBannerConfig();
+                },
+                add() {
+                    window.location.href = '/BeautyHomePageConfig/EditBeautyBannerConfig';
+                },
+                editBannerConfig(i) {
+                    var bannerId = this.tableDatas[i].Id;
+                    window.location.href = '/BeautyHomePageConfig/EditBeautyBannerConfig?bannerId=' + bannerId;
+                },
+            },
+        });
+</script>

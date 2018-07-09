@@ -1,0 +1,181 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@using Tuhu.Provisioning;
+@model List<TireCouponResultModel>
+    @{
+        ViewBag.Title = "优惠券监控平台";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    <div class="title">
+        <h2>优惠券监控平台</h2>
+    </div>
+    @if (Model.Any())
+    {
+        <table class="table" width="100%">
+            <tr>
+                <th>店铺</th>
+                <th>优惠券</th>
+                <th>操作</th>
+                <th>历史</th>
+            </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @item.ShopName
+                </td>
+                <td>
+                    @foreach(var dat in item.Data)
+                    {
+                        <p style="margin:0;float:left;margin-right:10px;">满@(dat.QualifiedPrice.ToString("0"))减@(dat.Reduce.ToString("0"));</p>
+                    }
+                    <div style="clear:both;"></div>
+                </td>
+                <td><a href="javascript:void(0)" onclick="Edit('@item.ShopName')">编辑</a></td>
+                <td><a href="javascript:void(0)" onclick="FetchHistory('@item.ShopName')">历史</a></td>
+            </tr>
+        }
+         </table>
+    }
+
+
+    <div id="EditBox" style="display:none;">
+        <table class="table table-hover table-bordered" width="100%">
+               <tr>
+                   <th>满</th>
+                   <th>减</th>
+                   <th>有效期至</th>
+                   <th>操作</th>
+               </tr> 
+            <tbody id="coupon-data">
+
+            </tbody>
+        </table>
+    </div>
+
+    <div id="LogBox" style="display:none;">
+        <table  class="table table-hover table-bordered" width="100%">
+            <tr>
+                <th>优惠券名称</th>
+                <th>到期时间</th>
+                <th>操作人</th>
+                <th>操作类型</th>
+                <th>操作时间</th>
+            </tr>
+            <tbody id="log-data"></tbody>
+        </table>
+    </div>
+
+
+<script>
+    Edit = function (obj) {
+        $("#coupon-data").empty();
+        $.post("/Tire/TireCouponList", {
+            ShopName: obj
+        }, function (data) {
+            $.each(data, function (idx, object) {
+                var html = '<tr><td>' + object.QualifiedPrice + '</td><td>'
+                    + object.Reduce + '</td><td>'
+                    + FormatTime(object.EndTime) + '</td><td><a href="javascript:void(0)" onclick="DeleteFunc(this,'
+                    + object.PKID + ')">删除</a></td></tr>';
+                $("#coupon-data").append(html);
+            });
+            });       
+        $("#EditBox").dialog({
+            title: obj + "优惠券",
+            width: 900,
+            modal: true,
+            buttons: {
+                "添加": function () {
+                    var html = '<tr><td><input type="text" class="qp" /></td><td><input type="text" class="rd"></td><td>'
+                        + '<input type="datetime-local" value="2017-09-19T23:59" class="endtime"/>'
+                        + '</td><td><a href="javascript:void(0)" onclick="Delete2Func(this)" style="margin-right:20px;">删除</a>'
+                        + '<a href="javascript:void(0)" onclick="SaveFunc(\''+obj+'\',this)">保存</a></td></tr>';
+                    $("#coupon-data").append(html);
+                },
+                "关闭并刷新": function () {
+                    location.reload();
+                }
+            }
+        })
+    }
+
+    SaveFunc = function (shop, target) {
+        var object = $(target).parent().parent();
+        var qp = object.find(".qp").val();
+        var rd = object.find(".rd").val();
+        var ed = object.find(".endtime").val();
+        $.post("/Tire/AddTireCoupon", {
+            ShopName: shop,
+            QualifiedPrice: qp,
+            Reduce: rd,
+            EndTime: ed
+        }, function (data) {
+            if (data < 1) {
+                alert("添加参数错误");
+            }
+            else {
+                var html = '<td>' + qp + '</td><td>'
+                    + rd + '</td><td>'
+                    + ed + '</td><td><a href="javascript:void(0)" onclick="DeleteFunc(this,'
+                    + data + ')">删除</a></td>';
+                object.html(html);
+            }
+        });
+    }
+
+    DeleteFunc = function (target,pkid) {
+        $.post("/Tire/DeleteTireCoupon", {
+            PKID: pkid
+        }, function (data) {
+            if (data = 0) {
+                alert("删除失败");
+            } else {
+                alert("删除成功");
+                $(target).parent().parent().remove();
+            }
+        });
+    }
+
+    Delete2Func = function (target) {
+        var obj = $(target).parent().parent();
+        obj.remove();
+    }
+
+
+    FetchHistory = function (ShopName) {
+        $("#log-data").empty();
+        $.post("/Tire/FetchCouponLogByShopName", {
+            ShopName: ShopName
+        }, function (data) {
+            if (data.Code == 0) {
+                alert("查询修改历史出错，请稍后重试");
+            }
+            else {
+                $.each(data.Data, function (idx, object) {
+                    var html = '<tr><td>' + object.CouponName+ '</td><td>'
+                        + FormatTime(object.CouponEndTime) + '</td><td>'
+                        + object.Operator + '</td><td>'
+                        + object.OperateType + '</td><td>'
+                        + FormatTime(object.CreateDateTime) + '</td></tr>';
+                    $("#log-data").append(html);
+                });
+            }
+            });
+        $("#LogBox").dialog({
+            title: ShopName + "优惠券修改历史",
+            width: 800,
+            modal: true,
+            buttons: {
+                "关闭": function () {
+                    $(this).dialog("close");
+                }
+            }
+        })
+    }
+
+    FormatTime = function (strTime) {
+        var obj = new Date(parseInt(strTime.replace("/Date(", "").replace(")/", ""), 10));
+        return obj.Format("yyyy-MM-dd hh:mm");
+    }
+
+</script>

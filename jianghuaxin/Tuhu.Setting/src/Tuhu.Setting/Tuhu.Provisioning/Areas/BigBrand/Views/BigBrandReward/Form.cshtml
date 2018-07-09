@@ -1,0 +1,227 @@
+﻿
+@{
+    ViewBag.Title = "Form";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<style type="text/css">
+    .trinline {
+        display:inline;
+    }
+</style>
+<div>
+    <form id="form1">
+        <table class="form form-inline">
+            <tr>
+                <th class="formTitle">名称</th>
+                <td class="formValue">
+                    <input type="text" id="Title" name="Title" class="form-control required" />
+                </td>
+                <th class="formTitle">抽奖类型</th>
+                <td class="formValue">
+                    <select id="BigBrandType" name="BigBrandType" class="form-control">
+                        <option value="1">普通抽奖</option>
+                        <option value="2">积分抽奖</option>
+                        <option value="3">定人群抽奖</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">抽奖次数</th>
+                <td class="formValue">
+                    <input type="text" id="PreTimes" name="PreTimes" class="form-control required"/>
+                </td>
+                <th class="formTitle">抽奖次数(分享后)</th>
+                <td class="formValue">
+                    <input type="text" id="CompletedTimes" name="CompletedTimes" class="form-control required" />
+                </td>
+                
+            </tr>
+            <tr>
+                <th class="formTitle">抽奖周期:</th>
+                <td class="formValue">
+                    <select id="PeriodType" name="PeriodType" style="height: 23px;" >
+                        <option value="1">小时</option>
+                        <option value="2">天</option>
+                        <option value="3">月</option>
+                    </select>
+                    <input type="number" id="Period" name="Period" class="required" style="width: 80px;" />
+                    <br/>
+                    <label>开始时间：</label>  <input type="text" id="StartDateTime" name="StartDateTime" style="width:120px" class="required" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})" />                 </td>
+                <th class="formTitle">单次抽奖消耗积分</th>
+                <td class="formValue">
+                    <input type="number" id="NeedIntegral" name="NeedIntegral" class="form-control" />
+                </td>
+            </tr>
+            <tr id="AfterLoginSwitchContainer">
+                <td>启用登录后置<i title="选择登录后置：大翻盘的登录判断不在页面点击「开始」时而在用户领取奖励时。" class="fa fa-question-circle"></i></td>
+                <td><input type="checkbox" id="AfterLoginSwitch"  name="AfterLoginSwitch"/></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr id="AfterLoginContainer" class="hidden">
+                <td class="formTitle">抽奖验证类型</td>
+                <td class="formValue">
+                    <select id="AfterLoginType" name="AfterLoginType" class="form-control">
+                        <option value="1">微信授权</option>
+                    </select>
+                </td>
+                <td>必须关注公众号</td>
+                <td>
+                    <span AfterLoginType="1">
+                        <label><input type="checkbox" name="AfterLoginValue" value="WX_APP_OfficialAccount">途虎养车</label>
+                        <label><input type="checkbox" name="AfterLoginValue" value="WX_OA_NewCarMagazine">新汽车志</label>
+                    </span>
+                </td>
+            </tr>
+        </table>
+        <input type="hidden" id="PKID" value="0" name="PKID" />
+    </form>
+    <form id="form2" style="display:none;">
+        <table class="form" style="table-layout: inherit;">
+            <tr class="trinline">
+                <th class="formTitle">第1轮奖池ID </th>
+                <td class="formValue">
+                    <input type="text" id="wheel1" name="wheel1" class="form-control"/>
+                </td>
+            </tr>
+            <tr class="trinline">
+                <th class="formTitle">第2轮奖池ID </th>
+                <td class="formValue">
+                    <input type="text" id="wheel2" name="wheel2" class="form-control" />
+                </td>
+            </tr>
+            <tr class="trinline">
+                <th class="formTitle">第3轮奖池ID </th>
+                <td class="formValue">
+                    <input type="text" id="wheel3" name="wheel3" class="form-control" />
+                </td>
+            </tr>
+            <tr class="trinline">
+                <th class="formTitle">第4轮奖池ID </th>
+                <td class="formValue">
+                    <input type="text" id="wheel4" name="wheel4" class="form-control" />
+                </td>
+            </tr>
+            <tr id="AddPool">
+                <td colspan="2" style="text-align: center;">
+                    <a class="btn btn-sm btn-danger" id="btnAddWheel" name="btnAddWheel"><i class="fa fa-plus"></i>添加对应奖池</a>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<script type="text/javascript">
+    var index = 4;
+
+    function submitForm(iframe) {
+        if (!$("#form1").formValid()) {
+            return false;
+        }
+        var formData = $("#form1").formSerialize();
+        if (formData.BigBrandType == 1 && $("#AfterLoginSwitch").prop("checked")) {
+            var afterLoginValueArr = [];
+            $("input[name=AfterLoginValue]").each(function() {
+                if ($(this).prop("checked")) {
+                    afterLoginValueArr.push($(this).val());
+                }
+            });
+            formData.AfterLoginValue = afterLoginValueArr.join(",");
+        } else {
+            formData.AfterLoginType = 0;
+            formData.AfterLoginValue = "";
+        }
+        var formWheel = $("#form2").formSerialize();
+        var array = [];
+
+        for (var i = 0; i <= index; i++) {
+            var item = {};
+            item.FKPoolPKIDText = $('#wheel' + i).val();
+            if (item.FKPoolPKIDText) {
+                item.TimeNumber = i;
+                array.push(item);
+            }
+        }
+
+        console.log("array",array);
+
+        $.submitForm({
+            url: "/BigBrand/BigBrandReward/SubmitForm",
+            param: {
+                modeljson: JSON.stringify(formData),
+                wheeljson:array.length>0?JSON.stringify(array):""
+            },
+            success: function () {
+                $.currentWindow().location.reload();
+            }
+        });
+
+    }
+    function SwitchAfterLogin(el) {
+        $("#AfterLoginSwitchContainer").addClass("hidden");
+        $("#AfterLoginContainer").addClass("hidden");
+        if (el.val() == "1") {
+            $("#AfterLoginSwitchContainer").removeClass("hidden");
+            if ($("#AfterLoginSwitch").prop("checked")) {
+                $("#AfterLoginContainer").removeClass("hidden");
+            }
+        }
+    }
+    var pkid = $.request("pkid");
+    function init() {
+        if (pkid) {
+            $.ajax({
+                url: "/BigBrand/BigBrandReward/GetFormJson",
+                type: "post",
+                data: { pkid: pkid },
+                dataType: "json",
+                async: false,
+                success: function (res) {
+                    $('#form1').formSerialize(res.FormData);
+                    if (res.WheelData) {
+                        for (var key in res.WheelData) {
+                            if ($('#wheel' + res.WheelData[key].TimeNumber).val() == undefined) {
+                                console.log(res.WheelData[key].TimeNumber);
+                                addWheel();
+                            }
+                            if ($("#wheel" + res.WheelData[key].TimeNumber).val() == '')
+                                $("#wheel" + res.WheelData[key].TimeNumber).val(res.WheelData[key].FKPoolPKID);
+                            else {
+                                var value = $("#wheel" + res.WheelData[key].TimeNumber).val();
+                                console.log("value",value)
+                                $("#wheel" + res.WheelData[key].TimeNumber).val(value+',' + res.WheelData[key].FKPoolPKID);
+                            }
+                        }
+                        SwitchAfterLogin($("#BigBrandType"));
+                    }
+                }
+            });
+        }
+
+        $('#btnAddWheel').on('click', function () {
+            addWheel();
+        });
+
+        $("#BigBrandType").on("change",
+            function() {
+                SwitchAfterLogin($(this));
+            });
+        $("#AfterLoginSwitch").on("change",
+            function() {
+                $("#AfterLoginContainer").addClass("hidden");
+                if ($(this).prop("checked")) {
+                    $("#AfterLoginContainer").removeClass("hidden");
+                }
+            });
+    }
+
+    function addWheel() {
+        var form2 = $("#form2");
+        index++;
+        $('#AddPool',form2).before(`<tr>  <th class="formTitle">第${index}轮奖池ID </th><td class="formValue"> <input type="text" id="wheel${index}" name="wheel${index}" class="form-control" /> </td></tr>`);
+    }
+
+    $(function () {
+        init();
+    });
+
+</script>

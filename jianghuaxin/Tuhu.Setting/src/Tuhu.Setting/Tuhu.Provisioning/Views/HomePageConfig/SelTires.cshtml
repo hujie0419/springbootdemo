@@ -1,0 +1,83 @@
+﻿@{
+    ViewBag.Title = "SelTires";
+    Layout = null;
+}
+
+<div id="selTire">
+
+</div>
+<br/>
+<input type="button" value="选 择" onclick="SetTires()" />
+<script type="text/javascript">
+    $(function () {
+        GetTires();
+    });
+
+
+    function GetBrand(name) {
+       
+        var result = false;
+        var apptype = $('#apptype').val();
+        var keyvaluelenth = $('#keyvaluelenth').val();
+        if (keyvaluelenth != "") {
+            if (apptype == 1) {//android
+                keyvaluelenth = keyvaluelenth.replace(/'/g, '"');
+                keyvaluelenth = JSON.parse(keyvaluelenth);
+                var tempJson = keyvaluelenth[0];
+                if (tempJson.brand != undefined && tempJson.brand != "") {
+                    var array = tempJson.brand.replace(/'/g, '').split(',');
+                    for (var i = 0; i < array.length; i++) {
+                        if (array[i] == name) {
+                            result = true;
+                            break;
+                        }
+                    }
+                }
+            } else {//IOS
+                console.log(keyvaluelenth);
+                var tempJson = JSON.parse(keyvaluelenth);
+                if (tempJson.brand != undefined && tempJson.brand != "") {
+                    var array = tempJson.brand.replace(/"/g, '').split(',');
+                    for (var i = 0; i < array.length; i++) {
+                        if (array[i] == name) {
+                            result = true;
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+   
+
+    //获取车型信息
+    function GetTires() {
+        $.ajax({
+            url: '@(System.Configuration.ConfigurationManager.AppSettings["ApiDomain"].ToString())/Tires/GetTiresBrand',
+            type: 'post',
+            dataType: 'json',
+            success: function (result) {
+                
+                var value = "";//$('#hidTire').val();
+                //console.log(result.TiresBrand);
+                $('#selTire').empty();
+                var i = 0
+                for (; i < result.TiresBrand.length; i++) {
+                
+                    if (GetBrand(result.TiresBrand[i].BrandName)) {
+                        $('#selTire').append(' <input type="checkbox" name="ck" checked="checked" value="' + result.TiresBrand[i].BrandName + '">' + result.TiresBrand[i].BrandName + '</input> &nbsp;&nbsp;&nbsp;');
+                    } else {
+                        $('#selTire').append(' <input type="checkbox" name="ck"  value="' + result.TiresBrand[i].BrandName + '">' + result.TiresBrand[i].BrandName + '</input> &nbsp;&nbsp;&nbsp;');
+                    }
+
+                    if (i % 3 == 0 && i != 0)
+                        $('#selTire').append("<br/>");
+                    // console.log(result.TiresBrand[i].BrandName);
+                }
+            }
+
+        });
+    }
+
+</script>

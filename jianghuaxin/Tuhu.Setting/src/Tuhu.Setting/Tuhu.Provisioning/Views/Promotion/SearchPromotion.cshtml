@@ -1,0 +1,404 @@
+﻿@model Tuhu.Provisioning.Models.PromotionTaskListModel
+@{
+    ViewBag.Title = "优惠券任务搜索页";
+    //Layout = null;
+    var taskStatus = new Dictionary<int, string>();
+    taskStatus.Add(-1, "所有状态");
+    taskStatus.Add(0, "待审核");
+    taskStatus.Add(1, "已生效");
+    taskStatus.Add(2, "已关闭");
+
+    var taskType = new Dictionary<int, string>();
+    taskType.Add(-1, "所有状态");
+    taskType.Add(1, "单次任务");
+    taskType.Add(2, "触发任务");
+}
+
+    <style type="text/css">
+        
+        * {
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+        #CreateTime {
+            width:150px;
+        }
+
+        .floor-top {
+            font-size: 12px;
+            margin-top: 15px;
+        }
+
+            .floor-top .piece, .showbox .piece {
+                display: inline-block;
+                color: #696969;
+                margin-right: 10px;
+            }
+
+                .floor-top .piece input, .floor-top .piece select, .showbox .piece input, .showbox .piece select {
+                    padding: 5px 0;
+                    font-size: 12px;
+                    text-align: center;
+                    border: 1px solid #ccc;
+                    color: #696969;
+                }
+
+                .floor-top .piece select {
+                    padding: 5px 20px;
+                }
+
+            .floor-top .btn, .showbox .btn {
+                display: inline-block;
+                padding: 5px 20px;
+                border-radius: 5px;
+                color: #fff;
+                margin-right: 25px;
+            }
+
+            .floor-top .chaxun {
+                background-color: #688af1;
+                cursor:pointer;
+            }
+
+            .floor-top .renwu {
+                background-color: #24c11c;
+            }
+
+            .floor-top .youhuiquan {
+                background-color: #f5940e;
+                cursor:pointer;
+            }
+
+        .floor-table {
+            margin-top: 30px;
+            display: inline-block;
+            text-align: center;
+        }
+
+            .floor-table table {
+                border: solid 1px #cbcbcb;
+                border-collapse: collapse;
+                clear: both;
+                text-align: center;
+            }
+
+                .floor-table table th, .floor-table table td {
+                    padding: 10px 10px;
+                    border: 1px solid #cbcbcb;
+                }
+
+                .floor-table table th {
+                    background-color: #66abef;
+                    color: #fff;
+                    text-align:center;
+                }
+
+                .floor-table table tbody tr td:first-child {
+                    color: #2900dc;
+                }
+
+                .floor-table table tbody tr td span {
+                    padding: 5px 5px;
+                    color: #fff;
+                    border-radius: 5px;
+                }
+
+                    .floor-table table tbody tr td span.shenhe {
+                        background-color: #5d90f9;
+                        cursor:pointer;
+                    }
+
+                    .floor-table table tbody tr td span.guanbi {
+                        background-color: #f95d5d;
+                        cursor:pointer;
+                    }
+
+                    .floor-table table tbody tr td span.caozuo {
+                        background-color: #f8e71c;
+                        cursor:pointer;
+                    }
+
+                    .floor-table table tbody tr td span.disabled {
+                        background-color: #c4c4c4;
+                    }
+
+        .page-number {
+            margin: 10px;
+        }
+
+            .page-number span {
+                border: 1px solid #f2f2f2;
+                padding: 5px 10px;
+                color: #56c1f1;
+            }
+
+            .page-number .active {
+                background-color: #ff7816;
+                color: #fff;
+                border: 1px solid #ff6500;
+            }
+
+        .showbox {
+            position: fixed;
+            top: 100px;
+            left: 140px;
+            display: inline-block;
+            padding: 30px;
+            text-align: center;
+            background-color: #fff;
+            -moz-box-shadow: 0 0 0 10px rgba(3,3,3,.2);
+            -webkit-box-shadow: 0 0 0 10px rgba(3,3,3,.2);
+            box-shadow: 0 0 0 10px rgba(3,3,3,.2);
+        }
+
+            .showbox .floor-table table th {
+                background-color: #fff;
+                color: #000;
+            }
+
+            .showbox .floor-table table tbody tr td:first-child {
+                color: #000;
+            }
+
+            .showbox .chaxunbox {
+                background-color: #169bd5;
+            }
+
+            .showbox .close {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                cursor:pointer;
+            }
+    </style>
+    <link rel="stylesheet" type="text/css" href="/css/pager.css" />
+    <link rel="stylesheet" type="text/css" href="/Content/jquery-ui-1.8.9.custom.css" />
+
+    <div class="floor-top">
+        <div class="piece">
+            任务编号：
+            @{
+                if (Model.SearchInfo != null && Model.SearchInfo.PromotionTaskId != null)
+                {
+                    <input type="text" value="@Model.SearchInfo.PromotionTaskId.ToString()" id="PromotionTaskId" placeholder="请输入发券任务编号" />
+                }
+                else
+                {
+                    <input type="text" value="" id="PromotionTaskId" placeholder="请输入发券任务编号" />
+                }
+            }
+
+        </div>
+        <div class="piece">
+            任务名称：
+            @{
+                if (Model.SearchInfo != null && Model.SearchInfo.TaskName != null)
+                {
+                    <input type="text" value="@Model.SearchInfo.TaskName" id="TaskName" placeholder="请输入任务名称" />
+                }
+                else
+                {
+                    <input type="text" value="" id="TaskName" placeholder="请输入任务名称" />
+                }
+            }
+
+        </div>
+        <div class="piece">
+            创建时间：
+            @{
+                if (Model.SearchInfo != null && Model.SearchInfo.CreateTime != null)
+                {
+                    <input type="text" value="@Model.SearchInfo.CreateTime.Value.ToString("yyyy-MM-dd")" id="CreateTime" placeholder="请输入任务创建时间" />
+                }
+                else
+                {
+                    <input type="text" value="" id="CreateTime" placeholder="请输入任务创建时间" />
+                }
+            }
+        </div>
+        <div class="piece">
+            状态：
+            <select id="TaskStatus" placeholder="所有状态">
+                @{
+
+                    foreach (var item in taskStatus)
+                    {
+                        if (Model.SearchInfo.TaskStatus != null && Model.SearchInfo.TaskStatus.Value == item.Key)
+                        {
+                            <option value="@item.Key" selected="selected">@item.Value</option>
+                        }
+                        else
+                        {
+                            <option value="@item.Key">@item.Value</option>
+                        }
+
+                    }
+                }
+            </select>
+        </div>
+        <div class="piece">
+            任务类型：
+            <select id="TaskType" placeholder="所有类型">
+                @{
+
+                    foreach (var item in taskType)
+                    {
+                        if (Model.SearchInfo.TaskType != null && Model.SearchInfo.TaskType.Value == item.Key)
+                        {
+                            <option value="@item.Key" selected="selected">@item.Value</option>
+                        }
+                        else
+                        {
+                            <option value="@item.Key">@item.Value</option>
+                        }
+
+                    }
+                }
+            </select>
+        </div>
+    </div>
+    @{
+        if (Model.SearchInfo.PageNo == null)
+        {
+            <input type="text" id="PageNo" name="PageNo" value="1" style="display:none;"/>
+        }
+        else
+        {
+            <input type="text" id="PageNo" name="PageNo" value="@Model.SearchInfo.PageNo" style="display:none;"/>
+        }
+    }
+    <div class=" floor-top">
+        <div class="piece">
+            优惠券ID：
+            @{
+                if (Model.SearchInfo.CouponRulesId != null)
+                {
+                    <input type="text" value="@Model.SearchInfo.CouponRulesId" id="CouponRulesId" placeholder="请输入优惠券ID" />
+                }
+                else
+                {
+                    <input type="text" value="" id="CouponRulesId" placeholder="请输入优惠券ID" />
+                }
+            }
+
+        </div>
+        <div class="btn chaxun">查询</div>
+        <div class="btn renwu"><a href="/Promotion/CreatePromotionTask" target="_blank" style=" color:white;">新建任务</a></div>
+        <div class="btn youhuiquan">账户优惠券查询</div>
+    </div>
+    <div class="floor-table">
+        <table style="font-size:12px;">
+            <thead>
+                <tr>
+                    <th style="width: 20px;">任务编号</th>
+                    <th style="width: 50px;">任务名称</th>
+                    <th style="width: 20px;">优惠券ID</th>
+                    <th style="width: 50px;">任务类型</th>
+                    <th>创建时间</th>
+                    <th style="width: 40px;">状态</th>
+                    <th style="width: 80px;">操作</th>
+                    <th style="width: 50px;">创建人</th>
+                    <th style="width: 50px;">审核人</th>
+                    <th>审核时间</th>
+                    <th>计划执行时间</th>
+                    <th>执行时间</th>
+                    <th>关闭时间</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    foreach (var item in Model.PromotionTaskList)
+                    {
+                        <tr>
+                            <td><a href="/Promotion/CreatePromotionTask?id=@item.PromotionTaskId" target="_blank">@item.PromotionTaskId</a></td>
+                            <td>@item.TaskName</td>
+                            <td>@item.CouponRulesIds</td>
+                            @{
+                                foreach (var info in taskType)
+                                {
+                                    if (info.Key == item.TaskType)
+                                    {
+                                        <td>@info.Value</td>
+                                    }
+                                }
+                            }
+
+                            <td>@item.CreateTime</td>
+                            @{
+                                foreach (var info in taskStatus)
+                                {
+                                    if (info.Key == item.TaskStatus)
+                                    {
+                                        <td>@info.Value</td>
+                                    }
+                                }
+                            }
+                            <td style="width:98px;">
+                                @if (item.TaskStatus == 1 || item.TaskStatus == 2)
+                                {
+                                    <span class="disabled">审核</span>
+                                }
+                                else
+                                {
+                                    if (item.IsImmediately == 1)
+                                    {
+                                        <span class="shenhe" id="@item.PromotionTaskId" style="display:block">审核并执行</span><br />
+                                    }
+                                    else
+                                    {
+                                        <span class="shenhe" id="@item.PromotionTaskId">审核</span>
+                                    }
+                                }
+                                @if (item.TaskStatus == 2)
+                                {
+                                    <span class="disabled">关闭</span>
+                                }
+                                else
+                                {
+                                    <span class="guanbi" id="@item.PromotionTaskId">关闭</span>
+                                }
+
+                                @*<span class="caozuo">操作记录</span>*@
+                            </td>
+                            <td>@item.Creater</td>
+                            <td>@item.Auditor</td>
+                            <td>@item.AuditTime</td>
+                            @if (item.IsImmediately == 1)
+                            {
+                            <td>审核后执行</td>
+                            }
+                            else
+                            {
+                            <td>@item.TaskStartTime</td>
+                            }
+                            <td>@item.ExecuteTime</td>
+                            <td>@item.CloseTime</td>
+                        </tr>
+                                }
+                }
+            </tbody>
+        </table>
+        <br />
+        <div style="margin-top: 10px; width:948px; text-align:left;">
+            @{
+                if (Model != null)
+                {
+                    @Html.Raw(Model.PagerStr);
+                }
+            }
+        </div><br />
+    </div>
+    <div class="showbox" style="display:none;">
+        <div class="close">✕</div>
+        <iframe frameborder=0 src='/Promotion/UserPromotionCheck' width='800px' height='350px'></iframe>
+    </div>
+    @*<script type='text/javascript' src="/Scripts/jquery-1.7.1.js"></script>
+    <script type='text/javascript' src="/Scripts/jquery-ui-1.8.9.custom.min.js"></script>
+    <script src="/Scripts/jquery-ui.min.js" type="text/javascript"></script>
+    <script type='text/javascript' src="/Scripts/jquery.validate-1.8.1.min.js"></script>
+    <script type='text/javascript' src="/Scripts/jquery.validate.unobtrusive.min.js"></script>
+
+    <script type='text/javascript' src="/Scripts/json2.js"></script>
+    <script type='text/javascript' src='/Scripts/cultures/datepicker/jquery.ui.datepicker-zh.js'></script>*@
+    <script type='text/javascript' src="/Scripts/Promotion/SearchPromotion.js"></script>

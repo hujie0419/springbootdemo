@@ -1,0 +1,176 @@
+﻿@{
+    ViewBag.Title = "大客户保养套餐";
+}
+@section head{
+    <link rel="stylesheet" href="/Scripts/artDialog6.0.4/css/ui-dialog.css" />
+    <link href="~/css/beautyPackage.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="~/Content/plugins/select2/select2.min.css" />
+    <style type="text/css">
+        .ui-dialog {
+            width: auto;
+        }
+
+        .select2-selection__choice {
+            color: black;
+        }
+
+        .select2-search__field {
+            display: none;
+            /*border: 1px solid white;*/
+        }
+    </style>
+}
+
+<div id="div" v-cloak>
+    <h2><a href="/VipBaoYangPackage/VipBaoYangPackage">保养套餐配置</a><a href="/VipBaoYangPackage/VipPromotionOperation" style="margin-left:30px">给用户塞券</a><a href="/VipBaoYangPackage/PromotionOperationRecord" style="margin-left:30px">塞券记录</a><a href="/VipBaoYangPackage/VipBaoYangPackageSmsConfig" style="margin-left:30px">短信配置</a></h2>
+    <div style="margin-bottom:20px">
+        <select v-model="filterCondition.vipUserId" id="vipUserId" style="float:left;height:30px">
+            <option value="00000000-0000-0000-0000-000000000000">-请选择-</option>
+            <option v-for="item in packages" :value="item.VipUserId.toUpperCase()">{{item.VipUserName}}</option>
+        </select>
+        <input type="button" value="查询" v-on:click="pager.currentPage=0;" style="margin-left:20px;height:30px" />
+    </div>
+    <table class="tableContainer" style="margin-top:30px">
+        <thead>
+            <tr>
+                <th>大客户</th>
+                <th>是否发送短信</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tr v-if="list.length<=0">
+            <td colspan="3">无数据</td>
+        </tr>
+        <tr v-if="loading">
+            <td colspan="3"><img src="/Images/loading.gif" /></td>
+        </tr>
+        <tr v-for="item in list">
+            <td>{{item.UserName}}</td>
+            <td v-if="item.IsSendSms==true"><span style="color:green;font-weight:bolder">发送</span></td>
+            <td v-if="item.IsSendSms==false"><span style="color:red;font-weight:bolder">不发送</span></td>
+            <td><a v-on:click="UpdateSendSmsStatus(item.VipUserId,true)" v-if="item.IsSendSms==false" style="cursor:pointer"><span>发送</span></a><a v-on:click="UpdateSendSmsStatus(item.VipUserId,false)" v-if="item.IsSendSms==true" style="cursor:pointer"><span>不发送</span></a></td>
+        </tr>
+    </table>
+    <div style="margin-top:20px;">
+        <span>
+            每页显示:
+            <select v-model="pager.size">
+                <option v-for="size in sizes" v-bind:value="size">{{size}}</option>
+            </select>
+            条
+        </span>
+        <span>
+            <button type="button" v-on:click="pager.currentPage=1" v-bind:disabled="pager.currentPage<=1">首页</button>
+            <button type="button" v-on:click="pager.currentPage-=1" v-bind:disabled="pager.currentPage<=1">上一页</button>
+            <button type="button" v-on:click="pager.currentPage+=1" v-bind:disabled="pager.currentPage>=pager.pages">下一页</button>
+            <button type="button" v-on:click="pager.currentPage=pager.pages" v-bind:disabled="pager.currentPage>=pager.pages">尾页</button>
+        </span>
+        <span style="float:right">
+            <span>当前第{{pager.currentPage}}页/共{{pager.pages}}页&nbsp;&nbsp;转到<input style="width:30px" type="text" v-model="pager.inputPage">页</span>
+            <button type="button" v-on:click="pager.currentPage=pager.inputPage" v-bind:disabled="pager.inputPage<=0 || pager.inputPage>pager.pages">确定</button>
+        </span>
+    </div>
+</div>
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script type="text/javascript" src="~/Content/My97DatePicker/WdatePicker.js"></script>
+    <script src="/Scripts/artDialog6.0.4/dist/dialog-min.js"></script>
+    <script src="/Scripts/artDialog6.0.4/dist/dialog-plus-min.js"></script>
+    <script src="~/Scripts/plugins/select2/select2.full.min.js"></script>
+    <script type="text/javascript">
+        var vue = new Vue({
+            el: "#div",
+            data: {
+                pager: {
+                    total: 0,
+                    pages: 0,
+                    currentPage: 1,
+                    size: 20,
+                    inputPage: 0,
+                },
+                packages: [],
+                brands: [],
+                loading: false,
+                list: [],
+                sizes: [5, 10, 20, 40, 50, 100, 200],
+                filterCondition: {
+                    vipUserId: "00000000-0000-0000-0000-000000000000",
+                    isSendSms: false
+                },
+            },
+            watch: {
+                "pager.total": function () {
+                    var self = this;
+                    self.pager.pages = Math.ceil(self.pager.total / self.pager.size);
+                },
+                "pager.size": function () {
+                    var self = this;
+                    if (self.pager.size <= 0) {
+                        self.pager.size = 1;
+                        return;
+                    }
+                    if (self.pager.size > 200) {
+                        self.pager.size = 200;
+                        return;
+                    }
+                    self.pager.pages = Math.ceil(self.pager.total / self.pager.size);
+                    this.Init();
+                },
+                "pager.currentPage": function () {
+                    var self = this;
+                    if (self.pager.currentPage <= 0) {
+                        self.pager.currentPage = 1;
+                        return;
+                    }
+                    if (self.pager.pages > 1 && self.pager.currentPage > self.pager.pages) {
+                        self.pager.currentPage = self.pager.pages;
+                        return;
+                    }
+                    self.Init();
+                },
+            },
+            created: function () {
+                this.GetAllBaoYangPackageUser();
+                this.Init();
+            },
+            methods: {
+                Init: function () {
+                    var self = this;
+                    self.loading = true;
+                    self.list = [];
+                    self.filterCondition.vipUserId = $("#vipUserId").val();
+                    $.get("SelectVipSmsConfig", {
+                        vipUserId: self.filterCondition.vipUserId,
+                        pageIndex: self.pager.currentPage, pageSize: self.pager.size
+                    }, function (result) {
+                        self.loading = false;
+                        self.list = result;
+                        self.pager.total = result.length > 0 ? result[0].Total : 0;
+                    });
+                },
+                GetAllBaoYangPackageUser: function () {
+                    var self = this;
+                    $.get("GetAllBaoYangPackageUser", function (result) {
+                        self.packages = result;
+                    });
+                },
+                UpdateSendSmsStatus: function (vipUserId, isSendSms) {
+                    var self = this;
+                    if (confirm("是否确认操作")) {
+                        $.post("UpdateSendSmsStatus", { vipUserId: vipUserId, isSendSms: isSendSms }, function (result) {
+                            if (result) {
+                                alert("操作成功");
+                                self.Init();
+                            } else {
+                                alert("操作失败");
+                            }
+                        });
+                    }
+                }
+            },
+        });
+        $(function () {
+            $("#vipUserId").filtrateSelect();
+        });
+    </script>
+}

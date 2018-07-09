@@ -1,0 +1,141 @@
+﻿@{
+    ViewBag.Title = "分享赚钱活动商品配置";
+    Layout = "~/Views/Shared/_PersonalCenterLeft.cshtml";
+    List<Tuhu.Provisioning.DataAccess.Entity.ShareActivityProductConfig> products = ViewBag.products;
+}
+
+<h2>分享赚钱活动商品配置</h2>
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    textarea {
+        width: 100px;
+        height: 100px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+
+    td {
+        width: 200px;
+    }
+</style>
+
+<div>
+    <table style="width:50%">
+        <tr>
+            <td><a href="javascript:void(0)" class="btn" onclick="ShareActivityProductConfig.Add()">添加</a></td>
+            <td>产品：</td>
+            <td>
+                <select id="product">
+                    <option value="">--请选择--</option>
+                    @foreach (var item in products)
+                    {
+                        <option value="@item.ProductId">@item.ProductName</option>
+                    }
+                </select>
+            </td>
+            <td><input type="button" style="margin-top:0" class="btn" onclick="ShareActivityProductConfig.SearchList()" value="搜索" /></td>
+        </tr>
+    </table>
+</div>
+
+<div class="listdata"></div>
+<div id="AddItem"></div>
+
+<script>
+    $("#product").filtrateSelect({ height: 200 });
+    $(function () {
+
+        $(".listdata").load("/ShareActivityProductConfig/list");
+
+        $(".listdata").on("click", ".pager>a", function (event) {
+            event.preventDefault();
+            debugger;
+            $.ajax({
+                type: "POST",
+                url: this.href,
+                data: { "ProductId": $("#product").val() },
+                success: function (result) {
+                    $(".listdata").html(result);
+                },
+                error: function (result) {
+                    alert("失败!")
+                }
+            });
+        });
+    })
+
+    var ShareActivityProductConfig = {
+        "SearchList": function () {
+            $.ajax({
+                type: "POST",
+                url: "/ShareActivityProductConfig/List",
+                data: { "ProductId": $("#product").val() },
+                success: function (result) {
+                    $(".listdata").html(result);
+                },
+                error: function (result) {
+                    alert("失败!")
+                }
+            });
+        },
+        "Add": function () {
+            $("#AddItem").load('/ShareActivityProductConfig/Edit?id=0');
+            $("#AddItem").dialog({
+                title: "添加",
+                width: 600,
+                height: 400,
+                modal: true
+            });
+        },
+        "Update": function (id) {
+            $("#AddItem").load('/ShareActivityProductConfig/Edit?id=' + id);
+            $("#AddItem").dialog({
+                title: "修改",
+                width: 600,
+                height: 400,
+                modal: true
+            });
+        },
+        "Delete": function (id) {
+            if (window.confirm("您确定要删除吗？")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/ShareActivityProductConfig/Delete",
+                    data: { "id": id },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/ShareActivityProductConfig/Index";
+                        }
+                        else {
+                            alert("删除失败！");
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        }
+    }
+</script>  

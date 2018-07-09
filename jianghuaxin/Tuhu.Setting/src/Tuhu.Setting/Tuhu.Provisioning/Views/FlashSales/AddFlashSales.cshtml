@@ -1,0 +1,216 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@model FlashSales
+@{
+    Layout = null;
+}
+
+<script src="../../Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#StartTimeHour").val('@Model.StartTime.ToString("HH:mm")');
+        $("#StartTime").val('@Model.StartTime.ToString("yyyy-MM-dd")');
+        $("#StartTime").datepicker({ dateFormat: 'yy-mm-dd' });
+        $("form").submit(function () {
+            if ($("#Name").val() == "" || $("#PictureUrl").val() == "" || $("#CountDown").val() == "") {
+                alert('活动名称、展示图片和倒计时不能为空');
+                return false;
+            }
+            var reg = /^[0-9]*$/;
+            if (!reg.test($("#Position").val())) {
+                alert('排序号须为正整数');
+                return false;
+            }
+            if (!reg.test($("#CountDown").val())) {
+                alert('倒计时须为正整数');
+                return false;
+            }
+            var datereg = /^((?:19|20)\d\d)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/;
+            if (!datereg.test($("#StartTime").val())) {
+                alert('开始日期格式不正确');
+                return false;
+            }
+            if ($('input:radio[name=radiouserid]:checked').attr("value") == "True" && $("#BannerUrl").val() == '') {
+                alert('请上传相应Banner');
+                return false;
+            }
+            $("#StartTime").val($("#StartTime").val() + " " + $("#StartTimeHour").val() + ":00");
+        });
+        $('input:radio[name=IsBanner]').click(function () {
+            var _radiovalue = $(this).attr("value");
+            if (_radiovalue=='True') {
+                $("#BannerID").show();
+            }
+            else {
+                $("#BannerID").hide();
+            }
+        });
+
+    });
+
+    function UplaodImg(inputid, imgid, imgviewid) {
+        $.ajaxFileUpload({
+            url: '/Advertise/AddWxBannerImg',
+            secureuri: false,
+            fileElementId: inputid,
+            dataType: 'text',
+            data: {},
+            type: "post",
+            success: function (src) {
+                if (src != "false") {
+                    $("#" + imgviewid).attr("src", src);
+                    $("#" + imgviewid).show();
+                    $("#" + imgid).val(src);
+                } else {
+                    alert("上传失败！");
+                }
+            }
+        });
+    }
+</script>
+@using (Html.BeginForm(new { @enctype = "multipart/form-data" }))
+{
+    @Html.ValidationSummary(true)
+    @Html.HiddenFor(m => m.PKID)
+    @Html.HiddenFor(m => m.EnID)
+    @Html.HiddenFor(m => m.PictureUrl)
+    @Html.HiddenFor(m => m.BannerUrl)
+
+    <table style="background:#ffffff;font-size:12px;width:100%;">
+        <tr>
+            <td align="right" style="width:30%;">模块名称：</td>
+            <td style="width:70%;">@Html.TextBoxFor(model => model.Name, new { @style = "width:90%" })</td>
+        </tr>
+        <tr>
+            <td align="right">状态：</td>
+            <td>
+                @Html.RadioButtonFor(m => m.Status, 1) 启用
+                @Html.RadioButtonFor(m => m.Status, 0) 停用
+            </td>
+        </tr>
+        <tr>
+            <td align="right">开始时间：</td>
+            <td>
+                @Html.TextBoxFor(model => model.StartTime, new { @style = "width:80px;text-align:center;", @readonly = "readonly", @Value = Model.StartTime.ToString("yyyy-MM-dd") })
+                <select id="StartTimeHour">
+                    <option value="00:00">00:00</option>
+                    <option value="00:30">00:30</option>
+                    <option value="01:00">01:00</option>
+                    <option value="01:30">01:30</option>
+                    <option value="02:00">02:00</option>
+                    <option value="02:30">02:30</option>
+                    <option value="03:00">03:00</option>
+                    <option value="03:30">03:30</option>
+                    <option value="04:00">04:00</option>
+                    <option value="04:30">04:30</option>
+                    <option value="05:00">05:00</option>
+                    <option value="05:30">05:30</option>
+                    <option value="06:00">06:00</option>
+                    <option value="06:30">06:30</option>
+                    <option value="07:00">07:00</option>
+                    <option value="07:30">07:30</option>
+                    <option value="08:00">08:00</option>
+                    <option value="08:30">08:30</option>
+                    <option value="09:00">09:00</option>
+                    <option value="09:30">09:30</option>
+                    <option value="10:00">10:00</option>
+                    <option value="10:30">10:30</option>
+                    <option value="11:00">11:00</option>
+                    <option value="11:30">11:30</option>
+                    <option value="12:00">12:00</option>
+                    <option value="12:30">12:30</option>
+                    <option value="13:00">13:00</option>
+                    <option value="13:30">13:30</option>
+                    <option value="14:00">14:00</option>
+                    <option value="14:30">14:30</option>
+                    <option value="15:00">15:00</option>
+                    <option value="15:30">15:30</option>
+                    <option value="16:00">16:00</option>
+                    <option value="16:30">16:30</option>
+                    <option value="17:00">17:00</option>
+                    <option value="17:30">17:30</option>
+                    <option value="18:00">18:00</option>
+                    <option value="18:30">18:30</option>
+                    <option value="19:00">19:00</option>
+                    <option value="19:30">19:30</option>
+                    <option value="20:00">20:00</option>
+                    <option value="20:30">20:30</option>
+                    <option value="21:00">21:00</option>
+                    <option value="21:30">21:30</option>
+                    <option value="22:00">22:00</option>
+                    <option value="22:30">22:30</option>
+                    <option value="23:00">23:00</option>
+                    <option value="23:30">23:30</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td align="right">倒计时：</td>
+            <td>@Html.TextBoxFor(model => model.CountDown, new { @style = "width:50px;text-align:center;" }) </td>
+        </tr>
+        <tr>
+            <td align="right">展示图片：</td>
+            <td>
+                <form method="post" action="" enctype="multipart/form-data">
+                    <input style="width:150px;" type="file" id="upPictureUrl" name="upPictureUrl" onchange="UplaodImg('upPictureUrl', 'PictureUrl', 'vwPictureUrl')" />
+                </form><br />
+                <img height="78" src="@Model.PictureUrl" id="vwPictureUrl" />
+            </td>
+        </tr>
+        <tr>
+            <td align="right">排序号：</td>
+            <td>@Html.TextBoxFor(model => model.Position, new { @style = "width:50px;text-align:center;" }) （需为整数，越小越靠前）</td>
+        </tr>
+        <tr>
+            <td align="right">显示列数：</td>
+            <td>
+                @Html.RadioButtonFor(m => m.DisplayColumn, 1) 单列展示
+                @Html.RadioButtonFor(m => m.DisplayColumn, 2) 双列展示
+            </td>
+        </tr>
+        <tr>
+            <td align="right">APP处理值：</td>
+            <td>@Html.TextBoxFor(model => model.AppValue, new { @style = "width:90%" })</td>
+        </tr>
+        <tr>
+            <td align="right">列表Banner：</td>
+            <td>
+                @Html.RadioButtonFor(m => m.IsBanner, true) 启用
+                @Html.RadioButtonFor(m => m.IsBanner, false) 停用
+            </td>
+        </tr>
+        <tbody id="BannerID" @Html.Raw(Model.IsBanner ? "" : " style=\"display:none;\"")>
+            <tr style="background-color:#f9f9f9;">
+                <td align="right">列表Banner图片：</td>
+                <td>
+                    <form method="post" action="" enctype="multipart/form-data">
+                        <input style="width:150px;" type="file" id="upBannerUrl" name="upBannerUrl" onchange="UplaodImg('upBannerUrl', 'BannerUrl', 'vwBannerUrl')" />
+                    </form><br />
+                    <img height="78" src="@Model.BannerUrl" id="vwBannerUrl" />
+                </td>
+            </tr>
+        </tbody>
+        <tr>
+            <td align="right">背景色：</td>
+            <td>@Html.TextBoxFor(model => model.BackgoundColor, new { @style = "width:50px" })</td>
+        </tr>
+        <tr>
+            <td align="right">下期预告是否启用：</td>
+            <td>
+                @Html.RadioButtonFor(m => m.IsTomorrowTextActive, true) 启用
+                @Html.RadioButtonFor(m => m.IsTomorrowTextActive, false) 停用
+            </td>
+        </tr>
+        <tr>
+            <td align="right">下期预告：</td>
+            <td>@Html.TextBoxFor(model => model.TomorrowText, new { @style = "width:90%" })</td>
+        </tr>
+        <tr>
+            <td align="right"></td>
+            <td>
+                <input type="submit" value="保存" />
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="button" value="取消并返回" onclick="location = 'FlashSales'" />
+            </td>
+        </tr>
+    </table>
+}

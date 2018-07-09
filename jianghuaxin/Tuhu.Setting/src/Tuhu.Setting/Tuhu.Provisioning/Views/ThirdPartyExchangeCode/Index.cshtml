@@ -1,0 +1,771 @@
+﻿
+@{
+    ViewBag.Title = "第三方兑换码管理后台";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section head{
+    <link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet"/>
+    <link href="~/Content/ProductVehicleType/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
+}
+<script src="https://file-tuhu-cn.alikunlun.com/yewu/oms/scripts/md503.js" type="text/javascript"></script>
+<script src="https://file-tuhu-cn.alikunlun.com/yewu/oms/scripts/verifyBtn.js" type="text/javascript"></script>
+<div class="title">
+    <h2>第三方兑换码管理后台</h2>
+</div>
+<div class="content">
+
+    @*搜索条件*@
+    <form class="form-inline" id="SerchElement" >
+        <div class="form-group">
+            <label >筛选条件</label>
+        </div>
+        @*<div class="form-group form-group-sm">
+            <label >状态</label>
+            <select class="form-control" name="select">
+                <option>全部</option>
+                <option>启用</option>
+                <option>禁用</option>
+            </select>
+        </div>*@
+
+        <div class="form-group form-group-sm">
+            <label >批次ID</label>
+            <input type="text" class="form-control" name="branchId" placeholder="请天写批次ID">
+        </div>
+        <div class="form-group form-group-sm">
+            <label >批次名称</label>
+            <input type="text" class="form-control" name="branchName" placeholder="请天写批次名称">
+        </div>
+        <div class="form-group form-group-sm">
+            <label >创建人</label>
+            <input type="text" class="form-control" name="User" placeholder="创建人，登陆用户名">
+        </div>
+        <div class="form-group form-group-sm">
+            <label >最近联系人</label>
+            <input type="text" class="form-control" name="Call" placeholder="联系人">
+        </div>
+        <button type="button" class="btn btn-primary" id="SerchExchangeCodeBtn" value="">搜索</button>
+    </form>
+    <p>
+        <br/>
+    </p>
+    @*排序*@
+    <form class="form-inline" role="form">
+        <div class="form-group">
+            <label for="name">筛选条件</label>
+        </div>
+        <div class="form-group">
+            <div class="btn-group  btn-group-sm">
+                <button type="button" class="btn btn-primary" value="10" onclick="BtnSort(this)">批次数量</button>
+                <button type="button" class="btn btn-primary" value="20" onclick="BtnSort(this)">库存数量</button>
+                <button type="button" class="btn btn-primary" value="30" onclick="BtnSort(this)">兑换开始日期</button>
+                <button type="button" class="btn btn-primary" value="40" onclick="BtnSort(this)">兑换截至日期</button>
+                <button type="button" class="btn btn-primary" value="50" onclick="BtnSort(this)">创建时间</button>
+                <button type="button" class="btn btn-primary" value="60" onclick="BtnSort(this)">更新日期</button>
+              
+            </div>
+        </div>
+    </form>
+    <p>
+        <br/>
+    </p>
+    <div>
+        <button type="button" class="btn btn-info" data-toggle="button" id="CreateBranch"> +新建</button>
+    </div>
+    @*数据展示，查询后的批次*@
+    <div class="table-responsive">
+        <table class="table table-striped table-hover table-condensed">
+            @*<caption>条纹表格布局</caption>*@
+            <thead>
+            <tr>
+                <th>批次ID</th>
+                <th>批次名称</th>
+                <th>限领数量</th>
+                <th>批次数量</th>
+                <th>库存数量</th>
+                <th>兑换开始日期</th>
+                <th>兑换截至日期</th>
+                <th>创建人</th>
+                <th>创建日期</th>
+                <th>最近更新人</th>
+                <th>更新日期</th>
+                <th>操作</th>
+                <th>导入</th>
+                <th>历史</th>
+            </tr>
+            </thead>
+            <tbody id="SerchExchangeCodeDetail">                    
+            </tbody>
+        </table>
+    </div>
+    @*分页*@
+   
+    <form class="form-inline" id="page" style="display:none" >
+        <div class="form-group form-group-sm">
+           
+            <div class="button-group">
+                <button type="button" class="btn btn-primary btn-small" onclick="PrivatePage(this)" >上一页</button>
+                <input type="text" class="form-control" id="currentPage" >
+                <button type="button" class="btn btn-primary btn-small" onclick="NextPage(this)" >下一页</button>
+            </div>
+        </div>
+        <button type="button" class="btn btn-primary btn-small" onclick="tragePage(this)" >跳转</button>
+    </form>
+
+</div>
+
+
+@*查看/编辑*@
+<div class="modal fade" id="Branchmodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" >
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="CreateBranchtitle">兑换码详情</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" id="BranchmodalOperate"  role="form">
+                    <div class="form-group">
+                        <h5><label for="firstname" class="col-sm-3 control-label">批次ID</label></h5>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" name="BranchID" placeholder="GUID" readonly="readonly">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <h5>
+                            <label for="lastname" class="col-sm-3 control-label">批次名称</label>
+                        </h5>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" name="BranchName" maxLength="40" placeholder="请输入批次名称,最长40个字符">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <h5>
+                            <label for="lastname" class="col-sm-3 control-label">限领数量</label>
+                        </h5>
+                        <div class="col-sm-9">
+                            <input type="number" class="form-control" name="LimitQty" maxLength="40" placeholder="请输入限领数量，最大为999999999">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <h5>
+                            <label for="lastname" class="col-sm-3 control-label">批次数量</label>
+                        </h5>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" name="BatchQty" id="inputBra" onblur="readBra(this)" placeholder="请输入批次数量" readonly="readonly" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <h5>
+                            <label for="lastname" class="col-sm-3 control-label">库存数量</label>
+                        </h5>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" name="StockQty" id="inputSor"  placeholder="请输入库存数量" readonly="readonly">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <h5><label for="lastname" class="col-sm-3 control-label">兑换开始日期</label></h5>
+                        <div class="col-sm-9">
+                            <input id="datetimepickerOne" name="StartDateTime" type="text" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd'})">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <h5>
+                            <label for="lastname" class="col-sm-3 control-label">兑换截至日期</label>
+                        </h5>
+                        <div class="col-sm-9">
+                            <input  id="datetimepickerTwo" name="EndDateTime" type="text" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd '})">
+                            <span class="add-on"><i class="icon-th"></i></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <h5>
+                            <label for="lastname" class="col-sm-3 control-label" placeholder="请输入库存数量">说明</label>
+                        </h5>
+                        <div class="col-sm-9">
+                            <textarea class="form-control" rows="-1" maxlength="400" name="Instructions"></textarea>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="branchConmmit">保存</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+@*询问是否需要导入兑换码*@
+<div id="requestimport" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h5 class="modal-title">导入兑换码询问框</h5>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <label class="col-md-12">是否需要导入兑换码明细？</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="ImportOK">导入</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消 </button>
+            </div>
+        </div>
+    </div>
+</div>
+@*导入兑换码*@
+<div id="Import"  class="modal fade"  tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4>批量导入兑换码</h4>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-6 col-md-offser-6">
+                            <input id="importFile" type="file" style="display: none" class="btnImport" name="importFile" />
+                            <div class="input-append">
+                                <input id="Cover" class="input-large" type="text" style="height: 30px;" />
+                                <a class="btn btn-primary" onclick="$('input[id=importFile]').click();">选择导入文件</a>
+                                <p>
+                                    <br />
+                                    请使用excel，使用sheet1工作簿，导入列名“
+                                    ExchangeCode”
+                                    <br />
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">              
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="btnImport" >导入</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@*历史*@
+<div class="modal fade" id="history" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">操作历史</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" id="descr" role="form">
+                    <div class="form-group">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover table-condensed">
+                                @*<caption>条纹表格布局</caption>*@
+                                <thead>
+                                    <tr>
+                                        <th>用户名</th>
+                                        <th>操作</th>
+                                        <th>时间</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historymall"></tbody>
+
+                            </table>
+                        </div>
+                    </div>
+
+                    <br />
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script src="~/Content/listmenu/js/jquery.min.js"></script>
+    <script src="~/Content/ProductVehicleType/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/My97DatePicker/WdatePicker.js"></script>
+    <script src="~/Content/ProductVehicleType/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="~/Content/ProductVehicleType/js/bootstrap-datetimepicker.zh-CN.js"></script>
+    <script src="~/Scripts/ajaxfileupload.js"></script>
+    <script>
+        var pageSize = 50;
+        var sort = 00;
+        var oType = "";
+        var branchName = "", branchId = "", user = "", call = "", insertid = 0;
+        var starttime = "";
+        var endtime = "", pkid = 0, batchQty = 0, stockQty = 0;
+        var pageNumber = $("#currenstockQtytPage").val() === "" || $("#currenstockQtytPage").val() == undefined ? 1 : $("#currentPage").val(), count = 0;
+        $(function () {
+            $('input[id=importFile]').change(function () {
+                $('#Cover').val($(this).val());
+            });
+            //日期选择器
+            //$('#datetimepickerOne').datetimepicker({
+            //    format: 'yyyy-mm-dd',
+            //    autoclose: true, //自动关闭
+            //    minView: 2, //最精准的时间选择为日期0-分 1-时 2-日 3-月
+            //    weekStart: 1,
+            //    language: 'zh-CN'
+            //});
+            if ($('#datetimepickerOne').val() === "") {
+                $('#datetimepickerOne').val(GetDateStr(-1));
+            }
+            if ($('#datetimepickerTwo').val() === "") {
+                $('#datetimepickerTwo').val(GetDateStr(1));
+            }
+            //$('#datetimepickerTwo').datetimepicker({
+            //    format: 'yyyy-mm-dd',
+            //    autoclose: true, //自动关闭
+            //    minView: 2, //最精准的时间选择为日期0-分 1-时 2-日 3-月
+            //    weekStart: 1,
+            //    language: 'zh-CN',
+            //    pickerPosition: 'top-right'
+            //});
+            var pdata = {
+                pageSize: pageSize,
+                pageNumber: 1,
+                //select: select,
+                sort: 00,
+                branchid: null,
+                branchName: null,
+                user: null,
+                call: null
+            };
+
+            Serch(pdata);
+            //搜索
+            $('#SerchExchangeCodeBtn').click(function () {
+                sort = 00;
+                pageNumber = 1;
+                var $data = $('#SerchElement').serializeArray();
+
+                $data.map(function (v) {
+                    //if (v.name === "select") {
+                    //    if (v.value === "全部") {
+                    //        select = null;
+                    //    }
+                    //    if (v.value === "启用") {
+                    //        select = 1;
+                    //    }
+                    //    if (v.value === "禁用") {
+                    //        select = 0;
+                    //    }
+                    //}
+
+                    if (v.name === "branchName") {
+                        branchName = v.value === "" ? null : v.value;
+                    }
+                    if (v.name === "branchId") {
+                        branchId = v.value === "" ? null : v.value;
+                    }
+                    if (v.name === "User") {
+                        user = v.value === "" ? null : v.value;
+                    }
+                    if (v.name === "Call") {
+                        call = v.value === "" ? null : v.value;
+                    }
+                });
+
+                var postdata = {
+                    pageSize: pageSize,
+                    pageNumber: pageNumber,
+                    //select: select,
+                    sort: sort,
+                    branchid: branchId,
+                    branchName: branchName,
+                    user: user,
+                    call: call
+                };
+                Serch(postdata);
+                $('#currentPage').val(1);
+            });
+            //新建
+            $('#CreateBranch').click(function () {
+                oType = "insert";
+                $('#CreateBranchtitle').html("");
+                $('input[name=BranchID]').val("");
+                $('input[name=BranchName]').val("");
+                $('input[name=LimitQty]').val("");
+                $('input[name=BatchQty]').val(0);
+                $('input[name=StockQty]').val(0);
+                $('textarea[name=Instructions]').val("");
+                $('#CreateBranchtitle').html("新增兑换码批次");
+                $('#Branchmodal').modal('show');
+            });
+
+        });
+
+        //提交新建/编辑
+        $('#branchConmmit').click(function () {
+            var $data = $('#BranchmodalOperate').serializeArray();
+            var branchIdC = "", branchNameC = "", limitQty = "", batchQty = "", stockQty = "", startDateTime = "", endDateTime = "", instructions = "";
+            $data.map(function(v) {
+                if (v.name === "BranchID") {
+                    branchIdC = v.value === "" ? null : v.value;
+                    batchId = branchIdC;
+                }
+                if (v.name === "BranchName") {
+                    branchNameC = v.value === "" ? null : v.value;
+                }
+                if (v.name === "LimitQty") {
+                    limitQty = v.value === "" ? null : v.value;
+                }
+                if (v.name === "BatchQty") {
+                    batchQty = v.value === "" ? null : v.value;
+                }
+                if (v.name === "StockQty") {
+                    stockQty = v.value === "" ? null : v.value;
+                }
+                if (v.name === "StartDateTime") {
+                    startDateTime = v.value === "" ? null : v.value;
+                    starttime = startDateTime;
+                }
+                if (v.name === "EndDateTime") {
+                    endDateTime = v.value === "" ? null : v.value;
+                    endtime = endDateTime;
+                }
+                if (v.name === "Instructions") {
+                    instructions = v.value === "" ? null : v.value;
+                }
+            });
+            if (branchNameC == "" || branchNameC == null) {
+                alert("请填写批次名称！");
+                return false;
+            }
+            if (limitQty == "" || limitQty == null)
+            {
+                alert("请填写限制数量！");
+                return false;
+            }
+            if (limitQty >999999999) {
+                alert("限制数量过大，请重新填写！");
+
+                return false;
+            }
+            if (limitQty<0) {
+                alert("限制数量需大于0！");
+                return false;
+            }
+            var postdata = { type: oType, branchId: branchIdC, branchName: branchNameC, limitQty: limitQty, batchQty: batchQty, stockQty: stockQty, startDateTime: startDateTime, endDateTime: endDateTime, instructions: instructions, pkid: pkid };
+            $('#branchConmmit').attr("disabled", "disabled");
+            $.post("@Url.Action("BranchOperate")", postdata, function(data) {
+                if (data.msg > 0) {
+                    insertid = data.msg;
+                    $('#Branchmodal').modal('hide');
+                    if (oType == "insert") {
+                        $('#requestimport').modal('show');
+                    }
+                    var postdata = {
+                        pageSize: pageSize,
+                        pageNumber: 1,
+                        //select: select,
+                        sort: sort,
+                        branchid: branchId,
+                        branchName: branchName,
+                        user: user,
+                        call: call
+                    };
+                    $('#branchConmmit').removeAttr("disabled");
+                    Serch(postdata);
+                    $('#currentPage').val(1);
+                } else {
+                    $('#branchConmmit').removeAttr("disabled");
+                    alert("保存不成功！");
+                    return false;
+                }
+            });
+
+            $('#ImportOK').click(function() {
+                $('#requestimport').modal('hide');
+                var file = $("#Cover");
+                file.after(file.clone().val(""));
+                file.remove();
+                $('#Import').modal('show');
+            });
+        });
+        //搜索
+        function Serch(postdata) {
+            $.post("@Url.Action("SelectCout")", postdata, function (data) {
+                count = Math.ceil(data.msg / pageSize);
+                if (count > 1) {
+                    $('#currentPage').val(pageNumber);
+                    $('#page').show();
+                }
+                if (data.msg > 0) {
+
+                    $.post("@Url.Action("SelectBatches")", postdata, function (data) {
+                        if (data != null && data.length) {
+                            var tr = "";
+                            $.each(data, function (i, item) {
+                                var startDateTime = formatDate(item.StartDateTime),
+                                    endDateTime = formatDate(item.EndDateTime),
+                                    createDateTime = formatDate(item.CreateDateTime),
+                                    updateDateTime = formatDate(item.UpdateDateTime);
+                                var see = ' <a href="/ThirdPartyExchangeCode/Detail?batchId=' + item.BatchGuid + '"  onclick="SelectBranch(this)" data-id="' + item.BatchGuid + '" data-pkid="' + item.PKID + '" >查看</a>';
+                                var import1 = '<a href="#" onclick="Import(this)" data-Id="' + item.BatchGuid + '" data-starttime="' + item.StartDateTime + '" data-endtime="' + item.EndDateTime + '" data-pkid="' + item.PKID + '"  data-batchQty="' + item.BatchQty + '"data-stockQty="' + item.StockQty + '">导入</a>';
+                                var im = item.BatchQty > 0 ? see : import1;
+                                tr += '<tr><td>' + item.BatchGuid + '</td><td>' + item.BatchName + '</td><td>' + item.LimitQty + '</td><td>' + item.BatchQty + '</td> <td>' + item.StockQty + '</td><td>' + startDateTime + '</td><td> ' + endDateTime + '</td> <td>' + item.Creator + '</td> <td>' + createDateTime + '</td><td> ' + item.Modifier + '</td> <td>' + updateDateTime + '</td><td> <a href="#" btnkey="EditCode" istuhuverify="2" onclick="EditBranch(this)" data-id="' + item.BatchGuid + '" data-pkid="' + item.PKID + '">编辑</a></td ><td> ' + im+ '</td> <td><a href="#" onclick="ShowLog(this)" data-Id="' + item.BatchGuid + '" data-pkid="' + item.PKID + '" >历史</a></td></tr> ';
+
+                            });
+                            $('#SerchExchangeCodeDetail').empty().append(tr);
+                            setPower("EditCode", 2);
+                        } else {
+                            $('#SerchExchangeCodeDetail').html("");
+                        }
+                    });
+                }
+            });
+        }
+
+        //编辑
+        function EditBranch(e) {
+            oType = "update";
+            var batchId = $(e).data().id;
+            pkid = $(e).data().pkid;
+            var postdata = { batchId: batchId };
+            $.post("@Url.Action("SelectBatch")", postdata, function(data) {
+                if (data != null && !data.length)
+                {
+                    $('#CreateBranchtitle').html("编辑兑换码批次");
+                    $('input[name=BranchID]').val(data.BatchGuid);
+                    $('input[name=BranchName]').val(data.BatchName);
+                    $('input[name=LimitQty]').val(data.LimitQty);
+                    $('input[name=BatchQty]').val(data.BatchQty);
+                    $('input[name=StockQty]').val(data.StockQty);
+                    $('input[name=StartDateTime]').val(formatDate1(data.StartDateTime));
+                    $('input[name=EndDateTime]').val(formatDate1(data.EndDateTime));
+                    $('textarea[name=Instructions]').val(data.Instructions);
+
+                    $('#Branchmodal').modal('show');
+                } else {
+                    alert("没有该商品！");
+                }
+            });
+
+        }
+         //历史
+        function ShowLog(e) {
+            pkid = $(e).data().pkid;
+            var postdata = { pkid: pkid };
+            $.post("@Url.Action("SelectLog")", postdata, function (item) {
+                if (item != null && item != [])
+                {
+                    $('#historymall').empty().append(item);
+                    $('#history').modal('show');
+                } else {
+                    alert("未找到改记录！");
+                }
+            });
+
+        }
+
+        //分页
+        //前一页
+        function PrivatePage(e) {
+            var pageNum = $(e).next().val();
+            if (pageNum > 1) {
+                pageNumber = pageNum - 1;
+                FenPage()
+            }
+        }
+        //后一页
+        function NextPage(e) {
+            var pageNum = $(e).prev().val();
+            if (pageNum > 0 && pageNum < count) {
+                pageNumber = Number( pageNum )+ 1;
+                FenPage();
+            }
+        }
+        function tragePage(e) {
+            var pageNum = $('#currentPage').val();
+            if (pageNum > 0 && pageNum < count) {
+                pageNumber = Number(pageNum);
+                FenPage();
+            }
+        }
+        $('#currentPage').bind('keypress', function (event) {
+            if (event.keyCode == "13") {
+                var pageNum = $('#currentPage').val();
+                if (pageNum > 0 && pageNum < count) {
+                    pageNumber = Number(pageNum) ;
+                    FenPage();
+                }
+            }
+        });
+        function FenPage() {
+            var postdata = {
+                pageSize: pageSize,
+                pageNumber: pageNumber,
+                //select: select,
+                sort: sort,
+                branchid: branchId,
+                branchName: branchName,
+                user: user,
+                call: call
+            };
+            Serch(postdata);
+        }
+
+
+        //导入
+        function Import(e) {
+            oType = "update"
+            batchId = $(e).data().id;
+            pkid = $(e).data().pkid;
+            batchQty = $(e).data().batchqty;
+            stockQty = $(e).data().stockqty;
+            starttime = formatDate1($(e).data().starttime);
+            endtime = formatDate1($(e).data().endtime);
+            var file = $("#Cover");
+            file.after(file.clone().val(""));
+            file.remove();
+            $('#Import').modal('show');
+        }
+        function BtnImport()
+        {
+            if (oType=="update")
+                var postdata = { batchId: batchId, endDateTime: endtime, startDateTime: starttime, batchQty: batchQty, stockQty: stockQty, pkid: pkid };
+            else
+                var postdata = { batchId: 0, endDateTime: endtime, startDateTime: starttime, batchQty: 0, stockQty: 0, pkid: insertid };
+            var id = $('#importFile').attr('id');
+            $('#btnImport').attr("disabled", "disabled");
+            var post = {
+                pageSize: pageSize,
+                pageNumber: pageNumber,
+                //select: select,
+                sort: sort,
+                branchid: branchId,
+                branchName: branchName,
+                user: user,
+                call: call
+            };
+            $.ajaxFileUpload({
+                url: "@Url.Action("Import")",
+                secureuri: false,
+                fileElementId: id,
+                dataType: 'json',
+                async: false,
+                data: postdata,
+                type: "post",
+                success: function (result) {
+                  
+                    $('#btnImport').removeAttr("disabled");
+                    if (result.Status == 0) {
+                        alert("导入成功！");
+                        location.reload();
+                        return;
+                        Serch(post);
+                        $('#Import').modal('hide');
+                    } else {
+                        alert(result.Result);
+                        location.reload();
+                        return;
+                        Serch(post);
+                        $('#Import').modal('hide');
+                    }
+                  
+                },
+                error: function (data) //服务器响应失败处理函数
+                {
+                    $('#btnImport').removeAttr("disabled");
+                    alert(JSON.parse(data.responseText).Result);
+                    Serch(post);
+                    $('#Import').modal('hide');
+                }
+            });
+        }
+        $('#btnImport').on('click', function () {
+
+            BtnImport()
+        });
+        $('#importFile').on('change', function () {
+            var filename = $('#importFile').val();
+            $('#Cover').val(filename);
+        })
+
+
+        ////自动保存库存时间
+        //function readBra(e) {
+        //    var batch = $('#inputBra').val();
+        //    $('#inputSor').val(batch);
+        //}
+
+        function GetDateStr(addDayCount) {
+            var dd = new Date();
+            var link = "-", link1 = "-";
+            dd.setDate(dd.getDate() + addDayCount); //获取AddDayCount天后的日期
+            var y = dd.getFullYear();
+            var m = dd.getMonth() + 1; //获取当前月份的日期
+            var d = dd.getDate();
+            if (m < 10) {
+                link = "-" + "0";
+            }
+            if (d < 10) {
+                link1 = "-" + "0";
+            }
+            return y + link + m + link1 + d;
+        }
+        function BtnSort(e)
+        {
+            var num = $(e).val();
+            sort = num;
+            if (num % 2 == 0)
+            { $(e).val(Number(num) + 1); }
+            else { $(e).val(Number(num) - 1); }
+            var postdata = {
+                pageSize: pageSize,
+                pageNumber: 1,
+                //select: select,
+                sort: sort,
+                branchid: branchId,
+                branchName: branchName,
+                user: user,
+                call: call
+            };
+            Serch(postdata);
+        }
+
+        //处理时间类型的字符串
+        function formatDate(now) {
+            now = now.replace(/\/Date\(/, "").replace(")/", "");
+            now = new Date(parseInt(now));
+            var year = now.getFullYear();
+            var month = jia0(now.getMonth() + 1);
+            var date = jia0(now.getDate());
+            var hour = jia0(now.getHours());
+            var minute = jia0(now.getMinutes());
+            var second = jia0(now.getSeconds());
+            return year + "年" + month + "月" + date + "日   " + hour + ":" + minute + ":" + second;
+        }
+
+
+        function formatDate1(now) {
+            now = now.replace(/\/Date\(/, "").replace(")/", "");
+            now = new Date(parseInt(now));
+            var year = now.getFullYear();
+            var month = jia0(now.getMonth() + 1);
+            var date = jia0(now.getDate());
+            var hour = jia0(now.getHours());
+            var minute = jia0(now.getMinutes());
+            var second = jia0(now.getSeconds());
+            return year + "-" + month + "-" + date;
+        }
+        function jia0(n) {
+            if (n < 10)
+                n = "0" + n;
+            return n;
+        }
+        @*function SelectBranch(e) {
+            var id = $(e).data().id;
+            $.post("@Url.Action("Detail")", { batchId: id }, function () { });
+        }*@
+    </script>
+}

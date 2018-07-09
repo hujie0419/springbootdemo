@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title></title>
+    <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="css/swiper.min.css" />
+</head>
+<body>
+	<div class="wrapper">
+		<div class="battery">
+			<div class="left">Sketch</div>
+			<div class="center">9:41 AM</div>
+			<div class="right">100%</div>
+		</div>
+		<div class="logo">
+			<div class="left">上海市</div>
+			<div class="center">
+				<img src="img/logo.png" />
+			</div>
+			<div class="right"></div>
+		</div>
+		<div class="carmodel">
+			<span class="left">迈锐宝 2.0T 2014年产</span>
+			<span class="right">当前里程 20000km</span>
+		</div>
+		<div class="byTip">
+			<img src="img/tip.png" />
+		</div>
+		<div class="entry">
+			<a>
+				<img src="https://img1.tuhu.org/activity/image/c4e829f2-930f-48d0-8aae-c45988dfc638.png">
+				<p class="strong">换轮胎</p>
+				<p class="icon">¥400.00起</p>
+			</a> 
+			<a> 
+				<img src="https://img1.tuhu.org/activity/image/f71ade82-390b-4f63-93fe-1820e5999874.png">
+				<p class="strong">做保养</p>
+				<p>精确匹配</p>
+			</a> 
+			<a> 
+				<img src="https://img1.tuhu.org/activity/image/91f5bf1a-1b00-4f6c-b040-85ab6a424ee0.png">
+				<p class="strong">洗车</p>
+				<p>优质服务</p>
+			</a> 
+			<a> 																																																																																																						
+				<img src="https://img1.tuhu.org/activity/image/f1f90e33-9adc-40e3-a32a-354f961b1e7a.png">
+				<p class="strong">领红包</p>
+				<p>幸运大翻牌</p>
+			</a>
+		</div>
+		<div class="swiperItem">
+			<div class="swiper-container" id="service">
+			    <div class="swiper-wrapper">
+			        <div class="swiper-slide"><img src="img/wz.png"/>查违章</div>
+			        <div class="swiper-slide"><img src="img/jy.png"/>加油</div>
+			        <div class="swiper-slide"><img src="img/bx.png"/>保险</div>
+			        <div class="swiper-slide"><img src="img/fx.png"/>返现</div>
+			        <div class="swiper-slide"><img src="img/zb.png"/>直播</div>
+			        <div class="swiper-slide"><img src="img/wd.png"/>问答</div>
+			        <div class="swiper-slide"><img src="img/bx.png"/>保险</div>
+			        <div class="swiper-slide"><img src="img/fx.png"/>返现</div>
+			        <div class="swiper-slide"><img src="img/zb.png"/>直播</div>
+			        <div class="swiper-slide"><img src="img/wd.png"/>问答</div>
+			    </div>
+			</div>
+		</div>
+		<div class="hotnews">
+			<img src="img/news.png" />
+		</div>
+		<div class="advertise">
+			<img src="img/bannerv2.png" />
+		</div>
+		<div class="banner">
+			<div class="swiper-container" id="banner">
+				<div class="swiper-wrapper">
+				    <div class="swiper-slide">
+				    	<img src="img/bannerv2.png" />
+				    </div>
+				    <div class="swiper-slide">
+				    	<img src="img/bannerv2.png" />
+				    </div>
+				    <div class="swiper-slide">
+				    	<img src="img/bannerv2.png" />
+				    </div>
+			  	</div>
+			  	<div class="swiper-pagination"></div>
+			</div>
+		</div>
+		<div class="flash">
+			<div class="title">
+				<div class="left">天天秒杀</div>
+				<div class="right">
+					<img src="img/time.png" />
+				</div>
+			</div>
+			<div class="content">
+				<img src="img/flash.png" />
+			</div>
+		</div>
+		<div class="recom">
+			<div class="title">
+				<div class="left">精品推荐</div>
+				<div class="right">更多></div>
+			</div>
+			<div class="content">
+				
+			</div>
+		</div>
+		<div class="footer">
+			<a class="home">首页</a>
+			<a class="md">门店</a>
+			<a class="find">发现</a>
+			<a class="answer">问答</a>
+			<a class="my">我的</a>
+		</div>
+	</div>
+</body>
+</html>
+<script src="js/zepto.min.js"></script>
+<script src="js/swiper.min.js"></script>
+<script>
+	var bannerSwiper=new Swiper("#banner",{
+		loop:true,
+		pagination : '.swiper-pagination'
+	})
+	
+	var serviceSwiper=new Swiper("#service",{
+		slidesPerView:6
+	})
+</script>

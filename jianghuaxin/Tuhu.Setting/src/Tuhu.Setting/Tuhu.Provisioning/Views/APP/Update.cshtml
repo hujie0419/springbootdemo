@@ -1,0 +1,69 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+@using Tuhu.Provisioning.DataAccess.Entity
+@model tbl_app_Versions
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Update</title>
+</head>
+
+<body>
+    <div>
+        <form action="Update2" method="post" align="center">
+            <table cellspacing="0" rules="all" border="1" style="border-collapse:collapse" width="500" height="200" align="center">
+                <tr>
+                    <td align="center"><strong>版本编号</strong></td>
+                    <td align="center"><input type="text" name="Version_Number" value="@Model.Version_Number" style="width: 100%; height: 100%; border: 0pt; text-align: center" /></td>
+                </tr>
+                <tr>
+                    <td align="center"><strong>版本标识</strong></td>
+                    <td align="center"><input type="text" name="VersionCode" value="@Model.VersionCode" style="width: 100%; height: 100%; border: 0pt; text-align: center" /></td>
+                </tr>
+                <tr>
+                    <td align="center"><strong>强制更新</strong></td>
+                    @if (Model.MustUpdate==1)
+                    {
+                        <td align="center">
+                            <input type="radio" name="MustUpdate" id="MustUpdate1" value="1" checked="checked" sty="">是
+                            <input type="radio" name="MustUpdate" id="MustUpdate2" value="0">否
+                        </td>
+                    }
+                    else
+                    {
+                        <td align="center">
+                            <input type="radio" name="MustUpdate" id="MustUpdate1" value="1"  sty="">是
+                            <input type="radio" name="MustUpdate" id="MustUpdate2" value="0" checked="checked">否
+                        </td>
+                    }
+                </tr>
+                <tr>
+                    <td align="center"><strong>创建时间</strong></td>
+                    <td align="center">@Model.CreateTime</td>
+                </tr>
+                <tr>
+                    <td align="center"><strong>上次更新时间</strong></td>
+                    <td align="center">@Model.LastUpdateTime</td>
+                </tr>
+                <tr>
+                    <td align="center"><strong>下载地址</strong></td>
+                    <td align="center">@Model.Download</td>
+                </tr>
+                <tr>
+                    <td align="center"><strong>下载数量</strong></td>
+                    <td align="center">@Model.Download_Number</td>
+                </tr>
+                <tr>
+                    <td align="center" height="70"><strong>更新内容</strong></td>
+                    <td style="border:1px solid #000;margin:0px;padding:0px;overflow:hidden;"><textarea style="width: 100%; height: 100%;border:0pt;" name="UpdateConnent">@Model.UpdateConnent</textarea></td>
+                </tr>
+
+            </table>
+            <input type="submit" value="保存" /><input type="hidden" name="PKID" value="@Model.PKID" />
+        </form>
+    </div>
+</body>
+</html>

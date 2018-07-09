@@ -1,0 +1,863 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "返现配置";
+}
+<link rel="stylesheet" href="/Scripts/artDialog6.0.4/css/ui-dialog.css" />
+<link href="~/Content/iview/iview.css" rel="stylesheet" />
+<style type="text/css">
+    [v-cloak] {
+        display: none;
+    }
+
+    .tableContainer {
+        width: 100%;
+    }
+
+        .tableContainer th {
+            background: #66ABEF;
+            color: #F3F7FA;
+            border: 1px solid #559BD0;
+            font-weight: 600;
+            font-family: "Microsoft Yahei";
+            text-align: center;
+        }
+
+        .tableContainer td {
+            font-size: 75%;
+            padding: 8px 3px 8px 3px;
+            font-family: "Microsoft Yahei";
+            text-align: center;
+            border: 1px solid #eee;
+        }
+
+    .pager > button {
+        float: right;
+        margin-right: 4px;
+    }
+
+    .ui-dialog {
+        width: auto;
+    }
+
+    .demo-upload-list {
+        display: inline-block;
+        width: 60px;
+        height: 60px;
+        text-align: center;
+        line-height: 60px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        overflow: hidden;
+        background: #fff;
+        position: relative;
+        box-shadow: 0 1px 1px rgba(0,0,0,.2);
+        margin-right: 4px;
+    }
+
+    img:hover {
+        transform: scale(12);
+    }
+</style>
+<div id="div" style="margin-top:20px" v-cloak>
+    <Tabs type="card" v-model="filterCondition.tabValue">
+        <Tab-Pane label="25元返现" name="Rebate25"></Tab-Pane>
+        <Tab-Pane label="58元返现" name="Rebate58"></Tab-Pane>
+    </Tabs>
+    <div style="margin-bottom:20px">
+        <i-input style="width:200px;margin-left:15px" placeholder="订单号" v-model="filterCondition.orderId"></i-input>
+        <i-input style="width:200px;margin-left:15px" placeholder="手机号" v-model="filterCondition.phone"></i-input>
+        <i-input style="width:200px;margin-left:15px" placeholder="微信号" v-model="filterCondition.wxId"></i-input>
+        <i-input style="width:200px;margin-left:15px" placeholder="微信昵称" v-model="filterCondition.wxName"></i-input>
+    </div>
+    <div style="margin-top:20px">
+        <i-select v-model="filterCondition.status" style="margin-left:15px;height:30px;width:200px">
+            <i-option value="None">-请选择状态-</i-option>
+            <i-option value="Applying">待审核</i-option>
+            <i-option value="Approved">已通过但未支付</i-option>
+            <i-option value="Unapprove">审核拒绝</i-option>
+            <i-option value="Complete">已支付</i-option>
+        </i-select>
+        <i-input style="width:200px;margin-left:15px" placeholder="备注" v-model="filterCondition.remarks"></i-input>
+        <i-input style="width:200px;margin-left:15px" placeholder="红包专员" v-model="filterCondition.principalPerson"></i-input>
+        <i-input style="width:200px;margin-left:15px" placeholder="返现金额" v-model="filterCondition.rebateMoney"></i-input>
+    </div>
+    <div  style="margin-top:20px">
+        <i-select v-model="filterCondition.timeType" style="margin-left:15px;height:30px;width:200px;">
+            <i-option value="None">-请选择时间-</i-option>
+            <i-option value="CreateTime">申请时间</i-option>
+            <i-option value="CheckTime">审核时间</i-option>
+            <i-option value="RebateTime">返现时间</i-option>
+        </i-select>
+        <Date-Picker v-if="filterCondition.timeType!='None'" v-model="filterCondition.startTime" type="datetime" format="yyyy-MM-dd" placeholder="开始时间" style="width: 200px;margin-left:15px;"></Date-Picker>
+        <Date-Picker v-if="filterCondition.timeType!='None'" v-model="filterCondition.endTime" type="datetime" format="yyyy-MM-dd" placeholder="截止时间" style="width: 200px;margin-left:15px;"></Date-Picker>
+    </div>
+    <div style="margin-top:20px">
+        <i-button type="success" v-on:click="pager.currentPage=0;" style="margin-left:15px;height:30px;width:90px">查询</i-button>
+        <i-button type="success" v-if="filterCondition.tabValue=='Rebate58'" v-on:click="AddRebateConfig" style="margin-left:15px;height:30px;width:90px">新增</i-button>
+        <i-button type="info" v-on:click="ExportFile()" style="margin-left:15px;height:30px;width:90px">导出excel</i-button>
+        <i-button type="warning" v-on:click="ClearCondition" style="margin-left:15px;height:30px;width:90px">清空</i-button> 
+        <input type="file" v-if="isUploadFile=='1'&&filterCondition.tabValue=='Rebate58'" id="file" style="margin-left:15px;" value="上传文件" v-on:change="uploadFileChange" />
+        <i-button type="error" v-if="isUploadFile=='1'&&filterCondition.tabValue=='Rebate58'"  id="upload" v-bind:disabled="lock" v-on:click="UploadFile">批量导入</i-button>
+        <a style="float:right" href="/RebateConfig/RebatePageConfig" target="_blank">返现页面配置</a>
+    </div>
+    <table class="tableContainer" style="margin-top:30px">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="check_all" v-on:click="GetAllExportItem()" /></th>
+                <th>返现编号</th>
+                <th>订单号</th>
+                <th>手机号</th>
+                @*<th>二维码</th>*@
+                @*<th>微信号</th>*@
+                <th>微信昵称</th>
+                <th>状态</th>
+                <th v-if="filterCondition.tabValue=='Rebate25'"><span style="color:red;font-weight:bolder">支付Status</span></th>
+                <th v-if="filterCondition.tabValue=='Rebate25'"><span style="color:red;font-weight:bolder">支付Reason</span></th>
+                <th>拒绝原因</th>
+                <th>上传截图</th>
+                @*<th>百度ID</th>
+                <th>百度吧名</th>*@
+                <th>红包专员</th>
+                @*<th>用户名称</th>
+                <th>车牌号</th>*@
+                <th>来源</th>
+                <th v-if="filterCondition.tabValue=='Rebate58'">内容链接</th>
+                <th>返现金额</th>
+                <th>返现时间</th>
+                <th>备注</th>
+                <th>申请时间</th>
+                <th>审核时间</th>
+                <th>操作</th>
+                <th>审核</th>
+            </tr>
+        </thead>
+        <tr v-if="list.length<=0&&!loading">
+            <td colspan="22">无数据</td>
+        </tr>
+        <tr v-if="loading">
+            <td colspan="22"><img src="/Images/loading.gif" /></td>
+        </tr>
+        <tr v-for="(item,index) in list">
+            <td><input type="checkbox" :value="item.PKID" name="check_child" class="exportItem" /></td>
+            <td>{{item.PKID}}</td>
+            <td><a :href="'https://oms.tuhu.cn/Order/Details/'+item.OrderId" target="_blank">{{item.OrderId}}</a></td>
+            <td>{{item.UserPhone}}<i-button type="primary" size="small" v-if="item.UserPhone" v-on:click="SearchPhone(item,'phone')" style="margin-left:15px">查看</i-button> </td>
+            @*<td><a :href="item.QRCodeImg" target="_blank"><img :src="item.QRCodeImg" style="width:26px;height:auto;margin-left:5px" /></a></td>*@
+            @*<td>{{item.WXId|formatValue}}<i-button type="primary" size="small" v-if="item.WXId" v-on:click="SearchPhone(item.WXId,'wxId')" style="margin-left:15px">查看</i-button> </td>*@
+            <td>{{item.WXName }}</td>
+            <td>{{item.Status|formatCheckStatus}}</td>
+            <td v-if="filterCondition.tabValue=='Rebate25'">{{item.PayStatus}} <i-button v-if="isWxPayRetry=='1'&&item.PayStatus!=1&&item.PayStatus!=2&&item.RedOutbizNo" type="warning" v-on:click="WxPayManualRetry(item.PKID)" style="margin-left:15px;height:30px;width:90px">重试</i-button></td>
+            <td v-if="filterCondition.tabValue=='Rebate25'">{{item.Reason}}</td>
+            <td>{{item.RefusalReason}}</td>
+            <td>
+                <a v-for="imgItem in item.ImgList" :href="imgItem.ImgUrl" target="_blank">
+                    <img :src="imgItem.ImgUrl" style="width:26px;height:auto;margin-left:5px" />
+                </a>
+            </td>
+            @*<td>{{item.BaiDuId}}</td>
+            <td>{{item.BaiDuName}}</td>*@
+            <td>{{item.PrincipalPerson}}</td>
+            @*<td>{{item.UserName}}</td>
+            <td>{{item.CarNumber}}</td>*@
+            <td>{{item.Source}}</td>
+            <td v-if="filterCondition.tabValue=='Rebate58'"><a :href="item.ContentUrl" target="_blank">{{item.ContentUrl}}</a></td>
+            <td>{{item.RebateMoney}}</td>
+            <td>{{item.RebateTime|formatDate}}</td>
+            <td>{{item.Remarks}}<a v-on:click="editRemarks(item.PKID,item.Remarks)" style="cursor:pointer;margin-left:15px"><span>编辑</span></a></td>
+            <td>{{item.CreateTime|formatDate}}</td>
+            <td>{{item.CheckTime|formatDate}}</td>
+            <td>
+                <a v-on:click="SelectRebateConfigByPKID(item.PKID)" style="cursor:pointer"><span>查看</span></a>
+                <a v-on:click="SearchLog(item.PKID)" style="cursor:pointer"><span> / 日志</span></a>
+                <a v-if="isEnableDelete=='1'&&item.Status!='4'" v-on:click="DeleteRebateApplyConfig(item.PKID)" style="cursor:pointer"><span> / 删除</span></a>
+            </td>
+            <td v-if="item.Source!='爱卡'&&item.Source!='汽车之家'">
+                <a v-if="item.Status=='2'&&!item.RedOutbizNo" v-on:click="UpdateStatusForComplete(item.PKID)" style="cursor:pointer"><span>  完成支付</span></a>
+                <a v-if="item.Status=='1'&&!item.RedOutbizNo" v-on:click="UpdateStatus(item.PKID,'Approved')" style="cursor:pointer"><span> / 通过</span></a>
+                <a v-if="item.Status=='1'&&!item.RedOutbizNo" v-on:click="UpdateStatus(item.PKID,'Unapprove')" style="cursor:pointer"><span> / 拒绝</span></a>
+            </td>
+            <td v-if="item.Source=='爱卡'||item.Source=='汽车之家'">
+                <a v-if="item.Status=='1'" v-on:click="UpdateStatusForComplete(item.PKID)" style="cursor:pointer"><span>  完成支付</span></a>
+                <a v-if="item.Status=='1'" v-on:click="UpdateStatus(item.PKID,'Unapprove')" style="cursor:pointer"><span> / 拒绝</span></a>
+            </td>
+        </tr>
+    </table>
+    <div style="margin-top:20px;">
+        <i-span>
+            每页显示:
+            <i-select v-model="pager.size" style="width:100px">
+                <i-option v-for="size in sizes" v-bind:value="size">{{size}}</i-option>
+            </i-select>
+            条
+        </i-span>
+        <i-span>
+            <i-button type="info" v-on:click="pager.currentPage=1" v-bind:disabled="pager.currentPage<=1">首页</i-button>
+            <i-button type="info" v-on:click="pager.currentPage-=1" v-bind:disabled="pager.currentPage<=1">上一页</i-button>
+            <i-button type="info" v-on:click="pager.currentPage+=1" v-bind:disabled="pager.currentPage>=pager.pages">下一页</i-button>
+            <i-button type="info" v-on:click="pager.currentPage=pager.pages" v-bind:disabled="pager.currentPage>=pager.pages">尾页</i-button>
+        </i-span>
+        <i-span style="float:right">
+            <i-span>当前第{{pager.currentPage}}页/共{{pager.pages}}页&nbsp;&nbsp;转到<input style="width:30px" type="text" v-model="pager.inputPage">页</i-span>
+            <i-button type="info" v-on:click="pager.currentPage=pager.inputPage" v-bind:disabled="pager.inputPage<=0 || pager.inputPage>pager.pages">确定</i-button>
+        </i-span>
+    </div>
+    <artdialog v-if="logDialog" :height="500" :width="800" prefix="artdialog" v-on:close="logDialog=false" :title="'日志'">
+        <div class="dialog-content">
+            <table style="width:100%;line-height:25px">
+                <tr>
+                    <th>Type</th>
+                    <th>Msg</th>
+                    <th>操作人</th>
+                    <th>操作时间</th>
+                </tr>
+                <tr v-for="item in logData">
+                    <td>{{item.Type}}</td>
+                    <td>{{item.Msg}}</td>
+                    <td>{{item.OperateUser}}</td>
+                    <td>{{item.CreateDateTime|formatDate}}</td>
+                </tr>
+            </table>
+        </div>
+    </artdialog>
+    <artdialog v-if="remarkDialog" v-on:save="updateRemarks"  :height="200" :width="450" prefix="remarkDialog" :buttons="buttons" v-on:close="remarkDialog=false" :title="'备注'">
+        <div class="dialog-content">
+           <i-input type="textarea" v-model="remarks" style="height:180px"></i-input>
+        </div>
+    </artdialog>
+    <artdialog v-if="uploadDialog" :height="500" :width="800" prefix="artdialog" v-on:close="uploadDialog=false" :title="'上传结果'">
+        <div class="dialog-content">
+            <table style="width:100%;line-height:25px">
+                <tr>
+                    <th>#</th>
+                    <th>OrderId</th>
+                    <th>Msg</th>
+                </tr>
+                <tr v-for="(item,index) in uploadData">
+                    <td>{{++index}}</td>
+                    <td>{{item.OrderId}}</td>
+                    <td>{{item.Remarks}}</td>
+                </tr>
+            </table>
+        </div>
+    </artdialog>
+    <artdialog v-if="showdialog" v-on:save="save" :height="500" ref="artdialog" v-on:close="showdialog=false" :buttons="buttons" :title="'返现详情'">
+        <div class="dialog-content">
+            <table style="width:100%;line-height:25px">
+                <tr>
+                    <th style="width:20%">订单号</th>
+                    <td><i-input :disabled="dialogEdit" v-model="configData.OrderId" clearable style="width:70%"></i-input></td>
+                </tr>
+                <tr v-if="!dialogEdit">
+                    <th>手机号</th>
+                    <td><i-input :disabled="dialogEdit" v-model="configData.UserPhone" style="width:70%"></i-input></td>
+                </tr>
+                <tr v-if="!dialogEdit">
+                    <th>微信ID</th>
+                    <td><i-input :disabled="dialogEdit" v-model="configData.WXId" style="width:70%"></i-input></td>
+                </tr>
+                <tr>
+                    <th>微信昵称</th>
+                    <td><i-input :disabled="dialogEdit" v-model="configData.WXName" style="width:70%"></i-input></td>
+                </tr>
+                <tr>
+                    <th>用户名称</th>
+                    <td><i-input :disabled="dialogEdit" v-model="configData.UserName" style="width:70%"></i-input></td>
+                </tr>
+                <tr>
+                    <th>车牌号</th>
+                    <td><i-input :disabled="dialogEdit" v-model="configData.CarNumber" style="width:70%"></i-input></td>
+                </tr>
+                <tr>
+                    <th>来源</th>
+                    <td>
+                        <i-select v-model="configData.Source" :disabled="dialogEdit"style="width:70%" transfer>
+                            <i-option v-for="item in source" :value="item.value" key="item.value">{{item.label}}</i-option>
+                        </i-select>
+                </tr>
+                <tr>
+                    <th>内容</th>
+                    <td><i-input :disabled="dialogEdit" v-model="configData.ContentUrl" style="width:70%"></i-input></td>
+                </tr>
+                <tr>
+                    <th>红包专员</th>
+                    <td><i-input :disabled="dialogEdit" v-model="configData.PrincipalPerson" style="width:70%"></i-input></td>
+                </tr>
+                @*<tr>
+                    <th>返现金额</th>
+                    <td><i-input :disabled="dialogEdit" v-model="configData.RebateMoney" style="width:70%"></i-input></td>
+                </tr>*@
+                <tr>
+                    <th>备注</th>
+                    <td><i-input type="textarea" :disabled="dialogEdit" v-model="configData.Remarks" style="width:90%"></i-input></td>
+                </tr>
+            </table>
+        </div>
+    </artdialog>
+    <artdialog v-if="checkdialog" v-on:save="UpdateStatusToUnapprove" :width="800" :height="180" ref="artdialog" v-on:close="checkdialog=false" :buttons="buttons" :title="'返现详情'">
+        <div class="dialog-content">
+            <radio-group v-model="statusConfig.refusalReasonId" style="line-height:30px">
+                <radio label="3333" v-if="filterCondition.tabValue=='Rebate58'" :disabled="checkDisabled"><span>无</span></radio>
+                <radio label="3384" v-if="filterCondition.tabValue=='Rebate25'" :disabled="checkDisabled"><span>您好，您的朋友圈截图未满20个赞 ，请重新提交信息！</span></radio>
+                <radio label="3385" v-if="filterCondition.tabValue=='Rebate25'" :disabled="checkDisabled"><span>您的订单还是已发货状态，请联系门店或客服更改订单状态为“已安装”，更改后请重新提交信息！</span></radio>
+                <radio label="3386" v-if="filterCondition.tabValue=='Rebate25'" :disabled="checkDisabled"><span>您好，您上传的截图不符，请您重新提交信息，朋友圈截图需满足文字40个字，6张图，20个赞！</span></radio>
+                <radio label="3450" v-if="filterCondition.tabValue=='Rebate25'" :disabled="checkDisabled"><span>您好，您的朋友圈文字不足40个字，请在评论里加上40字文字说明且包含有“途虎养车购买安装”等字样，添加完成后重新截图并提交信息哦！</span></radio>
+            </radio-group>
+        </div>
+    </artdialog>
+</div>
+
+<script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+<script type="text/javascript" src="~/Content/My97DatePicker/WdatePicker.js"></script>
+<script src="/Scripts/artDialog6.0.4/dist/dialog-min.js"></script>
+<script src="/Scripts/artDialog6.0.4/dist/dialog-plus-min.js"></script>
+<script src="~/Scripts/ajaxfileupload.js"></script>
+<script src="~/Scripts/vue.common.js"></script>
+<script src="~/Scripts/iview/iview.min.js"></script>
+<script type="text/javascript">
+    function formatCheckStatus(value) {
+        var result = "无";
+        switch (value) {
+            case 1:
+                result = "待审核";
+                break;
+            case 2:
+                result = "已通过但未支付";
+                break;
+            case 3:
+                result = "审核拒绝";
+                break;
+            case 4:
+                result = "已支付";
+                break;
+        }
+        return result;
+    }
+    function formatValue(value) {
+        if (value) {
+            var result = value.slice(0, 3) + "****" + value.slice(-4);
+            return result;
+        } else {
+            return value;
+        }
+    }
+    Vue.filter('formatCheckStatus', formatCheckStatus);
+    Vue.filter('formatValue', formatValue);
+    var vue = new Vue({
+        el: "#div",
+        data: {
+            pager: {
+                total: 0,
+                pages: 0,
+                currentPage: 1,
+                size: 20,
+                inputPage: 0,
+            },
+            showdialog: false,
+            checkdialog: false,
+            statusConfig: {
+                refusalReason: "",
+                refusalReasonId: 3384,
+                pkid:0
+            },
+            buttons: "",
+            users: [],
+            loading: false,
+            dialogEdit: false,
+            excelFile: "",
+            lock: false,
+            logDialog: false,
+            remarkDialog:false,
+            uploadDialog: false,
+            disabled: false,
+            checkDisabled:false,
+            list: [],
+            outbizNo: "",
+            remarks: "",
+            pkid:0,
+            isWxPayRetry:"@ViewBag.IsWxPayRetry",
+            isEnableDelete: "@ViewBag.IsEnableDelete",
+            isUploadFile:"@ViewBag.IsUploadFile",
+            logData: {
+                Type: "",
+                Msg: "",
+                Remark: "",
+                OperateUser: "",
+                CreateDateTime: ""
+            },
+            uploadData: {},
+            configData: {
+                OrderId: "",
+                UserPhone: "",
+                WXId: "",
+                WXName: "",
+                Status:"Applying",
+                ImgList: [],
+                BaiDuId: "",
+                BaiDuName: "",
+                PrincipalPerson: "",
+                RebateMoney: "",
+                Remarks: "",
+                UserName: "",
+                CarNumber: "",
+                Source: "",
+                ContentUrl:""
+            },
+            source: [
+                {
+                    label: "-请选择-",
+                    value: ""
+                },
+                {
+                    label: "爱卡",
+                    value: "爱卡"
+                },
+                {
+                    label: "汽车之家",
+                    value: "汽车之家"
+                }
+            ],
+            sizes: [5, 10, 20, 40, 50, 100, 200],
+            filterCondition: {
+                status: "None",
+                timeType: "None",
+                pkidStr: "",
+                orderId: "",
+                phone: "",
+                wxId: "",
+                remarks: "",
+                startTime: "",
+                endTime: "",
+                wxName: "",
+                principalPerson: "",
+                rebateMoney: "",
+                tabValue: "Rebate25"
+            },
+        },
+        watch: {
+            "pager.total": function () {
+                var self = this;
+                self.pager.pages = Math.ceil(self.pager.total / self.pager.size);
+            },
+            "pager.size": function () {
+                var self = this;
+                if (self.pager.size <= 0) {
+                    self.pager.size = 1;
+                    return;
+                }
+                if (self.pager.size > 200) {
+                    self.pager.size = 200;
+                    return;
+                }
+                self.pager.pages = Math.ceil(self.pager.total / self.pager.size);
+                this.Init();
+            },
+            "pager.currentPage": function () {
+                var self = this;
+                if (self.pager.currentPage <= 0) {
+                    self.pager.currentPage = 1;
+                    return;
+                }
+                if (self.pager.pages > 1 && self.pager.currentPage > self.pager.pages) {
+                    self.pager.currentPage = self.pager.pages;
+                    return;
+                }
+                self.Init();
+            },
+            "filterCondition.tabValue": function () {
+                var self = this;
+                self.Init();
+            }
+        },
+        created: function () {
+            this.Init();
+        },
+        methods: {
+            Init: function () {
+                var self = this;
+                if (self.filterCondition.timeType != "None") {
+                    if (self.filterCondition.startTime == "" || self.filterCondition.endTime == "") {
+                        alert("请完善起止时间");
+                        return false;
+                    }
+                }
+                self.loading = true;
+                self.list = [];
+                $.get("SelectRebateConfig", {
+                    status: self.filterCondition.status,
+                    orderId: self.filterCondition.orderId,
+                    phone: self.filterCondition.phone,
+                    wxId: self.filterCondition.wxId,
+                    remarks: self.filterCondition.remarks,
+                    wxName: self.filterCondition.wxName,
+                    timeType: self.filterCondition.timeType,
+                    startTime: self.getTimeSpan(self.filterCondition.startTime),
+                    endTime: self.getTimeSpan(self.filterCondition.endTime),
+                    principalPerson: self.filterCondition.principalPerson,
+                    rebateMoney: self.filterCondition.rebateMoney,
+                    pageIndex: self.pager.currentPage,
+                    pageSize: self.pager.size,
+                    source: self.filterCondition.tabValue
+                }, function (result) {
+                    self.loading = false;
+                    self.list = result;
+                    self.pager.total = result.length > 0 ? result[0].Total : 0;
+                });
+            },
+            editRemarks: function (pkid,remarks) {
+                var self = this;
+                self.remarks = remarks;
+                self.pkid = pkid;
+                self.remarkDialog = true;
+            },
+            updateRemarks: function () {
+                var self = this;
+                if (confirm("是否确认操作？")) {
+                    $.post("UpdateRemarks", { pkid: self.pkid, remarks: self.remarks }, function (result) {
+                        if (result) {
+                            alert("操作成功");
+                            self.remarkDialog = false;
+                            setTimeout(function () { self.Init(); }, 2000);
+                        } else {
+                            alert("操作失败");
+                        }
+                    })
+                }
+            },
+            save: function () {
+                var self = this;
+                if (self.configData.OrderId == "") {
+                    alert("订单号不能为空或订单号输入有误");
+                    return;
+                }
+                if (self.configData.UserPhone == "") {
+                    alert("手机号不能为空");
+                    return;
+                }
+                if (self.configData.WXId == "") {
+                    alert("微信号不能为空");
+                    return;
+                }
+                if (self.configData.Source == "") {
+                    alert("请选择来源");
+                    return;
+                }
+                //if (self.configData.ImgList.length <= 0) {
+                //    alert("请上传图片");
+                //    return;
+                //}
+                if (confirm("是否确认操作？")) {
+                    if (isNaN(self.configData.OrderId))
+                        self.configData.OrderId = self.configData.OrderId.replace("th", "").replace("TH", "");
+                    $.post("UpsertRebateApplyConfig", { data: self.configData }, function (result) {
+                        if (result.status) {
+                            alert("操作成功");
+                            self.showdialog = false;
+                            setTimeout(function () { self.Init(); }, 2000);
+                        } else {
+                            alert(result.msg);
+                        }
+                    })
+                }
+            },
+            SelectRebateConfigByPKID: function (pkid) {
+                var self = this;
+                $.get("SelectRebateConfigByPKID", { pkid: pkid }, function (result) {
+                    self.configData.PKID = result.PKID;
+                    self.configData.OrderId = result.OrderId;
+                    self.configData.Status = self.StatusConvert(result.Status);
+                    self.configData.UserPhone = self.ParameterConvert(result.UserPhone);
+                    self.configData.WXId = self.ParameterConvert(result.WXId);
+                    self.configData.WXName = self.ParameterConvert(result.WXName);
+                    self.configData.ImgList = result.ImgList;
+                    self.configData.BaiDuId = self.ParameterConvert(result.BaiDuId);
+                    self.configData.BaiDuName = self.ParameterConvert(result.BaiDuName);
+                    self.configData.PrincipalPerson = self.ParameterConvert(result.PrincipalPerson);
+                    self.configData.RebateMoney = self.ParameterConvert(result.RebateMoney);
+                    self.configData.Remarks = self.ParameterConvert(result.Remarks);
+                    self.configData.Source = result.Source;
+                    self.configData.CarNumber = result.CarNumber;
+                    self.configData.UserName = result.UserName;
+                    self.configData.ContentUrl = result.ContentUrl;
+                    self.showdialog = true;
+                    self.dialogEdit = true;
+                    self.checkDisabled = false;
+                });
+            },
+            StatusConvert: function (status) {
+                var result = "Applying";
+                switch (status) {
+                    case 0:
+                    case 1:
+                        result = "Applying";
+                        break;
+                    case 2:
+                        result = "Approved";
+                        break;
+                    case 3:
+                        result = "Unapprove";
+                        break;
+                    case 4:
+                        result = "Complete";
+                        break;
+                    default:
+                        result = "Applying";
+                        break;
+                };
+                return result;
+            },
+            ParameterConvert: function (data) {
+                var result = data;
+                if (data === null || data === "null")
+                    result = "";
+                return result;
+            },
+            AddRebateConfig: function () {
+                var self = this;
+                self.configData.OrderId = "";
+                self.configData.UserPhone = "";
+                self.configData.WXId = "";
+                self.configData.WXName = "";
+                self.configData.ImgList = [];
+                self.configData.BaiDuId = "";
+                self.configData.BaiDuName = "";
+                self.configData.PrincipalPerson = "";
+                self.configData.RebateMoney = "";
+                self.configData.Remarks = "";
+                self.configData.CreateTime = "";
+                self.configData.PKID = "";
+                self.configData.RebateTime = "";
+                self.configData.UserName = "";
+                self.configData.CarNumber = "";
+                self.configData.Source = "";
+                self.configData.ContentUrl = "";
+                self.showdialog = true;
+                self.dialogEdit = false;
+                self.checkDisabled = false;
+            },
+            UpdateStatusToUnapprove() {
+                var self = this;
+                if (self.statusConfig.refusalReasonId <= 0) {
+                    alert("请选择拒绝原因");
+                    return false;
+                }
+                if (confirm("是否确认操作")) {
+                    $.post("UpdateStatus", { pkid: self.statusConfig.pkid, status: "Unapprove", refusalReasonId: self.statusConfig.refusalReasonId }, function (result) {
+                        if (result.status) {
+                            alert("操作成功");
+                            self.checkdialog = false;
+                            setTimeout(function () { self.Init(); }, 2000);
+                        } else {
+                            alert(result.msg);
+                        }
+                    });
+                }
+            },
+            UpdateStatus: function (pkid, status) {
+                var self = this;
+                if (status == "Unapprove") {
+                    self.statusConfig.pkid = pkid;
+                    if (self.filterCondition.tabValue == "Rebate58")
+                        self.statusConfig.refusalReasonId = 3333;
+                    else
+                        self.statusConfig.refusalReasonId = 3384;
+                    self.checkdialog = true;
+                } else {
+                    if (confirm("是否确认操作")) {
+                        $.post("UpdateStatus", { pkid: pkid, status: status }, function (result) {
+                            if (result.status) {
+                                alert("操作成功");
+                                self.checkdialog = false;
+                                setTimeout(function () { self.Init(); }, 2000);
+                            } else {
+                                alert(result.msg);
+                            }
+                        });
+                    }
+                }
+            },
+            UpdateStatusForComplete: function (pkid) {
+                var self = this;
+                if (confirm("是否确认操作")) {
+                    $.post("UpdateStatusForComplete", { pkid: pkid }, function (result) {
+                        if (result) {
+                            alert("操作成功");
+                            setTimeout(function () { self.Init(); }, 2000);
+                        } else {
+                            alert("操作失败");
+                        }
+                    });
+                }
+            },
+            SearchLog: function (pkid) {
+                var self = this;
+                self.logDialog = true;
+                $.get("SearchRebateConfigLog", { pkid: pkid }, function (result) {
+                    self.logData = result;
+                });
+            },
+            DeleteRebateApplyConfig: function (pkid) {
+                var self = this;
+                if (confirm("是否确认操作")) {
+                    $.post("DeleteRebateApplyConfig", { pkidStr: pkid }, function (result) {
+                        if (result) {
+                            alert("操作成功");
+                            setTimeout(function () { self.Init(); }, 2000);
+                        } else {
+                            alert("操作失败");
+                        }
+                    });
+                }
+            },
+            ClearCondition: function () {
+                var self = this;
+                self.filterCondition.status = "None";
+                self.filterCondition.orderId = "";
+                self.filterCondition.phone = "";
+                self.filterCondition.wxId = "";
+                self.filterCondition.remarks = "";
+                self.filterCondition.wxName = "";
+                self.filterCondition.timeType = "None";
+                self.filterCondition.principalPerson = "";
+                self.filterCondition.rebateMoney = "";
+                self.filterCondition.startTime = "";
+                self.filterCondition.endTime = "";
+            },
+            getTimeSpan(time) {
+                if (time) {
+                    var year = time.getFullYear();
+                    var day = time.getDate();
+                    var month = time.getMonth() + 1;
+                    var hours = time.getHours();
+                    var minutes = time.getMinutes();
+                    var seconds = time.getSeconds();
+                    return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
+                }
+            },
+            ExportFile: function () {
+                var self = this;
+                 if (self.filterCondition.timeType != "None") {
+                    if (self.filterCondition.startTime == "" || self.filterCondition.endTime == "") {
+                        alert("请完善起止时间");
+                        return false;
+                    }
+                }
+                 var href = "/RebateConfig/ExportRebateConfigInfo?status=" + self.filterCondition.status + "&timeType="
+                     + self.filterCondition.timeType + "&startTime=" + self.getTimeSpan(self.filterCondition.startTime) + "&endTime="
+                     + self.getTimeSpan(self.filterCondition.endTime) + "&orderId=" + self.filterCondition.orderId + "&phone="
+                     + self.filterCondition.phone + "&wxId=" + self.filterCondition.wxId + "&remarks="
+                     + self.filterCondition.remarks + "&principalPerson=" + self.filterCondition.principalPerson + "&rebateMoney="
+                     + self.filterCondition.rebateMoney + "&pageIndex=" + self.pager.currentPage + "&pageSize="
+                     + self.pager.size + "&wxName=" + self.filterCondition.wxName + "&source=" + self.filterCondition.tabValue;
+                window.open(href, "_blank");
+            },
+            //GetChecked: function () {
+            //    var self = this;
+            //    self.filterCondition.pkidStr = "";
+            //    $("input[name='check_child']:checked").each(function () {
+            //        if (this.checked) {
+            //            self.filterCondition.pkidStr += $(this).val() + ",";
+            //        }
+            //    })
+            //},
+            uploadFileChange: function (event) {
+                var self = this;
+                var input = event.target;
+                var file = input.files[0];
+                if (file) {
+                    self.excelFile = file;
+                }
+                else self.excelFile = null;
+            },
+            UploadFile: function () {
+                var self = this;
+                if (self.excelFile == null) {
+                    alert("请先上传文件");
+                    return;
+                }
+                self.lock = true;
+                var formData = new FormData();
+                formData.append("file", self.excelFile);
+                $.ajax({
+                    url: 'UploadFile',
+                    type: "post",
+                    data: formData,
+                    dataType: "json",
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        if (data.length > 0) {
+                            document.querySelector("#file").value = "";
+                            self.excelFile = null;
+                            self.uploadDialog = true;
+                            self.uploadData = data;
+                        }
+                        else {
+                            alert("上传失败!");
+                        }
+                        self.lock = false;
+                    },
+                    error: function (rsp) {
+                        alert("上传失败");
+                        self.lock = false;
+                    }
+                });
+            },
+            UpMorePicture: function (event) {
+                var self = this;
+                var input = event.target;
+                var file = input.files[0];
+                var formData = new FormData();
+                formData.append("file", file);
+                $.ajax({
+                    url: '/RebateConfig/UploadImage',
+                    type: "post",
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        if (data.Status) {
+                            self.configData.ImgList.push({ "ImgUrl": data.ImageUrl });
+                        } else {
+                            alert(data.Msg);
+                        }
+                    }
+                });
+            },
+            DelMorePicture: function (id) {
+                var self = this;
+                self.configData.ImgList = self.configData.ImgList.filter(function (x, index) {
+                    return index != id;
+                });
+            },
+            GetAllExportItem: function () {
+                if ($("#check_all")[0].checked) {
+                    $("[name='check_child']").attr("checked", 'true');
+                } else {
+                    $("[name='check_child']").removeAttr("checked");
+                }
+            },
+            WxPayManualRetry: function (pkid) {
+                var self = this;
+                if (confirm("是否确认重试")) {
+                    $.post("WxPayManualRetry", { pkid: pkid }, function (result) {
+                        if (result) {
+                            alert("回掉成功");
+                            setTimeout(function () { self.Init(); }, 2000);
+                        } else {
+                            alert("回掉失败");
+                        }
+                    })
+                }
+            },
+            SearchPhone: function (item, type) {
+                var self = this;
+                $.get("SelectRebateConfigByPKID", { pkid: item.PKID }, function (result) {
+                    item.UserPhone = self.ParameterConvert(result.UserPhone);
+                });
+                $.post("InsertSearchLog", { pkid: item.PKID, phone: item.UserPhone, type: type }, function (result) {
+
+                });
+            }
+        },
+    });
+</script>

@@ -1,0 +1,44 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.ServiceTypeSetting
+@{
+    Layout = null;
+}
+
+<style>
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: #0088cc;
+        border-color: #0088cc;
+    }
+</style>
+@using (Html.BeginForm(new { @enctype = "multipart/form-data" }))
+{
+    @Html.ValidationSummary(true)
+    @Html.HiddenFor(m => m.Id)
+    <div>  
+        <table style="width:100%">
+            <tbody>
+
+                <tr>
+                    <td>服务类型</td>
+                    <td>@Html.TextBoxFor(model => model.ServiceType)</td>
+                </tr>
+                <tr>
+                    <td>服务类型名称</td>
+
+                    <td>@Html.TextBoxFor(model => model.ServiceTypeName)</td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+      
+    <input class="btn" type="submit" value="保存" />
+    <input class="btn" type="button" value="取消" onclick="location = 'Index'" />
+
+}

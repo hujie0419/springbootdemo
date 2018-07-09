@@ -1,0 +1,220 @@
+﻿@{
+    Layout = null;
+}
+
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.SE_HomePageFlowProductConfig>
+
+<div class="modal-dialog">
+    <div class="modal-content" style="width:800px;">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                &times;
+            </button>
+            <h4 class="modal-title">
+                编辑瀑布流产品信息
+            </h4>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <form class="form-horizontal" id="form1">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">PID：</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="PID" name="PID" />
+                        </div>
+                        <label class="col-sm-2 control-label">产品名称：</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="DisplayName" name="DisplayName"  readonly="readonly"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">价格:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="Price" name="Price" readonly="readonly" />
+                        </div>
+                        <label class="col-sm-2">限时抢购活动ID：</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="PKFlashSale" name="PKFlashSale" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">排序:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="PriorityLevel" name="PriorityLevel"  />
+                        </div>
+                        <label class="col-sm-2">状态：</label>
+                        <div class="col-sm-4">
+                            <input type="radio" name="IsEnabled" value="true" checked="checked" /><span>启用</span>
+                            <input type="radio" name="IsEnabled" value="false" /><span>禁用</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-3">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <a href="javascript:void(0)" class="btn btn-danger btn-sm form-control" id="btnSave" name="btnSave">保  存</a>
+                        </div>
+                        <div class="col-sm-3">
+
+                        </div>
+                    </div>
+                    <input type="hidden" id="FKHomePageFlowConfig" name="FKHomePageFlowConfig" value="@ViewBag.FlowID"/>
+                </form>
+            </div>
+
+            <div class="row">
+                <table class="table table-bordered" id="FlowProducts">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>PID</th>
+                            <th>产品名称</th>
+                            <th>价格</th>
+                            <th>活动GUID</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>管 理</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null)
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.ID</td>
+                                    <td>@item.PID</td>
+                                    <td>@item.DisplayName</td>
+                                    <td>@item.Price</td>
+                                    <td>@item.PKFlashSale</td>
+                                    <td>@(item.IsEnabled==true?"启用":"禁用")</td>
+                                    <td>@(string.Format("yyyy-MM-dd HH:mm:ss",item.CreateDateTime))</td>
+                                    <td>
+                                        @*<a href="#" class="btn btn-default btn-sm" name="btnEdit" >编 辑</a>*@
+                                        <a href="#" class="btn btn-default btn-sm" name="btnDelete" data-id="@item.ID">删 除</a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        $('#PID').on('change', function () {
+            var value = $(this).val();
+            var pid = $(this);
+            if (value) {
+                $.ajax({
+                    url: '/ActivityV2/GetProductImage',
+                    type: 'post',
+                    data: { pid: value }
+                }).done(function (result) {
+                    result = JSON.parse(result);
+                    if (result.DisplayName) {
+                        $('#DisplayName').val(result.DisplayName);
+                        $('#Price').val(result.ActivityPrice);
+
+                    } else {
+                        alert("PID不存在");
+                        pid.val("");
+                        $('#DisplayName').val("");
+                        $('#Price').val("");
+                    }
+                });
+            } else {
+                $('#DisplayName').val("");
+                $('#Price').val("");
+                $('#PKFlashSale').val("");
+            }
+
+        });
+
+        $('#PKFlashSale').on('change', function () {
+            var value = $(this).val();
+            var pid =$('#PID').val();
+            if (value) {
+                $.ajax({
+                    url: '/ActivityV2/ActivityValidate',
+                    type: 'post',
+                    data: { activity: value, pid: pid },
+                    dataType: 'json'
+                }).done(function (result) {
+                    result = JSON.parse(result);
+                    if (!result.status) {
+                        alert("活动GUID在缓存中不存在");
+                        $('#PKFlashSale').val("");
+                    }
+                });
+            } else {
+                $('#PKFlashSale').val("");
+            }
+        });
+
+        $('a[name="btnDelete"]').on('click', function () {
+            var id = $(this).data("id");
+            var del = $(this);
+         
+            if (confirm("您确定删除吗?"))
+                if (id) {
+                    $.ajax({
+                        url: '/HomePageConfigV2/DeleteFlowProduct',
+                        type: 'post',
+                        data: { id: id }
+                    }).done(function (result) {
+                        if (result == 1) {
+                            del.parent().parent().remove()
+                        } else {
+                            alert("删除失败");
+                        }
+                    });
+                }
+
+        });
+
+        $('#btnSave').on('click', function () {
+            var data = {};
+            data.PID = $('#PID').val();
+            data.DisplayName = $("#DisplayName").val();
+            data.Price = $('#Price').val();
+            data.PKFlashSale = $('#PKFlashSale').val();
+            data.PriorityLevel = $('#PriorityLevel').val();
+            data.IsEnabled = $('input[name="IsEnabled"]:checked').val();
+            data.FKHomePageFlowConfig = $('#FKHomePageFlowConfig').val();
+            if (data.PID) {
+                $.ajax({
+                    url: '/HomePageConfigV2/FlowProductSave',
+                    type: 'post',
+                    data: data,
+                    dataType:'json'
+                }).done(function (result) {
+                    if (result == 1) {
+                        alert("保存成功");
+                        var html = "<tr>";
+                        html += "<td></td>";
+                        html += "<td>" + data.PID + "</td>";
+                        html += "<td>" + data.DisplayName + "</td>";
+                        html += "<td>" + data.Price + "</td>";
+                        html += "<td>" + data.IsEnabled == true ? "启用" : "禁用" + "</td>";
+                        html += "<td></td>";
+                        html += "<td></td> <td></td><td></td></tr>";
+                        $('#FlowProducts tbody').append(html);
+                        $("#PID").val("");
+                        $('#DisplayName').val("");
+                        $('#Price').val("");
+                        $('#PKFlashSale').val("");
+                        $('#PriorityLevel').val("");
+                    } else {
+                        alert("保存失败");
+                    }
+                });
+            }
+        });
+
+
+    });
+</script>

@@ -1,0 +1,31 @@
+﻿@{
+    ViewBag.Title = "Tuhu短链生产";
+    ViewBag.PageTitle = "Tuhu短链生成";
+    Layout = "../Shared/_Layout.cshtml";
+}
+<div style="margin:100px;font-size:1.8em;">
+    <input type="url" style="width:450px;height:1.8em;" id="baseUrl" placeholder="输入待转换URL">
+    <button style="width:120px;height:1.5rem;" onclick="transform()">生成短链</button>
+    <div style="margin-top:20px;">
+        <textarea id="shortUrl" style="width:450px; font-size:1.8rem;border-radius:5px;">
+        </textarea>
+    </div>
+</div>
+
+<script>
+    transform = function () {
+        var baseUrl = $("#baseUrl").val();
+        $.post("/MGMTools/Transform", {
+            url: baseUrl
+        }, function (data) {
+            if (data.Code === 0) {
+                alert(data.Info);
+                return false;
+            } else {
+                $("#shortUrl").val(data.Data);
+                return false;
+            }
+        });
+        return false;
+    }
+</script>

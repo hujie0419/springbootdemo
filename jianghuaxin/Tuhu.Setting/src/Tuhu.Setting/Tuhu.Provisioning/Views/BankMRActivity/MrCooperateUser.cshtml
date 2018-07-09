@@ -1,0 +1,307 @@
+﻿@{
+    ViewBag.Title = "合作用户配置";
+    Layout = "~/Views/Shared/_LayoutNew.cshtml";
+}
+@section css{
+    <link href="~/css/beautyPackage.css" rel="stylesheet" type="text/css" />
+}
+
+<div id="div" v-cloak>
+    <h2>
+        <a href="/BankMRActivity/MrCooperateUser">公司配置</a>
+        <a href="/BeautyServicePackage/ServiceCodeTypeConfig">服务码类型配置</a>
+    </h2>
+    <h2><button v-on:click="EditMrCooperateUserConfig()">添加客户</button></h2>
+    <table class="table table-striped table-bordered table-hover dataTables-example">
+        <thead>
+            <tr>
+                <th>客户ID</th>
+                <th>客户名称</th>
+                <th>公司</th>
+                <th>公司用户</th>
+                <th>创建人</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tr v-for="item in MrCooperateUserConfigs">
+            <td>{{item.PKID}}</td>
+            <td>{{item.CooperateName}}</td>
+            <td>{{item.VipCompanyName}}</td>
+            <td>{{item.VipUserName}}</td>
+            <td>{{item.CreateUser}}</td>
+            <td>
+                <button v-on:click="EditMrCooperateUserConfig(item)">操作</button>
+            </td>
+        </tr>
+    </table>
+    <div style="margin-top:20px;">
+        <span>
+            每页显示:
+            <select v-model="pager.size">
+                <option v-for="size in sizes" v-bind:value="size">{{size}}</option>
+            </select>
+            条
+        </span>
+        <span>
+            <button type="button" v-on:click="pager.currentPage=1" v-bind:disabled="pager.currentPage==1">首页</button>
+            <button type="button" v-on:click="pager.currentPage-=1" v-bind:disabled="pager.currentPage==1">上一页</button>
+            <button type="button" v-on:click="pager.currentPage+=1" v-bind:disabled="pager.currentPage==pager.pages">下一页</button>
+            <button type="button" v-on:click="pager.currentPage=pager.pages" v-bind:disabled="pager.currentPage==pager.pages">尾页</button>
+        </span>
+        <span style="float:right">
+            <span>当前第{{pager.currentPage}}页/共{{pager.pages}}页&nbsp;&nbsp;转到<input style="width:30px" type="text" v-model="pager.inputPage">页</span>
+            <button type="button" v-on:click="pager.currentPage=pager.inputPage" v-bind:disabled="pager.inputPage<=0 || pager.inputPage>pager.pages">确定</button>
+        </span>
+    </div>
+    <div id="MrCooperateUserConfigDialog">
+        <div class="content">
+            <modal v-if="Dialog.ShowMrCooperateUserConfigDialog" v-on:close="Dialog.ShowMrCooperateUserConfigDialog=false">
+                <h3 slot="header">编辑客户</h3>
+                <div slot="body" class="vertical-group">
+                    <div>
+                        <label>合作名称:</label>
+                        <input type="text" v-model="MrCooperateUserConfig.CooperateName" />
+                    </div>
+                    <div>
+                        <label>公司:</label>
+                        <select :disabled="MrCooperateUserConfig.PKID!=''" :style="MrCooperateUserConfig.PKID!=''?'background-color: #EEEEEE':''" v-model="CompanyId" v-on:change="ChangeCompany">
+                            <option v-for="item in AllVipCompany" v-bind:value="item.Id">
+                                {{item.Name}}
+                            </option>
+                        </select>
+                        <br/>
+                        <span v-if="MrCooperateUserConfig.PKID==''" style="font-size: 10px;color: #dc143c">(添加确认之后将不能修改)</span>
+                    </div>
+                    <div>
+                        <label>公司用户:</label>                   
+                        <select :disabled="MrCooperateUserConfig.PKID!=''" :style="MrCooperateUserConfig.PKID!=''?'background-color: #EEEEEE':''" v-model="MrCooperateUserConfig.VipUserId">
+                            <option v-for="item in CompanyUsers" v-bind:value="item.UserId">
+                                {{item.UserName}}
+                            </option>
+                        </select>
+                        <br/>
+                        <span v-if="MrCooperateUserConfig.PKID==''" style="font-size: 10px;color: #dc143c">(添加确认之后将不能修改)</span>
+                    </div>
+                    <div>
+                        <label>描述:</label>
+                        <textarea rows="3" cols="20" v-model="MrCooperateUserConfig.Description"></textarea>
+                    </div>
+                </div>
+                <div slot="footer">
+                    <button class="modal-default-button" v-on:click="UpsertMrCooperateUserConfig()">确认</button>
+                    <button class="modal-default-button" v-on:click="CloseMrCooperateUserConfigDialog">取消</button>     
+                </div>
+            </modal>
+        </div>
+    </div>
+</div>
+<script type="text/x-template" id="modal-template">
+    <transition name="modal">
+        <div class="modal-mask">
+            <div class="modal-wrapper">
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <slot name="header"></slot>
+                    </div>
+                    <div class="modal-body">
+                        <slot name="body"></slot>
+                    </div>
+                    <div class="modal-footer">
+                        <slot name="footer">
+                            <button class="modal-default-button" v-on:click="">OK</button>
+                        </slot>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</script>
+@section scripts{
+
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/dateJs/vue-date.min.js"></script>
+    <script type="text/javascript">
+    function formatDate(value) {
+        if (value) {
+            var time = value instanceof Date ? value : eval('new ' + value.toString().replace(/\//g, ""));
+            var year = time.getFullYear();
+            var day = time.getDate();
+            var month = time.getMonth() + 1;
+            var hours = time.getHours();
+            var minutes = time.getMinutes();
+            var seconds = time.getSeconds();
+            var func = function (value, number) {
+                var str = value.toString();
+                while (str.length < number) {
+                    str = "0" + str;
+                }
+                return str;
+            }
+            if (year == 1) {
+                return "";
+            } else {
+                return func(year, 4) + '-' + func(month, 2) + '-' + func(day, 2) + ' '
+            }
+        }
+    }
+    Vue.filter('formatDate', formatDate);
+    Vue.component('modal', {
+        template: '#modal-template'
+    });
+    var vue = new Vue({
+        el: "#div",
+        data: {
+            MrCooperateUserConfigs: [],
+            AllVipCompany: [],
+            CompanyUsers: [],
+            CompanyId: 0,
+            sizes: [2, 5, 10, 20, 40, 50, 100, 200],
+            pager: {
+                total: 0,
+                pages: 0,
+                currentPage: 1,
+                size: 20,
+                inputPage: 0
+            },
+            MrCooperateUserConfig: {
+                PKID: "",
+                CooperateName: "",
+                VipUserId: "",
+                VipUserName: "",
+                VipCompanyName: "",
+                Description: "",
+                CreateUser: "",
+                CreateTime: "",
+                UpdateTime: ""
+            },
+            Dialog: {
+                ShowMrCooperateUserConfigDialog: false
+            },
+        },
+        components: { datepicker },
+        created: function () {
+            this.load();
+        },
+        watch: {
+            "CompanyId": function () {
+                var self = this;
+                self.GetCompanyUsersByCompanyId();
+            },
+            "pager.total": function () {
+                var self = this;
+                var pager = self.pager;
+                pager.pages = Math.ceil(pager.total / pager.size);
+            },
+            "pager.size": function () {
+                var self = this;
+                if (self.pager.size <= 0) {
+                    self.pager.size = 1;
+                    return;
+                }
+                if (self.pager.size > 200) {
+                    self.pager.size = 200;
+                    return;
+                }
+                self.pager.pages = Math.ceil(self.pager.total / self.pager.size);
+                this.load();
+            },
+            "pager.currentPage": function () {
+                var self = this;
+                if (self.pager.currentPage <= 0) {
+                    self.pager.currentPage = 1;
+                    return;
+                }
+                if (self.pager.pages > 0 && self.pager.currentPage > self.pager.pages) {
+                    self.pager.currentPage = self.pager.pages;
+                    return;
+                }
+                self.load();
+            }, 
+        },
+        methods: {
+            load: function (callback) {
+                var self = this;
+                self.GetMrCooperateUserConfigs(self.pager.currentPage, self.pager.size);
+            },
+            ChangeCompany: function () {
+                this.MrCooperateUserConfig.VipUserId = "";
+            },
+            delayLoad: function (callback) {
+                var self = this;
+                setTimeout(function () { self.load(callback); }, 2000);
+            },
+            EditMrCooperateUserConfig: function (config) {
+                var self = this;
+                self.GetAllVipCompany(function () {
+                    if (config) {
+                        self.MrCooperateUserConfig.PKID = config.PKID;
+                        self.MrCooperateUserConfig.CooperateName = config.CooperateName;
+                        self.MrCooperateUserConfig.VipUserId = config.VipUserId;
+                        self.MrCooperateUserConfig.VipUserName = config.VipUserName;
+                        self.MrCooperateUserConfig.VipCompanyName = config.VipCompanyName;
+                        self.MrCooperateUserConfig.Description = config.Description == null ? "":config.Description;
+                        self.MrCooperateUserConfig.CreateUser = config.CreateUser;
+                        self.MrCooperateUserConfig.CreateTime = config.CreateTime;
+                        self.MrCooperateUserConfig.UpdateTime = config.UpdateTime;
+                        self.CompanyId = config.VipCompanyId;
+                    } else {
+                        self.MrCooperateUserConfig.PKID = 0;
+                        self.MrCooperateUserConfig.CooperateName = "";
+                        self.MrCooperateUserConfig.VipUserId = "";
+                        self.MrCooperateUserConfig.VipUserName = "";
+                        self.MrCooperateUserConfig.VipCompanyName = "";
+                        self.MrCooperateUserConfig.Description = "";
+                        self.MrCooperateUserConfig.CreateUser = "";
+                        self.MrCooperateUserConfig.CreateTime = "";
+                        self.MrCooperateUserConfig.UpdateTime = "";
+                    }
+
+                    self.Dialog.ShowMrCooperateUserConfigDialog = true;
+                });               
+            },
+            CloseMrCooperateUserConfigDialog: function () {
+                var self = this;
+                self.Dialog.ShowMrCooperateUserConfigDialog = false;
+            },
+            GetMrCooperateUserConfigs: function (pageIndex, pageSize) {
+                var self = this;
+                $.get("GetMrCooperateUserConfigs", {
+                    pageIndex: pageIndex, pageSize: pageSize
+                }, function (result) {
+                    self.MrCooperateUserConfigs = result.Item1 || [];;
+                    self.pager.total = result.Item2 || 0;
+                })
+            },
+            UpsertMrCooperateUserConfig: function () {
+                var self = this;
+                var config = self.MrCooperateUserConfig;
+                if (config.VipUserId && config.VipUserId != "") {
+                    $.post("UpsertMrCooperateUserConfig", { config: config }, function (result) {
+                        if (result) {
+                            alert("成功");
+                            self.Dialog.ShowMrCooperateUserConfigDialog = false;
+                            self.load();
+                        }
+                    })
+                } else {
+                    alert("没有用户不能保存");
+                }                
+            },
+            GetAllVipCompany: function (callback) {
+                var self = this;
+                $.get("GetAllVipCompany", function (data) {
+                    self.AllVipCompany = data;
+                    return callback();
+                })
+            },
+            GetCompanyUsersByCompanyId() {
+                var self = this;
+                $.get("GetCompanyUsersByCompanyId", { companyId: self.CompanyId }, function (data) {
+                    self.CompanyUsers = data;
+                })
+            }
+        }
+    })
+
+    </script>
+}

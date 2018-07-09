@@ -1,0 +1,281 @@
+﻿@{
+    ViewBag.Title = "ProductDetail";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+@model Tuhu.Provisioning.DataAccess.Entity.Router.RouterLink
+
+
+<div style="font-size: 13px">
+    <div class="container" id="container" style="margin-top: 50px; min-height: 330px; overflow-y: auto; width: 800px;">
+        <div class="form-group">
+            <div class="col-sm-2"></div>
+            @if (ViewBag.linkKind == 1)
+            {
+                <div class="col-sm-2">
+                    <input type="radio" name="rbtire" value="/tire/item" @(ViewBag.state == 1 ? "checked=\"checked\"" : "")/><span>轮胎</span>
+                </div>
+                <div class="col-sm-2">
+                    <input type="radio" name="rbtire" value="/wheelRim/item" @(ViewBag.state == 2 ? "checked=\"checked\"" : "")/><span>轮毂</span>
+                </div>
+                <div class="col-sm-2">
+                    <input type="radio" name="rbtire" value="/accessory/item" @(ViewBag.state == 3 ? "checked=\"checked\"" : "")/><span>车品</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">车型要求:</label>
+                    <div class="col-sm-4">
+                        <select id="tireType" name="tireType" class="form-control">
+                            <option value="">无</option>
+                            <option value="requireCarLevel2=1">二级车型</option>
+                            <option value="requireCarLevel4=1">4级车型</option>
+                            <option value="requireCarLevel5=1">5级车型</option>
+                        </select>
+                    </div>
+                </div>
+            }
+            @if (ViewBag.linkKind == 2)
+            {
+                <div class="col-sm-2">
+                    <input type="radio" name="rbtire" value="/pages/tireDetail/tireDetail" @(ViewBag.state == 1 ? "checked=\"checked\"" : "")/><span>轮胎</span>
+                </div>
+                <div class="col-sm-2">
+                    <input type="radio" name="rbtire" value="/pages/hubs/detail" @(ViewBag.state == 2 ? "checked=\"checked\"" : "")/><span>轮毂</span>
+                </div>
+                <div class="col-sm-2">
+                    <input type="radio" name="rbtire" value="/pages/chepin/detail" @(ViewBag.state == 3 ? "checked=\"checked\"" : "")/><span>车品</span>
+                </div>
+            }
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+        </div>
+        <br/>
+        <br/>
+        
+        <br/>
+        <br/>
+        <div class="form-group">
+            <label class="col-sm-2 control-label"> 产品ID：</label>
+            <div class="col-sm-10">
+                <input type="text" id="txtPID" name="txtPID" class="form-control" value="@ViewBag.pid"/>
+            </div>
+        </div>
+        <br/>
+        <br/>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">名称:</label>
+            <div class="col-sm-10">
+                <input type="text" id="pName" name="pName" class="form-control" value="@ViewBag.pName"/>
+            </div>
+        </div>
+        <br/>
+        <br/>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">活动ID:</label>
+            <div class="col-sm-10">
+                <input type="text" id="txtActivityID" name="txtActivityID" class="form-control" value="@ViewBag.aid"/>
+            </div>
+        </div>
+        <br/>
+        <br/>
+        <div class="form-group">
+
+            @if (Model != null)
+            {
+                foreach (var item in Model.RouterParameterList)
+                {
+                    if (item.Kind == 1)
+                    {
+                        <div class="col-sm-3">
+                            <input type="radio" class="check" value="@item.Content" style="font-size: 100px" @(item.State == 1 ? "checked=\"checked\"" : "")/><span>@item.Discription</span>
+                        </div>
+                    }
+                    else if (item.Kind == 2)
+                    {
+                        <div class="col-sm-4">
+                            <label>@item.Discription</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <input type="text" name="text" class="text" id="text" value="@item.Url"/>
+                        </div>
+                    }
+                }
+
+                <div class="col-sm-4">
+                    <input type="hidden" class="form-control" id="MainLinkContent" name="MainLinkContent" value="@Model.MainLink.Content"/>
+                </div>
+                <div class="col-sm-4">
+                    <input type="hidden" class="form-control" id="para" name="para" value="@ViewBag.paraArray"/>
+                </div>
+                <div class="col-sm-12">
+                    <input type="hidden" class="form-control" id="linkId" name="linkId" value="@ViewBag.linkId"/>
+                </div>
+                <div class="col-sm-12">
+                    <input type="hidden" class="form-control" id="noLinkId" name="noLinkId" value="@ViewBag.noLinkId"/>
+                </div>
+                <div class="col-sm-12">
+                    <input type="hidden" class="form-control" id="linkKind" name="linkKind" value="@ViewBag.linkKind"/>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="modal-footer" style="text-align: center;">
+            <button type="button" class="btn btn-default btn-sm" style="width: 160px;" id="btnSave" name="btnSave">生成</button>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="~/Scripts/multiple/multiple-select.css" type="text/css"/>
+<script type="text/javascript" src="~/Scripts/multiple/multiple-select.js"></script>
+<script type="text/javascript">
+
+
+    $(function() {
+
+
+        $("#txtPID").on("blur",
+            function() {
+
+                var id = $('#txtPID').val();
+                $.ajax({
+                    url: 'GetProductNameById',
+                    type: 'post',
+                    dataType: 'json',
+                    data: { id: id },
+                    success: function(result) {
+                        if (result !== 0) {
+
+                            $("#pName").val(result);
+
+
+                        } else {
+                            parent.layer.msg('ID不存在', { shade: 0.3 });
+                            $("#pName").val("");
+                            return;
+                        }
+
+                    },
+                    error: function(xmlHttpRequest, textStatus) {
+                        //alert("进入error！");
+                        alert(XMLHttpRequest.status);
+                        alert(XMLHttpRequest.readyState);
+                        alert(textStatus);
+                    }
+                });
+
+            });
+        //保存按钮点击事件
+        $('#btnSave').on('click',
+            function() {
+                var mainLinkContent = $('input:radio[name="rbtire"]:checked').val();
+                var pId = $('#txtPID').val();
+                var pName = $('#pName').val();
+                var aId = $('#txtActivityID').val();
+                var vId = "";
+                var pIdArray = pId.split("|");
+
+
+                if (mainLinkContent == null) {
+                    parent.layer.msg('请选择类型', { shade: 0.3 });
+                    return;
+                }
+
+                if (pName === "" || pId === "") {
+                    parent.layer.msg('请填写正确的产品ID', { shade: 0.3 });
+                    return;
+                }
+
+                if (pId !== "" && pIdArray.length > 1) {
+                    if (pIdArray[1] != "") {
+                        vId = pIdArray[1];
+                        pId = pIdArray[0];
+                    }
+                }
+
+                var check = "";
+                $("input[class^='check']").each(function() { //遍历每一个名以check开头的input.
+
+                    if ($(this).prop("checked")) {
+                        check += "&" + (encodeURIComponent($(this).val()));
+                    }
+                });
+
+                var linkKind = $('#linkKind').val();
+                var tireType = $('#tireType').val();
+                if ($('#tireType').val() !== "")
+                    tireType = "&" + encodeURIComponent(tireType);
+                var url;
+                switch (linkKind) {
+                case "1": //APP
+                    url = mainLinkContent +
+                        "?pid=" +
+                        encodeURIComponent(pId) +
+                        (vId !== "" ? ("&vid=" + encodeURIComponent(vId)) : "") +
+                        (aId !== "" ? ("&aid=" + encodeURIComponent(aId)) : "") +
+                        check +
+                        tireType;
+                    break;
+                case "2": //小程序
+                    url = mainLinkContent +
+                        "?productid=" +pId +
+                        (vId !== "" ? ("&variantid=" + vId) : "") +
+                        (aId !== "" ? ("&vid=" + aId) : "") ;
+                    break;
+                }
+                var linkId = $('#linkId').val();
+                var noLinkId = $('#noLinkId').val();
+                if (linkId !== "" && noLinkId !== "") {
+
+
+                    $("#Link").val(url);
+                    parent.$("#" + linkId).val(url);
+                    parent.$("#" + noLinkId).val(decodeURIComponent(url));
+
+                    //关闭窗口
+                    var index = parent.layer.getFrameIndex(window.name);
+                    parent.layer.close(index);
+                }
+
+            });
+
+        //设置radio可以取消
+        $(":radio").click(
+            function() {
+                var nm = $(this).attr("name");
+                $(":radio[name=" + nm + "]:not(:checked)").attr("tag", 0);
+                if ($(this).attr("tag") == 1) {
+                    $(this).attr("checked", false);
+                    $(this).attr("tag", 0);
+                } else {
+                    $(this).attr("tag", 1);
+                }
+            }
+        );
+
+    });
+
+    //预置车型选择
+    function initTireType() {
+        var require = $("#para").val();
+
+        if ("" !== require) {
+            // alert(require);
+            var paraArray = require.split('&');
+
+            var select = document.getElementById("tireType");
+            for (var i = 0; i < select.length; i++) {
+                for (var j = 0; j < paraArray.length; j++) {
+                    if (select.options[i].value === paraArray[j]) {
+                        select.options[i].setAttribute("selected", true);
+
+                    }
+                }
+
+            }
+
+
+        }
+    }
+
+    initTireType();
+</script>

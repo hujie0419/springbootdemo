@@ -1,0 +1,213 @@
+﻿
+@{
+    ViewBag.Title = "六周年车型认证审核";
+}
+
+
+<!DOCTYPE html>
+<style>
+    .search-bar {
+        margin-top:20px;
+        border-bottom:1px solid #ccc;
+        width:100%;
+        display: flex;
+        height:30px;
+        flex-direction: row;
+        align-items: flex-start;
+    }
+    .search-bar div{display:block;width:100px;text-align: right;margin-right:10px;}
+
+    .overlay {
+        display: block;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        background-color: #999;
+        opacity: 0.3;
+        top: 0px;
+        left: 0px;
+        right: 0px;
+        bottom: 0px;
+    }
+    #LogListDialog .container a{
+        display: block;
+        width: 50px;
+        height: 30px;
+        text-align: center;
+        line-height: 30px;
+        color: #666;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    #LogListDialog .container {
+        position: fixed;
+        width: 80%;
+        background-color:#fff;
+        margin: auto;  
+        position: fixed;  
+        top: 0; left: 0; bottom: 0; right: 0;
+        text-align: center;
+        padding:20px;
+    }
+    .PageSize{padding:20px;}
+</style>
+
+<div>
+    
+    <div class="search-bar">
+        <div>手机号</div>
+        <input id="mobile"/>
+        <div>认证状态</div>
+        <div>
+            <select id="status">
+                <option value="0">审核中</option>
+                <option value="1">审核通过</option>
+                <option value="-1">未认证</option>
+            </select>
+        </div>
+        <button id="search">搜索</button>
+    </div>
+    <div class="PageSize">
+        每页显示：
+        <select id="PageSize">
+            <option value="10">10</option>
+            <option value="20" selected="selected">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="10000">10000</option>
+        </select>条
+    </div>
+    <div id="content" class="content">
+
+    </div>
+</div>
+<pre>
+        审核步骤
+            1. 在状态为“审核中”的列表中查看需要审核的数据
+            2. 查看“行驶证照片”上的车牌号和VIN码与用户填写的是否一致？
+            3. 如果一致，操作“设为认证成功”，不一致操作“设为未认证”
+ 
+        注：系统审核在每天8:00和13:00和17:00执行三次，请小伙伴们在这些时间点后不久进行人工审核，如果间隔时间太长，建议等待下一次系统审核后再进行人审，谢谢
+</pre>
+@section scripts{
+    <div id="LogListDialog" style="display: none;">
+        <div class="overlay"></div>
+        <div class="container">
+            <div class="content"></div>
+            <div>
+                <a style="float: right;" class="close">关闭</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function() {
+            var elements = {
+                mobile: jQuery("#mobile"),
+                status: jQuery("#status"),
+                btnSearch: jQuery("#search"),
+                content: jQuery("#content"),
+                logListDialog: jQuery("#LogListDialog"),
+                pageSize: jQuery("#PageSize")
+            };
+
+
+            var events = {
+                getPageList: function(pageIndex) {
+
+                    jQuery.ajax({
+                        url: 'List',
+                        data: {
+                            pageIndex: pageIndex,
+                            pageSize: elements.pageSize.val(),
+                            status: elements.status.val(),
+                            mobile: elements.mobile.val()
+                        },
+                        success: function(data) {
+                            elements.content.html(data);
+                        }
+                    });
+                },
+                getLogsList: function(carId) {
+                    jQuery.ajax({
+                        url: 'Logs',
+                        data: {
+                            carId: carId
+                        },
+                        success: function(data) {
+                            elements.logListDialog.show().find(".content").html(data);
+                        }
+                    });
+                }
+            };
+            elements.logListDialog.find("a.close").click(function() {
+                elements.logListDialog.hide();
+            });
+
+            elements.pageSize.bind("change",
+                function() {
+                    events.getPageList(1);
+                });
+
+            elements.content.delegate("a[name=SetStatus]",
+                'click',
+                function() {
+                    var status = jQuery(this).data('status');
+                    var oldStatus = jQuery(this).data('oldstatus');
+                    var carid = jQuery(this).data('carid');
+                    var mobile =
+                        jQuery(this).data('mobile');
+                    var carNo = jQuery(this).data('carno');
+                    var statusText = "";
+                    if (status == "1") {
+                        statusText = "认证成功";
+                    } else if (status == "-1") {
+                        statusText = "未认证";
+                    }
+                    if (confirm("确认把这个车型设为" + statusText + "状态吗？并且给此用户发送短信通知")) {
+                        jQuery.ajax({
+                            url: 'SetStatus',
+                            type: 'POST',
+                            data: {
+                                carId: carid,
+                                newStatus: status,
+                                oldStatus: oldStatus,
+                                description: '',
+                                mobile: mobile,
+                                carNo: carNo
+                            },
+                            success: function(data) {
+                                if (data && data.success) {
+                                    alert("操作成功");
+                                    events.getPageList(1);
+                                }
+                            }
+                        });
+                    }
+
+                }).delegate("a[name=LogList]",
+                "click",
+                function() {
+                    var el = jQuery(this);
+                    var carid = jQuery(el).data('carid');
+                    events.getLogsList(carid);
+                });
+            elements.content.on("click",
+                ".pager>a",
+                function(event) {
+                    event.preventDefault();
+                    var url = $(this).attr("href");
+                    if (url) {
+                        $.get(url,
+                            function(html) {
+                                elements.content.html(html);
+                            });
+                    }
+                });
+            elements.btnSearch.bind("click",
+                function() {
+                    events.getPageList(1);
+                });
+            events.getPageList(1);
+        })();
+    </script>
+}

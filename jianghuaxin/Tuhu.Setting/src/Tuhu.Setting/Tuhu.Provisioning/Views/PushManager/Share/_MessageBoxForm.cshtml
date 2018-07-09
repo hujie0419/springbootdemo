@@ -1,0 +1,320 @@
+﻿@using Newtonsoft.Json;
+@using Tuhu.Service.Push.Models.MessageBox
+@using Tuhu.Service.Push.Models.Push
+@model List<Tuhu.Service.Push.Models.Push.PushTemplate>
+@{
+    var plan = Model != null ? Model.FirstOrDefault() : null;
+    Func<MessageBoxShowType, string> getname = type =>
+    {
+        switch (type)
+        {
+            case MessageBoxShowType.Text:
+                return "文字";
+            case MessageBoxShowType.BigImageText:
+                return "大图文";
+            case MessageBoxShowType.SmallImageText:
+                return "小图文";
+            case MessageBoxShowType.ActivityText:
+                return "互动消息文字";
+            case MessageBoxShowType.OrderText:
+                return "订单文字消息";
+            default:
+                return "";
+        }
+    };
+    var showtypes = Enum.GetValues(typeof(MessageBoxShowType)).Cast<MessageBoxShowType>().Where(x => x != MessageBoxShowType.OrderText).Select(x => new
+    {
+        name = getname(x),
+        value = x
+    });
+    var messagebox = Model == null ? null : Model.FirstOrDefault(x => x.DeviceType == Tuhu.Service.Push.Models.Push.DeviceType.MessageBox);
+    var dict = new Dictionary<string, string>();
+    if (ViewData["dict"] != null)
+    {
+        dict = ViewData["dict"] as Dictionary<string, string>;
+    }
+
+    Func<string, Dictionary<string, string>> GetExtraDict = type =>
+    {
+        if (messagebox != null && messagebox.ExtraDict != null && messagebox.ExtraDict.ContainsKey(type) && !string.IsNullOrEmpty(messagebox.ExtraDict[type]))
+        {
+            return JsonConvert.DeserializeObject<Dictionary<string, string>>(messagebox.ExtraDict[type]);
+        }
+        else
+        {
+            return new Dictionary<string, string>();
+        }
+    };
+    var iosdict = GetExtraDict("ios");
+    var androiddict = GetExtraDict("android");
+    var androidextradict = androiddict.Where(x => x.Key != "AppActivity");
+
+    var navigationTypes = ViewData["NavigationTypes"] as IEnumerable<MessageNavigationType>;
+    List<SelectListItem> navigationTypeSelects = new List<SelectListItem>();
+
+    foreach (var item in navigationTypes)
+    {
+        var selectitem = new SelectListItem()
+        {
+            Text = item.NavigationName,
+            Value = item.PkId.ToString()
+        };
+
+        if (messagebox != null && messagebox.MessageNavigationTypeId.HasValue)
+        {
+            selectitem.Selected = messagebox.MessageNavigationTypeId.Value == item.PkId;
+        }
+        navigationTypeSelects.Add(selectitem);
+    }
+    if (!navigationTypeSelects.Any(x => x.Selected))
+    {
+        navigationTypeSelects[0].Selected = true;
+    }
+}
+<div id="boxinfo" style="display: none">
+    <div style="display:none;width:auto" id="EditConfig">
+
+        <div>
+
+            <div class="modal-body form-horizontal">
+
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="aCategoryName">推送标题</label>
+                    <div class="col-sm-8">
+                        <input type="text" v-model="EditImageText.Title" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="aCategoryName">图片</label>
+                    <div class="col-sm-8">
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <img style="width: 80px" v-bind:src="EditImageText.ImageUrl" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <input id="textimageupload" required type="file" v-on:change="upTextImage(EditImageText)" accept=".png,.jpg,.jpeg,.jpe" />
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="aCategoryName">推送描述</label>
+                    <div class="col-sm-8">
+
+                        <input required type="text" v-model="EditImageText.Desctiption" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="aCategoryName">跳转链接</label>
+                    <div class="col-sm-8">
+                        <input type="text" v-model="EditImageText.JumpUrl" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="aCategoryName">排序</label>
+                    <div class="col-sm-8">
+                        <input type="number" v-model="EditImageText.Order" />
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    @Html.Hidden("MessageBoxShowType", messagebox == null ? "Text" : messagebox.MessageBoxShowType.ToString())
+    <form id="BoxForm" method="post" action="@Url.Action("IOSSubmitTemplate")">
+        @Html.Hidden("PKID", messagebox != null ? messagebox.PKID : 0)
+        @Html.Hidden("BatchID", plan != null ? plan.BatchID : 0)
+        @Html.Hidden("DeviceType", DeviceType.MessageBox)
+
+        <input type="hidden" id="SubmitType" name="SubmitType" value="1" />
+        <input type="hidden" id="phonepreview" name="phonepreview" value="" />
+        <table id="iossetting" style="background: #ffffff; font-size: 12px; text-align: center" border="1">
+            <tr>
+                <th colspan="4">App消息</th>
+            </tr>
+            <tr>
+                <td colspan="2">模版ID</td>
+                <td colspan="2">
+                    @if (messagebox != null)
+                    {
+                        <span>@messagebox.PKID</span>
+                    }
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">内容设置</td>
+            </tr>
+
+            <tr>
+                <td colspan="2">推送形式</td>
+                <td colspan="2">
+                    @foreach (var item in showtypes)
+                    {
+                        <input type="radio" name="MessageBoxShowType" value="@item.value" v-model="MessageBoxShowType" />@item.name
+
+                    }
+                </td>
+            </tr>
+            <tr v-show="MessageBoxShowType=='Text'||MessageBoxShowType=='ActivityText'||MessageBoxShowType=='OrderText'">
+                <td colspan="2">推送标题</td>
+                <td colspan="2">
+                    @Html.TextBox("Title", messagebox == null ? "" : messagebox.Title, new { @style = "width:100%" })
+                </td>
+            </tr>
+            <tr v-show="MessageBoxShowType=='Text'||MessageBoxShowType=='ActivityText'||MessageBoxShowType=='OrderText'">
+                <td colspan="4">通知内容</td>
+            </tr>
+            <tr v-show="MessageBoxShowType=='Text'||MessageBoxShowType=='ActivityText'||MessageBoxShowType=='OrderText'">
+                <td colspan="4">
+                    @Html.TextArea("Content", messagebox == null ? "" : messagebox.Content, new { @style = "width:100%" })
+                </td>
+            </tr>
+
+
+            <tr v-show="IsShowImageText">
+                <td>
+                    <a v-on:click="AddMessageImageTextConfig" href="javascript:void(0)">新增</a>
+                </td>
+            </tr>
+            <tr v-show="IsShowImageText">
+                <td>推送标题</td>
+                <td>图片缩略</td>
+                <td>排序</td>
+                <td> 操作</td>
+            </tr>
+            <tr v-show="IsShowImageText" v-for="imageinfo in ImageTextInfos">
+                <td>
+                    {{imageinfo.Title}}
+                </td>
+                <td>
+                    <img style="width: 80px" v-bind:src="imageinfo.ImageUrl" />
+                    @*{{imageinfo.ImageUrl}}*@
+                </td>
+                <td>
+                    {{imageinfo.Order}}
+                </td>
+                <td>
+                    <a v-on:click="EditMessageImageTextConfig(imageinfo)" href="javascript:void(0)">编辑</a>
+                    <a v-on:click="DeleteMessageImageTextConfig(imageinfo.Pkid)" href="javascript:void(0)">删除</a>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4"></td>
+            </tr>
+            <tr>
+                <td colspan="4"></td>
+            </tr>
+
+            <tr id="123" v-show="!IsShowImageText">
+                <td>通知图片</td>
+                <td>预览图片</td>
+                <td colspan="2">
+                    @*<input type="file" name="image" id="image" />*@
+                    <input type="file" name="imgUpload" id="BoximgUpload" onchange="upImage(this, 'box')" style="cursor: pointer;" accept=".png,.jpg,.jpeg,.jpe" />
+                    <input type="text" name="BigImagePath" id="BigImagePath" style="display: none" value="@(messagebox != null ? messagebox.ImageUrl : "")" />
+                    <div algin='center'>
+                        <img id="imgUploadUrl" name="imgUploadUrl" src="@(messagebox != null ? messagebox.ImageUrl : "")" />
+                    </div>
+                </td>
+            </tr>
+            <tr v-show="!IsShowImageText">
+                <td>跳转链接</td>
+
+                <td colspan="4">
+                    @Html.TextBox("AppActivity", messagebox != null ? messagebox.AppActivity : "", new { @style = "width:300px" })
+                </td>
+            </tr>
+
+
+            <tr id="appendto">
+                <td colspan="4">高级选项</td>
+            </tr>
+            <tr>
+                <td colspan="3">消息类型</td>
+                <td>
+                    @Html.DropDownList("MessageNavigationTypeId", navigationTypeSelects)
+                </td>
+
+            </tr>
+
+            @*<tr>
+                    <td colspan="3">键(key)</td>
+                    <td>值(value)</td>
+                </tr>
+                <tr>
+                    <td colspan="4">iOS键值对</td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <input type="text" class="androidextrakey" name="ExtraKey[0].Key" value="@(iosdict.Count > 0 ? iosdict.First().Key : "")" />
+                    </td>
+                    <td>
+                        <input type="text" style="width: 80%" class="androidextravalue" name="ExtraKey[0].Value" value="@(iosdict.Count > 0 ? iosdict.First().Value : "")" />
+
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4">Android键值对</td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <input type="text" name="ExtraKey[1].Key" value="@(androidextradict.Count() > 0 ? androidextradict.First().Key : "")" />
+                    </td>
+                    <td>
+                        <input type="text" style="width: 80%" name="ExtraKey[1].Value" value="@(androidextradict.Count() > 0 ? androidextradict.First().Value : "")" />
+
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <input type="text" name="ExtraKey[2].Key" value="@(androidextradict.Count() > 1 ? androidextradict.Skip(1).First().Key : "")" />
+                    </td>
+                    <td>
+                        <input type="text" style="width: 80%" name="ExtraKey[2].Value" value="@(androidextradict.Count() > 1 ? androidextradict.Skip(1).First().Value : "")" />
+
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4">Android后续动作</td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <input type="text" name="ExtraKey[3].Key" readonly="readonly" value="AppActivity" />
+                    </td>
+                    <td>
+                        <input type="text" style="width: 80%" name="ExtraKey[3].Value" value="@(androiddict.ContainsKey("AppActivity") ? androiddict["AppActivity"] : "")" />
+
+                    </td>
+                </tr>*@
+            <tr>
+                <td colspan="3">推送时间(单次推送可用)</td>
+                <td>
+                    @*@Html.TextBox("PushTime", iosdata != null && iosdata.Sendtime.HasValue ? iosdata.Sendtime.Value.ToString() : "", new { @class = "datetimepicker" })*@
+                    <input type="text" style="width: 200px;" id="BoxPushTime" name="PushTime" value="@(messagebox != null && messagebox.Sendtime.HasValue ? messagebox.Sendtime.Value.ToString() : "")" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">消息过期周期</td>
+                <td>
+                    @*@Html.TextBox("ExpireTime", iosdata != null && iosdata.ExpireTime.HasValue ? iosdata.ExpireTime.Value.ToString() : "", new { @class = "datetimepicker" })*@
+                    <input type="text" id="ExpireTime" onclick="SetExpireTime('box')" name="ExpireTime" value="@(dict.ContainsKey("MessageBox") ? dict["MessageBox"] : "")" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <input type="button" onclick="SubmitIOS('box')" value="保存模版" />
+                    <input type="button" value="预览" onclick="IOSPreview('box')" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+
+<script>
+
+</script>

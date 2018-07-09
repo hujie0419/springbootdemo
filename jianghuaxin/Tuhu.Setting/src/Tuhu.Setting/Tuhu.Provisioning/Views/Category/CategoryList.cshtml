@@ -1,0 +1,163 @@
+﻿@{
+    ViewBag.Title = "类别列表";
+    List<Tuhu.Provisioning.DataAccess.Entity.CategoryDic> list = ViewData["CategoryDic"] as List<Tuhu.Provisioning.DataAccess.Entity.CategoryDic>;
+}
+
+<h2>类别列表</h2>
+
+<a class="button1" style="float:right" href="/Category/CategoryList" target="_blank">模块楼层</a>
+<style>
+    .ui-dialog {
+        border-radius: 3px;
+        padding: 0px;
+        width: auto;
+    }
+
+    .ui-dialog-grid {
+        width: 100%;
+    }
+
+    .ui-dialog-title {
+        width: 75%;
+        padding: 8px 15px 8px 15px;
+    }
+
+    .ui-dialog-close {
+        top: 8px;
+    }
+
+    .ui-dialog-body {
+        padding: 10px;
+    }
+
+    .ui-dialog-content {
+        padding: 0px;
+    }
+
+    .ui-dialog-footer {
+        padding: 5px 10px 5px 5px;
+        background: #ffffff;
+        border-top: 1px solid #eee;
+    }
+
+        .ui-dialog-footer button {
+            padding: 3px 15px;
+            border-radius: 2px;
+            box-shadow: 0 1px 1px rgba(0,0,0,.15);
+            font-size: 12px;
+        }
+
+            .ui-dialog-footer button.ui-dialog-autofocus {
+                font-weight: 700;
+                text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+            }
+
+    .button1 {
+        border-radius: 5px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        font-family: "Microsoft Yahei";
+        outline: none;
+        cursor: pointer;
+        background: #0088cc;
+        border-color: #0088cc;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: #0088cc;
+        border: solid 1px #0088cc;
+    }
+</style>
+<link rel="stylesheet" href="/Scripts/artDialog6.0.4/css/ui-dialog.css" />
+<script src="~/Scripts/artDialog6.0.4/dist/dialog-min.js"></script>
+<script src="~/Scripts/artDialog6.0.4/dist/dialog-plus-min.js"></script>
+<div>
+    <input type="button" class="button1" value="添加" onclick="insertClick()" />
+</div>
+<div>
+    <table style="width:100%;margin-top:20px;">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>ParentId</th>
+                <th>Name</th>
+                <th>Value</th>
+                <th>Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in list)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.ParentId</td>
+                    <td>@item.Name</td>
+                    <td>@item.Value</td>
+                    <td>@item.Type</td>
+                   
+                </tr>
+
+            }
+
+        </tbody>
+    </table>
+
+</div>
+<script>
+    function insertClick() {
+        var dialgpResult = dialog({
+            height: 100,
+            width: 300,
+            fixed: true,
+            title: "添加类别",
+            button: [
+            {
+                value: "保存",
+                callback: function () { 
+                    $.ajax({
+                        type: "POST",
+                        url: "/Category/AddCategoryModel",
+                        data: {
+                            "Name": $(".Name").val(),
+                            "Value": $(".Value").val()
+                        },
+                        success: function (result) {
+                            if (result) {
+                                window.location.reload(true);
+
+                            }
+                            else {
+                                alert("保存失败！");
+
+                            }
+                        },
+                        error: function (result) {
+                            alert("失败!")
+                        }
+                    });
+                }
+            },
+            
+            {
+                value: "关闭"
+            }]
+        });
+
+        $.ajax({
+            url: "/Category/AddCategory",
+            data: {},
+            type: "GET",
+            success: function (result) {
+
+                dialgpResult.content(result);
+                dialgpResult.showModal();
+
+            }
+        });
+    }
+</script>

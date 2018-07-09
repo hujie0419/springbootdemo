@@ -1,0 +1,591 @@
+﻿
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<style>
+    .form .formTitle {
+        width: 110px;
+    }
+
+    .form-control {
+        display: inline;
+    }
+
+    .formValue table tr th {
+        width: 80px;
+        height: 35px;
+    }
+</style>
+<form id="form1">
+    <table class="form">
+        <tr>
+            <th class="formTitle">广告类型</th>
+            <td class="formValue">
+                <input type="radio" id="AdType" name="AdType" value="1" onchange="adTypeChange()" @(Model.AdType == 1 ? "checked" : "") />&nbsp;文字&nbsp;&nbsp;
+                <input type="radio" id="AdType" name="AdType" value="2" onchange="adTypeChange()" @(Model.AdType == 2 ? "checked" : "") />&nbsp;图片&nbsp;&nbsp;
+                <input type="radio" id="AdType" name="AdType" value="3" onchange="adTypeChange()" @(Model.AdType == 3 ? "checked" : "") />&nbsp;弹窗
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">标题</th>
+            <td class="formValue">
+                <input type="text" id="Title" name="Title" class="form-control required" maxlength="200" value="@Model.Title" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">选择城市</th>
+            <td class="formValue" width="200">
+                <select id="Province" name="Province" class="form-control required" style="width:200px;">
+                    <option value="0">全部</option>
+                </select>
+                <select id="City" name="City" class="form-control" style="width:200px;">
+                    <option value="0">全部</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">产品线</th>
+            <td class="formValue">
+                <select id="ProductLine" name="ProductLine" class="form-control" style="width:200px;">
+                    <option value="1普通-轮胎" @(Model.ProductLine == "1普通-轮胎" ? "selected" : "")>1普通-轮胎</option>
+                    <option value="1普通-保养-到家" @(Model.ProductLine == "1普通-保养-到家" ? "selected" : "")>1普通-保养-到家</option>
+                    <option value="1普通-保养-到店" @(Model.ProductLine == "1普通-保养-到店" ? "selected" : "")>1普通-保养-到店</option>
+                    <option value="1普通-车品" @(Model.ProductLine == "1普通-车品" ? "selected" : "")>1普通-车品</option>
+                    <option value="1普通-轮毂" @(Model.ProductLine == "1普通-轮毂" ? "selected" : "")>1普通-轮毂</option>
+                    <option value="1普通-蓄电池-到家" @(Model.ProductLine == "1普通-蓄电池-到家" ? "selected" : "")>1普通-蓄电池-到家</option>
+                    <option value="1普通-蓄电池-到店" @(Model.ProductLine == "1普通-蓄电池-到店" ? "selected" : "")>1普通-蓄电池-到店</option>
+                    <option value="11违章代缴" @(Model.ProductLine == "11违章代缴" ? "selected" : "")>11违章代缴</option>
+                    <option value="12加油卡" @(Model.ProductLine == "12加油卡" ? "selected" : "")>12加油卡</option>
+                    <option value="13车品服务" @(Model.ProductLine == "13车品服务" ? "selected" : "")>13车品服务</option>
+                    <option value="14保养年卡" @(Model.ProductLine == "14保养年卡" ? "selected" : "")>14保养年卡</option>
+                    <option value="19美容团购" @(Model.ProductLine == "19美容团购" ? "selected" : "")>19美容团购</option>
+                    <option value="20年卡抵扣" @(Model.ProductLine == "20年卡抵扣" ? "selected" : "")>20年卡抵扣</option>
+                    <option value="21服务委托单" @(Model.ProductLine == "21服务委托单" ? "selected" : "")>21服务委托单</option>
+                    <option value="23车险" @(Model.ProductLine == "23车险" ? "selected" : "")>23车险</option>
+                    <option value="26道路救援" @(Model.ProductLine == "26道路救援" ? "selected" : "")>26道路救援</option>
+                    <option value="32钣喷服务" @(Model.ProductLine == "32钣喷服务" ? "selected" : "")>32钣喷服务</option>
+                    <option value="33门店钣喷服务" @(Model.ProductLine == "33门店钣喷服务" ? "selected" : "")>33门店钣喷服务</option>
+                    <option value="43年检代办" @(Model.ProductLine == "43年检代办" ? "selected" : "")>43年检代办</option>
+                    <option value="44大客户保养2C保" @(Model.ProductLine == "44大客户保养2C保" ? "selected" : "")>44大客户保养2C保</option>
+                    <option value="47美容年卡" @(Model.ProductLine == "47美容年卡" ? "selected" : "")>47美容年卡</option>
+                    <option value="拼团" @(Model.ProductLine == "拼团" ? "selected" : "")>拼团</option>
+                    <option value="56大客户保养2C保补" @(Model.ProductLine == "56大客户保养2C保补" ? "selected" : "")>56大客户保养2C保补</option>
+                    <option value="57VIP卡2C企" @(Model.ProductLine == "57VIP卡2C企" ? "selected" : "")>57VIP卡2C企</option>
+                </select>
+            </td>
+        </tr>
+
+        <tr id="sloganArea">
+            <th class="formTitle">广告语</th>
+            <td class="formValue">
+                <textarea id="Slogan" name="Slogan" class="form-control required" maxlength="13" placeholder="不能超过13个字符" rows="2">@Model.Slogan</textarea>
+            </td>
+        </tr>
+        <tr id="operationButtonTextArea">
+            <th class="formTitle">操作按钮文字</th>
+            <td class="formValue">
+                <input type="text" id="OperatingButtonText" name="OperatingButtonText" class="form-control required" maxlength="4" placeholder="不能超过4个字符" value="@Model.OperatingButtonText" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">生效平台</th>
+            <td class="formValue">
+                <table>
+                    <tr>
+                        <th>
+                            <input id="IsPcRoute" name="cbChannels" type="checkbox" value="PC" @(Model.PcRoute != null ? "checked" : "") /> PC
+                        </th>
+                        <td>
+                            <input type="text" class="form-control" id="PcRoute" name="PcRoute" style="width:385px;" maxlength="200" placeholder="请输入跳转链接" value="@Model.PcRoute" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <input id="IsMiniProgramRoute" name="cbChannels" type="checkbox" value="MiniProgram" @(Model.MiniProgramRoute != null ? "checked" : "") /> 小程序
+                        </th>
+                        <td>
+                            <input type="text" class="form-control" id="MiniProgramRoute" name="MiniProgramRoute" style="width:385px;" maxlength="200" placeholder="请输入跳转链接" value="@Model.MiniProgramRoute" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <input id="IsIosRoute" name="cbChannels" type="checkbox" value="IOS" @(Model.IosRoute != null ? "checked" : "") /> IOS
+                        </th>
+                        <td>
+                            <input type="text" class="form-control" id="IosRoute" name="IosRoute" style="width:385px;" maxlength="200" placeholder="请输入跳转链接" value="@Model.IosRoute" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <input id="IsAndroidRoute" name="cbChannels" type="checkbox" value="Android" @(Model.AndroidRoute != null ? "checked" : "") /> Android
+                        </th>
+                        <td>
+                            <input type="text" class="form-control" id="AndroidRoute" name="AndroidRoute" style="width:385px;" maxlength="200" placeholder="请输入跳转链接" value="@Model.AndroidRoute" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <input id="IsWapRoute" name="cbChannels" type="checkbox" value="H5" @(Model.WapRoute != null ? "checked" : "") /> H5
+                        </th>
+                        <td>
+                            <input type="text" class="form-control" id="WapRoute" name="WapRoute" style="width:385px;" maxlength="200" placeholder="请输入跳转链接" value="@Model.WapRoute" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <input id="IsHuaweiRoute" name="cbChannels" type="checkbox" value="华为轻应用" @(Model.HuaweiRoute != null ? "checked" : "") /> 华为轻应用
+                        </th>
+                        <td>
+                            <input type="text" class="form-control" id="HuaweiRoute" name="HuaweiRoute" style="width:385px;" maxlength="200" placeholder="请输入跳转链接" value="@Model.HuaweiRoute" />
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr id="pcIconUrlArea">
+            <th class="formTitle">上传PC端图标</th>
+            <td class="formValue">
+                <table>
+                    <tr>
+                        <td rowspan="2">
+                            <img id="imgPcIconUrl" @(string.IsNullOrWhiteSpace(Model.DomainPcIconUrl) == false ? "src=" + Model.DomainPcIconUrl : "") width="100" height="60" />
+                        </td>
+                        <td valign="bottom" style="padding-left:10px;">
+                            <span style="color:red;">图标大小为20*20</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td valign="bottom" style="padding-left:10px;">
+                            <input type="file" id="filePcIconUrl" name="filePcIconUrl" class="file" onchange="UploadBgImg(this, 'imgPcIconUrl', 'PcIconUrl')" />
+                            <input type="hidden" id="PcIconUrl" name="PcIconUrl" value="@Model.PcIconUrl" />
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr id="mobileIconUrlArea">
+            <th class="formTitle">上传移动端图标</th>
+            <td class="formValue">
+                <table>
+                    <tr>
+                        <td rowspan="2">
+                            <img id="imgMobileIconUrl" @(string.IsNullOrWhiteSpace(Model.DomainMobileIconUrl) == false ? "src=" + Model.DomainMobileIconUrl : "") width="100" height="60" />
+                        </td>
+                        <td valign="bottom" style="padding-left:10px;">
+                            <span style="color:red;">图标大小为40*40</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td valign="bottom" style="padding-left:10px;">
+                            <input type="file" id="fileMobileIconUrl" name="fileMobileIconUrl" class="file" onchange="UploadBgImg(this, 'imgMobileIconUrl', 'MobileIconUrl')" />
+                            <input type="hidden" id="MobileIconUrl" name="MobileIconUrl" value="@Model.MobileIconUrl" />
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr id="pcImageUrlArea">
+            <th class="formTitle">上传PC端图片</th>
+            <td class="formValue">
+                <table>
+                    <tr>
+                        <td rowspan="2">
+                            <img id="imgPcImageUrl" @(string.IsNullOrWhiteSpace(Model.DomainPcImageUrl) == false ? "src=" + Model.DomainPcImageUrl : "") width="100" height="60" />
+                        </td>
+                        <td valign="bottom" style="padding-left:10px;">
+                            <span id="spPcImageSize" style="color:red;">图标大小为130*170</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td valign="bottom" style="padding-left:10px;">
+                            <input type="file" id="filePcImageUrl" name="filePcImageUrl" class="file" onchange="UploadBgImg(this, 'imgPcImageUrl', 'PcImageUrl')" />
+                            <input type="hidden" id="PcImageUrl" name="PcImageUrl" value="@Model.PcImageUrl" />
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr id="mobileImageUrlArea">
+            <th class="formTitle">上传移动端图片</th>
+            <td class="formValue">
+                <table>
+                    <tr>
+                        <td rowspan="2">
+                            <img id="imgMobileImageUrl" @(string.IsNullOrWhiteSpace(Model.DomainMobileImageUrl) == false ? "src=" + Model.DomainMobileImageUrl : "") width="100" height="60" />
+
+                        </td>
+                        <td valign="bottom" style="padding-left:10px;">
+                            <span id="spMobileImageSize" style="color:red;">图标大小为750*300</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td valign="bottom" style="padding-left:10px;">
+                            <input type="file" id="fileMobileImageUrl" name="fileMobileImageUrl" class="file" onchange="UploadBgImg(this, 'imgMobileImageUrl', 'MobileImageUrl')" style="display:inline; vertical-align:bottom;" />
+                            <input type="hidden" id="MobileImageUrl" name="MobileImageUrl" value="@Model.MobileImageUrl" />
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        @*<tr>
+                <th class="formTitle">开始版本</th>
+                <td class="formValue"><input type="text" id="StartVersion" name="StartVersion" class="form-control" value="@Model.StartVersion" /></td>
+            </tr>
+            <tr>
+                <th class="formTitle">结束版本</th>
+                <td class="formValue"><input type="text" id="EndVersion" name="EndVersion" class="form-control" value="@Model.EndVersion" /></td>
+            </tr>*@
+        <tr>
+            <th class="formTitle">上线时间</th>
+            <td class="formValue">
+                <input type="text" id="OnlineTime" name="OnlineTime" class="form-control Wdate" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm:ss',maxDate:'#F{$dp.$D(\'OfflineTime\')}' } )" style="width:200px; border: 1px solid #ddd;" value="@(string.IsNullOrEmpty(Model.OnlineTime)==true? "":Convert.ToDateTime(Model.OnlineTime).ToString("yyyy-MM-dd HH:mm:ss"))" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">下线时间</th>
+            <td class="formValue">
+                <input type="text" id="OfflineTime" name="OfflineTime" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss',minDate:'#F{$dp.$D(\'OnlineTime\')}'})" style="width:200px; border: 1px solid #ddd;" value="@(string.IsNullOrEmpty(Model.OfflineTime)==true? "":Convert.ToDateTime(Model.OfflineTime).ToString("yyyy-MM-dd HH:mm:ss"))" />
+            </td>
+        </tr>
+    </table>
+    <input type="hidden" id="PKID" name="PKID" value="@Model.PKID" />
+    <input type="hidden" id="ProvinceID" name="ProvinceID" value="@Model.ProvinceID" />
+    <input type="hidden" id="CityID" name="CityID" value="@Model.CityID" />
+</form>
+<script src="/Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+    var Func = {
+        //获取区域信息
+        LoadRegion: function () {
+            var provinceId = $("#ProvinceID").val();
+            var cityId = $("#CityID").val();
+            $.get("/Tire/GetRegion", null, function (regions) {
+                var html_p = '';
+                $.map(regions, function (value, key) {
+                    if (provinceId == value.RegionId)
+                        html_p += '<option data-pkid="' + value.RegionId + '" value="' + value.RegionId + '" selected>' + value.RegionName + '</option>';
+                    else
+                        html_p += '<option data-pkid="' + value.RegionId + '" value="' + value.RegionId + '">' + value.RegionName + '</option>';
+                });
+                $("#Province").append(html_p);
+                //编辑时加载城市信息
+                if (provinceId > 0)
+                    Func.LoadCity(regions);
+                //省份变更事件
+                $("#Province").change(function () {
+                    Func.LoadCity(regions);
+                });
+            });
+        },
+        //根据省份获取城市信息
+        LoadCity: function (regions) {
+            var provinceId = $("#ProvinceID").val();
+            var cityId = $("#CityID").val();
+            var PKID = $("#Province>option:selected").attr("data-pkid");
+            var regionValue = $("#Province>option:selected").val();
+            var regionText = $("#Province>option:selected").text();
+            var html_c = '';
+            var zxs = false;
+            if (PKID == 1 || PKID == 2 || PKID == 19 || PKID == 20)
+                zxs = true;
+            if (PKID && PKID.length) {
+                $.map(regions, function (value, key) {
+                    if (value.RegionId == PKID) {
+                        if (zxs) {
+                            if (cityId == regionValue)
+                                html_c += '<option data-pkid="' + PKID + '" value="' + regionValue + '" selected>' + regionText + '</option>';
+                            else
+                                html_c += '<option data-pkid="' + PKID + '" value="' + regionValue + '">' + regionText + '</option>';
+                        }
+                        else {
+                            html_c += '<option value="0">全部</option>'
+                            $.map(value.ChildRegions, function (v, k) {
+                                if (cityId == v.RegionId)
+                                    html_c += '<option data-pkid="' + v.RegionId + '" value="' + v.RegionId + '" selected>' + v.RegionName + '</option>';
+                                else
+                                    html_c += '<option data-pkid="' + v.RegionId + '" value="' + v.RegionId + '">' + v.RegionName + '</option>';
+                            });
+                        }
+                    }
+                });
+            }
+            if (html_c.length > 0)
+                $("#City").empty().append(html_c);
+            else
+                $("#City").empty().append('<option value="0">全部</option>');
+        }
+    }
+    //初始化
+    $(function () {
+        //加载区域
+        Func.LoadRegion();
+        //根据广告类型显示内容
+        setDisplay();
+        //复选框点击事件
+        $(":checkbox").click(function () {
+            noChecked();//复选框不选中时清空内容
+        });
+    });
+    //提交表单
+    function submitForm() {
+        if (!$('#form1').formValid()) {
+            return false;
+        }
+
+        var formData = $("#form1").formSerialize();
+
+        formData.AdType = $("input[name='AdType']:checked").val();
+        formData.ProvinceID = $("#Province").val();
+        formData.ProvinceName = $("#Province").find("option:selected").text();
+        formData.CityID = $("#City").val();
+        formData.CityName = $("#City").find("option:selected").text();
+
+        //支持的渠道
+        var isChecked = false;
+        var SupportedChannels = new Array();
+        $("input[name='cbChannels']:checked").each(function () {
+            SupportedChannels.push(this.value);
+            isChecked = true;
+        });
+        if (!isChecked) {
+            $.modalMsg("请至少选择一个生效平台", "warning");
+            return false;
+        }
+
+        //检查有效性
+        if (!CheckValid())
+            return false;
+
+        formData.SupportedChannels = SupportedChannels.toString();
+
+        //验证是否存在
+        $.ajax({
+            dataType: 'json',
+            async: false,
+            url: "/AdvertisingConfig/GetAdvertisingConfigInfo?provinceId=" + formData.ProvinceID
+            + "&cityId=" + formData.CityID + "&productLine=" + formData.ProductLine + "&adType=" + formData.AdType + "&pkid=" + formData.PKID,
+            success: function (res) {
+                if (res.result) {
+                    //保存信息
+                    $.confirmForm({
+                        prompt: "当前区域和产品线的广告类型配置已存在,是否覆盖？",
+                        loading: "处理中...",
+                        url: "/AdvertisingConfig/AddAdvertisingConfig",
+                        param: formData,
+                        success: function () {
+                            //self.parent.$("#gridList").resetSelection();
+                            self.parent.$("#gridList").trigger("reloadGrid");
+                            self.parent.$('#loadingPage').hide();
+                            self.parent.window.frames[1].location.reload();
+                        }
+                    });
+                } else {
+                    $.submitForm({
+                        url: "/AdvertisingConfig/AddAdvertisingConfig",
+                        param: formData,
+                        success: function () {
+                            //self.parent.$("#gridList").resetSelection();
+                            self.parent.$("#gridList").trigger("reloadGrid");
+                            self.parent.$('#loadingPage').hide();
+                            self.parent.window.frames[1].location.reload();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    //提交检查有效性
+    function CheckValid() {
+        ////验证省份
+        //if ($("#Province").val() == 0) {
+        //    $.modalMsg("请选择省份", "warning");
+        //    return false;
+        //}
+        //验证PC路由
+        if (document.getElementById("IsPcRoute").checked) {
+            if ($.trim($("#PcRoute").val()) == "") {
+                $.modalMsg("请输入PC的跳转链接", "warning");
+                return false;
+            }
+        }
+        //验证MiniProgram路由
+        if (document.getElementById("IsMiniProgramRoute").checked) {
+            if ($.trim($("#MiniProgramRoute").val()) == "") {
+                $.modalMsg("请输入小程序跳转链接", "warning");
+                return false;
+            }
+        }
+        //验证IOS路由
+        if (document.getElementById("IsIosRoute").checked) {
+            if ($.trim($("#IosRoute").val()) == "") {
+                $.modalMsg("请输入IOS跳转链接", "warning");
+                return false;
+            }
+        }
+        //验证Android路由
+        if (document.getElementById("IsAndroidRoute").checked) {
+            if ($.trim($("#AndroidRoute").val()) == "") {
+                $.modalMsg("请输入Android跳转链接", "warning");
+                return false;
+            }
+        }
+        //验证H5路由
+        if (document.getElementById("IsWapRoute").checked) {
+            if ($.trim($("#WapRoute").val()) == "") {
+                $.modalMsg("请输入H5跳转链接", "warning");
+                return false;
+            }
+        }
+        //验证华为轻应用路由
+        if (document.getElementById("IsHuaweiRoute").checked) {
+            if ($.trim($("#HuaweiRoute").val()) == "") {
+                $.modalMsg("请输入华为轻应用跳转链接", "warning");
+                return false;
+            }
+        }
+        //验证图标和图片
+        var isPcRoute = document.getElementById("IsPcRoute").checked;
+        var isMiniProgramRoute = document.getElementById("IsMiniProgramRoute").checked;
+        var isIosRoute = document.getElementById("IsIosRoute").checked;
+        var isAndroidRoute = document.getElementById("IsAndroidRoute").checked;
+        var isWapRoute = document.getElementById("IsWapRoute").checked;
+        var isHuaweiRoute = document.getElementById("IsHuaweiRoute").checked;
+
+
+        if ($("input[name='AdType']:checked").val() == 1) {
+            if (isPcRoute) {
+                if ($.trim($('#imgPcIconUrl')[0].src) == "") {
+                    $.modalMsg("请上传PC端的图标", "warning");
+                    return false;
+                }
+            }
+            if (isMiniProgramRoute || isIosRoute || isAndroidRoute || isWapRoute || isHuaweiRoute) {
+                if ($.trim($('#imgMobileIconUrl')[0].src) == "") {
+                    $.modalMsg("请上传移动端的图标", "warning");
+                    return false;
+                }
+            }
+        } else {
+            if (isPcRoute) {
+                if ($.trim($('#imgPcImageUrl')[0].src) == "") {
+                    $.modalMsg("请上传PC端的图片", "warning");
+                    return false;
+                }
+            }
+            if (isMiniProgramRoute || isIosRoute || isAndroidRoute || isWapRoute || isHuaweiRoute) {
+                if ($.trim($('#imgMobileImageUrl')[0].src) == "") {
+                    $.modalMsg("请上传移动端的图片", "warning");
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    //上传
+    function UploadBgImg(obj, showImg, showUrl) {
+        var pobj = $(obj);
+        var fileSize = pobj[0].files[0].size / 1024 * 1.0;
+        if (fileSize > 1024) {
+            alert("不能上传大于1024KB的图片");
+            return false;
+        }
+        var rd = Math.ceil(Math.random() * 9999) + 1;
+        var fileElId = $(obj).attr("id");
+        $.ajaxFileUpload({
+            url: '/AdvertisingConfig/ImageUploadToAli?rd=' + rd,
+            secureuri: false,
+            fileElementId: fileElId,
+            dataType: 'json',
+            async: false,
+            success: function (result) {
+                if (result.BImage != "" && result.SImage != "") {
+                    $("#" + showImg).attr("src", result.SImage).show();
+                    $("#" + showUrl).val(result.BImage);
+                } else {
+                    alert("上传失败！");
+                }
+            },
+            error: function (data, status, e)//服务器响应失败处理函数
+            {
+                alert(e);
+            }
+        });
+    }
+
+    //广告类型切换
+    function adTypeChange() {
+        setDisplay();
+    }
+
+    //根据广告类型显示内容
+    function setDisplay() {
+        var checkValue = $("input[name='AdType']:checked").val();
+        if (checkValue == 1) {
+            $("#sloganArea").show();
+            $("#operationButtonTextArea").show();
+
+            $("#pcIconUrlArea").show();
+            $("#mobileIconUrlArea").show();
+            $("#pcImageUrlArea").hide();
+            $("#mobileImageUrlArea").hide();
+        } else if (checkValue == 2) {
+            $("#sloganArea").hide();
+            $("#operationButtonTextArea").hide();
+
+            $("#pcIconUrlArea").hide();
+            $("#mobileIconUrlArea").hide();
+            $("#pcImageUrlArea").show();
+            $("#mobileImageUrlArea").show();
+
+            $("#spPcImageSize").html("图片大小为130*170");
+            $("#spMobileImageSize").html("图片大小为750*300");
+        }
+        else {
+            $("#sloganArea").hide();
+            $("#operationButtonTextArea").hide();
+
+            $("#pcIconUrlArea").hide();
+            $("#mobileIconUrlArea").hide();
+            $("#pcImageUrlArea").show();
+            $("#mobileImageUrlArea").show();
+
+            $("#spPcImageSize").html("图片大小为455*600");
+            $("#spMobileImageSize").html("图片大小为540*710");
+        }
+    }
+
+    //复选框不选中时清空内容
+    function noChecked() {
+        //验证PC路由
+        if (!document.getElementById("IsPcRoute").checked) {
+            $("#PcRoute").val("");
+        }
+        //验证MiniProgram路由
+        if (!document.getElementById("IsMiniProgramRoute").checked) {
+            $("#MiniProgramRoute").val("");
+        }
+        //验证IOS路由
+        if (!document.getElementById("IsIosRoute").checked) {
+            $("#IosRoute").val("");
+        }
+        //验证Android路由
+        if (!document.getElementById("IsAndroidRoute").checked) {
+            $("#AndroidRoute").val("");
+        }
+        //验证H5路由
+        if (!document.getElementById("IsWapRoute").checked) {
+            $("#WapRoute").val("");
+        }
+        //验证华为轻应用
+        if (!document.getElementById("IsHuaweiRoute").checked) {
+            $("#HuaweiRoute").val("");
+        }
+    }
+
+</script>
+

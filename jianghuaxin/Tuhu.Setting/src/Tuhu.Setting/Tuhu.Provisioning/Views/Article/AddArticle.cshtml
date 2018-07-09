@@ -1,0 +1,708 @@
+﻿@using Tuhu.Provisioning.Controllers;
+@model Tuhu.Provisioning.DataAccess.Entity.Article
+@{
+    Layout = null;
+    //获取类目数据集合
+    var CategoryModelList = ViewBag.categoryModelList as IList<Tuhu.Provisioning.DataAccess.Entity.ArticleCategory>;
+}
+<link href="~/Scripts/zTree/css/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+<script src="~/Scripts/zTree/js/jquery.ztree.core-3.5.min.js"></script>
+<script src="~/Scripts/zTree/js/jquery.ztree.excheck-3.5.min.js"></script>
+
+<script src="../../Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<iframe name="formsubmitWrap" style="display:none;"></iframe>
+@using (Html.BeginForm("AddArticle", "Article",FormMethod.Post,new { target = "formsubmitWrap" }))
+{
+    @Html.ValidationSummary(true)
+    @Html.HiddenFor(m => m.PKID)
+    @Html.HiddenFor(m => m.SmallImage)
+    @Html.HiddenFor(m => m.Image)
+    <input type="hidden" id="Type" name="Type" value="@(Model.Type)" />
+
+        <table style="background:#ffffff;font-size:12px;width:100%;">
+            <tr>
+                <td align="right">是否开启评论</td>
+                <td>@Html.CheckBoxFor(m => m.CommentIsActive)</td>
+            </tr>
+            @*<tr>
+                    <td align="right">文字类目</td>
+                    <td>
+                        @Html.DropDownListFor(model => model.Category,
+                        new List<SelectListItem>(){
+                                new SelectListItem() { Value = "1", Text = "汽车百科" },
+                                new SelectListItem() { Value = "2", Text = "驾驶技巧" },
+                                new SelectListItem() { Value = "3", Text = "保养秘诀" },
+                                new SelectListItem() { Value = "4", Text = "必备车品" }
+                        });
+                        @Html.HiddenFor(model => model.Category)
+                            <select id="CategorySelect">
+                                <option value="1">汽车百科</option>
+                                <option value="2">驾驶技巧</option>
+                                <option value="3">保养秘诀</option>
+                                <option value="4">必备车品</option>
+                            </select>
+                    </td>
+                </tr>*@
+            <tr>
+                <td align="right">标签：</td>
+                <td>
+                    <input id="treeCheck" onclick="zTreeSetting.checkAllTree(true);" type="button" value="全选" />
+                    <input id="treeUnCheck" onclick="zTreeSetting.checkAllTree(false);" type="button" value="反选" />
+
+                    <input id="treeCheck" onclick="zTreeSetting.expandAll(true);" type="button" value="展开全部" />
+                    <input id="treeUnCheck" onclick="zTreeSetting.expandAll(false);" type="button" value="折叠全部" />
+
+                    @Html.HiddenFor(m => m.CategoryTags, new { @style = "width:300px;" })
+                    <ul id="CategoryTagTree" class="ztree"></ul>
+                </td>
+            </tr>
+            <tr>
+                <td align="right">文字类目：</td>
+                <td>
+                    @if (CategoryModelList != null && CategoryModelList.Count > 0)
+                {
+                    List<SelectListItem> selectList = new List<SelectListItem>();
+                    for (int i = 0; i < CategoryModelList.Count; i++)
+                    {
+                        SelectListItem selectModel = new SelectListItem();
+                        selectModel.Value = CategoryModelList[i].id.ToString();
+                        selectModel.Text = CategoryModelList[i].CategoryName.ToString();
+                        selectList.Add(selectModel);
+                    }
+                    @Html.DropDownListFor(model => model.Category, selectList);
+                }
+                </td>
+            </tr>
+            <tr>
+                <td align="right">是否显示：</td>
+                <td>
+                    @Html.DropDownListFor(model => model.IsShow,
+                new List<SelectListItem>(){
+                        new SelectListItem() { Value = "1", Text = "是",Selected=true},
+                        new SelectListItem() { Value = "0", Text = "否" }
+                })
+                </td>
+            </tr>
+            @if (Model.Type == 0 || Model.Type == 99)
+            {
+            <tr>
+                <td align="right">是否展示在头条：</td>
+                <td>
+                    @Html.DropDownListFor(model => model.IsShowTouTiao,
+                 new List<SelectListItem>(){
+                        new SelectListItem() { Value = "1", Text = "是"},
+                        new SelectListItem() { Value = "0", Text = "否",Selected=true}
+                 })
+                </td>
+            </tr>
+            <tr>
+                <td align="right">是否用于发现频道：</td>
+                <td>
+                    @Html.DropDownListFor(model => model.IsFaxianChannel,
+                 new List<SelectListItem>(){
+                        new SelectListItem() { Value = "1", Text = "是",Selected=true},
+                        new SelectListItem() { Value = "0", Text = "否" }
+                 })
+                </td>
+            </tr>
+            }
+            <tr>
+                <td align="right" style="width:20%;">文章图片：</td>
+                <td style="width:80%;">
+                    <form method="post" action="" enctype="multipart/form-data">
+                        <input style="width:150px;" type="file" id="upPicture" name="upPicture" onchange="UploadBImg();" />
+                    </form><br />
+                    @if (Model.Type != 3)
+                    {
+                    <img height="40" src="@Model.SmallImage" id="vwPicture" style="width:40px;" />
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(Model.Image))
+                        {
+                            foreach (var imgUrl in Model.Image.Split(';'))
+                            {
+                                <img height="40" src="@imgUrl"  style="width:40px;" />
+                            }
+                        }
+                        else
+                        {
+                            <img height="40" src="@Model.SmallImage" id="vwPicture" style="width:40px;" />
+                        }
+                    }
+                </td>
+            </tr>
+            <tr>
+                <td align="right" style="width:20%;">首页图片：</td>
+                <td style="width:80%;">
+                    @Html.TextBoxFor(model => model.ShowImages, new { @style = "width:150px;display:none;" })
+                    <form method="post" action="" enctype="multipart/form-data">
+                        <input style="width:150px;" type="file" id="morePicture" name="morePicture" onchange="UploadBImg.UpMorePicture('morePicture',UploadBImg.AddMorePictureHTML);" />
+                    </form>
+                    <div id="morePictureVessel">
+                        <div style="clear:none;"></div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td align="right" style="width:20%;">首页图片样式：</td>
+                <td style="width:80%;">
+                    @Html.DropDownListFor(model => model.ShowType,
+                        new List<SelectListItem>(){
+                                new SelectListItem() { Value = "1", Text = "一行一列" },
+                                new SelectListItem() { Value = "2", Text = "一行二列" },
+                                new SelectListItem() { Value = "3", Text = "一行三列" }
+                    })
+               </td>
+            </tr>
+            <tr>
+                <td align="right" style="width:20%;">是否显示描述：</td>
+                <td style="width:80%;">
+                    @Html.CheckBoxFor(model => model.IsDescribe)
+                </td>
+            </tr>
+            <tr>
+                <td align="right">文章小标题：</td>
+                <td>@Html.TextBoxFor(model => model.SmallTitle, new { @style = "width:150px" })</td>
+            </tr>
+            <tr>
+                <td align="right">文章大标题：</td>
+                <td>@Html.TextBoxFor(model => model.BigTitle, new { @style = "width:150px" })</td>
+            </tr>
+            <tr>
+                <td align="right">标题颜色：</td>
+                <td>@Html.TextBoxFor(model => model.TitleColor, new { @style = "width:150px" })</td>
+            </tr>
+            <tr>
+                <td align="right">文章小描述：</td>
+                <td>@Html.TextAreaFor(model => model.Brief, new { @style = "width:90%;height:45px;" })</td>
+            </tr>
+            <tr>
+                <td align="right">文章内容：</td>
+                <td>
+                    @if (Model.Type != 1)
+                    {
+                        if (Model.Type == 3)
+                        {
+                            @Html.TextAreaFor(model => model.Content, new { id= "Content1",@style = "width:90%;height:160px;" })
+                        }
+                        else
+                        {
+                            @Html.TextAreaFor(model => model.Content, new { @style = "width:90%;height:260px;" })
+                        }
+                    }
+                    else if (Model.Type == 1)
+                    {
+                        @Html.TextAreaFor(model => model.Content, new { @style = "width:0px;height:0px;display:none;" })
+                        <input type="button" id="AddContentTypeToOne" value="添加商品" onclick="NewsManage.Add()" />
+                        <div id="ContentTypeToOne">
+                            @{
+                                var contentList = (List<ContentViewModel>)ViewBag.contentList;
+                                if (contentList != null && contentList.Count > 0)
+                                {
+                                    int contentListNum = 0;
+                                    foreach (var item in contentList)
+                                    {
+                            <text>
+                                <table style="margin-top:10px;width:100%" class="ContentTable">
+                                    <tbody>
+                                        <tr><td style="text-align:left;" colspan="2"><input type="button" style="font-weight:300;color:red;" onclick="NewsManage.Remove(this)" value="删除"></td></tr>
+                                        <tr><td align="right" style="width:10%;">商品标题:</td><td style="width:80%;"><input type="text" value="@(item.title)" class="productTitle"></td></tr>
+                                        <tr><td align="right" style="width:10%;">商品描述:</td><td style="width:80%;"><textarea cols="20" class="productDescribe NewTitleContent" rows="2" style="width:90%;height:45px;">@(ArticleController.HtmlEncode(item.describe))</textarea></td></tr>
+                                        <tr>
+                                            <td align="right" style="width:10%;">商品图片:</td>
+                                            <td style="width:80%;">
+                                                <form enctype="multipart/form-data" action="" method="post">
+                                                    <input type="file" onchange="NewsManage.UploadBImg(this);" name="upPictureProduct@(contentListNum)" id="upPictureProduct@(contentListNum)" style="width:150px;">
+                                                </form><br>
+                                                <img height="40" style="width:40px;" id="vwPicture" src="@(item.minPic)">
+                                                <input type="text" style="display:none;" value="@(item.maxPic)" class="maxProductPic">
+                                                <input type="text" style="display:none;" value="@(item.minPic)" class="minProductPic">
+                                            </td>
+                                        </tr>
+                                        <tr><td align="right" style="width:10%;">商品名称:</td><td style="width:80%;"><input type="text" value="@(item.productName)" class="productName"></td></tr>
+                                        <tr><td align="right" style="width:10%;">商品价格:</td><td style="width:80%;"><input type="text" value="@(item.productPrice)" class="productMoney"></td></tr>
+                                        <tr><td align="right" style="width:10%;">商品链接:</td><td style="width:80%;"><input type="text" value="@(item.productUrl)" class="productUrl"></td></tr>
+                                    </tbody>
+                                </table>
+                            </text>
+                                        contentListNum++;
+                                    }
+                                }
+                            }
+                        </div>
+                                }
+                </td>
+            </tr>
+            <tr>
+                <td align="right">文章来源：</td>
+                <td>@Html.TextBoxFor(model => model.Source, new { @style = "width:150px" })</td>
+            </tr>
+            <tr>
+                <td align="right">URL地址：</td>
+                <td>@Html.TextBoxFor(model => model.RedirectUrl, new { @style = "width:90%" })</td>
+            </tr>
+            <tr>
+                <td align="right">设定发布时间：</td>
+                <td>
+                    @Html.TextBoxFor(model => model.PublishDateTime, new { @style = "width:80px;text-align:center;", @readonly = "readonly", @Value = Model.PublishDateTime.ToString("yyyy-MM-dd") })
+
+                    <select id="PublishDateTimeHour">
+                        <option value="00">00时</option>
+                        <option value="01">01时</option>
+                        <option value="02">02时</option>
+                        <option value="03">03时</option>
+                        <option value="04">04时</option>
+                        <option value="05">05时</option>
+                        <option value="06">06时</option>
+                        <option value="07">07时</option>
+                        <option value="08">08时</option>
+                        <option value="09">09时</option>
+                        <option value="10">10时</option>
+                        <option value="11">11时</option>
+                        <option value="12">12时</option>
+                        <option value="13">13时</option>
+                        <option value="14">14时</option>
+                        <option value="15">15时</option>
+                        <option value="16">16时</option>
+                        <option value="17">17时</option>
+                        <option value="18">18时</option>
+                        <option value="19">19时</option>
+                        <option value="20">20时</option>
+                        <option value="21">21时</option>
+                        <option value="22">22时</option>
+                        <option value="23">23时</option>
+                    </select>
+                    <select id="PublishDateTimeMinute">
+                        <option value="00">00分</option>
+                        <option value="10">10分</option>
+                        <option value="15">15分</option>
+                        <option value="20">20分</option>
+                        <option value="25">25分</option>
+                        <option value="30">30分</option>
+                        <option value="35">35分</option>
+                        <option value="40">40分</option>
+                        <option value="45">45分</option>
+                        <option value="50">50分</option>
+                        <option value="55">55分</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td align="right">点赞数：</td>
+                <td>@Html.TextBoxFor(model => model.Vote, new { @style = "width:50px" }) 次</td>
+            </tr>
+            <tr>
+                <td align="right"></td>
+                <td>
+                    @*<input type="button" value="保存" id="btnSaveForm" />*@
+                    <input type="submit" value="保存" id="btnSaveForm"  />
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="button" value="取消并返回" onclick="location = 'ArticleManage'" />
+                </td>
+            </tr>
+        </table>
+    }
+
+<script type="text/javascript">
+    $(function () {
+        KindEditor.create('#Content', kdsimple);
+        var newsType = @Model.Type;
+        $("#PublishDateTimeHour").val('@Model.PublishDateTime.ToString("HH")');
+        $("#PublishDateTimeMinute").val('@Model.PublishDateTime.ToString("mm")');
+        $("#PublishDateTime").datepicker({ dateFormat: 'yy-mm-dd' });
+        $("form").submit(function () {
+            if(newsType ==1)
+            {
+                if ($("#SmallTitle").val() == "" || $("#BigTitle").val() == "") {
+                    alert('大小标题、内容不能为空');
+                    return false;
+                }              
+                if($("#PKID").val()=="0"){//新增文章判断图片链接
+                    if(!CheckImageValid()){
+                        return false;
+                    }
+                }
+                ContentJoin();
+            }
+            else{
+                if ($("#SmallTitle").val() == "" || $("#BigTitle").val() == "" || $("#Content").val() == "") {
+                    alert('大小标题、内容不能为空');
+                    return false;
+                }
+            }
+            $("#PublishDateTime").val($("#PublishDateTime").val() + " " + $("#PublishDateTimeHour").val() + ":" + $("#PublishDateTimeMinute").val() + ":00");
+            $(".ui-dialog-titlebar-close").click();
+        });
+        //$("#btnSaveForm").click(function(){
+        //    if(newsType ==1)
+        //    {
+        //        if ($("#SmallTitle").val() == "" || $("#BigTitle").val() == "") {
+        //            alert('大小标题、内容不能为空');
+        //            return;
+        //        }
+        //        ContentJoin();
+        //    }
+        //    else{
+        //        if ($("#SmallTitle").val() == "" || $("#BigTitle").val() == "" || $("#Content").val() == "") {
+        //            alert('大小标题、内容不能为空');
+        //            return;
+        //        }
+        //    }
+        //    $("#PublishDateTime").val($("#PublishDateTime").val() + " " + $("#PublishDateTimeHour").val() + ":" + $("#PublishDateTimeMinute").val() + ":00");
+        //    $.ajax({
+        //        type:"post",
+        //        url:"/Article/AddArticle",
+        //        data:$("form").serialize(),
+        //        async:false,
+        //        success:function(res){
+        //            if(res=="ok"){
+        //                $(".ui-dialog-titlebar-close").click();
+        //            }
+        //        }
+        //    });
+        //});
+        function CheckImageValid(){
+            var isvalid = true;
+            var parentEl = $("#ContentTypeToOne > .ContentTable");
+            var domain=location.host.indexOf("tuhu.cn")>=0?"tuhu.cn":"tuhu.test";
+            var hostImg1="http://img."+domain;
+            var hostImg2="http://image."+domain;
+            $(parentEl).each(function (i) {
+                var describle=NewsManage.HtmlEncode($(this).find("iframe[class='ke-edit-iframe']").contents().find("body").html());
+                $(htmlDecode(describle)).find("img").each(function() {
+                    if (!(this.src.indexOf(hostImg1) >= 0 || this.src.indexOf(hostImg2) >= 0)) {
+                        isvalid = false;
+                        return false;
+                    }
+                });
+            });
+            if(!isvalid){
+                alert('图片链接必须以http://img.tuhu.cn或http://image.tuhu.cn开始');
+                return false;
+            }else{
+                return true;
+            }
+        }
+        function ContentJoin() {
+            var parentEl = $("#ContentTypeToOne > .ContentTable");
+            var ContentList = new Array();
+            $(parentEl).each(function (i) {
+                var model = new ContentModel();
+                model.title = $(this).find(".productTitle").val();
+                //model.describe = $(this).find(".productDescribe").val();
+                model.describe = NewsManage.HtmlEncode($(this).find("iframe[class='ke-edit-iframe']").contents().find("body").html());
+                model.maxPic = $(this).find(".maxProductPic").val();
+                model.minPic = $(this).find(".minProductPic").val();
+                model.productName = $(this).find(".productName").val();
+                model.productPrice = $(this).find(".productMoney").val();
+                model.productUrl = $(this).find(".productUrl").val();
+                ContentList.push(model);
+            });
+            var jsonList = JSON.stringify(ContentList);
+            var conte = $("#Content").text(jsonList);
+            $(".ke-container-default").find("iframe[class='ke-edit-iframe']").contents().find("body").html(jsonList);
+            console.log(jsonList);
+        }
+        function ContentModel() {
+            this.title = "";
+            this.describe = "";
+            this.maxPic = "";
+            this.minPic = "";
+            this.productName = "";
+            this.productPrice = "";
+            this.productUrl = "";
+        }
+        function htmlDecode(html) {
+            var a = document.createElement('a'); a.innerHTML = html;
+            return a.textContent;
+        }
+        setTimeout(function(){
+            if(newsType == 1){
+                $(".ke-container-default").hide();
+            }
+        },500);
+    });
+
+    //function UploadImg()
+    //{
+    //	$.ajaxFileUpload({
+    //		url: '/Article/AddArticleImg',
+    //		secureuri: false,保
+    //		fileElementId: 'upPicture',
+    //		dataType: 'json',
+    //		data: {},
+    //		type: "post",
+    //		success: function (result)
+    //		{
+    //			if (result.BImage != "" && result.SImage != "")
+    //			{
+    //				$("#vwPicture").attr("src", result.SImage);
+    //				$("#vwPicture").show();
+    //				$("#SmallImage").val(result.SImage);
+    //				$("#Image").val(result.BImage);
+    //			} else
+    //			{
+    //				alert("上传失败！");
+    //			}
+    //		}
+    //	});
+    //}
+
+
+    var upCount = $("#ContentTypeToOne > table").length;
+    //上传图片地址
+    function UploadBImg() {
+        $.ajaxFileUpload({
+            url: '/Article/ImageUploadToAli',
+            secureuri: false,
+            fileElementId: 'upPicture',
+            dataType: 'json',
+            async: false,
+            success: function (result) {
+                if (result.BImage != "" && result.SImage != "") {
+                    $("#vwPicture").attr("src", result.SImage);
+                    $("#vwPicture").show();
+                    $("#SmallImage").val(result.SImage);
+                    $("#Image").val(result.BImage);
+                } else {
+                    alert("上传失败！");
+                }
+            }
+        });
+    }
+    //上传更多图片
+    UploadBImg.UpMorePicture = function(_fileElementId,_callback)
+    {
+        $.ajaxFileUpload({
+            url: '/Article/ImageUploadToAli',
+            secureuri: false,
+            fileElementId: _fileElementId || '',
+            dataType: 'json',
+            async: false,
+            success: function (result) {
+                _callback(result);
+            }
+        });
+    }
+    //更多图片添加DOM
+    UploadBImg.AddMorePictureHTML = function(result)
+    {
+        var _MorePictureHTML = "<span data-BImage=\"{BImage}\" data-SImage=\"{SImage}\" style=\"display:block;width:40px;float:left;margin-right:10px;border:1px solid red;\">"
+                  + "<img height=\"40\" src=\"{SImage}\" style=\"width:40px;\" />"
+                  + "<a href=\"javascript:void(0);\" onclick=\"UploadBImg.DelMorePicture(this);\">删除</a></span>"   
+        _MorePictureHTML = _MorePictureHTML.replace(/\{SImage\}/ig,result.SImage).replace(/\{BImage\}/ig,result.BImage);
+        $("#morePictureVessel").append(_MorePictureHTML);
+        UploadBImg.UpMorePictureHandler();
+    }
+    //删除上传图片
+    UploadBImg.DelMorePicture = function(obj)
+    {
+        if(confirm("确认删除？删除后不可恢复！"))
+        {
+            var _ojb = $(obj);
+            $(_ojb).parent("span").remove();;
+            UploadBImg.UpMorePictureHandler();
+        }
+    }
+    //上传图片统计
+    UploadBImg.UpMorePictureHandler = function()
+    {
+        var morePicturModel = function(){
+            this.BImage,
+            this.SImage
+        }
+
+        var _showImages = $("#ShowImages"),
+            _morePictureVessel = $("#morePictureVessel"),
+            _morePictureList = [];
+
+        _morePictureVessel.find("span").each(function(i){
+            var _morePicturModel = new morePicturModel();
+            _morePicturModel.BImage = $(this).attr("data-bimage"); 
+            _morePicturModel.SImage = $(this).attr("data-simage");
+            _morePictureList.push(_morePicturModel);
+        });
+        _showImages.val(JSON.stringify(_morePictureList));
+        console.log(JSON.stringify(_morePictureList));
+    }
+    //页面初始化加载多图片内容
+    UploadBImg.OnloadJSONToHTML = (function(){
+        setTimeout(function(){
+            var _MorePictureHTML = "<span data-BImage=\"{BImage}\" data-SImage=\"{SImage}\" style=\"display:block;width:40px;float:left;margin-right:10px;border:1px solid red;\">"
+              + "<img height=\"40\" src=\"{SImage}\" style=\"width:40px;\" />"
+              + "<a href=\"javascript:void(0);\" onclick=\"UploadBImg.DelMorePicture(this);\">删除</a></span>"
+              ,_MorePictureContext="",_MorePictureData = eval('('+ $("#ShowImages").val() +')');
+            console.log(_MorePictureData);
+            for (var i = 0; i < _MorePictureData.length; i++) {
+                _MorePictureContext += _MorePictureHTML.replace(/\{SImage\}/ig,_MorePictureData[i].SImage).replace(/\{BImage\}/ig,_MorePictureData[i].BImage);
+            }
+            $("#morePictureVessel").append(_MorePictureContext);
+        },1000);
+    })();
+
+    var NewsManage = {
+        Remove: function (obj) {
+            if (confirm("删除后不可恢复，确认？")) {
+                var parentObj = $(obj).parent("td").parent("tr").parent("tbody").parent("table");
+                $(parentObj).remove();
+            }
+        },
+        Add: function () {
+            console.log(upCount);
+            var templateHtml = "<table class=\"ContentTable\" style=\"margin-top:10px;width:100%\">";
+            templateHtml += "<tr><td colspan=\"2\" style=\"text-align:left;\"><input type=\"button\" value=\"删除\" onclick=\"NewsManage.Remove(this)\" style=\"font-weight:300;color:red;\"/></td></tr>";
+            templateHtml += "<tr><td align=\"right\" style=\"width:10%;\">商品标题:</td><td style=\"width:80%;\"><input type=\"text\" class=\"productTitle\" /></td></tr>";
+            templateHtml += "<tr><td align=\"right\" style=\"width:10%;\">商品描述:</td><td style=\"width:80%;\"><textarea style=\"width:90%;height:45px;\" rows=\"2\" class=\"productDescribe NewTitleContent\" cols=\"20\"></textarea></tr>";
+            templateHtml += "<tr><td align=\"right\" style=\"width:10%;\">商品图片:</td><td style=\"width:80%;\">";
+            templateHtml += "<form method=\"post\" action=\"\" enctype=\"multipart/form-data\"><input style=\"width:150px;\" type=\"file\" id=\"upPictureProduct$fileId$\" name=\"upPictureProduct$fileId$\" onchange=\"NewsManage.UploadBImg(this);\" /></form><br />"
+            templateHtml += "<img height=\"40\" src=\"\" id=\"vwPicture\" style=\"width:40px;display:none;\" /><input type=\"text\" class=\"maxProductPic\" style=\"display:none;\" /><input type=\"text\" class=\"minProductPic\" style=\"display:none;\" /></td></tr>";
+            templateHtml += "<tr><td align=\"right\" style=\"width:10%;\">商品名称:</td><td style=\"width:80%;\"><input type=\"text\" class=\"productName\" /></td></tr>";
+            templateHtml += "<tr><td align=\"right\" style=\"width:10%;\">商品价格:</td><td style=\"width:80%;\"><input type=\"text\" class=\"productMoney\" /></td></tr>";
+            templateHtml += "<tr><td align=\"right\" style=\"width:10%;\">商品链接:</td><td style=\"width:80%;\"><input type=\"text\" class=\"productUrl\" /></td></tr></table>";
+            $("#ContentTypeToOne").append(templateHtml.replace(/\$fileId\$/ig,upCount+1));
+            upCount++;
+            this.LoadKindEditor();
+        },
+        UploadBImg: function (obj) {
+            var pobj = $(obj).parent("form").parent("td");
+            var rd = Math.ceil(Math.random() * 9999) + 1;
+            var fileElId = $(obj).attr("id");
+            console.log(fileElId);
+            $.ajaxFileUpload({
+                url: '/Article/ImageUploadToAli?rd='+rd,
+                secureuri: false,
+                fileElementId: fileElId,
+                dataType: 'json',
+                async: false,
+                success: function (result) {
+                    if (result.BImage != "" && result.SImage != "") {
+                        $(pobj).find("#vwPicture").attr("src", result.SImage).show();
+                        $(pobj).find(".minProductPic").val(result.SImage);
+                        $(pobj).find(".maxProductPic").val(result.BImage);
+                    } else {
+                        alert("上传失败！");
+                    }
+                }
+            });
+        },
+        LoadKindEditor:function()
+        {
+            var kdsimpleForNew = {
+                themeType:'qq',
+                resizeType: 1,
+                allowPreviewEmoticons: false,
+                //uploadJson: '/FAQ/AddFile?prefix=article',
+                uploadJson: '/Article/ImageUploadToAli?from=content',
+                items: [
+                    'bold', 'italic', 'forecolor', 'underline', 'removeformat', 'link', 'source', 'image'],
+                afterChange: function () {
+                    this.sync();//这个是必须的,如果你要覆盖afterChange事件的话,请记得最好把这句加上.
+                }
+            };
+            KindEditor.create('.NewTitleContent', kdsimpleForNew);
+        },
+        HtmlEncode:function (str) {
+            ///<summary>html编码</summary>
+            str = str.replace(/&/ig, '&amp;');
+            str = str.replace(/</ig, '&lt;');
+            str = str.replace(/>/ig, '&gt;');
+            return str;
+        },
+        HtmlDecode:function(str) {
+            ///<summary>html解码</summary>
+            str = str.replace(/&amp;/gi, '&');
+            str = str.replace(/&lt;/gi, '<');
+            str = str.replace(/&gt;/gi, '>');
+            return str;
+        }
+    };
+    NewsManage.LoadKindEditor();
+
+    var zTreeSetting = {
+        setting :{
+            check: {
+                enable: true,
+                chkboxType:{ "Y" : "", "N" : "" }
+            },
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            },
+            callback: {
+                onCheck:function(event, treeId, treeNode){
+                    zTreeSetting.saveArticle();
+                }
+            },
+            view:{
+                addDiyDom:function(treeId, treeNode) {
+                    var aObj = $("#" + treeNode.tId + "_a");
+                    var editStr = "<select style='color:red;' id='CategoryTagTree_"+treeNode.id+"_select'>"+
+                                  "<option value='1'>显示标签</option>"+
+                                  "<option value='0' selected=selected'>不显示标签</option></select>";
+                    aObj.append(editStr);
+                    var selectObj = $("#CategoryTagTree_" + treeNode.id + "_select");
+                    if(selectObj)
+                    {
+                        selectObj.bind("change",function(){
+                            zTreeSetting.saveArticle();
+                        });
+                    }
+                }
+            }
+        },
+        zTreeJson:@Html.Raw(ViewBag.CategoryTagManager),
+        zTreeInit:function(){
+            $.fn.zTree.init($("#CategoryTagTree"), zTreeSetting.setting,zTreeSetting.zTreeJson);
+        },
+        model:function(){
+            this.key,
+            this.value,
+            this.isShow
+        },
+        getItems:function()
+        {
+            var treeObj=$.fn.zTree.getZTreeObj("CategoryTagTree"),
+                nodes=treeObj.getCheckedNodes(true),
+                itemsJson=[];
+
+            for(var i=0;i<nodes.length;i++){
+                var _model = new zTreeSetting.model();
+                _model.key = nodes[i].id;
+                _model.value = nodes[i].name;
+                _model.isShow = $("#CategoryTagTree_"+nodes[i].id+"_select option:selected").val() || 1;
+                itemsJson.push(_model);
+            }
+            var _json = JSON.stringify(itemsJson) || "";
+            return _json;
+        },
+        saveArticle:function(){
+            var strJson = zTreeSetting.getItems();
+            $("#CategoryTags").val(strJson);
+        },
+        checkAllTree:function(ischecks){
+            $.fn.zTree.getZTreeObj("CategoryTagTree").checkAllNodes(ischecks || false);
+            zTreeSetting.saveArticle();
+        },
+        expandAll:function(isExpandAll){
+            $.fn.zTree.getZTreeObj("CategoryTagTree").expandAll(isExpandAll || false);
+        },
+        defaultSelected:function()
+        {
+            var _selectTag="",
+                _model =JSON.parse($("#CategoryTags").val());
+            for (var i = 0; i < _model.length; i++) {
+                var obj = _model[i];
+                _selectTag = "#CategoryTagTree_"+ obj.key +"_select";
+                $(_selectTag).val(obj.isShow || 0);
+                console.log(_selectTag +","+ obj.isShow);
+            }
+        }
+    };
+
+    zTreeSetting.zTreeInit();
+    zTreeSetting.expandAll(true);
+    zTreeSetting.defaultSelected();
+    zTreeSetting.expandAll(false);
+</script>

@@ -1,0 +1,59 @@
+﻿@{
+    Layout = null;
+    var dev = System.Configuration.ConfigurationManager.AppSettings["env"] == "dev";
+    var url = string.Empty;
+    if (dev)
+    {
+        url = "http://open.api.tuhu.work/RightPlatform/GrantRedemptionCode";
+    }
+    else
+    {
+        url = "http://open.api.tuhu.cn/RightPlatform/GrantRedemptionCode";
+    }
+}
+<html>
+<body>
+    <form action="@url" method="post">
+        <table>
+            <tr>
+                <td>appId</td><td><input name="appId" /></td>
+            </tr>
+            <tr>
+                <td>identityId</td>
+                <td><input name="identityId" /></td>
+            </tr>
+            <tr>
+                <td>thirdPartyCode</td>
+                <td><input name="thirdPartyCode" /></td>
+            </tr>
+            <tr>
+                <td>signature</td>
+                <td><input name="signature" /></td>
+            </tr>
+            <tr>
+                <td>configId</td>
+                <td><input name="configId" /></td>
+            </tr>
+            <tr>
+                <td>mobileNum</td>
+                <td><input name="mobileNum" /></td>
+            </tr>
+            <tr>
+                <td>licenseNo</td>
+                <td><input name="licenseNo" /></td>
+            </tr>
+            <tr>
+                <td>vehicle</td>
+                <td><input name="vehicle" /></td>
+            </tr>
+            <tr>
+                <td>new</td>
+                <td><input name="new" /></td>
+            </tr>
+            <tr><td colspan="2"><input type="submit" style="float:right"/></td></tr>
+        </table>
+       
+    </form>
+</body>
+</html>
+

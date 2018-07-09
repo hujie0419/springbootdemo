@@ -1,0 +1,37 @@
+﻿
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.ConfigHistory>
+@{
+    Layout = "";
+}
+<style>
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+
+    td {
+        width: 250px;
+    }
+</style>
+<table>
+    <thead>
+        <tr>
+            <th>操作人</th>
+            <th>操作时间</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Author</td>
+                <td>@item.ChangeDatetime</td>
+                <td>@item.Operation</td>
+            </tr>
+        }
+    </tbody>
+</table>

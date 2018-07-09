@@ -1,0 +1,140 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.UserPermissionModel
+@{
+    Layout = null;
+    ViewBag.Title = "编辑用户等级配置";
+}
+
+<style>
+    .tab {
+        width: 100%;
+    }
+
+    .td_right {
+        text-align: right;
+    }
+
+    .td_left {
+        text-align: left;
+    }
+
+    #showTemplate select {
+        max-width: 200px;
+    }
+</style>
+<h2> @ViewBag.Title </h2>
+<div id="editUserPermission">
+    <form class="editForm">
+        <table class="tab" border="0" style="margin-bottom:10px;">
+            <tr>
+                <td class="td_right">名称：</td>
+                <td class="td_left" colspan="3">
+                    <input type="text" name="Name"  value="@(Model.Name == null ? null : Model.Name)"/>
+                </td> 
+            </tr>
+            <tr>
+                <td class="td_right">点亮图标:</td>
+                <td class="td_left">
+                        <input style="width: 150px;" type="file" id="upLightImage" name="upLightLmage" onchange="UploadImg(this, 'vLightImage', 'LightImage')" />
+                        <img id="vLightImage" style="height:40px;" src="@(Model.LightImage == null ? null : Model.LightImage)" />
+                        <input type="text"  id="LightImage" name="LightImage" size="1" style="visibility: hidden" value="@(Model.LightImage == null ? null : Model.LightImage)" />
+                    
+                </td>
+                <td class="td_right">未点亮图标:</td>
+                <td class="td_left">
+                    <input style="width: 150px;" type="file" id="upDarkImage" name="upDarkImage" onchange="UploadImg(this, 'vDarkImage', 'DarkImage');" />
+                    <img id="vDarkImage" style="height:40px;" src="@(Model.DarkImage == null ? null : Model.DarkImage)" />
+                    <input type="text"  id="DarkImage" name="DarkImage" size="1" style="visibility: hidden" value="@(Model.DarkImage == null ? null : Model.DarkImage)" />
+                </td>
+            </tr>
+              
+            <tr>
+                <td class="td_right">头图:</td>
+                <td class="td_left">
+                    <input style="width: 150px;" id="upTopImage" type="file" name="upTopImage" onchange="UploadImg(this, 'vTopImage', 'TopImage');" />
+                    <img  id="vTopImage" style="height:40px;" src="@(Model.TopImage == null ? null : Model.TopImage)" />
+                    <input type="text" id="TopImage" name="TopImage" size="1" style="visibility: hidden" value="@(Model.TopImage == null ? null : Model.TopImage)" />
+                </td>
+                <td class="td_right">显示顺序:</td>
+                <td class="td_left">
+                    <input type="text" name="Position" value="@(Model.Position == null?null:Model.Position.ToString())" />
+                </td>
+            </tr>
+            <tr>
+                <td class="td_right">是否为头图:</td>
+                <td class="td_left">
+                    <span><input type="radio" name="IsTopImage" value="1" checked="@(Model.IsTopImage==null || Model.IsTopImage == 0?null:"checked")" />是</span>  
+                    <span><input type="radio" name="IsTopImage" value="0" checked="@(Model.IsTopImage==null || Model.IsTopImage == 1?null:"checked")" />否</span>  
+                </td>
+                <td class="td_right">用户等级:</td>
+                <td class="td_left">
+                    <input type="text" name="UseUserLevel"   value="@(Model.UseUserLevel == null?null:Model.UseUserLevel.ToString())"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="td_right">是否启用</td>
+                <td class="td_left">
+                    <span><input type="radio" name="IsEnable" value="1" checked="@(Model.IsEnable==null || Model.IsEnable == 0?null:"checked")" />是</span>
+                    <span><input type="radio" name="IsEnable" value="0" checked="@(Model.IsEnable==null || Model.IsEnable == 1?null:"checked")" />否</span>  
+                </td>
+                <td class="td_right">是否高亮</td>
+                <td class="td_left">
+                    <span><input type="radio" name="IsLight" value="1" checked="@(Model.IsLight==null || Model.IsLight == 0?null:"checked")" />是</span>
+                    <span><input type="radio" name="IsLight" value="0" checked="@(Model.IsLight==null || Model.IsLight == 1?null:"checked")" />否</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="td_right">小标题</td>
+                <td class="td_left">
+                    <input type="text" name="FootTile" value="@(Model.FootTile == null?null:Model.FootTile.ToString())" />
+                </td>
+                <td class="td_right">
+                    版本:
+                </td>
+                <td class="td_left">
+                    <span><input type="radio" name="Version" value="1" checked="@(Model.Version==null || Model.Version == 2?null:"checked")" />老版本</span>
+                    <span><input type="radio" name="Version" value="2" checked="@(Model.Version==null || Model.Version == 1?null:"checked")" />新版本</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="td_right">描述:</td>
+                <td class="td_left" colspan="3">
+                   <input type="text"  style="height:15px;width:75%"  name="Description"  value="@(Model.Description == null?null:Model.Description.ToString())"/>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<script type="text/javascript">
+   
+    //子页面上传图片
+    function UploadImg(obj, showImg, showUrl) {
+        var pobj = $(obj);
+        var rd = Math.ceil(Math.random() * 9999) + 1;
+        var fileElId = $(obj).attr("id");
+        console.log(fileElId);
+        $.ajaxFileUpload({
+            url: '/Article/ImageUploadToAli?rd=' + rd,
+            secureuri: false,
+            fileElementId: fileElId,
+            dataType: 'json',
+            async: false,
+            success: function (result) {
+                if (result.BImage != "" && result.SImage != "") {
+                    console.log($("#" + showImg));
+                    $("#" + showImg).attr("src", result.SImage).show();
+                    $("#" + showUrl).val(result.BImage);
+
+                } else {
+                    alert("上传失败！");
+                }
+            },
+            error: function (data, status, e)//服务器响应失败处理函数
+            {
+                alert(e);
+            }
+        });
+    }
+
+    $("#editUserPermission>form").validate(mainValidateOptions);
+</script>

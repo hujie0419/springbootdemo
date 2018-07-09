@@ -1,0 +1,189 @@
+﻿<style>
+    th,td{
+        padding-left:5px;
+        text-align:left;
+    }
+</style>
+<div class="row" style="margin-top:20px;">
+    
+</div>
+<div class="row" style="margin-top:20px;">
+    <div class="col-md-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">  
+                <h2>Search</h2>
+            </div>
+            <div class="panel-body">
+                <div id="search" class="row">  
+                    <div class="col-md-9">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="input-search" placeholder="Type to search..." value="">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                            <button class="btn btn-default" id="export">导出所选</button>
+                    </div>
+                </div>
+                <div id="ss_reault">
+                    <div id="search-count"></div>
+                    <div id="search-output"></div>                  
+                </div>
+                <div id="treeView"></div>             
+            </div>
+        </div>
+
+    </div>
+    <div class="col-md-8">
+        <div class="panel panel-default" id="data" style="display:none;">
+            <div class="panel-heading" style="margin-bottom:15px;">
+                <div style="font-size:2rem;margin-bottom:10px;"><strong>表名:&nbsp;</strong><span id="tablename"></span></div>
+            </div>
+            <div class="panel-body">
+                <div style="font-size:1.8rem;margin-bottom:20px;"><strong>描述:&nbsp;</strong><span id="desc"></span></div>
+                <div>
+                    <table class="table table-bordered" style="text-align:left;">
+                        <thead>
+                        <tr>
+                            <th>字段名</th>
+                            <th>字段类型</th>
+                            <th>字节数</th>
+                            <th>字段长度</th>
+                            <th>是否可空</th>
+                            <th>备注</th>
+                        </tr>
+                        </thead>
+                        <tbody id="tableDetail">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/bootstrap-treeview.js"></script>
+<script>
+    $(function() {
+        $.post("/Home/GetTableList",
+            function(data) {
+                $('#ss_reault').hide();
+                var $searchableTree = $('#treeView').treeview({
+                    data: data,
+                    highlightSelected: true,
+                    levels: 1,
+                    onNodeSelected: function(event, node) {
+                        if (node.id !== '') {
+                            var dbName = node.id;
+                            var tableName = node.text;
+                            $("#tablename").text(tableName);
+                            $("#data").show();
+                            DbMap(dbName, tableName);
+                            $('#export').on('click',
+                                function(event) {
+                                    var queryStr = `${dbName}/${tableName}`;
+                                    window.location.href = `/Home/ExportFile?tableStr=${queryStr}`;
+                                });
+                        }
+
+                    }
+                });
+                
+
+
+                var search = function(e) {
+                    var pattern = $('#input-search').val();
+                    var options = {
+                        ignoreCase: true,
+                        revealResults: true
+                    };
+                    const results = $searchableTree.treeview('search', [pattern, options]);
+                    $('#treeView').show();
+                    if (results.length > 0) {
+                        $('#treeView').hide();
+                        $('#ss_reault').show();
+                    }
+                    var data3 = [];
+                    $.each(results,
+                        function(index, result) {
+                            if (result.id !== '') {
+                                var dat = {
+                                    id: `${result.id}/${result.text}`,
+                                    text: `${result.id}/${result.text}`
+                                };
+                                data3.push(dat);
+                            }
+                        });
+
+                    var $searchTree= $('#search-output').treeview({
+                        data: data3,
+                        highlightSelected: true,
+                        levels: 1,
+                        showCheckbox: true,
+                        multiSelect: true,
+                        onNodeSelected: function(event, node) {
+                            if (node.id !== '') {
+                                var info = node.text.split('/');
+                                if (info.length === 2) {
+                                    $("#tablename").text(info[1]);
+                                    $("#data").show();
+                                    DbMap(info[0], info[1]);
+                                }
+                            }
+                        }
+                    });
+
+
+                    $('#export').on('click',
+                        function(event) {
+                            var result = $searchTree.treeview('getChecked');
+                            var queryStr = [];
+                            $.each(result,
+                                function(k, v) {
+                                    if (v.id !== '') {
+                                        queryStr.push(v.id);
+                                    }
+                                });
+                            if (queryStr.length === 0 && data3.length!==0) {
+                                alert("未选中数据库");
+                                return;
+                            }
+                            window.location.href = `/Home/ExportFile?tableStr=${queryStr.join(";")}`;
+                        });
+                }
+
+                $('#input-search').on('keyup', search);
+                
+                $('#btn-clear-search').on('click',
+                    function(e) {
+                        $searchableTree.treeview('clearSearch');
+                        $('#input-search').val('');
+                        $('#search-output').html('');
+                        $('#treeView').show();
+                        $('#ss_reault').hide();
+                    });
+            });
+    });
+
+    function DbMap(db, table) {
+        $.post("/Home/FetchTableDetail",
+            {
+                DbName: db,
+                TableName: table
+            },
+            function(data2) {
+                $("#desc").text(data2.Description);
+                var html = '';
+                $.each(data2.Data,
+                    function(k, v) {
+                        html += `<tr><td>${v.FieldName}</td><td>${v.FieldType}</td><td>${(
+                                v.ByteCount === -1 ? 'MAX' : v.ByteCount)}</td><td>${(v.FieldSize === -1
+                                ? 'MAX'
+                                : v.FieldSize)}</td><td>${v.IsNullable}</td><td>${v.Description
+                            }</td></tr>`;
+                    });
+                $("#tableDetail").html(html);
+            });
+    }
+
+</script>

@@ -1,0 +1,384 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.CouponActivityModel
+@{
+    Layout = null;
+    ViewBag.Title = "编辑活动页配置";
+}
+<style>
+    .tab {
+        width: 100%;
+    }
+
+    .td_right {
+        text-align: right;
+    }
+
+    .td_left {
+        text-align: left;
+    }
+
+    #showTemplate select {
+        max-width: 200px;
+    }
+</style>
+<h2>编辑活动页配置</h2>
+<div id="editActivity">
+    <form class="editForm">
+        <table class="tab" border="0" style="margin-bottom:10px;">
+            <tr>
+                <td class="td_right">名称：</td>
+                <td class="td_left"><input type="text" name="ActivityName" value="@(Model == null ? null : Model.ActivityName)" /></td>
+                <td class="td_right">页面有效期：</td>
+                <td class="td_left"><input type="text" name="StartTime" style="width: 150px;" value="@(Model == null ? null : Model.StartTime.ToString("yyyy-MM-dd HH:mm"))" /></td>
+            </tr>
+            <tr>
+                <td class="td_right">发放渠道：</td>
+                <td class="td_left"><input type="text" name="ActivityChannel" value="@(Model == null ? null : Model.ActivityChannel)" /></td>
+                <td></td>
+                <td class="td_left"><input type="text" name="EndTime" style="width: 150px;" value="@(Model == null ? null : Model.EndTime.ToString("yyyy-MM-dd HH:mm"))" /></td>
+            </tr>
+            <tr>
+                <td class="td_right">数量：</td>
+                <td class="td_left"><input type="number" name="CouponNum" min="1" value="@(Model == null||Model.CouponNum == 0 ? null : Model.CouponNum.ToString())" /></td>
+                <td class="td_right">新注册用户：</td>
+                <td class="td_left">
+                    <label><input type="radio" name="IsNewUser" value="1" checked="@(Model == null || Model.IsNewUser < 1 ? null : "checked")" />是</label>
+                    <label><input type="radio" name="IsNewUser" value="0" checked="@(Model == null || Model.IsNewUser < 1 ? "checked" : null)" />否</label>
+                </td>
+            </tr>
+            <tr>
+                <td class="td_right">头图：</td>
+                <td class="td_left">
+                    <input style="width: 150px;" type="file" onchange="UploadImg(this);" />
+                    <img style="height:40px;" src="@(Model == null ? null : Model.BannerImg)" />
+                    <input type="text" name="BannerImg" size="1" style="visibility: hidden" value="@(Model == null ? null : Model.BannerImg)" />
+                </td>
+                <td class="td_right">底图：</td>
+                <td class="td_left">
+                    <input style="width:150px;" type="file" onchange="UploadImg(this);" />
+                    <img style="height:40px;" src="@(Model == null ? null : Model.ActivityRuleImg)" />
+                    <input type="text" name="ActivityRuleImg" size="1" style="visibility: hidden" value="@(Model == null ? null : Model.ActivityRuleImg)" />
+                </td>
+            </tr>
+            <tr style="display:none;">
+                <td class="td_right">活动类型:</td>
+                <td class="td_left">
+                    <select id="ActivityType" name="ActivityType" onchange="ChangeActivityType()">
+                        @if (Model != null)
+                        {
+                            if (Model.ActivityType == 0)
+                            {
+                                <option value="0" selected="selected">非限时抢购</option>
+                                <option value="1">限时抢购</option>
+                            }
+                            else
+                            {
+                                <option value="0">非限时抢购</option>
+                                <option value="1" selected="selected">限时抢购</option>
+                            }
+                        }
+                        else
+                        {
+                            <option value="0" selected="selected">非限时抢购</option>
+                            <option value="1">限时抢购</option>
+                        }
+                    </select>
+                </td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </form>
+    <div id="showTemplate">
+        @if (Model != null && Model.Coupons != null && Model.Coupons.Any())
+        {
+            foreach (var coupon in Model.Coupons)
+            {
+                int? type = null;
+                <form class="editForm">
+                    <table class="tab" border="0">
+                        <tr>
+                            <td class="td_right">优惠券类型：</td>
+                            <td class="td_left">
+                                <select name="CouponType">
+                                    @foreach (var couponType in ViewBag.CouponTypes as IEnumerable<Tuple<int, int?, string>>)
+                                    {
+                                        var selected = couponType.Item1 == coupon.CouponType;
+                                        if (selected)
+                                        {
+                                            type = couponType.Item2;
+                                        }
+                                        <option value="@couponType.Item1" selected="@(selected ? "selected" : null)" data-type="@couponType.Item2">@couponType.Item3</option>
+                                    }
+                                </select>
+                                <input type="hidden" id="pkid" name="pkid" value="@(coupon.PKID !=0?coupon.PKID.ToString():"")" />
+                            </td>
+                            <td class="td_right">有效日期方式： </td>
+                            <td class="td_left"><label><input type="radio" name="DateWay" value="0" checked="@(coupon.DateWay > 0 ? null : "checked")" />固定日期</label><label><input type="radio" name="DateWay" value="1" checked="@(coupon.DateWay > 0 ? "checked" : null)" />兑换后有效天数</label> </td>
+                        </tr>
+                        <tr>
+                            <td class="td_right">优惠金额： </td>
+                            <td class="td_left"><input name="Money" type="number" value="@coupon.Money" min="1" disabled="@(type == 3 || type == 99 ? "disabled" : null)" /></td>
+                            <td class="td_right">固定日期：</td>
+                            <td class="td_left">
+                                <input name="StartDate" type="date" value="@(coupon.StartDate == null ? null : coupon.StartDate.Value.ToString("yyyy-MM-dd"))" disabled="@(coupon.DateWay > 0 ? "disabled" : null)" /> 至 <input name="EndDate" type="date" value="@(coupon.EndDate == null ? null : coupon.EndDate.Value.ToString("yyyy-MM-dd"))" disabled="@(coupon.DateWay > 0 ? "disabled" : null)" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="td_right">限制最低金额： </td>
+                            <td class="td_left"><input name="MinMoney" type="number" value="@coupon.MinMoney" min="1" disabled="@(type == 3 || type == 99 ? "disabled" : null)" /></td>
+                            <td class="td_right">
+                                兑换后有效天数：
+                            </td>
+                            <td class="td_left">
+                                <input name="ValidDays" type="number" value="@coupon.ValidDays" min="1" style="width: 50px;" disabled="@(coupon.DateWay > 0 ? null : "disabled")" />
+                                @*优惠卷数量:*@
+                                <input style="display:none" type="number" id="CouponNum" name="CouponNum" value="@coupon.CouponNum" min="0" />
+                            </td>
+
+                        </tr>
+                        <tr>
+                            <td class="td_right">说明： </td>
+                            <td class="td_left"><input name="Instructions" type="text" placeholder="不超过20个字符" value="@coupon.Instructions" /></td>
+                            <td><input onclick="deletCoupon(this)" type="button" value="删除" /></td>
+                        </tr>
+                        <tr style="display:none">
+                            <td colspan="4" class="td_right">
+                                <span style="color:red;">
+                                    活动类型为【非限时抢购】时，优惠卷的数量为：【数量】字段；
+                                    活动类型为【限时抢购】时，优惠卷的数量为：【优惠卷数量】字段
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </form>}
+        }
+    </div>
+    <input style="margin-top:10px;" type="button" id="AddCoupon" value="添加优惠券" />
+    <div style="margin-top:10px;">
+        <form class="editForm" id="SuccessPage">
+            <table class="tab" border="0">
+                <tr><td class="td_left">成功页面：</td></tr>
+                <tr>
+                    <td class="td_right">头图：</td>
+                    <td class="td_left">
+                        <input style="width:150px;" type="file" onchange="UploadImg(this);" />
+                        <img style="height:40px;" src="@(Model == null ? null : Model.SuccessPage.TopImg)" />
+                        <input type="text" name="TopImg" size="1" style="visibility: hidden" value="@(Model == null ? null : Model.SuccessPage.TopImg)" />
+                    </td>
+                    <td class="td_right">IOS链接：</td>
+                    <td class="td_left"><input type="text" name="IOSLink" value="@(Model == null ? null : Model.SuccessPage.IOSLink)" /></td>
+                </tr>
+                <tr>
+                    <td class="td_right">中图：</td>
+                    <td class="td_left">
+                        <input style="width:150px;" type="file" onchange="UploadImg(this);" />
+                        <img style="height:40px;" src="@(Model == null ? null : Model.SuccessPage.CenterImg)" />
+                        <input type="text" name="CenterImg" size="1" style="visibility: hidden" value="@(Model == null ? null : Model.SuccessPage.CenterImg)" />
+                    </td>
+                    <td class="td_right">Android链接：</td>
+                    <td class="td_left"><input type="text" name="AndroidLink" value="@(Model == null ? null : Model.SuccessPage.AndroidLink)" /></td>
+                <tr>
+                    <td class="td_right">底图：</td>
+                    <td class="td_left">
+                        <input style="width:150px;" type="file" onchange="UploadImg(this);" />
+                        <img style="height:40px;" src="@(Model == null ? null : Model.SuccessPage.BottomImg)" />
+                        <input type="text" name="BottomImg" size="1" style="visibility: hidden" value="@(Model == null ? null : Model.SuccessPage.BottomImg)" />
+                    </td>
+                    <td class="td_right">跳转方式：</td>
+                    <td class="td_left" colspan="3">
+                        @{ var jumpMillisecond = Model == null || Model.SuccessPage.JumpMillisecond < 1000 ? 0 : Model.SuccessPage.JumpMillisecond; }
+                        <input type="number" style="font-size:10px; width: 50px;" name="JumpMillisecond" min="999" value="@(jumpMillisecond < 1000 ? null : jumpMillisecond.ToString())" disabled="@(jumpMillisecond < 1000 ? "disabled" : null)" />毫秒后<label><input type="radio" name="skipWay_1" checked="@(jumpMillisecond < 1000 ? null : "checked")" value="" />自动跳转</label> 或 <label><input type="radio" name="skipWay_1" checked="@(jumpMillisecond < 1000 ? "checked" : null)" value="0" />点击跳转</label>
+                    </td>
+                </tr>
+            </table>
+        </form>
+        <form class="editForm" id="ErrorPage">
+            <table class="tab" border="0">
+                <tr><td class="td_left">失败页面：</td></tr>
+                <tr>
+                    <td class="td_right">头图：</td>
+                    <td class="td_left">
+                        <input style="width:150px;" type="file" onchange="UploadImg(this);" />
+                        <img style="height:40px;" src="@(Model == null ? null : Model.ErrorPage.TopImg)" />
+                        <input type="text" name="TopImg" size="1" style="visibility: hidden" value="@(Model == null ? null : Model.ErrorPage.TopImg)" />
+                    </td>
+                    <td class="td_right">IOS链接：</td>
+                    <td class="td_left"><input type="text" name="IOSLink" value="@(Model == null ? null : Model.ErrorPage.IOSLink)" /></td>
+                </tr>
+                <tr>
+                    <td class="td_right">中图：</td>
+                    <td class="td_left">
+                        <input style="width:150px;" type="file" onchange="UploadImg(this);" />
+                        <img style="height:40px;" src="@(Model == null ? null : Model.ErrorPage.CenterImg)" />
+                        <input type="text" name="CenterImg" size="1" style="visibility: hidden" value="@(Model == null ? null : Model.ErrorPage.CenterImg)" />
+                    </td>
+                    <td class="td_right">Android链接：</td>
+                    <td class="td_left"><input type="text" name="AndroidLink" value="@(Model == null ? null : Model.ErrorPage.AndroidLink)" /></td>
+                </tr>
+                <tr>
+                    <td class="td_right">底图：</td>
+                    <td class="td_left">
+                        <input style="width:150px;" type="file" onchange="UploadImg(this);" />
+                        <img style="height:40px;" src="@(Model == null ? null : Model.ErrorPage.BottomImg)" />
+                        <input type="text" name="BottomImg" size="1" style="visibility: hidden" value="@(Model == null ? null : Model.ErrorPage.BottomImg)" />
+                    </td>
+                    <td class="td_right">跳转方式：</td>
+                    <td class="td_left" colspan="3">
+                        @{ jumpMillisecond = Model == null || Model.ErrorPage.JumpMillisecond < 1000 ? 0 : Model.ErrorPage.JumpMillisecond; }
+                        <input type="number" style="font-size:10px; width: 50px;" name="JumpMillisecond" min="999" value="@(jumpMillisecond < 1000 ? null : jumpMillisecond.ToString())" disabled="@(jumpMillisecond < 1000 ? "disabled" : null)" />毫秒后<label><input type="radio" name="skipWay_1" checked="@(jumpMillisecond < 1000 ? null : "checked")" value="" />自动跳转</label> 或 <label><input type="radio" name="skipWay_1" checked="@(jumpMillisecond < 1000 ? "checked" : null)" value="0" />点击跳转</label>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</div>
+<div id="addTemplate" style="display: none;">
+    <form class="editForm">
+        <table class="tab" border="0">
+            <tr>
+                <td class="td_right">优惠券类型：</td>
+                <td class="td_left">
+                    <select name="CouponType">
+                        @foreach (var type in ViewBag.CouponTypes as IEnumerable<Tuple<int, int?, string>>)
+                        {
+                            <option value="@type.Item1" data-type="@type.Item2">@type.Item3</option>
+                        }
+                    </select>
+                    <input type="hidden" id="pkid" name="pkid" value="0" />
+                </td>
+                <td class="td_right">有效日期方式： </td>
+                <td class="td_left"><label><input type="radio" name="DateWay" value="0" />固定日期</label> <label><input type="radio" name="DateWay" value="1" checked="checked" />兑换后有效天数</label></td>
+            </tr>
+            <tr>
+                <td class="td_right">优惠金额： </td>
+                <td class="td_left"><input name="Money" type="number" value="0" min="0" /></td>
+                <td class="td_right">固定日期：</td>
+                <td class="td_left"><input name="StartDate" type="date" value="" disabled="disabled" style="width: 100px;" /> 至 <input name="EndDate" type="date" value="" disabled="disabled" /></td>
+            </tr>
+            <tr>
+                <td class="td_right">限制最低金额： </td>
+                <td class="td_left"><input name="MinMoney" type="number" value="0" min="0" /></td>
+                <td class="td_right">
+                    兑换后有效天数：
+                   
+                </td>
+                <td class="td_left">
+                    @*优惠卷数量:*@
+                    <input name="ValidDays" type="number" value="" min="1" style="width: 50px;" />
+                    <input style="display:none" type="number" id="CouponNum" name="CouponNum" min="0" />
+
+                </td>
+            </tr>
+            <tr>
+                <td class="td_right">说明： </td>
+                <td class="td_left"><input name="Instructions" type="text" placeholder="不超过20个字符" /></td>
+                <td><input onclick="deletCoupon(this)" type="button" value="删除" /></td>
+            </tr>
+            <tr style="display:none">
+                <td colspan="4" class="td_left">
+                    <span style="color:red;">
+                        活动类型为【非限时抢购】时，优惠卷的数量为：【数量】字段；
+                        活动类型为【限时抢购】时，优惠卷的数量为：【优惠卷数量】字段
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<script>
+    $("#showTemplate").on("click", "[name=DateWay]", function () {
+        var tr = $(this).closest("tr").next();
+        if (this.value == "0") {
+            $("[type=date]", tr).removeProp("disabled");
+            $("[name=ValidDays]", tr.next()).prop("disabled", true);
+        }
+        else {
+            $("[type=date]", tr).prop("disabled", true);
+            $("[name=ValidDays]", tr.next()).removeProp("disabled");
+        }
+    }).on("change", "[name=CouponType]", function () {
+        var self = $(this);
+        var form = self.closest("form");
+        var type = self.children(":selected").data("type");
+        if (type == "3" || type == "11" || type == "99")
+            $("[name=Money],[name=MinMoney]", form).attr("disabled", "disabled");
+        else
+            $("[name=Money],[name=MinMoney]", form).removeAttr("disabled");
+
+        $("[name=Instructions]", form).val(self.children(":selected").text());
+    });
+
+    $("#SuccessPage [name=skipWay_1], #ErrorPage [name=skipWay_1]").on("click", function () {
+        var input = $(this).parent().siblings("[name=JumpMillisecond]");
+        this.value ? input.prop("disabled", true) : input.removeProp("disabled");
+    });
+
+    $("#editActivity>form").validate(mainValidateOptions);
+    $("#showTemplate>form").each(function () {
+        $(this).validate(couponValidateOptions);
+    });
+
+    if(@ViewBag.ActivityType == 0)
+    {
+        $("#SuccessPage").validate(pageValidateOptions);
+        $("#ErrorPage").validate(pageValidateOptions);
+
+    }
+
+
+    $("#editActivity [name=StartTime],#editActivity [name=EndTime]").datetimepicker({
+        minDate: new Date(),
+        dateFormat: "yy-mm-dd"
+    });
+
+    $("#AddCoupon").click(function () {
+        $("#showTemplate").append($("#addTemplate>.editForm").clone(true, true));
+        $("#showTemplate>form:last").validate(couponValidateOptions);
+
+        SetCouponNum();
+    });
+
+    function SetCouponNum() {
+        if ($("#editActivity [name=ActivityType]").val() == 1) {
+            //限时抢购
+            $("#editActivity [name=CouponNum]").attr("hidden", "hidden");
+            //  $("#editActivity [name=CouponNum]").val(0);
+            $("#showTemplate>form").each(function () {
+                var tab = $(this);
+                $("[name=CouponNum]", tab).removeAttr("hidden");
+            });
+        } else {
+            //非限时抢购
+            $("#editActivity [name=CouponNum]").removeAttr("hidden");
+            $("#showTemplate>form").each(function () {
+                var tab = $(this);
+                $("[name=CouponNum]", tab).attr("hidden", "hidden");
+                // $("[name=CouponNum]", tab).val(0);
+            });
+        }
+    }
+
+    ///活动类型为 限时抢购时不验证成功页面与失败页面的必填
+    function ChangeActivityType() {
+        var type = $("#editActivity [name=ActivityType]").val();
+        if (type == 1) {
+            $("#SuccessPage [name=TopImg]").rules("remove", "required");
+            $("#SuccessPage [name=CenterImg]").rules("remove", "required");
+            $("#SuccessPage [name=BottomImg]").rules("remove", "required");
+            $("#SuccessPage [name=IOSLink]").rules("remove", "required");
+            $("#SuccessPage [name=AndroidLink]").rules("remove", "required");
+            $("#SuccessPage [name=JumpMillisecond]").rules("remove", "required");
+
+            $("#ErrorPage [name=TopImg]").rules("remove", "required");
+            $("#ErrorPage [name=CenterImg]").rules("remove", "required");
+            $("#ErrorPage [name=BottomImg]").rules("remove", "required");
+            $("#ErrorPage [name=IOSLink]").rules("remove", "required");
+            $("#ErrorPage [name=AndroidLink]").rules("remove", "required");
+            $("#ErrorPage [name=JumpMillisecond]").rules("remove", "required");
+        } else {
+            $("#SuccessPage").validate(pageValidateOptions);
+            $("#ErrorPage").validate(pageValidateOptions);
+        }
+    }
+
+</script>

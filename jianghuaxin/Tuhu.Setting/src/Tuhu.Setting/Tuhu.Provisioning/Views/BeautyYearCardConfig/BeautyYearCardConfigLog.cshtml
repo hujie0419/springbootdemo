@@ -1,0 +1,155 @@
+﻿@model  int
+<head>
+    <link href="~/Content/iview/iview.css" rel="stylesheet" />
+    <script src="~/Scripts/vue.min.js"></script>
+    <script src="~/Scripts/iview/iview.min.js"></script>
+
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <fieldset>
+        <legend>操作记录</legend>
+        <div id="app" style="margin-left:10px;margin-right:10px;margin-bottom:10px;" v-cloak>
+            <i-button type="ghost" v-on:click="goBack">
+                <Icon type="chevron-left"></Icon>
+                返回
+            </i-button>
+            <br /><br />
+            <i-table :columns="columns" :data="data"></i-table>
+        </div>
+    </fieldset>
+
+</body>
+<style scoped>
+    .expand-row {
+        margin-bottom: 16px;
+    }
+</style>
+<script type="text/template" id="myexpandRow">
+    <div>
+        <i-row class="expand-row">
+            <i-col span="12">
+                <span class="expand-key">修改前: </span><br /><br />
+                <span class="expand-value" v-html="filterFun(row.oldValue)"></span>
+            </i-col>
+            <i-col span="10">
+                <span class="expand-key">修改后: </span><br /><br />
+                <span class="expand-value" v-html="filterFun(row.newValue)"></span>
+            </i-col>
+        </i-row>
+    </div>
+</script>
+<script>
+    function filterFun(value) {
+        if (!value) return '';
+        var reg = new RegExp(',"','g');
+        var result = value.toString().replace(reg, ',<br/>"');
+        return result;
+    }
+    Vue.component("expandRow",{
+        template: "#myexpandRow",
+        props: {
+            row: Object
+        }
+    })
+    var ve = new Vue({
+        el: '#app',
+        data() {
+            return {
+                columns: [
+                    {
+                        type: 'expand',
+                        width: 50,
+                        render: (h, params) => {
+                            return h('expandRow', {
+                                props: {
+                                    row: params.row
+                                }
+                            })
+                        }
+                    },
+                    {
+                        title: '操作人',
+                        key: 'name'
+                    },
+                    {
+                        title: '操作',
+                        key: 'action'
+                    },
+                    {
+                        title: '操作时间',
+                        key: 'dateTime'
+                    }
+                ],
+                data: [],
+
+            }
+        },
+        mounted: function () {
+            this.GetDatas();
+        },
+        methods: {
+            GetDatas() {
+                var _this = this;
+                $.ajax({
+                    url: "/BeautyYearCardConfig/GetBeautyYearCardConfigLog",
+                    type: "post",
+                    async: false,
+                    data: {
+                        cardId: @Model
+                        },
+                    success: function (data) {
+                        if (data != null) {
+                            data.forEach(function (x) {
+                                var action = '更新';
+                                if (x.OldValue == null || x.OldValue.length <= 0) {
+                                    action = '新增';
+                                }
+                                else if (x.NewValue == null || x.NewValue.length <= 0) {
+                                    action = '删除';
+                                }
+                                _this.data.push({
+                                    'name': x.OperateUser,
+                                    'action': action,
+                                    'dateTime': _this.getDates(x.CreateTime),
+                                    'oldValue': x.OldValue,
+                                    'newValue': x.NewValue,
+                                });
+                            });
+                        }
+                        else {
+                            _this.$Notice.warning({
+                                title: '获取日志异常',
+                                desc: '获取日志异常'
+                            });
+                        }
+                    },
+                    error: function () {
+                        alert("服务端异常！");
+                    }
+                });
+            },
+            getDates(e) {
+                var time = e instanceof Date ? e : eval('new ' + e.toString().replace(/\//g, ""));
+                var year = time.getFullYear();
+                var day = time.getDate();
+                var month = time.getMonth() + 1;
+                var hours = time.getHours();
+                var minutes = time.getMinutes();
+                var seconds = time.getSeconds();
+                return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+            },
+            goBack()
+            {
+                window.location.href = '/BeautyYearCardConfig/Index';
+            }
+
+
+        },
+    });
+
+</script>

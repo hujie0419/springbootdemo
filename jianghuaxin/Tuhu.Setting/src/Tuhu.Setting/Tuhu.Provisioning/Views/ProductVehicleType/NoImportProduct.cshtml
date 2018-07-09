@@ -1,0 +1,70 @@
+﻿@{
+    ViewBag.Title = "所有已配置未导入商品";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="~/Content/ProductVehicleType/css/bootstrap.min.css" rel="stylesheet">
+<div>
+
+    <script src="~/Content/ProductVehicleType/js/angular.min.js"></script>
+    <script src="~/Content/ProductVehicleType/js/tm.pagination.js"></script>
+    <link rel="stylesheet" type="text/css" href="~/Content/ProductVehicleType/css/NoImportProduct.css" />
+    <link href="~/Content/ProductVehicleType/css/iconfinder.css" type="text/css" rel="stylesheet" />
+    <link href="~/Content/ProductVehicleType/css/showLoading.css" type="text/css" rel="stylesheet" />
+    <div class="container-fluid" ng-app="NodeApp" style="margin-bottom:400px">
+        <div style="float: right; margin-right: 100px;padding-top:6px">
+            <a target="_blank" href="/ProductVehicleType/AllLog" class="btn btn-default">查看全部操作日志</a>
+            <a target="_blank" href="/ProductVehicleType/Index" class="btn btn-default">产品配置车型系统</a>
+        </div>
+        <div style="text-align: center; margin-bottom: 20px">
+            <h1 style="margin-top: 50px">所有已配置未导入商品</h1>
+        </div>
+        <button id="btnSearch" type="button" style="display:none"></button>
+        <div class="rowAll" id="mainContent">
+            <div style="float: left; width: 80%; margin-top: 20px; margin-left: 120px; margin-right: auto" ng-controller="ProductVehicleTypeController" id="tableContent">
+                <div class="table-responsive" ng-show="showTable">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>PID</th>
+                                <th>DisplayName</th>
+                                <th>是否上架</th>
+                                <th>是否缺货</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="item in apiInfoList">
+                                <td>{{$index+1}}</td>
+                                <td>{{item.PID}}</td>
+                                <td><a href="/ProductVehicleType/Detail/{{item.PID}}" target="_blank" class="inactive">{{item.DisplayName}}</a></td>
+                                <td>{{item.OnSale|myFormat}}</td>
+                                <td>{{item.Stockout|myFormat}}</td>
+                            </tr>
+                        </tbody>
+                        <tbody ng-show="msg">
+                            <tr>
+                                <td colspan="5" style="text-align:center">暂无数据</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    @*<tm-pagination conf="paginationConf"></tm-pagination>*@
+                    <div style="text-align: center;">
+                        <input style="display:none" value="{{number}}" class="pageIndex"/>
+                        <input style="margin-right:auto" type="button" class="nextPage" value="下一页" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    @*
+        <script src="~/Content/ProductVehicleType/js/jquery-1.12.1.min.js"></script>*@
+    <script src="~/Content/ProductVehicleType/js/bootstrap.min.js"></script>
+    <script src="~/Content/ProductVehicleType/js/NoImportProduct.js"></script>
+    <script src="~/Content/ProductVehicleType/js/jquery.showLoading.min.js" type="text/javascript"></script>
+
+</div>

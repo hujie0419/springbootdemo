@@ -1,0 +1,66 @@
+﻿@{
+    ViewBag.Title = "会员等级导入";
+    Layout = "~/Views/Shared/_PersonalCenterLeft.cshtml";
+}
+
+<script src="https://resource.tuhu.cn/StaticPage/peifu/js/ajaxfileupload.min.js"></script>
+
+<fieldset>
+    <legend>会员等级导入</legend>
+    <form method="post" action="" enctype="multipart/form-data">
+        <input type="file" id="btnImport" class="btnImport" name="btnImport">
+    </form>
+</fieldset>
+
+<fieldset>
+    <legend>导入失败列表</legend>
+    <table style="margin-top:20px;">
+        <thead>
+            <tr>
+                <th>手机号码</th>
+                <th>错误提示</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</fieldset>
+
+<div id="AddItem" style="display:none;"></div>
+<div id="EditItem" style="display:none;"></div>
+
+
+<script type="text/javascript">
+
+    $('#btnImport').on('change', function () {
+        var id = $(this).attr('id');
+        $.ajaxFileUpload({
+            url: '/UserPermission/ImportGrade',
+            secureuri: false,
+            fileElementId: id,
+            dataType: 'json',
+            async: false,
+            data: {},
+            type: "post",
+            success: function (result) {
+                console.log(result);
+                var result = JSON.parse(result)
+                if (result.Status == 1) {
+                    var strhtml = "";
+                    for (var item in result.Result) {
+                        if (result.Result[item].Mobile) {
+                            strhtml += "<tr><td>" + result.Result[item].Mobile + "</td><td>" + result.Result[item].ErrMsg + "</td></tr>"
+                        }
+                    }
+                    $("table tbody").html(strhtml);
+                    alert("导入成功！");
+                } else {
+                    $("table").html(result.Error);
+                }
+            },
+            error: function (data)//服务器响应失败处理函数
+            {
+                alert(JSON.stringify(data));
+            }
+        });
+    });
+</script>

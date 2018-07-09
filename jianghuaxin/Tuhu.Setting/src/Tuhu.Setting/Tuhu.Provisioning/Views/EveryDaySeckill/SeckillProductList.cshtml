@@ -1,0 +1,49 @@
+﻿@{
+    ViewBag.Title = "SeckillProductList";
+    Layout = null;
+    int number = 1;
+}
+@model Tuhu.Provisioning.DataAccess.Entity.QiangGouModel
+
+<table class="table tab-content" style="margin-top:10px;">
+    <thead>
+        <tr>
+            <th>PID</th>
+            <th>排序</th>
+            <th>名称</th>
+            <th>原价</th>
+            <th>促销价</th>
+            <th>伪原价</th>
+            <th>每人限购</th>
+            <th>总限购</th>
+            <th>安装付款方式</th>
+            <th>优惠券</th>
+            <th>渠道</th>
+            <th>会场限购状态</th>
+            <th>标签</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Products.Count() > 0)
+        {
+            foreach (var item in Model.Products.OrderBy(Q => Q.PKID))
+            {
+                <tr class="product-item">
+                    <td><input type="text" readonly="readonly" name="PID" value="@item.PID" onkeyup="QiangGou.CheckPID(this)" /></td>
+                    <td><input type="text" readonly="readonly" name="Position" value="@item.Position" /></td>
+                    <td><textarea name="ProductName" readonly="readonly">@(item.ProductName ?? item.DisplayName)</textarea></td>
+                    <td>@item.OriginalPrice.ToString("0.00")</td>
+                    <td><input type="text" readonly="readonly" name="Price" value="@item.Price.ToString("0.00")" /></td>
+                    <td><input type="text" readonly="readonly" name="FalseOriginalPrice" value="@(item.FalseOriginalPrice==null?(Math.Ceiling(item.OriginalPrice*1.3M)).ToString("0.00"):item.FalseOriginalPrice.Value.ToString("0.00"))" /></td>
+                    <td><input type="text" readonly="readonly" name="MaxQuantity" value="@item.MaxQuantity" /></td>
+                    <td><input type="text" readonly="readonly" name="TotalQuantity" value="@item.TotalQuantity" /></td>
+                    <td><select class="InstallAndPay" disabled="disabled"><option value="" @(string.IsNullOrWhiteSpace(item.InstallAndPay) ? "selected" : "")>不限</option><option value="PayOnline" @(item.InstallAndPay == "PayOnline" ? "selected" : "")> 在线支付</option><option value="InstallAtShop" @(item.InstallAndPay == "InstallAtShop" ? "selected" : "")>到店安装</option><option value="PayOnlineAndInstallAtShop" @(item.InstallAndPay == "PayOnlineAndInstallAtShop" ? "selected" : "")>在线支付且到店安装</option></select></td>
+                    <td><select class="IsUsePCode" disabled="disabled"><option value="1" @(item.IsUsePCode ? "selected" : "")>使用</option><option value="0" @(!item.IsUsePCode ? "selected" : "")>不使用</option></select></td>
+                    <td><select class="Channel" disabled="disabled"><option value="all" @(item.Channel == "all" ? "selected" : "")>全部</option><option value="pc" @(item.Channel == "pc" ? "selected" : "")>仅网站</option><option value="app" @(item.Channel == "app" ? "selected" : "")>仅APP</option></select></td>
+                    <td><select class="IsJoinPlace" disabled="disabled"><option value="0" @(item.IsJoinPlace ? "" : "selected")>否</option><option value="1" @(item.IsJoinPlace ? "selected" : "")>是</option></select></td>
+                    <td><select class="Label" disabled="disabled"><option value="" @(string.IsNullOrWhiteSpace(item.Label) ? "selected" : "")>无</option><option value="热卖" @(item.Label == "热卖" ? "selected" : "")> 热卖</option><option value="秒杀" @(item.Label == "秒杀" ? "selected" : "")>秒杀</option><option value="限量" @(item.Label == "限量" ? "selected" : "")>限量</option></select></td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

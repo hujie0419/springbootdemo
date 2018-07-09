@@ -1,0 +1,229 @@
+﻿@{
+    ViewBag.Title = "瀑布流配置";
+    Layout = null;
+}
+@model Tuhu.Provisioning.DataAccess.Entity.SE_HomePageFlowConfig
+
+<div class="modal-dialog">
+    <div class="modal-content" style="width:800px;">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                &times;
+            </button>
+            <h4 class="modal-title">
+                编辑瀑布流配置
+            </h4>
+        </div>
+        <div class="modal-body">
+                <form id="form1" class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-2 form-label">名称：</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title" />
+                        </div>
+                        <label class="col-sm-2">渠道:</label>
+                        <div class="col-sm-4">
+                            <select id="Channel" name="Channel">
+                                <option value="0" @(Model.Channel == 0 ? "selected=\"selected\"" : "")>全部</option>
+                                <option value="1" @(Model.Channel == 1 ? "selected=\"selected\"" : "")>Android</option>
+                                <option value="2" @(Model.Channel == 2 ? "selected=\"selected\"" : "")>IOS</option>
+                                <option value="3" @(Model.Channel == 3 ? "selected=\"selected\"" : "")>移动站</option>
+                                <option value="4" @(Model.Channel == 4 ? "selected=\"selected\"" : "")>小程序</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">开始版本：</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="StartVersion" name="StartVersion" value="@Model.StartVersion" />
+                        </div>
+                        <label class="col-sm-2 control-label">结束版本：</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="EndVersion" name="EndVersion" value="@Model.EndVersion" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">链接:</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="LinkUrl" name="LinkUrl" value="@Model.LinkUrl" />
+                        </div>
+                       
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">没有编码链接:</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="NoLinkUrl" name="NoLinkUrl" value="@(Model.LinkUrl)" readonly="readonly" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">背景图片:</label>
+                        <div class="col-sm-4">
+                            <img width="30" id="imgBgImageUrl" height="30" @(string.IsNullOrWhiteSpace(Model.BgImageUrl) == false ? "src=" + Model.BgImageUrl : "") style="display:inline;" />
+                            <input type="file" id="uploadBgImageUrl" name="uploadBgImageUrl" onchange="UploadBgImg(this, 'imgBgImageUrl', 'BgImageUrl')" style="display:inline;width:100px;" />
+                            @*<input type="hidden" id="BgImageUrl" name="BgImageUrl" value="@Model.BgImageUrl" />*@
+                        </div>
+                        <label class="col-sm-2 control-label">背景图片Url:</label>
+                        <div class="col-sm-4">
+                            <input type="text" id="BgImageUrl" name="BgImageUrl" value="@Model.BgImageUrl" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">背景小图:</label>
+                        <div class="col-sm-4">
+                            <img width="30" id="imgSmallBgImage" height="30" @(string.IsNullOrWhiteSpace(Model.SmallBgImage) == false ? "src=" + Model.SmallBgImage : "") style="display:inline;" />
+                            <input type="file" id="uploadSmallBgImage" name="uploadSmallBgImage" onchange="UploadBgImg(this, 'imgSmallBgImage', 'SmallBgImage')" style="display:inline;width:100px;" />
+                            @*<input type="hidden" id="BgImageUrl" name="BgImageUrl" value="@Model.BgImageUrl" />*@
+                        </div>
+                        <label class="col-sm-2 control-label">背景小图Url:</label>
+                        <div class="col-sm-4">
+                            <input type="text" id="SmallBgImage" name="SmallBgImage" value="@Model.SmallBgImage" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">统计：</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="UriCount" name="UriCount" value="@Model.UriCount" />
+                        </div>
+                        <label class="col-sm-2 control-label">状态:</label>
+                        <div class="col-sm-4">
+                            <input type="radio" name="IsEnabled" value="true" @(Model.IsEnabled ==true?"checked=\"checked\"":"") /><span>启用</span>
+                            <input type="radio" name="IsEnabled" value="false" @(Model.IsEnabled ==false?"checked=\"checked\"":"") /><span>禁用</span>
+                        </div>
+                    </div>
+                    <div class="form-group" style="display:@(Model.Type =="2"?"none":"block")">
+                        <label class="col-sm-2 control-label">是否倒计时:</label>
+                        <div class="col-sm-4">
+                            <input type="radio" name="IsCountDown" value="true" @(Model.IsCountDown ==true?"checked=\"checked\"":"") /><span>是</span>
+                            <input type="radio" name="IsCountDown" value="false" @(Model.IsCountDown ==false?"checked=\"checked\"":"") /><span>否</span>
+                        </div>
+                        <label class="col-sm-2 control-label">更多子产品:</label>
+                        <div class="col-sm-4">
+                            <input type="radio" name="IsChildProduct" value="true" @(Model.IsChildProduct ==true?"checked=\"checked\"":"") /><span>启用</span>
+                            <input type="radio" name="IsChildProduct" value="false" @(Model.IsChildProduct ==false?"checked=\"checked\"":"") /><span>禁用</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">开始时间：</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" name="StartDateTime" id="StartDateTime" value="@(string.Format("{0:yyyy-MM-dd HH:mm:ss}",Model.StartDateTime))" />
+                        </div>
+                        <label class="col-sm-2 control-label">结束时间:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" name="EndDateTime" id="EndDateTime" value="@(string.Format("{0:yyyy-MM-dd HH:mm:ss}",Model.EndDateTime))" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">大标题:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="BigTitle" name="BigTitle" value="@Model.BigTitle" />
+                        </div>
+                        <label class="col-sm-2 control-label">大标题颜色:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="BigTilteColor" name="BigTilteColor" value="@Model.BigTilteColor" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">小标题:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="SmallTitle" name="SmallTitle" value="@Model.SmallTitle" />
+                        </div>
+                        <label class="col-sm-2 control-label">小标题颜色:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="SmallTitleColor" name="SmallTitleColor" value="@Model.SmallTitleColor" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">优先级:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="PriorityLevel" name="PriorityLevel" value="@Model.PriorityLevel" />
+                        </div>
+                        @if (Model.Type == "5")
+                        {
+                            <label class="col-sm-2 control-label">模块：</label>
+                            <div class="col-sm-4">
+                                <select id="APPChannel" name="APPChannel" class="form-control">
+                                    <option value="1" @(Model.APPChannel  == "1"== true ? "selected=\"selected\"" : "")  >基本信息</option>
+                                    <option value="2" @(Model.APPChannel =="2" == true ? "selected=\"selected\"" : "") >违章信息</option>
+                                    <option value="3" @(Model.APPChannel=="3" == true ? "selected=\"selected\"" : "") >车险信息</option>
+                                    <option value="4" @(Model.APPChannel=="4" == true ? "selected=\"selected\"" : "") >工具条</option>
+                                </select>
+                            </div>
+                        }
+
+                        
+
+                    </div>
+                    <input  type="hidden" id="ID" name="ID" value="@Model.ID" />
+                    <input type="hidden" id="Type" name="Type" value="@Model.Type" />
+                </form>
+        </div>
+        <div class="modal-footer">
+            <a href="javascript:void(0)" class="btn btn-danger btn-sm " id="btnToobal" onclick="Toolbar()" style="width: 80px;" data-toggle="modal" data-target="#toobal">小工具</a>
+            <button type="button" id="btnSave" name="btnSave" class="btn btn-primary">
+
+                保 存
+            </button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                取 消
+            </button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+  
+
+    $(function () {
+        $('#Title').on('change', function () {
+            $("#UriCount").val("waterfall_" + $('#PriorityLevel').val() + "_" + $(this).val());
+        });
+        $('#PriorityLevel').on('change', function () {
+            $("#UriCount").val("waterfall_" + $(this).val() + "_" + $('#Title').val());
+        });
+
+        $('#btnSave').on('click', function () {
+            var data = {};
+            data.ID = $('#ID').val();
+            data.Title = $('#Title').val();
+            data.Channel = $('#Channel').val();
+            data.StartVersion = $('#StartVersion').val();
+            data.EndVersion = $('#EndVersion').val();
+            data.LinkUrl = $('#LinkUrl').val();
+            data.UriCount = $('#UriCount').val();
+            data.IsEnabled = $('input[name="IsEnabled"]:checked').val();
+            data.IsCountDown = $('input[name="IsCountDown"]:checked').val();
+            data.IsChildProduct = $('input[name="IsChildProduct"]:checked').val();
+            data.StartDateTime = $('#StartDateTime').val();
+            data.EndDateTime = $('#EndDateTime').val();
+            data.BgImageUrl = $('#BgImageUrl').val();
+            data.PriorityLevel = $('#PriorityLevel').val();
+            data.Type = $('#Type').val();
+            data.BigTitle = $('#BigTitle').val();
+            data.BigTilteColor = $('#BigTilteColor').val();
+            data.SmallTitle = $('#SmallTitle').val();
+            data.SmallTitleColor = $('#SmallTitleColor').val();
+            data.APPChannel = $('#APPChannel').val() || '';
+            data.SmallBgImage = $('#SmallBgImage').val();
+            $(this).attr("disabled", "disabled");
+            $.ajax({
+                url: '/HomePageConfigV2/FlowSave',
+                type: 'post',
+                data: data,
+                dataType:'json'
+            }).done(function (result) {
+                if (result == 1) {
+                    alert('保存成功');
+                    $('#edit').modal("hide");
+                    location.reload();
+                } else {
+                    alert("保存失败");
+                }
+            });
+        });
+
+        if ($('#NoLinkUrl').val()) {
+            $('#NoLinkUrl').val(decodeURIComponent($('#NoLinkUrl').val()));
+        }
+    });
+</script>

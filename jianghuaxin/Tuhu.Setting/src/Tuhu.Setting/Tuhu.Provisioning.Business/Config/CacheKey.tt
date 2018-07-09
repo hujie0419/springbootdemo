@@ -1,0 +1,136 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+
+using System.Collections.Generic;
+
+<# 
+var ConfigKeys = new List<Tuple<string, string, string>>(){
+	Tuple.Create("ThreeMVehicles", "BaoYangServiceConfig/ThreeMVehicles", "3M机油车型配置"),
+    Tuple.Create("TuhuRecommendPackageTypes", "BaoYangServiceConfig/TuhuRecommendPackageTypes", "途虎推荐的配置项目和优惠券相关信息"),	
+	Tuple.Create("BaoYangSuggestConfig","BaoYangServiceConfig/BaoYangSuggestConfig","保养推荐配置"),
+	Tuple.Create("BaoYangTypeIcons","BaoYangServiceConfig/BaoYangTypeIcons","保养项目图标"),
+	Tuple.Create("AppBaoYangTypeCategories","BaoYangServiceConfig/AppBaoYangTypeCategories","App保养项目的分类"),
+	Tuple.Create("WebBaoYangTypeCategories","BaoYangServiceConfig/WebBaoYangTypeCategories","Web保养项目的分类"),
+	Tuple.Create("UserBaoYangRecordConfig","BaoYangServiceConfig/UserBaoYangRecordConfig","用户保养档案配置文件"),
+	Tuple.Create("ProductTagConfig","BaoYangServiceConfig/ProductTagConfig","产品标签配置"),
+	Tuple.Create("BaoYangServiceConfig","ServiceGlobalConfig/BaoYangServiceConfig","保养项目对应的安装服务配置"),
+	Tuple.Create("VehicleFuelConfig","ServiceGlobalConfig/VehicleFuelConfig","燃油类型不能适配的保养项目配置"),
+	Tuple.Create("PartTypeNameMap","ServiceGlobalConfig/PartTypeNameMap","TuhuBaoYangParts中的PartName与保养Type的对应关系"),
+	Tuple.Create("AccessoryTypeNameMap","ServiceGlobalConfig/AccessoryTypeNameMap","tbl_PartAccessory中的AccessoryName与保养Type的对应关系"),
+	Tuple.Create("PrioritySettingMap","ServiceGlobalConfig/PrioritySettingMap","适配优先级配置中Name与保养Type的对应关系"),
+	Tuple.Create("BaoYangTypesConfig","ServiceGlobalConfig/BaoYangTypesConfig","保养Type的分类信息配置"),
+	Tuple.Create("PackageDescriptionConfig","ServiceGlobalConfig/PackageDescriptionConfig","保养Package的描述"),
+	Tuple.Create("GetPropertyDescriptionConfig","ServiceGlobalConfig/GetPropertyDescriptionConfig","五级属性描述信息"),
+	Tuple.Create("PackageTypeOrderConfig","ServiceGlobalConfig/PackageTypeOrderConfig","新增保养档案中保养项目的显示顺序"),
+	Tuple.Create("PrioritySettingCommon","PrioritySetting/Common","保养适配优先级配置--通用"),
+	Tuple.Create("PrioritySettingAntifreeze","PrioritySetting/Antifreeze","保养适配优先级配置--防冻液"),
+	Tuple.Create("QuantityLimitProducts","QuantityLimitProducts","售完即止商品"),
+	Tuple.Create("WareHouseIds","WareHouseIds","保养仓库"),
+	Tuple.Create("VehicleOilSetting","BaoYangServiceConfig/VehicleOilSetting","特殊车型对应的机油粘度配置"),
+	Tuple.Create("BaoYangNoticeSetting","BaoYangNoticeSetting","保养公告配置"),
+};
+
+var AdaptationKeys = new List<Tuple<string, string, string>>(){
+	Tuple.Create("VehicleAdaptation","VehicleAdaptation/{0}/{1}/{2}","车型适配数据"),
+	Tuple.Create("TimerAdaptation","TimerAdaptation/{0}","Tid适配数据"),
+	Tuple.Create("MaintainAdaptation","MaintainAdaptation","养护类产品适配"),
+	Tuple.Create("PriorityVehicleSetting","PriorityVehicleSetting/{0}","特殊车型配置"),
+	Tuple.Create("GetBatteryBlackPids","GetBatteryBlackPids/{0}/{1}/{2}","蓄电池黑名单--GetBatteryBlackPids/ProvinceId/CityId/installType"),
+	Tuple.Create("GetBatteryBrandAndPidByRegion","GetBatteryBrandAndPidByRegion/{0}/{1}","当前地区支持的蓄电池-- GetBatteryBrandAndPidByRegion/ProvinceId/CityId"),
+};
+
+var ProductKeys = new List<Tuple<string, string, string>>(){
+	Tuple.Create("CacheBaoYangProducts","CacheALLBaoYangProducts/{0}","产品缓存的前缀"),
+	Tuple.Create("CacheOilViscosityPids","CacheOilViscosityPids/{0}","当前粘度下的机油ID"),
+	Tuple.Create("AllOilViscosity","AllOilViscosity","当前所有的机油粘度"),
+	Tuple.Create("OriginalProduct","OriginalProduct/{0}/{1}/{2}","原厂产品缓存"),
+	Tuple.Create("ProductCache","ProductCache/{0}","按分类缓存产品ID"),
+	Tuple.Create("AllOil","AllOil/{0}/{1}","当前等级和升数下的机油ID"),
+	Tuple.Create("SameSeriesOil","SameSeriesOil/{0}","同一系列的机油ID"),
+	Tuple.Create("ChangeJiYouProduct","ChangeJiYouProduct/{0}/{1}","同一系列的机油产品,0汽油或柴油，1升数"),
+};
+
+var InstallServiceKeys = new List<Tuple<string, string, string>>(){
+	Tuple.Create("MaintainRegionConfig","MaintainRegionConfig/{0}","养护类服务可用地区"),
+	Tuple.Create("IsExistAddition","IsExistAddition/{0}/{1}/{2}/{3}","当前车型是否需要额外的安装服务"),
+};
+
+var XbyPackagesKeys = new List<Tuple<string, string, string>>(){
+	Tuple.Create("AllXbyPackages","AllXbyPackages","所有的小保养套餐"),
+	Tuple.Create("XbyPackageSetting", "BaoYangServiceConfig/XbyPackageSetting", "车型对应的小保养套餐品牌配置"),
+};
+
+var YearCardKeys = new List<Tuple<string, string, string>>(){
+	Tuple.Create("YearCardConfig","YearCardConfig/{0}","单个年卡配置"),
+	Tuple.Create("AllYearCardsConfig", "AllYearCardsConfig", "所有的年卡配置"),
+	Tuple.Create("AllYearCardIds", "AllYearCardIds", "所有的年卡ids"),
+	Tuple.Create("YearCardTypeConfig", "YearCardTypeConfig", "年卡类型配置"),
+	Tuple.Create("YearCardRecommendConfig", "YearCardRecommendConfig", "年卡推荐配置"),
+	Tuple.Create("YearCardOrderItems", "YearCardOrderItems/{0}", "年卡订单产品结果"),
+	Tuple.Create("YearCardPromotionData", "YearCardPromotionData/{0}", "年卡订单产品结果"),
+};
+
+var ActivityKeys = new List<Tuple<string, string, string>>(){
+	Tuple.Create("Activity","Activity/{0}","保养活动缓存"),
+};
+
+var OtherKeys = new List<Tuple<string, string, string>>(){
+	Tuple.Create("Region","Region/{0}","地区缓存"),
+	Tuple.Create("TodayUserOrder","TodayUserOrder/{0}","用户当天的订单"),
+	Tuple.Create("AppBaoYangGeneralSuggest","AppBaoYangGeneralSuggest/{0}/{1}","App首屏常规推荐,0位UserId，1位VehicleId"),
+	Tuple.Create("UserSuggestOil", "UserSuggestOil/{0}/{1}/{2}/{3}", "用户当前车型的机油推荐")
+
+};
+
+var group = new Dictionary<string, List<Tuple<string, string, string>>>(){
+	{"适配类缓存", AdaptationKeys},
+	{"产品缓存", ProductKeys},
+	{"安装服务缓存", InstallServiceKeys},
+	{"配置类缓存", ConfigKeys},
+	{"小保养套餐缓存", XbyPackagesKeys},
+	{"保养年卡缓存", YearCardKeys},
+	{"活动缓存", ActivityKeys},
+	{"其它缓存", OtherKeys}
+};
+
+var validate = new Dictionary<string, string>(){};
+foreach(var groupItem in group){
+	foreach(var item in groupItem.Value){
+		validate.Add(item.Item2, string.Empty);
+	}
+}#>
+
+namespace Tuhu.Service.BaoYang.Config
+{
+    public class CacheKey{
+	<# foreach (var groupItem in group){#><# foreach (var item in groupItem.Value){#>
+	//<#=item.Item3#>
+		public const string <#=item.Item1#> = "<#=item.Item2#>";
+
+	<#} #><#} #>
+
+		public static readonly Dictionary<string, Dictionary<string, string>> DirectCacheDic = new Dictionary<string, Dictionary<string, string>>(){
+		<# foreach (var groupItem in group){#>
+		{"<#=groupItem.Key#>", new Dictionary<string, string>(){
+			<# foreach (var item in groupItem.Value){#><# if(!item.Item2.Contains("{0}") || string.Equals(item.Item1, "CacheBaoYangProducts")){#>
+			{"<#=item.Item2#>", "<#=item.Item3#>"},
+			<#} #><#} #>
+		}},
+		<#} #>
+		};
+
+		public static readonly Dictionary<string, Dictionary<string, string>> NeedParamCacheDic = new Dictionary<string, Dictionary<string, string>>(){
+		<# foreach (var groupItem in group){#>
+		{"<#=groupItem.Key#>", new Dictionary<string, string>(){
+			<# foreach (var item in groupItem.Value){#><# if(item.Item2.Contains("{0}") && !string.Equals(item.Item1, "CacheBaoYangProducts")){#>
+			{"<#=item.Item2#>", "<#=item.Item3#>"},
+			<#} #><#} #>
+		}},
+		<#} #>
+		};
+	}
+}

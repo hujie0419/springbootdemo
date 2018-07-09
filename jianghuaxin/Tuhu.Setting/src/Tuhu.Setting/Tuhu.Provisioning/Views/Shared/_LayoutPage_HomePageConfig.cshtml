@@ -1,0 +1,231 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, noarchive, nofollow" />
+    <title>@ViewBag.Title</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700' rel='stylesheet' type='text/css'>
+    <!-- Add local styles, mostly for plugins css file -->
+    @if (IsSectionDefined("Styles"))
+    {@RenderSection("Styles", required: false)}
+
+    <!-- Add jQuery Style direct - used for jQGrid plugin -->
+    <link href="@Url.Content("~/Scripts/plugins/jquery-ui/jquery-ui.css")" rel="stylesheet" type="text/css" />
+    <link href="~/Scripts/multiple/multiple-select.css" rel="stylesheet" type="text/css" />
+    <!-- Primary Inspinia style -->
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/font-awesome/css")
+    <style type="text/css">
+        .module {
+            width:100px;
+            text-align:center;
+            float:left;
+            margin-left:5px;
+            margin-right:5px;
+            cursor:pointer;
+        }
+    </style>
+</head>
+<body class="fixed-sidebar">
+    <!-- 皮肤&布局设置 -->
+    @*@Html.Partial("_SkinConfig")*@
+
+    <!-- Wrapper-->
+    <!-- PageClass give you ability to specify custom style for specific view based on action -->
+    <div id="wrapper" class="">
+
+        <!-- Navigation -->
+        <nav class="navbar-default navbar-static-side" role="navigation">
+            <div class="sidebar-collapse" style="overflow:auto;">
+                @Html.Action("NavigationList", "HomePageConfigV2")
+            </div>
+        </nav>
+
+        <!-- Page wraper -->
+        <div id="page-wrapper" class="gray-bg @ViewBag.SpecialClass">
+            <!-- Top Navbar -->
+            <div class="row border-bottom">
+                <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
+                    <div class="navbar-header">
+                        <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a>
+                        <form role="search" class="navbar-form-custom" method="post" action="">
+                            <div class="form-group">
+                            </div>
+                        </form>
+
+                    </div>
+
+                    <ul class="nav navbar-top-links navbar-right">
+                        @if (Request.IsAuthenticated)
+                        {
+                            <li>
+                                <span class="m-r-sm text-muted welcome-message" data-i18n="topnav.welcometext">您好 @Context.User.Identity.Name， 欢迎进入首页配置管理系统，祝您生活愉快！</span>
+                            </li>
+                            <li>
+                                <a href="@ThBiz.Common.Configurations.YewuDomainConfig.YewuSite/Account/LogOff">
+                                    <i class="fa fa-sign-out"></i> 退出
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li>
+                                <a href="@ThBiz.Common.Configurations.YewuDomainConfig.YewuSite/Account/LogOn">
+                                    <i class="fa fa-sign-out"></i> 登录
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+            @{
+                if (Context.Request.Path.Equals("/HomePageConfigV2/HomePageModuleList"))
+                {
+                    <div class="row ibox ibox-content">
+                        <div class="col-md-1" style="width:75px;">
+                            <span class="nav-label">工具栏:</span>
+                        </div>
+                        <div class="col-md-11">
+                            <div class="ui-widget-content module" data-type="1" style="border-color:aliceblue;">
+                                <span class="nav-label">主业务</span>
+                            </div>
+                            <div class="ui-widget-content module" data-type="2" style="border-color:aliceblue;">
+                                <span class="nav-label">banner</span>
+                            </div>
+
+                            <div class="ui-widget-content module" data-type="3">
+                                <span class="nav-label">天天秒杀</span>
+                            </div>
+                            <div class="ui-widget-content module" data-type="4">
+                                <span class="nav-label">新人专区</span>
+                            </div>
+                            <div class="ui-widget-content module" data-type="5">
+                                <span class="nav-label">汽车头条</span>
+                            </div>
+                            <div class="ui-widget-content module" data-type="6">
+                                <span class="nav-label">保养提醒</span>
+                            </div>
+                            <div class="ui-widget-content module" data-type="7">
+                                <span class="nav-label">自定义模块</span>
+                            </div>
+                            <div class="ui-widget-content module" data-type="20">
+                                <span class="nav-label">动画模块</span>
+                            </div>
+                            <!--8 状态栏 9 标题栏 10车型库  -->
+                            <div class="ui-widget-content module" data-type="22">
+                                <span class="nav-label">轮胎模块</span>
+                            </div>
+                            <div class="ui-widget-content module" data-type="26">
+                                <span class="nav-label">保养模块</span>
+                            </div>
+                            <div class="ui-widget-content module" data-type="28">
+                                <span class="nav-label">改装模块</span>
+                            </div>
+                            <div class="ui-widget-content module" data-type="29">
+                                <span class="nav-label">美容团购模块</span>
+                            </div>
+                            <div class="ui-widget-content module" data-type="30">
+                                <span class="nav-label">拼图模块</span>
+                            </div>
+                            <div class="ui-widget-content module" data-type="32">
+                                <span class="nav-label">应用市场通栏</span>
+                            </div>
+                            <div class="ui-widget-content module" data-type="33" style="width: 150px;">
+                                <span class="nav-label">自定义人群&渠道模块</span>
+                            </div>
+                            <div class="ui-widget-content module" data-type="35">
+                                <span class="nav-label">车型活动模块</span>
+                            </div>
+                            <div class="ui-widget-content module" data-type="36" style="width: 150px;">
+                                <span class="nav-label">0元砍价+0元众测</span>
+                            </div>
+                            <div class="ui-widget-content module" data-type="37">
+                                <span class="nav-label">拼团模块</span>
+                            </div>
+                        </div>
+
+                    </div>
+                }
+            }
+           
+            <!-- Main view  -->
+            <div class="container-fluid">
+                @RenderBody()
+
+            </div>
+
+
+            <!-- Footer -->
+            <div class="footer">
+                <div class="pull-right">
+                </div>
+                <div>
+                    <strong>Copyright</strong> 途虎养车 &copy; @DateTime.Now.Year
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="toobal" class="modal fade" aria-hidden="true" role="dialog" tabindex="-1"></div>
+    <!-- End wrapper-->
+    <!-- Section for main scripts render -->
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/plugins/slimScroll")
+    @Scripts.Render("~/bundles/inspinia")
+    @*<script src="~/Scripts/jquery-ui.1.10.4.min.js" type="text/javascript"></script>*@
+    <script src="~/Scripts/jquery-ui.1.12.1.min.js" type="text/javascript"></script>
+    <script src="/Scripts/ajaxfileupload.js" type="text/javascript"></script>
+    <script type='text/javascript' src="/Scripts/jquery.validate-1.8.1.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/My97DatePicker/WdatePicker.js"></script>
+    <script src="~/Scripts/multiple/multiple-select.js" type="text/javascript"></script>
+    <!-- Skin config script - only for demo purpose-->
+    @*@Scripts.Render("~/bundles/skinConfig")*@
+
+    <!-- Handler for local scripts -->
+    @RenderSection("scripts", required: false)
+</body>
+</html>
+<script type="text/javascript">
+    $(function () {
+        $('.module').draggable({
+            revert: true,
+            // axis: 'x',
+            stop: function () {
+               
+            },
+            start: function () {
+
+            }
+        });
+
+        //$('.homepagespan').on('click', function () {
+        //    var id = $(this).data("id");
+        //    location.href = "/HomePageConfigV2/HomePageModuleList?id=" + id;
+        //});
+
+
+        $('.moduleHelper').on('click', function () {
+            var id = $(this).data("id");
+            var ptype = $(this).data("ptype");
+            if (ptype != 7 && ptype != 5 && ptype != 6 && ptype != 8 && ptype != 9 && ptype != 10)
+                location.href = "/HomePageConfigV2/HomePageModuleContentList?moduleID=" + id;
+            else 
+            {
+                location.href = "/HomePageConfigV2/HomePageModuleDeatil?moduleID=" + id;
+            }
+        })
+    })
+
+    function Toolbar() {
+        var url = "/HomePageConfigV2/SmallToolbar";
+        // dialogOpen("新增首页", url, "edit");
+        var dialog = $('#toobal');
+        dialog.empty();
+        dialog.html(dialog.load(url));
+    }
+</script>

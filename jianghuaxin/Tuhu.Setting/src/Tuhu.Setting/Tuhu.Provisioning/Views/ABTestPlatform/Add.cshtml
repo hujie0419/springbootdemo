@@ -1,0 +1,157 @@
+﻿
+@{
+    ViewBag.Title = "新建测试";
+    Layout = null;
+}
+
+<form id="FormAddABTest" method="post" action="">
+    <div>
+        <span>测试名称</span>
+        <input id="InputTestName" type="text" name="TestName" placeholder="英文，保存后不能修改" />
+    </div>
+    </p>
+    <div>
+        <span>总流量分配</span>
+        <input id="InputTestScale" type='text' name="TestScale" style='border:none;border-bottom:black solid 1px;width:50px' /><label>%</label>
+    </div>
+    </p>
+    <div>
+        <table id="viewTabs" style="background: #ffffff; font-size: 12px; width: 100%; text-align: center" border="1" class="table">
+            <thead>
+                <tr>
+                    <th style="text-align: center">分组</th>
+                    <th style="text-align: center">分组名称</th>
+                    <th style="text-align: center">流量分配</th>
+                    <th style="text-align: center">操作</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    </p>
+    <button type="button" class="btn btn-primary btn-small" onclick="addTable()">新增分组</button>
+</form>
+<script type="text/javascript">
+    //添加行
+    function addTable() {
+        var tab = document.getElementById("viewTabs"); //获得表格
+        //表格当前的行数
+        var rownum = document.getElementById("viewTabs").rows.length;
+        tab.insertRow(rownum);
+        var scale = Math.round(100 / rownum);
+        for (var i = 0; i < 4; i++) {
+            tab.rows[rownum].insertCell(i);//插入列
+            switch (i) {
+                case 0:
+                    tab.rows[rownum].cells[i].innerHTML = '<span name="GroupId" type="text">' + (rownum - 1) + '</span>';
+                    break;
+                case 1:
+                    tab.rows[rownum].cells[i].innerHTML = '<input name="GroupName" type="text"/>';
+                    break;
+                case 2:
+                    tab.rows[rownum].cells[i].innerHTML = '<span name="GroupScale" type="text">' + scale + '%</span>';
+                    break;
+                case 3:
+                    tab.rows[rownum].cells[i].innerHTML = '<a href="#" onclick="delRow(this)">删除行</a>';
+                    break;
+            }
+        }
+        for (var i = 1; i < rownum; i++) {
+            tab.rows[i].cells[2].innerHTML = '<span name="GroupScale" type="text">' + scale + '%</span>';
+        }
+    }
+    //删除行
+    function delRow(obj) {
+        var Row = obj.parentNode;
+        var Row = obj.parentNode; //tr
+        while (Row.tagName.toLowerCase() != "tr") {
+            Row = Row.parentNode;
+        }
+        Row.parentNode.removeChild(Row); //删除行
+
+        var tab = document.getElementById("viewTabs"); //获得表格
+        var rownum = document.getElementById("viewTabs").rows.length;
+        if (rownum > 1) {
+            var scale = Math.round(100 / (rownum - 1));
+            for (var i = 1; i < rownum; i++) {
+                tab.rows[i].cells[0].innerHTML = '<span name="GroupId" type="text">' + (i - 1) + '</span>';
+                tab.rows[i].cells[2].innerHTML = '<span name="GroupScale" type="text">' + scale + '%</span>';
+            }
+        }
+    }
+
+    function AddABTest(target) {
+        var testName = $("#InputTestName").val();
+        if (testName == "") {
+            alert("测试名称不能为空!");
+            return;
+        }
+        var re = new RegExp("^[a-zA-Z]+$");
+        if (!re.test(testName)) {
+            alert("测试名称必须是英文!");
+            return;
+        }
+        var array =@Html.Raw(Json.Encode(ViewBag.NameList));
+        if (array != null) {
+            for (var i = 0; i < array.length; i++) {
+                if (array[i].toLowerCase() == testName.toLowerCase()) {
+                    alert("测试名称已存在!");
+                    return;
+                }
+            }
+        }
+
+        var testScale = $("#InputTestScale").val();
+        if (testScale == "") {
+            alert("总流量分配不能为空!");
+            return;
+        }
+        var re = /^[0-9]+$/;
+        if (!re.test(testScale)) {
+            alert("总流量分配必须是正整数!");
+            return;
+        }
+
+        if (parseInt(testScale) > 100) {
+            alert("总流量分配必须是0到100之间整数!");
+            return;
+        }
+
+        if (document.getElementsByName("GroupId").length < 1) {
+            alert("至少新建一个分组!");
+            return;
+        }
+
+        var groupList = [];
+        var groupNum = document.getElementsByName("GroupId").length;
+        for (var i = 0; i < groupNum; i++) {
+            groupList.push({ 'GroupId': document.getElementsByName("GroupId")[i].innerText, "GroupName": document.getElementsByName("GroupName")[i].value})
+        }
+        jsonstr = JSON.stringify(groupList);
+
+        $.ajax({
+            url: "/ABTestPlatform/AddABTest",
+            type: "Post",
+            data: {
+                jsonstr: jsonstr,
+                testName: testName,
+                testScale: testScale
+            },
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                if (data == true) {
+                    alert('保存成功！');
+                    $(target).dialog("close");
+                    window.location.reload();
+                }
+                else {
+                    alert('保存失败！');
+                }
+            },
+            error: function () {
+                alert('提交失败！');
+            },
+        })
+    }
+</script>

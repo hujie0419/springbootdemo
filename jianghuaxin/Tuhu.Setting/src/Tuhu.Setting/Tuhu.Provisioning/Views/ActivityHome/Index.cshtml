@@ -1,0 +1,247 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = null;
+}
+
+@model  IEnumerable<Tuhu.Provisioning.DataAccess.Entity.ActivityHome>
+
+
+<form id="ActivityHomeEdit">
+    <table id="ActivityHomeEditTable">
+        @if (Model != null  && Model.Count() >0)
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>菜单名称:</td>
+                    <td>
+                        <input type="text" id="Name" name="Name" value="@item.Name" />
+                    </td>
+                    <td>
+                       图标:
+                    </td>
+                    <td>
+                        <img src="@item.Icon" width="30px" height="30px" id="Icon@(item.ID)" />
+                    </td>
+                    <td>
+                      
+                        <input type="file" id="img@(item.ID)" name="img@(item.ID)" onchange="UploadImgActivityHome(this,'Icon@(item.ID)')"/>
+                    </td>
+                    <td>APPUrl:</td>
+                    <td>
+                        <input type="text" id="APPUrl" name="APPUrl" value="@item.AppUrl" />
+                    </td>
+                    <td>
+                        微信Url：
+                    </td>
+                    <td>
+                        <input type="text" id="WXUrl" name="WXUrl"  value="@item.WXUrl"/>
+                    </td>
+                    <td>
+                        网站Url:
+                    </td>
+                    <td>
+                        <input type="text" id="WwwUrl" name="WwwUrl" value="@item.WwwUrl" />
+                    </td>
+                    <td>
+                        排序:
+                    </td>
+                    <td>
+                        <input type="number" id="Sort" name="Sort" value="@item.Sort" />
+                    </td>
+                    <td>
+                        <input type="button" name="btnHomeDel" id="btnHomeDel" value="删 除" onclick="deleteHomeRow(this)" />
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td>菜单名称:</td>
+                <td>
+                    <input type="text" id="Name" name="Name" />
+                </td>
+                <td>
+                    图标:
+                </td>
+              <td>
+                  <img width="30px" height="30px" id="Icon0" />
+              </td>
+                <td>
+                   
+                    <input type="file" id="img0" name="img0"  onchange="UploadImgActivityHome(this, 'Icon0')"/>
+                </td>
+                <td>APPUrl:</td>
+                <td>
+                    <input type="text" id="APPUrl" name="APPUrl"/>
+                </td>
+                <td>
+                    微信Url：
+                </td>
+                <td>
+                    <input type="text" id="WXUrl" name="WXUrl"/>
+                </td>
+                <td>
+                    网站Url:
+                </td>
+                <td>
+                    <input type="text" id="WwwUrl" name="WwwUrl"/>
+                </td>
+                <td>
+                    排序:
+                </td>
+                <td>
+                    <input type="number" id="Sort" name="Sort" value="1" />
+                </td>
+                <td>
+                    <input type="button" name="btnHomeDel" id="btnHomeDel" value="删 除" onclick="deleteHomeRow(this)" />
+                </td>
+            </tr>
+        }
+
+
+    </table>
+
+    <center>
+        <span id="addHomeRow" style="width:120px;  height:20px;  text-align:center; cursor:pointer; color:blue;"> 添 加 一 行 </span>
+    </center>
+</form>
+<script type="text/javascript">
+    var ActivityHomeEdit = {
+        rules: {
+            Name: {
+                required: true
+            },
+            APPUrl: {
+                required: true,
+                url: true
+            }
+
+
+        },
+        messages: {
+            Name: {
+                required: '必填'
+            },
+            APPUrl: {
+                required: '必填',
+                url: '输入网址'
+            }
+
+        }
+    };
+    $('#ActivityHomeEdit').validate(ActivityHomeEdit);
+
+    var i = 1;
+    $('#addHomeRow').click(function () {
+        var maxorder = 0;
+        var isAdd = false;
+        $('#ActivityHomeEditTable > tbody > tr').each(function (i) {
+            var orer = $('input[name=Sort]', this).val();
+            var name = $('input[name=Name]', this).val();
+            var icon = $('img', this).attr("src");
+            var APPUrl = $('input[name=APPUrl]', this).val();
+            if (name == '' || name==null || icon == undefined || icon == '' || APPUrl == '' || APPUrl == null) {
+                isAdd = true;
+                return false;
+            }
+            if (orer > maxorder) {
+                maxorder = orer;
+            }
+           
+        });
+        if (isAdd) {
+           alert('请填写【菜单名称】、【图标】、【APPURL】');
+            return false;
+        }
+        maxorder++;
+       // var template = $('#menuTemplate').html();
+        $('#ActivityHomeEditTable > tbody').append(' <tr><td>菜单名称:</td> <td><input type="text" id="Name" name="Name" /></td><td>图标:</td><td><img width="30px" height="30px" id="Icon' + i + '" /></td><td><input type="file"  onchange="UploadImgActivityHome(this,\'Icon' + i + '\')"    id="img' + i + '" name="img' + i + '" /></td> <td>APPUrl:</td><td>  <input type="text" id="APPUrl" name="APPUrl"/> </td> <td>  微信Url： </td> <td> <input type="text" id="WXUrl" name="WXUrl"/></td> <td> 网站Url: </td> <td>  <input type="text" id="WwwUrl" name="WwwUrl"/> </td><td>  排序: </td> <td>  <input type="number" id="Sort" name="Sort" value="' + maxorder + '" /> </td> <td><input type="button" name="btnHomeDel" id="btnHomeDel" value="删 除" onclick="deleteHomeRow(this)" />  </td> </tr>');
+        i++;
+    });
+
+    $('input[name=btnHomeDel]').click(function () {
+        $(this).parent().parent().remove();
+    });
+
+    function deleteHomeRow(obj){
+        $(obj).parent().parent().remove();
+    }
+
+
+    function GetActivityHomeTable() {
+        var isAdd = false;
+        $('#ActivityHomeEditTable > tbody > tr').each(function (i) {
+          
+            var name = $('input[name=Name]', this).val();
+            var icon = $('img', this).attr("src");
+            var APPUrl = $('input[name=APPUrl]', this).val();
+            if (name == '' || icon == undefined || icon == '' || APPUrl == '' || APPUrl == null ) {
+                isAdd = true;
+               
+                return false;
+            }
+           
+
+        });
+        if (isAdd) {
+            return null;
+        }
+      
+
+        var array = [];
+        $('#ActivityHomeEditTable > tbody > tr').each(function (i) {
+            var name = $('input[name=Name]', this).val();
+            var icon = $('img', this).attr("src");
+            var APPUrl = $('input[name=APPUrl]', this).val();
+            var WXUrl = $('input[name=WXUrl]', this).val();
+            var WwwUrl = $('input[name=WwwUrl]', this).val();
+            var sort = $('input[name=Sort]', this).val();
+            var json = {};
+            json.ActivityID = $('#id').val(),
+            json.Name = name;
+            json.Icon = icon;
+            json.AppUrl = APPUrl;
+            json.WXUrl = WXUrl;
+            json.WwwUrl = WwwUrl;
+            json.Sort = sort;
+            array.push(json);
+        });
+        console.log(array);
+        return array;
+    }
+
+
+    function UploadImgActivityHome(obj, icon) {
+        var pobj = $(obj);
+        var rd = Math.ceil(Math.random() * 9999) + 1;
+        var fileElId = $(obj).attr("id");
+       
+        $.ajaxFileUpload({
+            url: '/Article/ImageUploadToAli?rd=' + rd,
+            secureuri: false,
+            fileElementId: fileElId,
+            dataType: 'json',
+            async: false,
+            success: function (result) {
+                if (result.BImage != "" && result.SImage != "") {
+                    $('#'+icon).attr("src", result.BImage);
+                } else {
+                    alert("上传失败！");
+                }
+            },
+            error: function (data, status, e)//服务器响应失败处理函数
+            {
+                alert(e);
+            }
+        });
+    }
+
+
+</script>
+
+
+
+
+

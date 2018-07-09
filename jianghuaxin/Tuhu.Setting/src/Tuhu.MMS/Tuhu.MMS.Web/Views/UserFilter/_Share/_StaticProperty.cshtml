@@ -1,0 +1,190 @@
+﻿@using System.Collections
+@using Tuhu.MMS.Web.Domain.UserFilter
+@{
+    var configs = ViewData["config"] as IEnumerable<UserFilterValueConfig>;
+    Func<string, IEnumerable<SelectListItem>> getselectlist = colname =>
+    {
+        var selectlists = configs.Where(x => x.ColName == colname).Select(x => new SelectListItem()
+        {
+            Text = x.Name,
+            Value = x.Value
+        }).ToList();
+        selectlists.Insert(0, new SelectListItem() { Text = "请选择", Value = "" });
+        return selectlists;
+    };
+}
+<div class="ibox-content" v-show="SecondCategorySelect=='RegisterTime'">
+    <form id="RegisterTime">
+        <div class="row">
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="exampleInputName2">注册时间</label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+
+                    <div class="input-group">
+                        <span class="input-group-addon">
+                            <input type="radio" name="registrationtime_selecttype" id="optionsRadios2" value="date">
+                        </span>
+                        <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="text" name="registrationtime_start_date" class="form-control date" placeholder="选择开始日期">
+                    </div>
+                    <div class="input-group" style="margin-top: 15px;">
+                        <span class="input-group-addon">
+                            <input type="radio" name="registrationtime_selecttype" id="optionsRadios1" value="fromtoday">
+                        </span>
+                        <input type="text" name="registrationtime_from_date" placeholder="距今天天数(不含今天)" class="form-control">
+
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <div class="input-group date">
+                        <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="text" name="registrationtime_end_date" class="form-control" placeholder="选择结束日期">
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+    </form>
+</div>
+
+<div class="ibox-content" v-show="SecondCategorySelect=='FirstLoginTime'">
+    <form id="FirstLoginTime">
+        <div class="row">
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="exampleInputName2">首登APP时间</label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+
+                    <div class="input-group">
+                        <span class="input-group-addon">
+                            <input type="radio" name="appbindingtime_selecttype" id="optionsRadios2" value="date">
+                        </span>
+                        <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="text" name="appbindingtime_start_date" class="form-control date" placeholder="选择开始日期">
+                    </div>
+                    <div class="input-group" style="margin-top: 15px;">
+                        <span class="input-group-addon">
+                            <input type="radio" name="appbindingtime_selecttype" id="optionsRadios1" value="fromtoday">
+                        </span>
+                        <input type="text" name="appbindingtime_from_date" placeholder="距今天天数(不含今天)" class="form-control">
+
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <div class="input-group date">
+                        <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="text" name="appbindingtime_end_date" class="form-control" placeholder="选择结束日期">
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+    </form>
+</div>
+<div class="ibox-content" v-show="SecondCategorySelect=='Sex'">
+    <form id="Sex">
+        <div class="row">
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="exampleInputName2">性别</label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    
+                    <select class="form-control" name="gender" v-on:change="selectchange('gender')">
+                        @{
+                            foreach (var selectListItem in getselectlist("gender"))
+                            {
+                                <option value="@selectListItem.Value">@selectListItem.Text</option>
+                            }
+                        }
+                    </select>
+
+                    @*@Html.DropDownList("gender", getselectlist("gender"), new { @class = "form-control" })*@
+                    @*<select class="form-control" name="gender">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                    </select>*@
+                </div>
+            </div>
+
+        </div>
+        <div class="hr-line-dashed"></div>
+    </form>
+</div>
+<div class="ibox-content" v-show="SecondCategorySelect=='Area'">
+    <form id="Area">
+        <div class="row">
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="exampleInputName2">所在省份</label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    
+                    <select class="form-control" name="province" v-on:change="selectchange('province')">
+                        @{
+                            foreach (var selectListItem in getselectlist("province"))
+                            {
+                                <option value="@selectListItem.Value">@selectListItem.Text</option>
+                            }
+                        }
+                    </select>
+
+                    @*@Html.DropDownList("province", getselectlist("province"), new { @class = "form-control" })*@
+                    @*<select class="form-control" name="province">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                    </select>*@
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="exampleInputName2">所在城市</label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <select class="form-control" name="city" v-on:change="selectchange('city')">
+                        @{
+                            foreach (var selectListItem in getselectlist("city"))
+                            {
+                                <option value="@selectListItem.Value">@selectListItem.Text</option>
+                            }
+                        }
+                    </select>
+                    @*@Html.DropDownList("city", getselectlist("city"), new { @class = "form-control" })*@
+                    @*<select class="form-control" name="city">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                    </select>*@
+                </div>
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+    </form>
+</div> 

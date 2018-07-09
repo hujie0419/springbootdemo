@@ -1,0 +1,129 @@
+﻿@model DataSet
+@using System.Data
+@using System.Data.SqlClient
+@{
+	ViewBag.Title = "数据查询";
+}
+<style>
+	button, input[type=submit] { cursor: pointer; }
+	.resultBox { width: 100%; max-height: 400px; background-color: white; overflow: auto; }
+		.resultBox tr > :first-child { -moz-user-select: none; -ms-user-select: none; -webkit-user-select: none; user-select: none; background-color: #f0f0f0; color: gray; width: 24px; }
+			.resultBox tr > :first-child::before { content: attr(data-value); }
+		.resultBox thead > tr:first-child > :first-child { -moz-appearance: button; -webkit-appearance: button; appearance: button; cursor: pointer; text-align: center; }
+		.resultBox tr > * { white-space: nowrap; max-width: 150px; -ms-text-overflow: ellipsis; -o-text-overflow: ellipsis; text-overflow: ellipsis; overflow: hidden; }
+</style>
+<script>
+	function SelectAll(target)
+	{
+		if (document.createRange)
+		{
+			var range = document.createRange();
+			range.selectNode(target.parentNode.parentNode.parentNode);
+
+			window.getSelection().removeAllRanges();
+			window.getSelection().addRange(range);
+		}
+		else
+		{
+			document.selection.empty();
+			target.parentNode.parentNode.parentNode.createTextRange();
+		}
+	}
+</script>
+<form method="post">
+	<textarea name="sql" style="width: 100%;" rows="5">@ViewBag.sql</textarea>
+	@if (Request.Form["download"] == "0")
+	{
+		<label><input type="radio" name="download" value="0" checked="checked" />不导出</label>
+	}
+	else
+	{
+		<label><input type="radio" name="download" value="0" />不导出</label>
+	}
+	@if (Request.Form["download"] != "0" && Request.Form["download"] != "2")
+	{
+		<label><input type="radio" name="download" value="1" checked="checked" />智能导出(总数超过100行则导出)</label>
+	}
+	else
+	{
+		<label><input type="radio" name="download" value="1" />智能导出(总数超过100行则导出)</label>
+	}
+	@if (Request.Form["download"] == "2")
+	{
+		<label><input type="radio" name="download" value="2" checked="checked" />导出</label>
+	}
+	else
+	{
+		<label><input type="radio" name="download" value="2" />导出</label>
+	}
+	<input type="submit" value="查询" />
+    <button type="submit" name="ServerName" value="Aliyun">Aliyun</button>
+	<button type="submit" name="ServerName" value="WMS">查WMS</button>
+	<button type="submit" name="ServerName" value="Cache">查220</button>    
+	@if (ViewBag.Milliseconds != null)
+	{ <span>耗时：@(ViewBag.Milliseconds)ms</span>}<span style="color: red;">@ViewBag.Message</span>
+</form>
+<div><br /></div>
+@if (ViewBag.Exception != null)
+{
+	<div style="border: 1px solid #ccc; padding: 5px; line-height: 20px;">
+		@foreach (SqlError error in ViewBag.Exception.Errors)
+		{
+			<hr />
+			<div class="error">消息 @error.Number，级别 @error.Class，状态 @error.State，第 @error.LineNumber 行<br />@error.Message</div>
+		}
+	</div>
+}
+@if (ViewBag.SqlInfoMessages != null && ViewBag.SqlInfoMessages.Count > 0)
+{
+	<div style="border: 1px solid #ccc; padding: 5px; line-height: 20px;">
+		@foreach (SqlInfoMessageEventArgs msg in ViewBag.SqlInfoMessages)
+		{
+			<hr />
+			<div>@msg.Message</div>
+		}
+	</div>
+}
+@if (Model != null)
+{
+	foreach (DataTable table in Model.Tables)
+	{
+		<hr />
+		<div class="resultBox">
+			<table>
+				<thead>
+					<tr>
+						<th data-value="全选" onclick="SelectAll(this)">@{var rowIndex = 0;}</th>
+						@foreach (DataColumn col in table.Columns)
+						{
+							<th>@col.ColumnName</th>
+						}
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (DataRow row in table.Rows)
+					{
+						<tr>
+							<td data-value="@(++rowIndex)"></td>
+							@for (var index = 0; index < table.Columns.Count; index++)
+							{
+								if (row.IsNull(index))
+								{
+									<td style="background-color: #ffffe1;">NULL</td>
+								}
+								else if (table.Columns[index].DataType == typeof(string))
+								{
+									<td>@MvcHtmlString.Create(System.Text.RegularExpressions.Regex.Replace(Html.Encode(row[index]), "\r?\n", "<br />"))</td>
+								}
+								else
+								{
+									<td>@row[index]</td>
+								}
+							}
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}

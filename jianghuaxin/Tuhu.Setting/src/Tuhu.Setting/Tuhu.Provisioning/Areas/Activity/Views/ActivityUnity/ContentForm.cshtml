@@ -1,0 +1,2330 @@
+﻿
+@{
+    ViewBag.Title = "ContentForm";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<style type="text/css">
+    .isHidden {
+        display: none;
+    }
+</style>
+<script type="text/javascript" src="~/Scripts/multiple/multiple-select.js"></script>
+<div style="padding-top:20px;margin-right:20px;" id="formlist">
+    <ul class="nav nav-tabs" id="tabHeader"></ul>
+    <div class="tab-content" id="tabContent">
+
+    </div>
+</div>
+<img src="" style="display:none" id="hiddenimage" />
+<script type="text/javascript">
+    Date.prototype.Format = function (fmt) { //author: meizz
+        var o = {
+            "M+": this.getMonth() + 1, //月份
+            "d+": this.getDate(), //日
+            "h+": this.getHours(), //小时
+            "m+": this.getMinutes(), //分
+            "s+": this.getSeconds(), //秒
+            "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+            "S": this.getMilliseconds() //毫秒
+        };
+        if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    };
+    var keyValue = $.request("keyValue");
+    var group = new Date().Format("yyyyMMddhhmmssS");
+    var pkid = $.request("PKID");
+    var copy = $.request("copy");
+    if (keyValue && copy == "false") {
+        group = keyValue;
+    }
+    console.log("copy", copy);
+    console.log("group", group);
+    var FKActiveID = $.request("FKActiveID");
+    var RowType = parseInt($.request("RowType"));
+    var number = 0;
+    function createForm() {
+        var html = "";
+
+
+        if (RowType == 0 || RowType == 3) {
+            number = 1;
+        }
+        if (RowType == 1)
+            number = 2;
+
+        if (RowType == 2)
+            number = 3;
+
+        if (RowType == 4)
+            number = 4;
+
+        if (RowType == 7)
+            number = 4;
+
+        if (RowType == 6)
+            number = 5;
+        if (RowType == 8)
+            number = 4;
+
+        var headerList = "";
+        var content = "";
+        var articlelink = '';
+        var splitcoupon = '';
+        var vehicleheadimage = '';
+
+
+        for (var i = 1; i <= 5; i++) {
+            var data = ' <tr class="articlelink isHidden"> \
+            <th class="formTitle"> 文字链'+ i + ':</th> \
+            <td class="formValue" id="articlelinkTd'+ i + '"> \
+        <input placeholder="请输入显示文字" type="text" style="display:inline;width:60%;" name="ArticleLinkText" class="form-control" /> \
+        <div> \
+            <img id="imgUrl'+ i + '" width="6%" height="30" /> \
+            <input type="text" id="Image'+ i + '" name="Image" class="form-control" style="display:inline;width:60%;" /> \
+            <input type="file" data-type="image" id="ArticleLinkImageId'+ i + '" name="ArticleLinkImage' + i + '" style="display:inline;width:24%" onchange="ArticleLinkImage(' + i + ')" /> \
+        </div> \
+        <input placeholder="输入H5跳转链接" type="text" name="ArticleLinkTextH5Url" class="form-control" /> \
+        <input placeholder="输入小程序跳转链接" type="text" name="ArticleLinkTextWxUrl" class="form-control" /> \
+    </td> \
+</tr >';
+            articlelink += data;
+            var html = setVehicleHeadImage(i);
+            vehicleheadimage += html;
+        }
+        for (var i = 1; i <= 15; i++) {
+            var data = ' <tr class="splitcoupon isHidden"> \
+            <th class="formTitle"> 优惠券'+ i + ':</th> \
+            <td class="formValue" id="splitcouponTd'+ i + '"> \
+        <input placeholder="请输入优惠券ID" type="text" style="display:inline;width:60%;" name="splitcouponText" class="form-control" /> \
+        <div> \
+            <img id="imgUrl'+ i + '" width="6%" height="30" /> \
+            <input type="text" id="Image'+ i + '" name="Image" class="form-control" style="display:inline;width:60%;" /> \
+            <input type="file" data-type="image" id="splitcouponId'+ i + '" name="splitcoupon' + i + '" style="display:inline;width:24%" onchange="SplitCouponImage(' + i + ')" /> \
+        </div> \
+    </td> \
+</tr >';
+            splitcoupon += data;
+        }
+
+
+        for (var index = 1; index <= number; index++) {
+            var status = "";
+            if (index == 1)
+                status = "active";
+
+            var header = `  <li id="li${index}" class="${status}">
+<a href="#${index}" data-toggle="tab">第${index}个单元格</a>
+</li> `;
+            var form = ` <div id="${index}" class="tab-pane fade in ${status}">
+    <form id="form${index}">
+        <input type="hidden" id="PKID" name="PKID" />
+        <div style="padding-top:2px;">
+            <table class="form">
+                <tr>
+                    <th class="formTitle">组 号:</th>
+                    <td class="formValue">
+                        <input type="text" id="GROUP" name="GROUP" class="form-control" disabled="disabled" />
+                    </td>
+
+
+                </tr>
+                <tr>
+                    <th class="formTitle">渠 道:</th>
+                    <td class="formValue">
+                        <select id="Channel" name="Channel" class="form-control">
+                            <option value="all">全 部</option>
+                            <option value="wap">移动端</option>
+                            <option value="www">官 网</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">行类型：</th>
+                    <td class="formValue">
+                        <select id="RowType" disabled="disabled" name="RowType" class="form-control disabled">
+                            <option value="">===请选择===</option>
+                            <option value="0">一行一列</option>
+                            <option value="1">一行两列</option>
+                            <option value="2">一行三列</option>
+                            <option value="3">（网站）一行一列</option>
+                            <option value="4">一行四列</option>
+                            <option value="6">一行五列</option>
+                            <option value="7">一图三产品</option>
+                            <option value="8">App一图三产品</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">类 型:</th>
+                    <td class="formValue">
+                        <select id="Type" name="Type" class="form-control required">
+                            <option value="">===请选择===</option>
+                            <option value="0">轮 胎</option>
+                            <option value="1">车 品</option>
+                            <option value="10">轮 毂</option>
+                            <option value="2">链 接</option>
+                            <option value="3">图 片</option>
+                            <option value="4">优惠券</option>
+                            <option value="5">保 养</option>
+                            <option value="8">活动规则</option>
+                            <option value="9">秒 杀</option>
+                            <option value="13">大翻盘</option>
+                            <option value="20">新大翻盘</option>
+                            <option value="21">答题抽奖</option>
+                            <option value="18">优惠券礼包</option>
+                            <option value="12">其 它</option>
+                            <option value="16">保养定价</option>
+                            <option value="17">视 频</option>
+                            <option value="19">商品池</option>
+                            <option value="22">红包抽奖</option>
+                            <option value="23">拼团</option>
+                            <option value="24">文案</option>
+                            <option value="25">文字链</option>
+                            <option value="26">滑动优惠券</option>
+                            <option value="27">倒计时</option>
+                            <option value="28">摇奖机</option>
+                            <option value="29">分车型头图</option>
+                            <option value="30">新商品池</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr class="isHidden">
+                    <th class="formTitle">选项:</th>
+                    <td class="formValue">
+                        <input id="IsUploading" name="IsUploading" type="checkbox"><label for="IsUploading">是否图片</label>
+                        <input id="IsReplace" name="IsReplace" type="checkbox"><label for="IsReplace">是否推荐商品</label>
+                    </td>
+                </tr>
+
+
+                <tr class="tr isHidden pool productpool">
+                    <th class="formTitle">商品类型：</th>
+                    <td class="formValue">
+                        <select id="ProductType" name="ProductType" class="form-control">
+                            <option value="-1">不  限</option>
+                            <option value="0">轮 胎</option>
+                            <option value="1">车 品</option>
+                            <option value="2">轮 毂</option>
+                        </select>
+                    </td>
+                </tr>
+
+                 <tr class="isHidden productpool productpoolbrand">
+                    <th class="formTitle">品牌：</th>
+                      <td class="formValue">
+                        <select name="Brand" id="Brand" class="form-control">
+                            <option value="">请选择</option>
+                        </select>
+                       </td>
+                    </tr>
+                    <tr class="isHidden productpool">
+                         <th class="formTitle">活动限制：</th>
+                      <td class="formValue">
+                        <input class="ActivityTypeproductpool" name="ActivityType" type="radio" value="0">不限
+                        <input class="ActivityTypeproductpool" name="ActivityType" type="radio" value="1">活动ID <input type="text" id="ProductPoolActiveId">
+                      </td>
+                    </tr>
+<tr class="tr isHidden pool moban progress productpool productpoolDisplayWay">
+                    <th class="formTitle">进度条：</th>
+                    <td class="formValue">
+                        <select id="DisplayWay" name="DisplayWay" class="form-control">
+                            <option value="0">不显示</option>
+                            <option value="1">显 示</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr class="tr isHidden pool productpool">
+                    <th class="formTitle">一行X列：</th>
+                    <td class="formValue">
+                        <select id="ColumnNumber" name="ColumnNumber" class="form-control">
+                            <option value="1">一行一列</option>
+                            <option value="2">一行两列</option>
+                            <option value="3">一行三列</option>
+                        </select>
+                    </td>
+                </tr>
+
+<tr class="isHidden productpool">
+                      <th class="formTitle">是否分车型：</th>
+                      <td class="formValue">
+                        <input name="VehicleLevel" type="radio" value="0">不分车型
+                        <input name="VehicleLevel" type="radio" value="2">按2级车型展示
+                        <input name="VehicleLevel" type="radio" value="5">按5级车型展示
+                       </td>
+                    </tr>
+    <tr class="tr isHidden pool productpool">
+                    <th class="formTitle">适配过滤：</th>
+                    <td class="formValue">
+                        <select id="IsAdapter" name="IsAdapter" class="form-control">
+                            <option value="false">否</option>
+                            <option value="true">是</option>
+                        </select>
+                    </td>
+                </tr>
+
+                    <tr class="isHidden productpool">
+                         <th class="formTitle">最大行数：</th>
+                      <td class="formValue">
+                        <input name="RowLimit" type="radio" value="0">不限
+                        <input name="RowLimit" type="radio" value="1">限<input type="text" id="RowLimitValue">行
+                      </td>
+                    </tr>
+
+                <tr class="tr isHidden pool">
+                    <th class="formTitle">标签选择：</th>
+                    <td class="formValue">
+                        <select id="Tips" name="Tips" class="form-control" multiple="multiple"></select>
+                    </td>
+                </tr>
+                <tr class="isHidden pool moban productpool fuckpool">
+                    <th class="formTitle">图 片:</th>
+                    <td class="formValue">
+                        <img id="imgUrl" width="6%" height="30" />
+                        <input type="text" id="Image" name="Image" class="form-control" style="display:inline;width:60%;" />
+                        <input type="file" data-type="image" id="imageFile${index}" name="imageFile${index}" style="display:inline;width:24%" onchange="fileImage()" />
+                    </td>
+                </tr>
+                <tr class="isHidden ae">
+                    <th class="formTitle">AE动图:</th>
+                    <td class="formValue">
+                        <input type="text" id="FileUrl" name="FileUrl" class="form-control" style="display:inline;width:50%;" />
+                        <input type="file" data-type="image" id="File${index}" name="File${index}" style="display:inline;width:24%" onchange="UploadImgeae()" />
+                    </td>
+                </tr>
+                <tr class="tr isHidden">
+                    <th class="formTitle">PID：</th>
+                    <td class="formValue">
+                        <input type="text" id="PID" name="PID" class="form-control" />
+                    </td>
+                </tr>
+                <tr class="tr isHidden pintuan">
+                    <th class="formTitle">GroupId：</th>
+                    <td class="formValue">
+                        <select id="ProductGroupId" name="ProductGroupId" class="form-control"></select>
+                    </td>
+                </tr>
+                <tr class="tr isHidden">
+                    <th class="formTitle">产品名称：</th>
+                    <td class="formValue">
+                        <input type="text" value="" id="ProductName" name="ProductName" class="form-control" />
+                    </td>
+                </tr>
+                <tr class="tr activity isHidden pool moban">
+                    <th class="formTitle">活动ID：</th>
+                    <td class="formValue">
+                        <input type="text" id="ActivityID" name="ActivityID" class="form-control" />
+                    </td>
+                </tr>
+                <tr class="tr isHidden pool">
+                    <th class="formTitle">活动类型：</th>
+                    <td class="formValue">
+                        <select id="ActivityType" name="ActivityType" class="form-control">
+                            <option value="1">营销活动</option>
+                            <option value="2">分地区分车型活动</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr class="tr isHidden">
+                    <th class="formTitle" id="tdProductPrice">产品价格:</th>
+                    <td class="formValue">
+                        <input type="text" id="ActivityPrice" name="ActivityPrice" disabled="disabled" class="form-control" />
+                    </td>
+                </tr>
+                <tr class="tr chepin isHidden">
+                    <th class="formTitle">轮胎尺寸:</th>
+                    <td class="formValue">
+                        <input type="text" id="TireSize" name="TireSize" class="form-control" />
+                    </td>
+                </tr>
+                <tr class="coupon isHidden">
+                    <th class="formTitle">优惠券:</th>
+                    <td class="formValue">
+                        <input type="text" id="CID" name="CID" class="form-control" />
+                    </td>
+                </tr>
+                <tr class="uri isHidden">
+                    <th class="formTitle">移动端链接:</th>
+                    <td class="formValue">
+                        <input type="text" id="LinkUrl" name="LinkUrl" class="form-control" />
+                    </td>
+                </tr>
+                <tr class="uri isHidden">
+                    <th class="formTitle">小程序：</th>
+                    <td class="formValue">
+                        <select id="WxAppId" name="WxAppId" class="form-control">
+                            <option value="">===请选择===</option>
+                            <option value="wxfa83eefa43f2c0e9">途虎洗车小程序</option>
+                            <option value="wx27d20205249c56a3">途虎养车Tuhu小程序</option>
+                            <option value="wx3429052123c19770">途虎违章查询</option>
+                            <option value="wxcb33a9e9af575642">途虎问答小程序</option>
+                            <option value="wx25f9f129712845af">微信拼团小程序</option>
+                            <option value="wx625c1a4227bab347">途虎众测小程序</option>
+                            <option value="wx41fa1a41dc9816a2">途虎工场店</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr class="uri isHidden">
+                    <th class="formTitle">小程序链接:</th>
+                    <td class="formValue">
+                        <input type="text" id="WXAPPUrl" name="WXAPPUrl" class="form-control" />
+                    </td>
+                </tr>
+                <tr class="uri isHidden">
+                    <th class="formTitle">App跳转链接：</th>
+                    <td class="formValue">
+                        <input type="text" id="APPUri" name="APPUri" class="form-control" />
+                    </td>
+                </tr>
+                <tr class="by link isHidden uri carType">
+                    <th class="formTitle">车型要求: </th>
+                    <td class="formValue">
+                        <select id="Vehicle" name="Vehicle" class="form-control">
+                            <option value="">===请选择===</option>
+                            <option value="2">二级车型</option>
+                            <option value="4">四级车型</option>
+                            <option value="5">五级车型</option>
+                            <option value="1">车型认证</option>
+                            <option value="6">6周年车型认证</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr class="by link isHidden uri">
+                    <th class="formTitle">选 项: </th>
+                    <td class="formValue">
+                        <span class="notlink"><input id="IsRecommended" name="IsRecommended" type="checkbox">途虎推荐</span>
+                        <input id="IsLogin" name="IsLogin" type="checkbox">强制登录
+                        <input type="checkbox" id="IsTireStandard" name="IsTireSize" />轮胎规格
+                        <input type="checkbox" id="IsTireSize" name="IsTireSize" />轮胎尺寸
+                        <input type="checkbox" id="IsHiddenTtile" name="IsHiddenTtile" />隐藏标题栏
+                    </td>
+                </tr>
+                <tr class="isHidden by uri">
+                    <th class="formTitle">保养服务: </th>
+                    <td class="formValue">
+                        <select id="ByService" name="ByService" multiple="multiple"></select>
+                    </td>
+                </tr>
+                <tr class="by isHidden uri">
+                    <th class="formTitle">保养活动ID：</th>
+                    <td class="formValue">
+                        <input type="text" id="ByActivityID" name="ByActivityID" class="form-control" />
+                    </td>
+                </tr>
+                <tr class="other isHidden uri">
+                    <th class="formTitle">选 项: </th>
+                    <td class="formValue">
+                        <input name="OthersType" type="radio" value="1">查违章
+                        <input name="OthersType" type="radio" value="2">车品商城
+                        <input name="OthersType" type="radio" value="3">蓄电池
+                        <input name="OthersType" type="radio" value="4">保养大全
+                        <input name="OthersType" type="radio" value="5">首页
+                        <input name="OthersType" type="radio" value="6">会员商城
+                        <input name="OthersType" type="radio" value="7">优惠券列表
+                        <input name="OthersType" type="radio" value="8">其它
+                    </td>
+                </tr>
+                <tr class="uri isHidden">
+                    <th class="formTitle">PC链接：</th>
+                    <td class="formValue">
+                        <input type="text" id="PCUrl" name="PCUrl" class="form-control" />
+                    </td>
+                </tr>
+                <tr class="remark isHidden">
+                    <th class="formTitle">描 述:</th>
+                    <td class="formValue">
+                        <textarea id="Description" name="Description" style="height:120px;" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr class="isHidden pool productpool fuckpool">
+                    <th class="formTitle">排 序:</th>
+                    <td class="formValue">
+                        <input type="number" id="OrderBy" name="OrderBy" class="form-control" disabled="disabled" value="${index}" />
+                    </td>
+                </tr>
+                <tr class="isHidden activetext">
+                    <th class="formTitle">文 案:</th>
+                    <td class="formValue">
+                        <input type="text" id="ActiveText" name="ActiveText" class="form-control" />
+                    </td>
+                </tr>
+                  <tr class="isHidden countdown">
+                    <th class="formTitle">倒计时样式:</th>
+                    <td class="formValue">
+                        <input name="CountDownStyle" type="radio" value="1">深色背景
+                        <input name="CountDownStyle" type="radio" value="2">浅色背景
+                    </td>
+                </tr>
+                  <tr class="isHidden vehicleheadimage">
+                    <th class="formTitle">默认图片:</th>
+                    <td class="formValue">
+                        <img id="vehicliedefaultimgUrl" width="6%" height="30" />
+                        <input type="text" id="vehicliedefaultImage" name="vehicliedefaultImage" class="form-control" style="display:inline;width:60%;" />
+                        <input type="file" data-type="image" id="vehicliedefaultimageFile" name="vehicliedefaultimageFile" style="display:inline;width:24%" onchange="vehicliedefaultImageFile()" />
+                    </td>
+                   </tr>
+                    <tr class="vehicleheadimage isHidden">
+                        <th class="formTitle">跳转链接：</th>
+                        <td class="formValue">
+                            <input type="text" id="VehicleUrl" name="VehicleUrl" class="form-control VehicleUrl" />
+                        </td>
+                    </tr>
+                    <tr class="vehicleheadimage isHidden">
+                        <th class="formTitle">小程序跳转链接：</th>
+                        <td class="formValue">
+                            <input type="text" id="VehicleWXAPPUrl" name="VehicleWXAPPUrl" class="form-control VehicleWXAPPUrl" />
+                        </td>
+                    </tr>
+                    <tr class="vehicleheadimage isHidden">
+                        <th class="formTitle">分车型：</th>
+                        <td class="formValue">
+                             <input name="IsVehicle" type="radio" value="0">跳转页面不区分车型
+                             <input name="IsVehicle" type="radio" value="1">跳转页面区分车型
+                        </td>
+                   </tr>
+                    <tr class="vehicleheadimage isHidden">
+                        <th class="formTitle">分车型头图：</th>
+                        <td class="formValue">
+                        </td>
+                   </tr>
+                    ${vehicleheadimage}
+                    <tr class="vehicleheadimage isHidden">
+                        <th class="formTitle">
+                            <a href="javascript:void(0)" onclick="addVehicleInfo()">添加车型</a>
+                        </th>
+                        <td class="formValue">
+                        </td>
+                   </tr>
+                ${articlelink} ${splitcoupon}
+
+
+
+
+
+            </table>
+        </div>
+    </form>
+</div>`;
+            headerList += header;
+            content += form;
+
+
+        }
+
+        $('#tabHeader').append(headerList);
+        $("#tabContent").append(content);
+        if (RowType == 8) {
+
+            for (var i = 1; i <= number; i++) {
+                var type = $("#form" + i).find('#Type');
+                if (type) {
+                    array = []
+                    if (i == 1) {
+                        array = ["2", "3"]
+                    }
+                    else {
+                        array = ["0", "1", "10", "5", "3", "2", "4"];
+                    }
+                    var options = $(type).find('option');
+                    if (options) {
+
+                        options.each(function () {
+                            var value = $(this).val();
+
+                            var check = array.find(function (x) { return x == value });
+                            if (!check && value) {
+                                $(type).find('[value="' + value + '"]').remove();
+                            }
+                        });
+                    }
+                    //array.forEach(function (item) {
+                    //    $(type).find('[value="' + item + '"]').remove();
+                    //})
+                }
+            }
+        }
+        var removearray = [];
+        //一行2列
+        if (RowType == 1) {
+            removearray = ["19", "22", "16", "13", "20", "21", "17", "26", "25", "27"]
+        }
+        //一行3列
+        else if (RowType == 2) {
+            removearray = ["19", "22", "16", "13", "20", "21", "17", "18", "26", "25", "27"]
+        }
+        else if (RowType == 3) {
+            removearray = ["19", "9", "22", "16", "13", "20", "21", "17", "18", "26", "25", "27"]
+        }
+        else if (RowType == 4 || RowType == 6 || RowType == 7) {
+            removearray = ["19", "23", "9", "22", "16", "13", "20", "21", "17", "18", "26", "25", "27"]
+        }
+        //else if (RowType ==8) {
+        //    removearray = ["19", "9", "22", "16", "13", "20", "21", "17", "18", "26", "25", "27","8","12"]
+        //}
+        if (removearray && removearray.length > 0) {
+            for (var i = 1; i <= number; i++) {
+                var type = $("#form" + i).find('#Type');
+                if (type) { 
+                    var options = $(type).find('option');
+                    if (options) { 
+                        options.each(function () {
+                            var value = $(this).val();
+
+                            var check = removearray.find(function (x) { return x == value });
+                            if (check && value) {
+                                $(type).find('[value="' + value + '"]').remove();
+                            }
+                        });
+                    }
+                    //array.forEach(function (item) {
+                    //    $(type).find('[value="' + item + '"]').remove();
+                    //})
+                }
+            }
+        }
+    }
+
+    function setVehicleHeadImage(index) {
+        window.maxVehicleHeadImage = index;
+        var html = '  <tr class="isHidden vehicleheadimage">  \
+                        <th class="formTitle"> 车型'+ index + ' </th>  \
+                          <td class=formValue>  \
+                            <select  data-index="'+ index + '"  id="VehicleBrand' + index + '" name="VehicleBrand" style="width:40%;float:left" class="form-control"> \
+                            <option value="">请选择品牌</option> \
+                             </select > \
+                             <select data-index="'+ index + '" id="VehicleInfo' + index + '" name="VehicleInfo" style="width:40%;float:right"  class="form-control"> \
+                               <option value="">请选择车型</option> \
+                             </select > \
+                           </td>  \
+                        </tr> \
+                <tr class="isHidden vehicleheadimage" id="vehicleimagetd'+ index + '">  \
+                        <th class="formTitle">   </th>  \
+                          <td class=formValue>  \
+                             <img id="vehicleimgUrl' + index + '" width="6%" height="30" /> \
+                            <input type = "text" id = "vehicleImage' + index + '" name = "Image" class="form-control" style = "display:inline;width:60%;" /> \
+                            <input data-index="'+ index + '" type="file" data-type="image" id="vehicleimageFile' + index + '" name="imageFile' + index + '" style="display:inline;width:24%" onchange="vehiclefileImage(' + index + ')" /> \
+                          </td>  \
+                 </tr>';
+        return html;
+    }
+
+    function vehicliedefaultImageFile() {
+        var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+        var form = $('#form' + activeIndex);
+        var fileElId = $("#vehicliedefaultimageFile", form).attr("id");
+        console.log(fileElId);
+        $.ajaxFileUpload({
+            url: '/UploadFile/UploadFileByParam?directoryName=' + 'ActivityPageAe',
+            secureuri: false,
+            fileElementId: fileElId,
+            dataType: 'json',
+            async: false,
+            success: function (result) {
+                if (result.Code == 1) {
+                    $("#vehicliedefaultImage", form).val(result.File);
+                    $("#vehicliedefaultimgUrl", form).attr("src", result.File);
+                } else {
+                    alert(result.Msg);
+                }
+            },
+            error: function (data, status, e)//服务器响应失败处理函数
+            {
+                alert(e);
+            }
+        });
+    }
+
+    function vehiclefileImage(index) {
+
+        var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+        var form = $('#form' + activeIndex);
+        var fileElId = $("#vehicleimageFile" + index, form).attr("id");
+        console.log(fileElId);
+        $.ajaxFileUpload({
+            url: '/UploadFile/UploadFileByParam?directoryName=' + 'ActivityPageAe',
+            secureuri: false,
+            fileElementId: fileElId,
+            dataType: 'json',
+            async: false,
+            success: function (result) {
+                if (result.Code == 1) {
+                    $("#vehicleImage" + index, form).val(result.File);
+                    $("#vehicleimgUrl" + index, form).attr("src", result.File);
+                } else {
+                    alert(result.Msg);
+                }
+            },
+            error: function (data, status, e)//服务器响应失败处理函数
+            {
+                alert(e);
+            }
+        });
+    }
+
+
+    function addVehicleInfo() {
+
+        var index = window.maxVehicleHeadImage;
+        var id = "#vehicleimagetd" + index;
+        console.log(id);
+        var html = setVehicleHeadImage(index + 1);
+        console.log($(id).html());
+        $(id).after(html);
+        $('.isHidden', form).each(function () {
+            $(this).hide();
+        });
+        var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+        var form = $('#form' + activeIndex);
+        $(".vehicleheadimage", form).show();
+        setVehicleBrand();
+    }
+    function setShowInput() {
+        var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+        var form = $('#form' + activeIndex);
+        $('#Image').removeClass("required");
+        $('#FileUrl').removeClass("required");
+
+
+        $('.isHidden', form).each(function () {
+            $(this).show();
+        });
+        $('.ae', form).each(function () {
+            $(this).hide();
+        });
+        $('.tr', form).each(function () {
+            $(this).show();
+        });
+        $('.coupon', form).each(function () {
+            $(this).show();
+        });
+        $('.uri', form).each(function () {
+            $(this).show();
+        });
+        $('.by', form).each(function () {
+            $(this).show();
+        });
+        $('.link', form).each(function () {
+            $(this).show();
+        });
+        $('.notlink', form).each(function () {
+            $(this).show();
+        });
+        $('.other', form).each(function () {
+            $(this).show();
+        });
+        $('.remark', form).each(function () {
+            $(this).show();
+        });
+        $("input", form).each(function () {
+            $(this).removeClass("required");
+        });
+
+        var value = parseInt($("#Type", form).val()); //parseInt( $(this).val());
+        //console.log(value);
+        if (isNaN(value)) {
+            $('.isHidden', form).each(function () {
+                $(this).hide();
+            });
+        }
+
+        if (value == 25) {
+            $('.isHidden', form).each(function () {
+                $(this).hide();
+            });
+            $(".articlelink", form).show();
+
+            $("input", $(".articlelink")).each(function () {
+
+                $(this).removeClass("required");
+            });
+        }
+        else if (value != 25) {
+            $(".articlelink", form).hide();
+        }
+
+
+        if (value == 26) {
+            $('.isHidden', form).each(function () {
+                $(this).hide();
+            });
+            $(".splitcoupon", form).show();
+
+            $("input", $(".splitcoupon")).each(function () {
+
+                $(this).removeClass("required");
+            });
+        }
+        else if (value != 26) {
+            $(".splitcoupon", form).hide();
+        }
+        if (value == 27) {
+            $('.isHidden', form).each(function () {
+                $(this).hide();
+            });
+            $(".countdown", form).show();
+        }
+        else {
+            $(".countdown", form).hide();
+        }
+        //vehicleheadimage
+
+        if (value == 29) {
+            $('.isHidden', form).each(function () {
+                $(this).hide();
+            });
+            $(".vehicleheadimage", form).show();
+            $('.VehicleWXAPPUrl', form).removeClass("required");
+            $('.VehicleUrl', form).removeClass("required");
+        }
+        else {
+            $(".vehicleheadimage", form).hide();
+        }
+        if (value == 19 || value == 0 || value == 1 || value == 10 || value == 23) {
+            $('.pool', form).each(function () {
+                $(this).hide();
+            });
+            $(".productpool", form).hide();
+            if (value == 0 || value == 1 || value == 10 || value == 23)
+                $('.moban', form).each(function () {
+                    $(this).show();
+                });
+        }
+
+        if (value == 0 || value == 10 || value == 6 || value == 11 || value == 19 || value == 23) {
+            $('.coupon', form).each(function () {
+                $(this).hide();
+            });
+            $('.uri', form).each(function () {
+                $(this).hide();
+            });
+
+        }
+        if (value == 1 || value == 7) {
+            $('.chepin', form).each(function () {
+                $(this).hide();
+            });
+            $('.coupon', form).each(function () {
+                $(this).hide();
+            });
+            $('.uri', form).each(function () {
+                $(this).hide();
+            });
+        }
+
+        if (value == 2 || value == 17) {
+            $(".productpool", form).hide();
+            $(".fuckpool", form).show();
+            $('.tr', form).each(function () {
+                $(this).hide();
+            });
+            $('.coupon', form).each(function () {
+                $(this).hide();
+            });
+            $('.by', form).each(function () {
+                $(this).hide();
+            });
+            $('.link', form).each(function () {
+                $(this).show();
+            });
+            $('.notlink', form).each(function () {
+                $(this).hide();
+            });
+            $('.other', form).each(function () {
+                $(this).hide();
+            });
+        }
+
+        if (value == 17) {
+
+            $('.by', form).each(function () {
+                $(this).hide();
+            });
+
+        }
+        if (value == 23) {
+            //activity
+            $('.activity', form).each(function () {
+                $(this).hide();
+            });
+            $('.remark', form).each(function () {
+                $(this).hide();
+            });
+            $('.chepin', form).each(function () {
+                $(this).hide();
+            });
+            $('.progress', form).each(function () {
+                $(this).hide();
+            });
+            $('.pintuan', form).each(function () {
+                $(this).show();
+            });
+            $("#tdProductPrice").text("拼团价格");
+            //progress
+        }
+        else {
+            $('.pintuan', form).each(function () {
+                $(this).hide();
+            });
+            $("#tdProductPrice").text("产品价格");
+        }
+        if (value == 3 || value == 9 || value == 22) {
+            $(".productpool", form).hide();
+            $(".fuckpool", form).show();
+            $('.tr', form).each(function () {
+                $(this).hide();
+            });
+            $('.coupon', form).each(function () {
+                $(this).hide();
+            });
+            $('.uri', form).each(function () {
+                $(this).hide();
+            });
+            $('.remark', form).each(function () {
+                $(this).hide();
+            });
+        }
+
+        if (value == 4) {
+            $(".productpool", form).hide();
+            $(".fuckpool", form).show();
+            $('.tr', form).each(function () {
+                $(this).hide();
+            });
+            $('.uri', form).each(function () {
+                $(this).hide();
+            });
+            $('.remark', form).each(function () {
+                $(this).hide();
+            });
+        }
+        if (value == 5 || value == 12) {
+            $(".productpool", form).hide();
+            $(".fuckpool", form).show();
+            $('.tr', form).each(function () {
+                $(this).hide();
+            });
+            $('.coupon', form).each(function () {
+                $(this).hide();
+            });
+            $('.remark', form).each(function () {
+                $(this).hide();
+            });
+            if (value == 5) {
+                $("#APPUri", form).attr("disabled", "disabled");
+                $('.other', form).each(function () {
+                    $(this).hide();
+                });
+            } else {
+                $("#APPUri", form).removeAttr("disabled", "disabled");
+                $('.by', form).each(function () {
+                    $(this).hide();
+                });
+            }
+        }
+
+        if (value == 8) {
+            $(".productpool", form).hide();
+            $(".fuckpool", form).show();
+            $('.tr', form).each(function () {
+                $(this).hide();
+            });
+            $('.coupon', form).each(function () {
+                $(this).hide();
+            });
+            $('.uri', form).each(function () {
+                $(this).hide();
+            });
+
+        }
+
+        if (value == 13 || value == 16 || value == 18 || value == 20 || value == 21 || value == 28) {
+            $(".productpool", form).hide();
+            $(".fuckpool", form).show();
+            $('.tr', form).each(function () {
+                if ($(this).attr("class").indexOf("activity") == -1)
+                    $(this).hide();
+            });
+            $('.coupon', form).each(function () {
+                $(this).hide();
+            });
+            $('.uri', form).each(function () {
+                $(this).hide();
+            });
+            $('.remark', form).each(function () {
+                $(this).hide();
+            });
+            if (value == 18) {
+                $('.carType', form).each(function () {
+                    $(this).show();
+                });
+            }
+        }
+
+        $("input", form).each(function () {
+            var display = $(this).css("display");
+            if ($(this).attr("name") != undefined && display != "none" && $(this).attr("type") != "checkbox" && $(this).attr("type") != "file" && $(this).attr("name") != "ActivityID" && $(this).attr("name") != "ByActivityID" && $(this).attr("name") != "APPUri" && $(this).attr("name") != "TireSize") {
+                if (value != 25) {
+                    $(this).addClass("required");
+                }
+            }
+            if (value == 2 && $(this).attr("name") == "APPUri") {
+                $(this).addClass("required");
+            }
+        });
+
+        if (value == 9 || value == 13 || value == 16 || value == 18 || value == 20 || value == 21 || value == 28) {
+            $('input[name="Image"]', form).removeClass("required");
+        }
+
+        if (value == 13 || value == 16 || value == 18 || value == 20 || value == 21 || value == 28) {
+            $("#ActivityID", form).addClass("required");
+        } else {
+            $("#ActivityID", form).removeClass("required");
+        }
+        if (value == 19) {
+            $(".productpool", form).hide();
+            $(".fuckpool", form).show();
+            $('.isHidden', form).each(function () {
+                $(this).hide();
+            });
+            $('.pool', form).each(function () {
+                $(this).show();
+            });
+        }
+        if (value == 24) {
+            $(".productpool", form).hide();
+            $(".fuckpool", form).show();
+            $('.isHidden', form).each(function () {
+                $(this).hide();
+            });
+            //activetext
+            $('.activetext', form).each(function () {
+                $(this).show();
+            });
+        } else {
+            $('.activetext', form).each(function () {
+                $(this).hide();
+            });
+        }
+        if (value == 3) {
+            $(".productpool", form).hide();
+            $(".fuckpool", form).show();
+            $('.ae', form).each(function () {
+                $(this).show();
+            });
+            $('input[name="Image"]', form).removeClass("required");
+            $('input[name="FileUrl"]', form).removeClass("required");
+        }
+
+        if (value == 30) {
+            //productpool
+            $('.isHidden', form).each(function () {
+                $(this).hide();
+            });
+            $(".productpool", form).show();
+            $(".productpoolDisplayWay", form).hide();
+            $(".moban").hide()
+        }
+        else {
+            //$(".productpool", form).hide();
+        }
+
+        if (value == 29) {
+            $('.VehicleWXAPPUrl', form).removeClass("required");
+            $('.VehicleUrl', form).removeClass("required");
+        }
+        //CountDownStyle
+        $('input[name="CountDownStyle"]', form).removeClass("required");
+
+
+    }
+
+    function setProductGroupPrice() {
+        var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+        var form = $('#form' + activeIndex);
+        var pid = $("#PID", form).val();
+        var groupid = $("#ProductGroupId", form).val();
+        getPinTuanInfo(pid).then(function (data) {
+            console.log(data);
+            if (data.code == 1 && data.data.ProductGroupList && data.data.ProductGroupList.length) {
+                var grouplist = data.data.ProductGroupList;
+                //var price = data.data.
+                data.data.ProductGroupList.forEach(function (item) {
+                    console.log(item);
+                    if (groupid && groupid == item.ProductGroupId) {
+                        var price = item.Price;
+                        $("#ActivityPrice", form).val(price);
+                    }
+                });
+            }
+            else {
+                $.modalMsg("当前PID未获取到拼团信息", "warning");
+            }
+        });
+
+    }
+    function getPinTuanInfo(pid) {
+        return $.get("/Activity/ActivityUnity/GetProductGroupInfoByPIdAsync", { pid: pid }).then(function (data) {
+            return data;
+        });
+    }
+
+    function setGroupInfo(pid, ptvalue, form) {
+        if (!form) {
+            var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+            form = $('#form' + activeIndex);
+        }
+        var value = parseInt($("#Type", form).val());
+        if (value == 23) {
+            getPinTuanInfo(pid).then(function (data) {
+                console.log(data);
+                if (data.code == 1 && data.data.ProductGroupList && data.data.ProductGroupList.length) {
+                    var grouplist = data.data.ProductGroupList;
+                    $("#ProductGroupId", form).empty();
+                    data.data.ProductGroupList.forEach(function (item) {
+                        console.log(item);
+
+                        $("#ProductGroupId", form).append($('<option>', {
+                            value: item.ProductGroupId,
+                            text: item.ProductGroupId
+                        }));
+                    });
+                    if (ptvalue) {
+                        $("#ProductGroupId", form).val(ptvalue);
+                    }
+                }
+                else {
+                    $.modalMsg("当前PID未获取到拼团信息", "warning");
+                    $("#ProductGroupId", form).empty();
+
+                }
+            });
+            setTimeout(function () {
+                setProductGroupPrice();
+            }, 200);
+        }
+    }
+
+    function setProduct() {
+        var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+        var form = $('#form' + activeIndex);
+
+        var pid = $(this).val();
+        if (pid) {
+            $.ajax({
+                url: '/ActivityV2/GetProductImage?pid=' + pid,
+                dataType: "json",
+                type: 'post',
+                success: function (result) {
+                    result = JSON.parse(result);
+                    if (result.BImage) {
+                        $("#imgUrl", form).attr("src", result.BImage);
+
+                        $("#Image", form).val(result.BImage);
+                        $("#ProductName", form).val(result.DisplayName);
+                        $("#TireSize", form).val(result.TireSize);
+                        $("#ActivityPrice", form).val(result.ActivityPrice);
+                        $("#Description", form).val(result.CP_ShuXing5);
+
+                        setGroupInfo(pid, "", form);
+                    } else {
+                        $.modalMsg("输入的PID不存在", "warning");
+                        $("#imgUrl", form).removeAttr("src");
+                        $("#PID", form).val("");
+                        $("#Image", form).val("");
+                        $("#ProductName", form).val("");
+                        $("#TireSize", form).val("");
+                        $("#ActivityPrice", form).val("");
+                        $("#Description", form).val("");
+                    }
+                },
+                error: function (result) {
+                    $.modalMsg("获取输入的PID信息失败", "warning");
+                    $("#imgUrl", form).removeAttr("src");
+                    // $("#PID", form).val("");
+                    $("#Image", form).val("");
+                    $("#ProductName", form).val("");
+                    $("#TireSize", form).val("");
+                    $("#ActivityPrice", form).val("");
+                    $("#Description", form).val("");
+                }
+            })
+        } else {
+            $("#imgUrl", form).removeAttr("src");
+            $("#Image", form).val("");
+            $("#ProductName", form).val("");
+            $("#TireSize", form).val("");
+            $("#ActivityPrice", form).val("");
+            $("#Description", form).val("");
+        }
+    }
+    function UploadImgeae() {
+
+        var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+        var form = $('#form' + activeIndex);
+        var type = $(this).data("type");
+        // id: $("#imageFile" + activeIndex, form).attr("id"),
+        //var pobj = $(obj);
+        var fileSize = $("#File" + activeIndex, form)[0].files[0].size / 1024 * 1.0;
+        if (fileSize > 2024) {
+            alert("文件不能超过2M，超大会影响前台展示效率");
+            return false;
+        }
+        var rd = Math.ceil(Math.random() * 9999) + 1;
+        var fileElId = $("#File" + activeIndex, form).attr("id");
+        console.log(fileElId);
+        $.ajaxFileUpload({
+            url: '/UploadFile/UploadFileByParam?directoryName=' + 'ActivityPageAe',
+            secureuri: false,
+            fileElementId: fileElId,
+            dataType: 'json',
+            async: false,
+            success: function (result) {
+                if (result.Code == 1) {
+                    $("#FileUrl", form).val(result.File);
+                    $("#IsUploading", form).attr("checked", "checked");
+                    $("#Image", form).val('');
+                    $("#Image").next().val('');
+                    $("#Image").prev().attr("src", '');
+                } else {
+                    alert(result.Msg);
+                }
+            },
+            error: function (data, status, e)//服务器响应失败处理函数
+            {
+                alert(e);
+            }
+        });
+    }
+    function submitForm() {
+        var isValid = true;
+        for (var i = 1; i <= number; i++) {
+            $('#tabHeader li').each(function (e) {
+                var href = $(this).find("a").attr("href");
+                if (href == "#" + i) {
+                    $('#tabHeader li').each(function (index, ee) {
+                        // console.log(index);
+                        $(this).removeClass("active");
+                        $("#" + (index + 1)).removeClass("active");
+
+                    });
+                    $(this).addClass("active");
+                    $("#" + i).addClass(" in active");
+                    console.log(!$('#form' + i).formValid())
+                    if (!$('#form' + i).formValid()) {
+                        console.log(i);
+                        isValid = false;
+                    }
+                }
+            });
+            if (!isValid)
+                break;
+        }
+        console.log("!isValid", !isValid)
+        if (!isValid)
+            return;
+
+        var array = [];
+        for (var n = 1; n <= number; n++) {
+            var formData = $("#form" + n).formSerialize();
+            if (!pkid) {
+                formData.PKID = 0;
+            }
+            formData.OthersType = $('input[name="OthersType"]:checked', '#form' + n).val();
+            formData.CountDownStyle = $('input[name="CountDownStyle"]:checked', '#form' + n).val();
+
+            if (formData.Type == 27) {
+                if (formData.CountDownStyle == '' || !formData.CountDownStyle) {
+                    $.modalMsg("请选择倒计时样式", "error");
+                    return;
+                }
+            }
+            formData.FKActiveID = FKActiveID;
+            formData.RowType = RowType;
+            if (formData.ByService)
+                formData.ByService = formData.ByService.toString();
+            if (formData.Tips) {
+                formData.Tips = formData.Tips.toString();
+            }
+            if (formData.Type == 5) {
+                if (!formData.ByService) {
+                    $.modalMsg("请选择保养项目", "error");
+                    return;
+                }
+                formData.APPUrl = "/maintenance?type=" + formData.ByService.replace(/,/g, ';');
+                if (formData.IsLogin)
+                    formData.APPUrl += "&requireUser=1";
+                if (formData.IsTireStandard)
+                    formData.APPUrl += "&requireTireSpec=1";
+                if (formData.IsRecommended)
+                    formData.APPUrl += "&IsTuhuRecommend=1";
+                else
+                    formData.APPUrl += "&IsTuhuRecommend=0";
+                if (formData.IsTireSize)
+                    formData.APPUrl += "&requireWheelRimSize=1";
+                if (formData.IsHiddenTtile)
+                    formData.APPUrl += "&navHidden=1";
+                if (formData.ByActivityID && formData.ByActivityID != "&nbsp;")
+                    formData.APPUrl += "&aid=" + formData.ByActivityID;
+            }
+            if (formData.Type == 2) {
+                formData.APPUrl = "/webView?url=" + encodeURIComponent(formData.APPUri);
+                if (formData.IsLogin)
+                    formData.APPUrl += "&requireUser=1";
+                if (formData.IsTireStandard)
+                    formData.APPUrl += "&requireTireSpec=1";
+                if (formData.IsTireSize)
+                    formData.APPUrl += "&requireWheelRimSize=1";
+                if (formData.IsHiddenTtile)
+                    formData.APPUrl += "&navHidden=1";
+            }
+            if (formData.Type == 12) {
+                if (formData.OthersType == 1)
+                    formData.APPUrl = "/carProfile/trafficViolation/result";
+                if (formData.OthersType == 2)
+                    formData.APPUrl = "/accessory";
+                if (formData.OthersType == 3)
+                    formData.APPUrl = "/battery";
+                if (formData.OthersType == 4)
+                    formData.APPUrl = "/allServices";
+                if (formData.OthersType == 5)
+                    formData.APPUrl = "/home";
+                if (formData.OthersType == 6)
+                    formData.APPUrl = "/memberMall";
+                if (formData.OthersType == 7)
+                    formData.APPUrl = "/coupons";
+                if (formData.OthersType == 8)
+                    formData.APPUrl = formData.APPUri;
+            }
+            if (formData.Type == 23) {
+                if (!formData.ProductGroupId) {
+                    $.modalMsg("请选择拼团项目", "error");
+                    return;
+                }
+            }
+            if (formData.Type == 18 || formData.Type == 20 || formData.Type == 21 || formData.Type == 28) {
+                formData.HashKey = formData.ActivityID;
+                formData.ActivityID = "";
+
+            }
+            if (formData.Type == 24) {
+                if (!formData.ActiveText) {
+                    $.modalMsg("请输入图文信息", "error");
+                    return;
+                }
+                try {
+                    JSON.parse(formData.ActiveText);
+                } catch (err) {
+                    $.modalMsg("不是有效的json信息", "error");
+                    return;
+                }
+            }
+            if (formData.Type == 26) {
+                var jsonarray = [];
+                var configcount = 0;
+                var imginfoarray = [];
+                var submitinfo = [];
+                configcount = 0;
+                for (var index = 1; index <= 15; index++) {
+                    var form = $('#form' + n);
+                    var tdinfo = $('#splitcouponTd' + index, form);
+
+                    var splitcouponText = $("input[name='splitcouponText']", tdinfo).val();
+                    var imgurl = $("#Image" + index, tdinfo).val();
+                    var height = $("#Image" + index, tdinfo).attr("data-height");
+                    var width = $("#Image" + index, tdinfo).attr("data-width");
+
+                    if (splitcouponText && imgurl) {
+                        imginfoarray.push({
+                            height, width
+                        });
+                    }
+                    if (splitcouponText != '' && splitcouponText != '&nbsp;'
+                        && imgurl != '' && imgurl != '&nbsp;'
+                    ) {
+                        configcount += 1;
+                    }
+                    else if (splitcouponText == '&nbsp;' || splitcouponText == '') {
+                        if (imgurl != '&nbsp;' && imgurl != '') {
+                            $.modalMsg("优惠券" + index + "的ID没有配置", "error");
+                            isquitsave = true;
+                            return;
+                        }
+                    }
+                    else if (imgurl == '&nbsp;' || imgurl == '') {
+                        if (splitcouponText != '&nbsp;' && splitcouponText != '') {
+                            $.modalMsg("优惠券" + index + "的图片没有配置", "error");
+                            isquitsave = true;
+                            return;
+                        }
+                    }
+                    var model = {
+                        CouponId: splitcouponText,
+                        CouponImage: imgurl
+                    };
+                    submitinfo.push(model);
+                }
+
+                var height = '';
+                var isquitsave = false;
+                imginfoarray.forEach(function (item) {
+                    if (height == '') {
+                        height = item.height;
+                    }
+                    else {
+                        if (height != item.height) {
+                            $.modalMsg("图片高度不一致", "error");
+                            isquitsave = true;
+                            return;
+                        }
+                    }
+                    if (configcount == 2) {
+                        if (item.width != 976) {
+                            $.modalMsg("图片宽度必须是976", "error");
+                            isquitsave = true;
+                            return;
+                        }
+                    }
+                    if (configcount == 3) {
+                        if (item.width != 481) {
+                            $.modalMsg("图片宽度必须是481", "error");
+                            isquitsave = true;
+                            return;
+                        }
+                    }
+                    if (configcount == 4) {
+                        if (item.width != 315) {
+                            $.modalMsg("图片宽度必须是315", "error");
+                            isquitsave = true;
+                            return;
+                        }
+                    }
+                    if (configcount >= 5) {
+                        if (item.width != 238) {
+                            $.modalMsg("图片宽度必须是238", "error");
+                            isquitsave = true;
+                            return;
+                        }
+                    }
+                });
+                if (configcount < 2) {
+                    $.modalMsg("至少配置2张优惠券", "error");
+                    return;
+                }
+                if (isquitsave) {
+                    return;
+                }
+                formData.JsonContent = JSON.stringify(submitinfo);
+            }
+
+            if (formData.Type == 25) {
+                var jsonarray = [];
+                var configcount = 0;
+                for (var index = 1; index <= 5; index++) {
+                    var form = $('#form' + n);
+
+                    var tdid = 'articlelinkTd' + index;
+                    var tdinfo = $('#articlelinkTd' + index, form);
+                    var text = $("input[name='ArticleLinkText']", tdinfo).val();
+                    var icon = $("#Image" + index, tdinfo).val();
+                    var h5url = $("input[name='ArticleLinkTextH5Url']", tdinfo).val();
+                    var wxurl = $("input[name='ArticleLinkTextWxUrl']", tdinfo).val();
+                    //if (h5url != '' && wxurl != '') {
+                    //    if (text == '' || text == undefined) {
+                    //        $.modalMsg("文字链" + index + "的文字不能为空", "error");
+                    //        return;
+                    //    } else {
+                    //        configcount++;
+                    //    }
+                    //}
+
+
+
+                    if ((h5url != '' || wxurl != '') && (text == '' || text == undefined)) {
+                        $.modalMsg("文字链" + index + "的文字不能为空", "error");
+                        return;
+                    } else {
+                        if ((icon != '' || icon != '') && (text == '' || text == undefined)) {
+                            $.modalMsg("文字链" + index + "的文字不能为空", "error");
+                            return;
+                        }
+                    }
+                    if (text != '' && text != undefined) {
+                        configcount++;
+                    }
+                    if (icon != '') {
+                        if (text.length > 7) {
+                            $.modalMsg("文字链" + index + "的文字不能超过七个字", "error");
+                            return;
+                        }
+                    } else {
+                        if (text.length > 8) {
+                            $.modalMsg("文字链" + index + "的文字不能超过八个字", "error");
+                            return;
+                        }
+                    }
+                    var model = {
+                        Test: text,
+                        Icon: icon,
+                        H5Url: h5url,
+                        WxUrl: wxurl
+                    };
+                    jsonarray.push(model);
+                }
+                if (configcount < 1) {
+                    $.modalMsg("请配置至少一条文字链", "error");
+                    return;
+                }
+
+
+                formData.JsonContent = JSON.stringify(jsonarray);
+
+            }
+            if (formData.Type == 30) {
+
+                //$("#form" + n)
+                // $('input[name="OthersType"]:checked', '#form' + n).val();
+                formData.ActivityType = $("input[name='ActivityType']:checked", "#form" + n).val();
+                if (formData.ProductType == "-1" && formData.ActivityType == "0") {
+                    $.modalMsg("至少配置一个商品筛选条件", "error");
+                    return;
+                }
+
+
+
+                if (formData.ActivityType == "1") {
+                    formData.ActivityID = $("#ProductPoolActiveId", "#form" + n).val();
+                } else {
+                    formData.ActivityID = "";
+                }
+
+                if (formData.ActivityID == '' && (formData.Brand == '' || formData.Brand == '&nbsp;')) {
+                    $.modalMsg("活动id或品牌不能同时为空", "error");
+                    return;
+                }
+                formData.VehicleLevel = $("input[name='VehicleLevel']:checked", "#form" + n).val();
+                var RowLimit = $("input[name='RowLimit']:checked", "#form" + n).val();
+                if (RowLimit != '0') {
+                    RowLimit = $("#RowLimitValue", "#form" + n).val();
+                }
+                formData.RowLimit = RowLimit;
+            }
+
+            if (formData.Type == 29) {
+                if (!formData.vehicliedefaultImage || formData.vehicliedefaultImage == '' || formData.vehicliedefaultImage == '&nbsp;') {
+                    $.modalMsg("默认图片不能为空", "error");
+                    return;
+                }
+                formData.Image = formData.vehicliedefaultImage;
+                //if (!formData.VehicleUrl || formData.VehicleUrl == '' || formData.VehicleUrl == '&nbsp;') {
+                //    $.modalMsg("跳转链接不能为空", "error");
+                //    return;
+                //}
+                formData.LinkUrl = formData.VehicleUrl;
+                formData.WXAPPUrl = formData.VehicleWXAPPUrl;
+                formData.IsVehicle = $("input[name='IsVehicle']:checked", "#form" + n).val() == "1" ? true : false
+                var vehiclearray = [];
+                for (var i = 1; i <= window.maxVehicleHeadImage; i++) {
+                    var brand = $("#VehicleBrand" + i, '#form' + n).val();
+                    var vehicleinfo = $("#VehicleInfo" + i, '#form' + n).val();
+                    var vehicleimage = $("#vehicleImage" + i, '#form' + n).val();
+
+                    if (brand != '') {
+                        if (vehicleinfo == '') {
+                            $.modalMsg("车型不能为空", "error");
+                            return;
+                        }
+                        if (vehicleimage == '') {
+                            $.modalMsg("车型图片不能为空", "error");
+                            return;
+                        }
+                    }
+                    else if (vehicleimage != '') {
+                        if (brand == '' || vehicleimage == '') {
+                            $.modalMsg("车型不能为空", "error");
+                            return;
+                        }
+                    }
+                    var model = {
+                        Value: brand,
+                        Value1: vehicleinfo,
+                        Value2: vehicleimage,
+                        FormIndex: n,
+                        GroupId: formData.GROUP
+                    }
+                    vehiclearray.push(model);
+                }
+                formData.JsonContent = JSON.stringify(vehiclearray);
+
+            }
+
+            array.push(formData);
+        }
+
+        $.submitForm({
+            url: "/Activity/ActivityUnity/SubmitContent?keyValue=" + keyValue,
+            param: {
+                list: JSON.stringify(array),
+                keyValue: keyValue,
+                copy: $.request("copy")
+            },
+            success: function () {
+
+                top.$.modalClose();
+                top.$("#loadingPage").css("display", "none");
+                $.currentWindow().$("#gridList").trigger("reloadGrid");
+            }
+        });
+
+
+    }
+    function SplitCouponImage(index) {
+        var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+        var form = $('#form' + activeIndex);
+
+        var tdid = 'splitcouponTd' + index;
+        var tdinfo = $('#splitcouponTd' + index, form);
+
+        $.uploadFile({
+            id: $("#splitcouponId" + index, tdinfo).attr("id"),
+            preBack: function () {
+                var size = $("#splitcouponId" + index, tdinfo)[0].files[0].size / 1024 * 1.0;
+                var fileObject = $("#splitcouponId" + index, tdinfo)[0].files[0];
+                if (fileObject.type != "image/gif") {
+                    if (size > 500) {
+                        $.modalMsg("上传的图片过大", "warning");
+                        return false;
+                    } else {
+                        return true;
+                    }
+                } else {
+                    if (size > 2048) {
+                        $.modalMsg("该图片尺寸为" + size.toFixed(2) + "KB,不要上传大于2M的图片", "warning");
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            callBack: function (res) {
+                console.log(res);
+
+                $('#imgUrl' + index, tdinfo).attr("src", res.BImage);
+                $("#Image" + index, tdinfo).val(res.BImage);
+                $("#hiddenimage").attr("src", res.BImage);
+                var image = new Image();
+                image.onload = function () {
+                    var width = this.width;
+                    var height = this.height;
+                    $("#Image" + index, tdinfo).attr('data-height', height);
+                    $("#Image" + index, tdinfo).attr('data-width', width);
+                };
+                image.src = res.BImage;
+                //setTimeout(function () {
+                //    $("#Image" + index, tdinfo).attr('data-height', $("#hiddenimage").height());
+                //    $("#Image" + index, tdinfo).attr('data-width', $("#hiddenimage").width());
+                //}, 1000);
+
+                $("#splitcouponId" + index, tdinfo).val('');
+                $("#splitcouponId" + index, tdinfo).next().val('');
+            },
+            complete: function () {
+                $("#splitcouponId" + activeIndex, tdinfo).on("change", fileImage);
+            }
+        });
+    }
+
+
+    function ArticleLinkImage(index) {
+        var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+        var form = $('#form' + activeIndex);
+
+        var tdid = 'articlelinkTd' + index;
+        var tdinfo = $('#articlelinkTd' + index, form);
+        $.uploadFile({
+            id: $("#ArticleLinkImageId" + index, tdinfo).attr("id"),
+            preBack: function () {
+                var size = $("#ArticleLinkImageId" + index, tdinfo)[0].files[0].size / 1024 * 1.0;
+                var fileObject = $("#ArticleLinkImageId" + index, tdinfo)[0].files[0];
+                if (fileObject.type != "image/gif") {
+                    if (size > 500) {
+                        $.modalMsg("上传的图片过大", "warning");
+                        return false;
+                    } else {
+                        return true;
+                    }
+                } else {
+                    if (size > 2048) {
+                        $.modalMsg("该图片尺寸为" + size.toFixed(2) + "KB,不要上传大于2M的图片", "warning");
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            callBack: function (res) {
+                console.log(res);
+                var image = new Image();
+                image.onload = function () {
+                    var width = this.width;
+                    var height = this.height;
+                    if (width != 54 || height != 54) {
+                        $.modalMsg("Icon尺寸只能是54*54", "warning");
+                    }
+                    else {
+                        $('#imgUrl' + index, tdinfo).attr("src", res.BImage);
+                        $("#Image" + index, tdinfo).val(res.BImage);
+                        $("#hiddenimage").attr("src", res.BImage);
+                        $("#ArticleLinkImageId" + index, tdinfo).val('');
+                        $("#ArticleLinkImageId" + index, tdinfo).next().val('');
+                    }
+                };
+                image.src = res.BImage;
+
+            },
+            complete: function () {
+                $("#ArticleLinkImageId" + activeIndex, tdinfo).on("change", fileImage);
+            }
+        });
+    }
+
+
+
+    function fileImage() {
+        var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+        var form = $('#form' + activeIndex);
+        var type = $("#imageFile" + activeIndex, form).data("type");
+        if (type == "image") {
+            $.uploadFile({
+                id: $("#imageFile" + activeIndex, form).attr("id"),
+                preBack: function () {
+                    var size = $("#imageFile" + activeIndex, form)[0].files[0].size / 1024 * 1.0;
+                    var fileObject = $("#imageFile" + activeIndex, form)[0].files[0];
+                    if (fileObject.type != "image/gif") {
+                        if (size > 500) {
+                            $.modalMsg("上传的图片过大", "warning");
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    } else {
+                        if (size > 2048) {
+                            $.modalMsg("该图片尺寸为" + size.toFixed(2) + "KB,不要上传大于2M的图片", "warning");
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }
+                },
+                callBack: function (res) {
+                    // console.log(res);
+                    var RowType = parseInt($.request("RowType"));
+                    if (RowType == 8) {
+                        var image = new Image();
+                        image.onload = function () {
+                            var width = this.widht;
+                            var height = this.height;
+                            if (width != 255 && height != 255) {
+                                $.modalMsg("请上传255*255的图片", "warning");
+                            }
+                            else {
+                                $('#imgUrl', form).attr("src", res.BImage);
+                                $("#Image", form).val(res.BImage);
+                                $("#IsUploading", form).attr("checked", "checked");
+                                $("#FileUrl", form).val('');
+                                $("#FileUrl").next().val('');
+                            }
+                        };
+                        image.src = res.BImage;
+                    }
+                    else {
+                        $('#imgUrl', form).attr("src", res.BImage);
+                        $("#Image", form).val(res.BImage);
+                        $("#IsUploading", form).attr("checked", "checked");
+                        $("#FileUrl", form).val('');
+                        $("#FileUrl").next().val('');
+                    }
+
+                },
+                complete: function () {
+                    $("#imageFile" + activeIndex, form).on("change", fileImage);
+                }
+            });
+        } else if (type == "video") {
+            $.uploadFileAll({
+                id: $("#videoFile" + activeIndex, form).attr("id"),
+                preBack: function () {
+                    return true;
+                },
+                callBack: function (res) {
+                    console.log(res);
+                    if (res.Code == 1) {
+                        $('#LinkUrl', form).val(res.File);
+                    }
+                },
+                complete: function () {
+                    $("#videoFile" + activeIndex, form).on("change", fileImage);
+                }
+            });
+        }
+
+    }
+
+    function isActivity() {
+        var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+        var form = $('#form' + activeIndex);
+        var pid = $('#PID', form).val();
+        var guid = $(this, form).val();
+
+        if (guid && pid) {
+            $.ajax({
+                type: 'post',
+                url: '/ActivityV2/ActivityValidate',
+                data: { activity: guid, pid: pid },
+                success: function (result) {
+                    result = JSON.parse(result);
+                    if (!result.status) {
+                        $.modalMsg("限时抢购GUID不存在，请重新输入", "warning");
+                        $("#ActivityID", form).val('');
+                    }
+                },
+                error: function () {
+                    $.modalMsg("限时抢购GUID不存在，请重新输入", "warning");
+                    $("#ActivityID", form).val('');
+                }
+            })
+        }
+    }
+    function Setsplitcoupon(form, content) {
+        var models = JSON.parse(content);
+        for (var index = 1; index <= 15; index++) {
+
+            var tdid = 'splitcouponTd' + index;
+            var tdinfo = $('#splitcouponTd' + index, form);
+            if (index - 1 <= models.length) {
+                var model = models[index - 1];
+                if (model) {
+                    $("input[name='splitcouponText']", tdinfo).val(model.CouponId);
+                    $("#Image" + index, tdinfo).val(model.CouponImage);
+                    $('#imgUrl' + index, tdinfo).attr("src", model.CouponImage);
+
+                    var image = new Image();
+                    image.onload = function () {
+                        var width = this.width;
+                        var height = this.height;
+                        tdinfo = $('#splitcouponTd' + this.index, form);
+
+                        $("#Image" + this.index, tdinfo).attr('data-height', height);
+                        $("#Image" + this.index, tdinfo).attr('data-width', width);
+                    };
+                    image.src = model.CouponImage;
+                    image.index = index;
+                }
+            }
+        }
+    }
+    function SetArticleLink(form, content) {
+
+        //var form = $('#form' + n);
+        //debugger;
+        //var tdid = 'articlelinkTd' + index;
+        //var tdinfo = $('#articlelinkTd' + index, form);
+        //var text = $("input[name='ArticleLinkText']", tdinfo).val();
+        //var icon = $("#Image" + index, tdinfo).val();
+        //var h5url = $("input[name='ArticleLinkTextH5Url']", tdinfo).val();
+        //var wxurl = $("input[name='ArticleLinkTextWxUrl']", tdinfo).val();
+        var models = JSON.parse(content);
+        if (models) {
+            for (var index = 1; index <= 5; index++) {
+                var model = models[index - 1];
+                var tdid = 'articlelinkTd' + index;
+                var tdinfo = $('#articlelinkTd' + index, form);
+                $("input[name='ArticleLinkText']", tdinfo).val(model.Test);
+                $("#Image" + index, tdinfo).val(model.Icon);
+                $('#imgUrl' + index, tdinfo).attr("src", model.Icon);
+                $("input[name='ArticleLinkTextH5Url']", tdinfo).val(model.H5Url);
+                $("input[name='ArticleLinkTextWxUrl']", tdinfo).val(model.WxUrl);
+            }
+        }
+    }
+
+    function loopActive(form) {
+        var formIndex = 0;
+        for (var i = 1; i <= number; i++) {
+            var newForm = $("#form" + i);
+            var key = $("#PKID", newForm).val();
+            if (key == pkid) {
+                console.log("key:", key, "i:", i);
+                formIndex = i;
+            }
+            $('#tabHeader li').each(function (e) {
+                var href = $(this).find("a").attr("href");
+                if (href == "#" + i) {
+                    $('#tabHeader li').each(function (index, ee) {
+                        $(this).removeClass("active");
+                        $("#" + (index + 1)).removeClass("active");
+
+                    });
+                    $(this).addClass("active");
+                    $("#" + i).addClass(" in active");
+                    $("#Type", form).trigger("change");
+                }
+            });
+        }
+        //设置选中的来激活
+        for (var j = 1; j <= number; j++) {
+            $('#li' + j).removeClass("active");
+            $("#" + j).removeClass(" in active");
+        }
+        $('#li' + formIndex).addClass("active");
+        $("#" + formIndex).addClass(" in active");
+    }
+
+    function ValidateCID() {
+        var value = $(this).val();
+        var obj = $(this);
+        if (value) {
+            $.ajax({
+                url: '/ActivityV2/CouponVlidate',
+                dataType: "json",
+                type: "post",
+                data: {
+                    "couponRulePKID": value
+                },
+                success: function (res) {
+                    $.modalMsg("名称：" + res.Name + "描述:" + res.Description, "warning")
+                },
+                error: function () {
+                    $.modalMsg("优惠券未查询到请重新输入", "warning");
+                    obj.val("");
+                }
+            })
+        }
+    }
+
+    function ProductTypeChange() {
+        if ($("#tabHeader .active").find("a") && $("#tabHeader .active").find("a").attr("href")) {
+
+            var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+            var form = $('#form' + activeIndex);
+            var value = $(this).val();
+
+            //Brand
+            if (value == "-1") {
+                $(".productpoolbrand", form).hide();
+            }
+            else {
+                $(".productpoolbrand", form).show();
+            }
+
+            $('#Brand' + ' option', form).each(function () {
+                if ($(this).val() != '') {
+                    $(this).remove();
+                }
+            });
+            if (value != '-1') {
+                var type = '';
+                if (value == "0") {
+                    type = 'tires';
+                }
+                else if (value == "1") {
+                    type = 'AutoProduct';
+                }
+                else if (value == "2") {
+                    type = 'hub';
+                }
+                if (type != '') {
+                    $.ajax({
+                        url: '/Activity/ActivityUnity/SelectProductBrandsByCategory',
+                        dataType: "json",
+                        type: 'GET',
+                        data: { 'category': type },
+                        async: false,
+                        success: function (data) {
+                            console.log(data);
+                            if (data.code == 1) {
+                                $.each(data.data, function (index, option) {
+                                    $("#Brand", form).append("<option value='" + option + "'>" + option + "</option>")
+                                })
+                            }
+                        }
+                    }
+                    )
+                }
+            }
+        }
+    }
+
+    function ProductPoolActiveIdChange() {
+        var target = $(this);
+        var value = $(this).val();
+        if (value && value != '') {
+            $.ajax({
+                url: '/Activity/ActivityUnity/SelectFlashSaleDataByActivityID',
+                dataType: "json",
+                //async: false,
+                data: {
+                    activityid: value
+                },
+                success: function (data) {
+                    if (data != "1") {
+                        $.modalMsg("找不到该活动ID", "warning");
+                        target.val("");
+                        $(".productpoolDisplayWay").hide();
+                    } else {
+                        $(".productpoolDisplayWay").show();
+                    }
+                }
+            });
+        }
+    }
+    function ProductPoolActiviteChange() {
+        if ($("#tabHeader .active").find("a") && $("#tabHeader .active").find("a").attr("href")) {
+
+            var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+            var form = $('#form' + activeIndex);
+            var value = $(this).val();
+            if (value == 0) {
+                $(".productpoolDisplayWay", form).hide();
+            } else {
+                $("#ProductPoolActiveId", form).trigger("change");
+            }
+        }
+    }
+
+    function initControl() {
+        $('#tabHeader').empty();
+        $("#tabContent").empty();
+        createForm();
+        $('select[name="RowType"]').val(RowType);
+        $('select[name="Type"]').on('change', setShowInput);
+        //$('input[type="file"]').on("change", fileImage);
+        $('input[name="PID"]').on("change", setProduct);
+        $('input[name="ActivityID"]').on("change", isActivity);
+        $('input[name="GROUP"]').val(group);
+        $('input[name="CID"]').on("change", ValidateCID);
+        $('select[name="ProductGroupId"]').on('change', setProductGroupPrice);
+        $(".productpoolbrand").hide();
+        $(".productpoolDisplayWay").hide();
+        $(".productpoolbrand").hide();
+        $('select[name="ProductType"]').on('change', ProductTypeChange);
+        //
+        $("#ProductPoolActiveId").on('change', ProductPoolActiveIdChange);
+        $(".ActivityTypeproductpool").on('change', ProductPoolActiviteChange);
+        //ActivityTypeproductpool
+        initByService();
+        initTips();
+        setVehicleBrand();
+        $("input", $(".splitcoupon")).each(function () {
+
+            $(this).removeClass("required");
+        });
+        if (keyValue) {
+            $.ajax({
+                url: '/Activity/ActivityUnity/GetContentForm?group=' + keyValue + "&FKActiveID=" + FKActiveID,
+                dataType: "json",
+                async: false,
+                success: function (result) {
+
+                    for (var i = 1; i <= number; i++) {
+                        var form = $("#form" + i);
+                        if (copy == "true")
+                            result[i - 1].GROUP = group;
+
+                        $("#form" + i).formSerialize(result[i - 1]);
+                        $('select[name="ProductType"]').trigger("change");
+                        $("#form" + i).formSerialize(result[i - 1]);
+                        if (result[i - 1].APPUrl) {
+                            $("#APPUrl", form).val(decodeURIComponent(result[i - 1].APPUrl));
+                        }
+                        $("#imgUrl", form).attr("src", result[i - 1].Image);
+                        if (result[i - 1].ByService) {
+                            $("#ByService", form).multipleSelect('setSelects', result[i - 1].ByService.split(","));
+                        }
+                        if (result[i - 1].Type == 25) {
+                            SetArticleLink(form, result[i - 1].JsonContent)
+                        }
+                        if (result[i - 1].Type == 26) {
+                            Setsplitcoupon(form, result[i - 1].JsonContent)
+                        }
+                        if (result[i - 1].Type == 27) {
+                            var value = result[i - 1].CountDownStyle;
+                            if (value) {
+                                $('input[name="CountDownStyle"]', form).each(function () {
+                                    var val = $(this).val();
+                                    if (val == result[i - 1].CountDownStyle) {
+                                        $(this).attr("checked", 'checked');
+                                    } else {
+                                        $(this).removeAttr("checked", 'checked');
+                                    }
+                                });
+                            }
+                        }
+                        if (result[i - 1].Type == 12) {
+                            $('input[name="OthersType"]', form).each(function () {
+                                var val = $(this).val();
+                                if (val == result[i - 1].OthersType) {
+                                    $(this).attr("checked", 'checked');
+                                } else {
+                                    $(this).removeAttr("checked", 'checked');
+                                }
+                            });
+                        }
+                        if (result[i - 1].Type == 18 || result[i - 1].Type == 20 || result[i - 1].Type == 21 || result[i - 1].Type == 28) {
+                            $("#ActivityID", form).val(result[i - 1].HashKey);
+                        }
+                        if (result[i - 1].Tips) {
+                            $('#Tips', form).multipleSelect('setSelects', result[i - 1].Tips.split(","));
+                        }
+                        console.log("123", result[i - 1])
+                        if (result[i - 1].Type == 30) {
+
+                            $('input[name="ActivityType"]', form).each(function () {
+                                var val = $(this).val();
+                                if (val == result[i - 1].ActivityType) {
+                                    $(this).attr("checked", 'checked');
+                                    $(this).trigger("change");
+                                } else {
+                                    $(this).removeAttr("checked", 'checked');
+
+                                    $(this).trigger("change");
+                                }
+                            });
+                            if (result[i - 1].ActivityType != 0) {
+                                $(".productpoolDisplayWay", form).show();
+                            } else {
+                                $(".productpoolDisplayWay", form).hide();
+                            }
+                            $("#ProductPoolActiveId", form).val(result[i - 1].ActivityID);
+                            $("#ProductPoolActiveId", form).trigger("change");
+                            $('input[name="VehicleLevel"]', form).each(function () {
+                                var val = $(this).val();
+                                if (val == result[i - 1].VehicleLevel) {
+                                    $(this).attr("checked", 'checked');
+                                } else {
+                                    $(this).removeAttr("checked", 'checked');
+                                }
+                            });
+
+                            $('input[name="RowLimit"]', form).each(function () {
+                                var val = $(this).val();
+                                if (val != 0 && result[i - 1].RowLimit != '') {
+                                    $(this).attr("checked", 'checked');
+                                    $("#RowLimitValue", form).val(result[i - 1].RowLimit);
+                                }
+                                else {
+                                    if (val == 0 && result[i - 1].RowLimit == '') {
+                                        $(this).attr("checked", 'checked');
+                                    } else {
+                                        $(this).removeAttr("checked", 'checked');
+                                    }
+                                }
+                            });
+
+
+                        }
+                        console.log("456", result[i - 1])
+                        if (result[i - 1].Type == 29) {
+                            $("#vehicliedefaultImage", form).val(result[i - 1].Image);
+                            $("#vehicliedefaultimgUrl", form).attr("src", result[i - 1].Image);
+                            $("#VehicleUrl", form).val(result[i - 1].LinkUrl);
+                            $("#VehicleWXAPPUrl", form).val(result[i - 1].WXAPPUrl);
+                            //formData.LinkUrl = formData.VehicleUrl;
+                            //formData.WXAPPUrl = formData.VehicleWXAPPUrl;
+
+
+                            //$("#IsVehicle", form).val(result[i - 1].LinkUrl);
+                            $('input[name="IsVehicle"]', form).each(function () {
+                                var val = $(this).val();
+                                var value = result[i - 1].IsVehicle ? 1 : 0;
+                                if (val == value) {
+                                    $(this).attr("checked", 'checked');
+                                } else {
+                                    $(this).removeAttr("checked", 'checked');
+                                }
+                            });
+                            // try {
+                            var configlist = JSON.parse(result[i - 1].JsonContent);
+                            for (var j = 1; j <= configlist.length; j++) {
+                                setVehicleBrand();
+                                var config = configlist[j - 1];
+                                if ((j - 1) < window.maxVehicleHeadImage) {
+
+                                } else {
+                                    addVehicleInfo();
+                                }
+
+                                $("#VehicleBrand" + j, form).val(config.Value);
+                                $("#VehicleBrand" + j, form).trigger("change");
+                                $("#VehicleInfo" + j, form).val(config.Value1);
+
+
+                                $("#vehicleImage" + j, form).val(config.Value2);
+                                $("#vehicleimgUrl" + j, form).attr("src", config.Value2);
+                            }
+                            //}
+                            //catch (err) {
+
+                            //}
+
+                        }
+                        console.log("789", result[i - 1])
+                        var pid = $('#PID', form).val();
+                        setGroupInfo(pid, result[i - 1].ProductGroupId, form);
+                        loopActive(form);
+                        //initPinTuan(result[i - 1].ProductGroupId);
+                    }
+                }
+            })
+        }
+
+
+    }
+
+    function vehicleBrandChange() {
+        var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+        var form = $('#form' + activeIndex);
+        var value = $(this).val();
+        var index = $(this).attr("data-index");
+        $('#VehicleInfo' + index + ' option', form).each(function () {
+            if ($(this).val() != '') {
+                $(this).remove();
+            }
+        });
+        if (value && value != '') {
+            $.ajax({
+                type: 'POST',
+                url: '/WheelAdapterConfig/GetVehiclesAndId',
+                data: { brand: value },
+                async: false,
+                success: function (data) {
+                    if (data) {
+                        $.each(data, function (index1, option) {
+                            $('#VehicleInfo' + index, form).append("<option value='" + option.str1 + "'>" + option.str + "</option>");
+                        })
+                    }
+                }
+            });
+
+            //$.post('/WheelAdapterConfig/GetVehiclesAndId', { brand: value }).then(function (data) {
+            //    if (data) {
+            //        $.each(data, function (index1, option) {
+            //            $('#VehicleInfo' + index, form).append("<option value='" + option.str + "'>" + option.str + "</option>");
+            //        })
+            //    }
+            //});
+        }
+    }
+
+    function setVehicleBrand() {
+        var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+        var form = $('#form' + activeIndex);
+        $.ajax({
+            type: 'POST',
+            url: '/WheelAdapterConfig/GetBrands',
+            async: false,
+            success: function (data) {
+                if (data) {
+                    $("select[name='VehicleBrand']", form).each(function (index1, item) {
+                        var s = $(item).find('option').length;
+                        if (s > 1) {
+                            console.log("123123123   " + s);
+                            return;
+                        }
+                        $.each(data, function (index2, option) {
+                            $(item).append("<option value='" + option.str + "'>" + option.str + "</option>");
+                        });
+                        $(item).on("change", vehicleBrandChange);
+                    });
+                }
+            }
+        });
+        //$.post('/WheelAdapterConfig/GetBrands').then(function (data) {
+
+        //})
+    }
+
+    //function setVehicleInfo() {
+    //    $.post('/WheelAdapterConfig/GetBrands').then(function (data) {
+    //        if (data) {
+    //            $("select[name='VehicleBrand']").each(function (index1, item) {
+
+    //                $.each(data, function (index2, option) {
+
+    //                    $(item).append("<option value='" + option.str + "'>" + option.str + "</option>");
+    //                });
+    //                $(item).on("change", vehicleBrandChange);
+    //            });
+    //        }
+    //    })
+    //}
+
+    //http://setting.tuhu.local/WheelAdapterConfig/GetBrands
+
+
+    //function initPinTuan(value) {
+
+    //    var activeIndex = $("#tabHeader .active").find("a").attr("href").substring(1, 3);
+    //    var form = $('#form' + activeIndex);
+    //    var pid = $('#PID', form).val();
+    //    setGroupInfo(pid,value);
+    //}
+    function setParameter(formId) {
+        $.modalOpen({
+            id: "setParameterForm",
+            url: "/Activity/ActivityUnity/SetParameterForm",
+            title: "设置跳转参数",
+            width: "800px",
+            height: "600px",
+            callBack: function (iframeId) {
+                var currentFrame = $.currentWindow();
+                var parameter = top.frames[iframeId].getFormParameter();
+                var form = $("#" + formId);
+                $("#APPUrl", form).val(parameter);
+            }
+        })
+    }
+
+    function initByService() {
+        $.ajax({
+            url: "/Activity/ActivityUnity/GetBaoyangProdcutJson",
+            type: "post",
+            dataType: "json",
+            async: false,
+            success: function (res) {
+                $('select[name="ByService"]').each(function () {
+                    console.log($(this))
+                    $(this).bindSelect({
+                        data: res,
+                        id: "id",
+                        text: "text"
+                    });
+                    $(this).multipleSelect();
+                });
+            }
+        })
+    }
+
+    function initTips() {
+        var data = [{
+            id: 1,
+            name: "适配"
+        }, { id: 2, name: "分期" }, { id: 3, name: "赠品" }, { id: 4, name: "安装服务" }];
+        $('select[name="Tips"]').each(function () {
+            $(this).bindSelect({
+                data: data,
+                id: "id",
+                text: "name"
+            });
+            $(this).multipleSelect({
+                selectAll: false
+            });
+        });
+    }
+
+
+    $(function () {
+        initControl();
+    })
+</script>

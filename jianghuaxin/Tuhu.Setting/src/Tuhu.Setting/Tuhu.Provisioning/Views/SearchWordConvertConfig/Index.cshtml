@@ -1,0 +1,43 @@
+﻿@{
+    ViewBag.Title = "搜索词关联配置";
+}
+
+<link href="~/Content/ProductVehicleType/css/bootstrap.v3.css" type="text/css" rel="stylesheet"/>
+
+<div class="container" style="margin-bottom: 400px">
+    <div class="row">
+        <div class="span12" style="float:left;text-align:center;margin-top:20px;"><h3>ES搜索词关联配置</h3></div>
+    </div>
+    <div class="row">
+        <div class="span12" style="float: left">
+
+            @using (Html.BeginForm("FileImport", "SearchWordConvertConfig", FormMethod.Post, new {enctype = "multipart/form-data"}))
+            {
+                <div style="width: 50%; float: left; margin-top: 20px">
+                    <fieldset id="fileUpload">
+                        <legend>上传导入Excel配置文件</legend>
+
+                        <div class="form-group">
+                            <input type="file" id="inputFile" name="files">
+                            <p class="help-block"></p>
+                            <span style="color: Red; text-align: center;">@ViewBag.error</span>
+                        </div>
+                        <input type="submit" value="上传导入" class="btn btn-success" id="btnImport"/>
+
+                    </fieldset>
+                </div>
+
+                <div style="width: 50%; float: right; margin-top: 20px;">
+                    <fieldset>
+                        <legend>下载当前配置文件</legend>
+                        <div class="form-group">
+                            @Html.ActionLink("下载excel配置模板(含当前最新配置数据)", "DownLoadFile", new { }, new { target = "_blank" })
+                        </div>
+                    </fieldset>
+                </div>
+            }
+        </div>
+    </div>
+
+</div>
+

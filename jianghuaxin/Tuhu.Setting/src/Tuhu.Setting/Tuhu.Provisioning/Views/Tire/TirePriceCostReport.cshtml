@@ -1,0 +1,600 @@
+﻿@model Tuple<IEnumerable<string>>
+@{
+    ViewBag.Title = "轮胎价格报表(含成本价)";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section head{
+    <style>
+    .title {
+    float: left;
+    }
+
+    .content {
+    clear: both;
+    }
+
+    .condition .name {
+    /*font-size: 16px;
+    font-weight: bold;*/
+    left: 0;
+    }
+
+    .right {
+    margin-left: 35px;
+    }
+
+    .condition {
+    margin-bottom: 10px;
+    }
+
+    .condition > div {
+    margin-bottom: 10px;
+    }
+
+    .condition > div label {
+    margin-top: 5px;
+    }
+
+    .condition > div label input[type=text] {
+    width: 50px;
+    }
+
+    button.select {
+    width: 200px;
+    height: 30px;
+    }
+
+    .beforetable > span, .beforetable > a {
+    margin-left: 20px;
+    }
+
+    .tuhu_self.color {
+    background-color: #8ADE94;
+    }
+
+    .tuhu_other.color {
+    background-color: #DCC8B9;
+    }
+
+    .hidden {
+    display: none;
+    }
+
+    .list {
+    width: 100%;
+    overflow-x: scroll;
+    }
+    </style>
+}
+<div class="title">
+    <h2>轮胎价格管理系统</h2>
+</div>
+<div class="content">
+    <div class="condition">
+        <div style="position:absolute;top:120px;right:50px">
+            <table style="width:500px;">
+                <tr>
+                    <td rowspan="3" style="width:100px;"> 轮胎进货价（移动平均）：</td>
+                    <td>
+                        1. 两个月内有采购单（以入库时间为准）<br />
+                        &nbsp;&nbsp;a. 5单以上且全部超过4条（不包括4条），取最近5单计算平均<br />
+                        &nbsp;&nbsp;b. 有满足4条超5单的，取最近超4条的5单计算<br />
+                        &nbsp;&nbsp;c. 其余情况，所有采购单计算平均
+                    </td>
+                </tr>
+                <tr>
+                    <td>2. 两个月内无采购单，1年内有采购单，取最近5单计算平均</td>
+                </tr>
+                <tr>
+                    <td>
+                        3. 超过1年未采购，取官网售价/1.1
+                    </td>
+                </tr>
+                <tr>
+                    <td>最近一次采购价：</td>
+                    <td>
+                        最近一年内，最后一单采购价格（以入库时间为准）
+                    </td>
+                </tr>
+                <tr>
+                    <td> 近7/30/90天销量：</td>
+                    <td>以下单时间统计，剔除汽配龙、大客户、u门店渠道</td>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <span class="name">产品名称：</span>
+            <input type="text" name="ProductName" value="" />
+
+            <span class="name right">PID：</span>
+            <input type="text" name="PID" value="" />
+        </div>
+        <div>
+            <span class="name">品牌：</span>
+            <select class="brand">
+                <option value="">所有</option>
+@foreach (var brand in Model.Item1)
+{
+                    <option value="@brand">@brand.Split('/')[0]</option>
+}
+            </select>
+
+            <span class="name right">库存状态：</span>
+            <select class="stock-status">
+                <option value="0">所有</option>
+                <option value="1">缺货</option>
+                <option value="2">多了</option>
+            </select>
+
+            <span class="name right">上架状态：</span>
+            <select class="onsale-status">
+                <option value="1">上架</option>
+                <option value="0">所有</option>
+                <option value="2">下架</option>
+            </select>
+
+
+        </div>
+        <div class="maoli-tj">
+            <input type="checkbox" value="" />
+            <span class="name">毛利额</span>
+            <select>
+                <option value="1">>=</option>
+                <option value="-1"><=</option>
+            </select>
+            <input type="text" style="width:40px" value="44" />
+        </div>
+        <div class="pcprice_per">
+            <input type="checkbox" value="" />
+            <span class="name">官网价格</span>
+            <select>
+                <option value="1">高于</option>
+                <option value="-1">低于</option>
+            </select>
+            实际指导价
+            <input type="text" style="width:40px" value="5" />%
+        </div>
+        <div class="yjx">
+            <input type="checkbox" value="" />
+            <span class="name">官网价格</span>
+            <select>
+                <option value="1">高于</option>
+                <option value="-1">低于</option>
+            </select>
+            预警线
+        </div>
+        <div class="stockcompare">
+            <input type="checkbox" value="" />
+            <span class="name">库存</span>
+            <select>
+                <option value="1">>=</option>
+                <option value="-1"><=</option>
+            </select>
+            <input type="text" style="width:40px" value="" />
+        </div>
+        <div class="zzts">
+            <input type="checkbox" value="" />
+            <span class="name">周转天数</span>
+            <select>
+                <option value="1">>=</option>
+                <option value="-1"><=</option>
+            </select>
+            <input type="text" style="width:40px" value="" />
+        </div>
+        <div>
+            <span class="name">更多条件：</span><br /><br />
+            <label><input type="radio" name="radio_1" value="0" checked />无</label><br /><br />
+            <label>
+                <input type="radio" name="radio_1" value="1" />
+                <span style="width: 20px; height: 10px; background: #CBD8DC">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                <span>自营平台售价/进货价</span>
+                <select>
+                    <option value="-1"><=</option>
+                    <option value="1">>=</option>
+                </select>
+                <input type="text" value="1" />
+            </label><br /><br />
+            <label>
+                <input type="radio" name="radio_1" value="2" />
+                <span style="width: 20px; height: 10px; background: #8ADE94">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                <span>第三方平台售价/官网价格</span>
+                <select>
+                    <option value="-1"><=</option>
+                    <option value="1">>=</option>
+                </select>
+                <input type="text" value="1" />
+            </label><br /><br />
+            <label>
+                <input type="radio" name="radio_1" value="3" />
+                <span style="width: 20px; height: 10px; background: #DCC8B9">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                <span>竞争对手价格/官网价格</span>
+                <select>
+                    <option value="-1"><=</option>
+                    <option value="1">>=</option>
+                </select>
+                <input type="text" value="1" />
+            </label>
+        </div>
+        <button class="select" onclick="Func.LoadList(1)">查询</button>
+    </div>
+    <div class="beforetable">
+        每页显示：
+        <select class="PageSize">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>条
+        <span class="data_count"></span>
+
+@*<a href="javascript:void(0)" onclick="Func.UpdatePriceBitch()">批量调整价格</a>*@
+        <a href="javascript:void(0)" onclick="Func.exportExcel()">导出</a>
+    </div>
+    <img class="loadimg" src="~/Scripts/layer/skin/default/loading-2.gif" style="margin:5% 50%;display:none;" />
+    <div class="list">
+    </div>
+
+</div>
+
+<div id="StockItem" style="display:none;">
+    <p>PID:<span class="pid"></span></p>
+    <p>产品名称：<span class="name"></span></p>
+    <table width="250"></table>
+</div>
+<div id="SaleNumItem" style="display:none;">
+    <p>PID:<span class="pid"></span></p>
+    <p>产品名称：<span class="name"></span></p>
+    <table width="400"></table>
+</div>
+<div id="UpdatePrice" style="display:none;">
+    <p>指导价：<span class="guidePrice"></span></p>
+    <p>官网价格：<input type="text" name="name" class="price" value="" />元</p>
+    <p>相比指导价((官网价-实际指导价)/实际指导价)：<span class="xiangbi"></span></p>
+</div>
+
+<div id="ApplyUpdatePrice" style="display:none;">
+    <p>该价格超过预警线，需要领导审批，审批通过后才会生效，确认修改？</p>
+    <p>申请原因：<input type="text" name="name" class="reason" value="" /></p>
+
+</div>
+<div id="UpdatePriceBitch" style="display:none;">
+    <p>
+        选择品牌：
+        <select class="brand">
+            <option value="">请选择</option>
+@foreach (var item in Model.Item1)
+            {
+                <option value="@item">@item.Split('/')[0]</option>
+}
+        </select>
+    </p>
+    <p>
+        选择花纹：
+        <select class="pattern">
+            <option value="">不限</option>
+        </select>
+    </p>
+    <p>
+        选择规格：
+        <select class="tiresize">
+            <option value="">不限</option>
+        </select>
+    </p>
+    <p>
+        价格调整：
+        <select class="addOrjian">
+            <option value="1">提价</option>
+            <option value="-1">降价</option>
+        </select>
+        <input type="text" value="" class="price" style="width:80px" />元
+    </p>
+</div>
+<div id="ZXTPrice"></div>
+<div id="ZXTCost"></div>
+<div id="YuanPCar" style="display:none;">
+</div>
+
+
+
+@section scripts{
+    <script src="~/Scripts/echarts.js"></script>
+    <script>
+    $(function () {
+    Func.LoadList(1);
+    //浏览其他页
+    $(".list").on("click", ".pager>a", function (event) {
+    event.preventDefault();
+    var url = $(this).attr("href");
+    if (url) {
+    $.post(url, function (html, status) {
+    if (status === "success") {
+    $(".list").html(html);
+    }
+    });
+    }
+    })
+    });
+
+    $(".PageSize").change(function () {
+    Func.LoadList(1);
+    });
+
+    </script>
+    <script>
+    var Func = {
+    LoadList: function (index) {
+    var ProductName = $("[name=ProductName]").val().trim(),
+    PID = $("[name=PID]").val().trim(),
+    Brand = $(".condition select.brand>option:selected").val(),
+    StockStatus = $("select.stock-status>option:selected").val(),
+    OnSaleStatus = $("select.onsale-status>option:selected").val(),
+    $radio = $("[name=radio_1]:checked"),
+    $label = $radio.parent(),
+    Type = $radio.val(),
+    Contrast,
+    MaoLiE,
+    PCPricePer,
+    MatchMaoLiE = $(".maoli-tj>select>option:selected").val(),
+    MatchPCPricePer = $(".pcprice_per>select>option:selected").val(),
+    MatchWarnLine = $(".yjx>select>option:selected").val(),
+    MatchStock,
+    MatchStockValue = $(".stockcompare>input[type=text]").val(),
+    MatchZZTS,
+    MatchZZTSValue = $(".zzts>input[type=text]").val(),
+    Proportion,
+    pageSize = $(".PageSize>option:selected").val(),
+    pageType = "seemore";
+    if ($(".maoli-tj>input[type=checkbox]").prop("checked")) {
+    MaoLiE = $(".maoli-tj>input[type=text]").val();
+    if (isNaN(MaoLiE)) {
+    alert("毛利额不合法");
+    return false;
+    }
+    MaoLiE = parseFloat(MaoLiE);
+    }
+    if ($(".pcprice_per>input[type=checkbox]").prop("checked")) {
+    PCPricePer = $(".pcprice_per>input[type=text]").val();
+    if (isNaN(PCPricePer)) {
+    alert("官网价格不合法");
+    return false;
+    }
+    PCPricePer = parseFloat(PCPricePer);
+    }
+    if ($(".stockcompare>input[type=checkbox]").prop("checked")) {
+    MatchStock = $(".stockcompare>select>option:selected").val();
+    if (!MatchStockValue.length||isNaN(MatchStockValue)) {
+    alert("库存数量不合法");
+    return false;
+    }
+    MatchStockValue = parseInt(MatchStockValue);
+    }
+    if ($(".zzts>input[type=checkbox]").prop("checked")) {
+    MatchZZTS = $(".zzts>select>option:selected").val();
+    if (!MatchZZTSValue.length||isNaN(MatchZZTSValue)) {
+    alert("周转天数数量不合法");
+    return false;
+    }
+    MatchZZTSValue = parseFloat(MatchZZTSValue);
+    }
+
+    if (!$(".yjx>input[type=checkbox]").prop("checked")) {
+    MatchWarnLine = -99;
+    }
+    if (Type > 0) {
+    Contrast = $label.find("select>option:selected").val();
+    Proportion = $label.find("[type=text]").val();
+    if (isNaN(Proportion)) {
+    alert("更多条件中相对比的值不合法");
+    return false;
+    }
+    Proportion = parseFloat(Proportion);
+    }
+
+    $.get("/Tire/PriceProductList", {
+    ProductName: ProductName,
+    PID: PID,
+    Brand: Brand,
+    StockStatus: StockStatus,
+    OnSaleStatus: OnSaleStatus,
+    Type: Type,
+    Contrast: Contrast,
+    Proportion: Proportion,
+    MaoLiE: MaoLiE,
+    MatchMaoLiE: MatchMaoLiE,
+    PCPricePer: PCPricePer,
+    MatchPCPricePer: MatchPCPricePer,
+    MatchStock: MatchStock,
+    MatchStockValue: MatchStockValue,
+    MatchZZTS: MatchZZTS,
+    MatchZZTSValue: MatchZZTSValue,
+    pageSize: pageSize,
+    MatchWarnLine: MatchWarnLine,
+    pageIndex: index,
+    pageType:pageType
+    }, function (html, status) {
+    if (status === "success") {
+    $(".loadimg").hide();
+    $(".list").html(html);
+    $(".data_count").text('共' + ($(".table").length ? $(".table").attr("data-count") : 0) + '条数据');
+    }
+    });
+    },
+    formatCurrency: function (num) {
+    num = num.toString().replace(/\$|\,/g, '');
+    if (isNaN(num))
+    num = "0";
+    sign = (num == (num = Math.abs(num)));
+    num = Math.floor(num * 100 + 0.50000000001);
+    cents = num % 100;
+    num = Math.floor(num / 100).toString();
+    if (cents < 10)
+    cents = "0" + cents;
+    for (var i = 0; i < Math.floor((num.length - (1 + i)) / 3) ; i++)
+    num = num.substring(0, num.length - (4 * i + 3)) + ',' +
+    num.substring(num.length - (4 * i + 3));
+    return (((sign) ? '' : '-') + num + '.' + cents);
+    },
+    LookStock: function (pid, name, totalStock, selfStock) {
+
+    $.get("/Tire/GetStock", { pid: pid }, function (data) {
+    if (data && data.length) {
+    $("#StockItem .pid").text(pid);
+    $("#StockItem .name").text(name);
+    var html = '<tr><th>仓库</th><th>库存数量</th></tr>';
+    html += '<tr><td>安全库存</td><td>' + selfStock + '</td></tr><tr><td>库存</td><td>' + totalStock + '</td></tr>';
+    $.each(data, function (i, v) {
+    html += '<tr>';
+    html += '<td>' + v.warehousename + '</td>';
+    html += '<td>' + (v.stocknum == null ? '-' : v.stocknum) + '</td>';
+    html += '</tr>';
+    });
+    $("#StockItem table").html(html);
+    $("#StockItem").dialog({
+    title: "库存明细",
+    width: 300,
+    height: 500,
+    modal: true,
+    });
+
+    }
+    else
+    alert("无分仓信息！");
+    });
+
+    },
+    LookSaleNum: function (pid, name, week, month, threemonth, totalStock, selfStock) {
+
+    $.get("/Tire/GetStock", { pid: pid }, function (data) {
+    if (data && data.length) {
+    $("#SaleNumItem .pid").text(pid);
+    $("#SaleNumItem .name").text(name);
+    var html = '<tr><th>仓库</th><th>库存数量</th><th>近3月销量</th><th>近1月销量</th><<th>近1周销量</th>/tr>';
+    html += '<tr><td>总</td><td>' + totalStock + '</td><td>' + threemonth + '</td><td>' + month + '</td><td>' + week + '</td></tr>';
+    html += '<tr><td>安全库存</td><td>' + selfStock + '</td><td></td><td></td><td></td></tr>'
+    $.each(data, function (i, v) {
+    html += '<tr>';
+    html += '<td>' + v.warehousename + '</td>';
+    html += '<td>' + (v.stocknum == null ? '-' : v.stocknum) + '</td>';
+    html += '<td>' + (v.num_threemonth == null ? '-' : v.num_threemonth) + '</td>';
+    html += '<td>' + (v.num_month == null ? '-' : v.num_month) + '</td>';
+    html += '<td>' + (v.num_week == null ? '-' : v.num_week) + '</td>';
+    html += '</tr>';
+    });
+    $("#SaleNumItem table").html(html);
+    $("#SaleNumItem").dialog({
+    title: "销量明细",
+    width: 450,
+    height: 500,
+    modal: true,
+    });
+    }
+    else
+    alert("无分仓信息！");
+    });
+    },
+    ShowZXTPrice: function (pid) {
+    $("#ZXTPrice").load('/Tire/ZXTPrice?pid=' + pid);
+    $("#ZXTPrice").dialog({
+    title: "轮胎(" + pid + ")价格变动",
+    width: 1200,
+    height: 700,
+    modal: true
+    });
+    },
+    ShowZXTCost: function (pid) {
+    $("#ZXTCost").load('/Tire/ZXTCost?pid=' + pid);
+    $("#ZXTCost").dialog({
+    title: "轮胎(" + pid + ")近一年采购历史",
+    width: 1200,
+    height: 700,
+    modal: true
+    });
+    },
+    LookYuanPei: function (pid) {
+    $.get("/Tire/LookYuanPeiByPID", { pid: pid }, function (data) {
+    if (data && data.length) {
+    var html = '<table>';
+    html += '<tr><th>车型ID</th><th>第一级</th><th>第二级</th></tr>';
+    $.each(data, function (index, value) {
+    html += '<tr><td>' + value.ProductID + '</td><td>' + value.Brand.split('- ')[1] + '</td><td>' + value.Vehicle + '</td></tr>';
+    });
+    html += '</table>';
+    $("#YuanPCar").html(html);
+    $("#YuanPCar").dialog({
+    title: "原配车型",
+    width: 300,
+    height: 500,
+    modal: true,
+    });
+
+    }
+    else
+    alert("无原配车型！");
+    });
+    },
+    exportExcel: function () {
+    var ProductName = $("[name=ProductName]").val().trim(),
+    PID = $("[name=PID]").val().trim(),
+    Brand = $(".condition select.brand>option:selected").val(),
+    StockStatus = $("select.stock-status>option:selected").val(),
+    OnSaleStatus = $("select.onsale-status>option:selected").val(),
+    $radio = $("[name=radio_1]:checked"),
+    $label = $radio.parent(),
+    Type = $radio.val(),
+    Contrast,
+    MaoLiE,
+    PCPricePer,
+    MatchMaoLiE = $(".maoli-tj>select>option:selected").val(),
+    MatchPCPricePer = $(".pcprice_per>select>option:selected").val(),
+    Proportion
+    if ($(".maoli-tj>input[type=checkbox]").prop("checked")) {
+    MaoLiE = $(".maoli-tj>input[type=text]").val();
+    if (isNaN(MaoLiE)) {
+    alert("毛利额不合法");
+    return false;
+    }
+    MaoLiE = parseFloat(MaoLiE);
+    }
+    if ($(".pcprice_per>input[type=checkbox]").prop("checked")) {
+    PCPricePer = $(".pcprice_per>input[type=text]").val();
+    if (isNaN(PCPricePer)) {
+    alert("官网价格不合法");
+    return false;
+    }
+    PCPricePer = parseFloat(PCPricePer);
+    }
+
+    if (Type > 0) {
+    Contrast = $label.find("select>option:selected").val();
+    Proportion = $label.find("[type=text]").val();
+    if (isNaN(Proportion)) {
+    alert("更多条件中相对比的值不合法");
+    return false;
+    }
+    Proportion = parseFloat(Proportion);
+    }
+    window.location.href = "/Tire/ExportExcel?ProductName=" + encodeURIComponent(ProductName) + "&PID=" + PID + "&Brand=" + Brand +
+    "&StockStatus=" + StockStatus + "&OnSaleStatus=" + OnSaleStatus + "&Type=" + Type + "&Contrast=" + Contrast +
+    "&Proportion=" + Proportion + "&MaoLiE=" + MaoLiE + "&MatchMaoLiE=" + MatchMaoLiE + "&PCPricePer=" + PCPricePer + "&MatchPCPricePer=" + MatchPCPricePer;
+    //$.get("/Tire/ExportExcel", {
+    //    ProductName: ProductName,
+    //    PID: PID,
+    //    Brand: Brand,
+    //    StockStatus: StockStatus,
+    //    OnSaleStatus: OnSaleStatus,
+    //    Type: Type,
+    //    Contrast: Contrast,
+    //    Proportion: Proportion,
+    //    MaoLiE: MaoLiE,
+    //    MatchMaoLiE: MatchMaoLiE,
+    //    PCPricePer: PCPricePer,
+    //    MatchPCPricePer: MatchPCPricePer
+    //}, function (result) {
+    //});
+    },
+    };
+
+    </script>
+}
+
+

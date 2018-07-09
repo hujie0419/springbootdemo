@@ -1,0 +1,806 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity.Discovery;
+@{
+    ViewBag.Title = "发表";
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>头条发表</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="@Url.Action("Index", "Home")">首页</a>
+            </li>
+            <li>
+                <a href="@Url.Action("Index", "ArticleManage")">头条管理</a>
+            </li>
+            <li class="active">
+                <strong>发表</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-2">
+
+    </div>
+</div>
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>All form elements <small>With custom checbox and radion elements.</small></h5>                  
+                </div>
+                <div class="ibox-content">
+                    <!----表单-->
+                    <form method="post" class="form-horizontal" id="formAddArticle">
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">标题</label>
+                            <div class="col-sm-10"><input type="text" class="form-control" name="SmallTitle" id="formTitle" placeholder="标题不能为空"></div>
+                        </div>
+                        <div class="hr-line-dashed"></div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">概要</label>
+                            <div class="col-sm-10"><textarea name="Brief" class="form-control" id="formBrief" style="width:100%;resize:vertical" placeholder="概要不能为空"></textarea></div>
+                        </div>
+                        <div class="hr-line-dashed"></div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">内容</label>
+                            <div class="col-sm-10">
+                                <textarea name="ContentHtml" id="editor_id" class="form-control" style="width:100%; height:300px;visibility:hidden;"></textarea>
+                            </div>
+                        </div>
+                        <div class="hr-line-dashed"></div>
+                        <div class="form-group" id="qrCodeImg">
+                            <label class="col-sm-2 control-label">二维码图片</label>
+                            <div class="col-sm-10">
+                                <input id="_hdQRCodeImg" name="QRCodeImg" type="hidden" value="" />
+                                <input style="width:150px;" type="file" id="qrCodeImg" name="qrCodeImg" onchange="uploadPic('qrCodeImg', HandlerPicResult);" />
+                                <div id="">
+                                    <img src="" id="imgQRCodeImg" width="150" height="75" style="display:none" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hr-line-dashed"></div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">封面模式</label>
+                            <div class="col-sm-10">
+                                <label class="checkbox-inline"> <input type="radio" value="NoPicMode" name="CoverMode" checked="checked">无图模式 </label>
+                                <!--<label class="checkbox-inline"> <input type="radio" value="OnePicSmallMode" name="CoverMode"> 单图小图模式 </label>
+                <label class="checkbox-inline"><input type="radio" value="OnePicBigMode" name="CoverMode"> 单图大图模式 </label>-->
+                                <label class="checkbox-inline"><input type="radio" value="TopBigPicMode" name="CoverMode"> 单图大图宽全屏模式 </label>
+                                <!--<label class="checkbox-inline"> <input type="radio" value="ThreePicMode" name="CoverMode"> 三图模式 </label>-->
+                                <label class="checkbox-inline"> <input type="radio" value="BigPicLeftMode" name="CoverMode"> 三图宽全屏模式 </label>
+                            </div>
+                        </div>
+                        <div class="form-group" style="display:none" id="divCoverImage">
+                            <label class="col-sm-2 control-label">上传封面图片</label>
+                            <div class="col-sm-10">
+                                <input id="_hdShowImages" name="CoverImage" type="hidden" value="" />
+                                <input style="width:150px;" type="file" id="morePicture" name="morePicture" onchange="UploadBImg.UpMorePicture('morePicture', UploadBImg.AddMorePictureHTML);" />
+                                <div id="morePictureVessel">
+                                    <div style="clear:none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hr-line-dashed"></div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">作者名</label>
+                            <div class="col-sm-10">
+                                @*<input type="text" class="form-control" id="formCoverTag" name="CoverTag" placeholder="作者名2~10个字">*@
+                                <select id="formCoverTag" name="CoverTag" class="form-control m-b" style="width:20%">
+                                    @if (ViewData["AllAuthor"] != null)
+                                    {
+                                        var authorList = ViewData["AllAuthor"] as List<CoverAuthor>;
+                                        if (authorList.Count > 0)
+                                        {
+                                            foreach (CoverAuthor au in authorList)
+                                            {
+                                                <option value="@au.AuthorName">@au.AuthorName</option>
+                                            }
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="hr-line-dashed"></div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">标签</label>
+                            <div class="col-sm-10">
+                                <span id="tagCollection">
+                                    <input type="hidden" id="_hdArticleTag" value="" name="CategoryTags" />
+                                </span>
+                                <button type="button" class="btn   btn-primary" data-toggle="modal" id="btnAddTags" data-target="#myModal5">添加</button>
+                            </div>
+                        </div>
+                        <div class="hr-line-dashed"></div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">文字类目</label>
+                            <div class="col-sm-10">
+                                <select id="Category" name="Category" class="form-control m-b" style="width:20%">
+                                    <option value="1">汽车百科</option>
+                                    <option value="2">驾驶技巧</option>
+                                    <option value="3">保养秘诀</option>
+                                    <option value="4">必备车品</option>
+                                    <option value="8">精选</option>
+                                    <option value="13">虎友口碑</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">是否展示在头条</label>
+                            <div class="col-sm-10">
+                                <label class="checkbox-inline"> <input type="radio" value="false" id="radioDisShow" name="IsShowTouTiao">否 </label>
+                                <label class="checkbox-inline"><input type="radio" value="true" id="radioShow" name="IsShowTouTiao"  checked="checked"> 是 </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">是否用于发现频道</label>
+                            <div class="col-sm-10">
+                                <label class="checkbox-inline"> <input type="radio" value="false" id="radioDisFaxianShow" name="IsShowFaxian" >否 </label>
+                                <label class="checkbox-inline"><input type="radio" value="true" id="radioFaxianShow" name="IsShowFaxian" checked="checked"> 是 </label>
+                            </div>
+                        </div>
+                        <div class="hr-line-dashed"></div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">
+                                定时发布
+                            </label>
+
+                            <div class="col-sm-10">
+                                <div class="col-md-1" style="width:180px;line-height:34px"><label> <input type="checkbox" value="" id="cbIsPublish" /> 是否定时发布</label></div>
+                                <div class="col-md-2"><input type="text" placeholder="定时发布时间" onClick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm'})" class="form-control" name="PublishDateTime" style="display:none;width:200px" id="PublishDateTime"></div>
+                            </div>
+                        </div>
+                        <div class="hr-line-dashed"></div>
+                        <div class="form-group">
+                            <div class="col-sm-4 col-sm-offset-2">
+                                <input class="btn btn-primary" type="submit" value="发表" id="btnPublish" name="CreateType" onclick="return checkForm(this)" />
+                                <input class="btn btn-white" type="submit" value="存草稿" id="btnSave" name="CreateType" onclick="return checkForm(this)" />
+                                <!--<button class="btn btn-white" type="button" id="btnPreView" value="">预览</button>-->
+                                <button class="btn btn-white" type="button" onclick="location.href = '/ArticleManage/Index'">取 消</button>
+                            </div>
+                        </div>
+
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal inmodal fade" id="myModal5" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">标签选择</h4>
+            </div>
+            <div class="modal-body">
+                <!----treeview--->
+                <div class="dd" id="nestable">
+                    <ol class="dd-list">
+                        @{
+                            var tagList = ViewData["AllTags"] as List<Category>;
+                            if (tagList.Count > 0)
+                            {
+                                foreach (var item in tagList)
+                                {
+                                    <li class="dd-item" data-id="@item.Id">
+                                        <div class="dd-handle tag-cs" data-id="@item.Id">@item.Name</div>
+                                        @if (item.ChildrenCategory != null && item.ChildrenCategory.Count > 0)
+                                        {
+                                            <ol class="dd-list">
+                                                @foreach (var child in item.ChildrenCategory)
+                                                {
+                                                    <li class="dd-item" data-id="@child.Id">
+                                                        <div class="dd-handle tag-cs" data-id="@child.Id">@child.Name</div>
+                                                        @if (child.ChildrenCategory != null && child.ChildrenCategory.Count > 0)//第三级
+                                                        {
+                                                            <ol class="dd-list">
+                                                                @foreach (var child2 in child.ChildrenCategory)
+                                                                {
+                                                                    <li class="dd-item" data-id="@child2.Id">
+                                                                        <div class="dd-handle tag-cs" data-id="@child2.Id">@child2.Name</div>
+                                                                    </li>
+                                                                }
+                                                            </ol>
+                                                        }
+                                                    </li>
+                                                }
+                                            </ol>
+                                        }
+                                    </li>
+                                }
+                            }
+                        }
+                    </ol>
+                </div>
+                <!----treeview- end-->
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    @Styles.Render("~/Content/plugins/iCheck/iCheckStyles")
+<style type="text/css">
+    .ke-icon-addproduct {
+        background-image: url(/Content/kindeditor/themes/default/good.png) !important;
+        /*background-position: 0px -592px;*/
+        width: 16px;
+        height: 16px;
+    }
+    .ke-icon-addvideo {
+        background-position: 0px -528px;
+        width: 16px;
+        height: 16px;
+    }
+        .ke-icon-bigtitle {
+       background-image: url(/Content/kindeditor/themes/default/big_title.png) !important;
+        width: 16px;
+        height: 16px;
+    }
+  .ke-icon-smalltitle {
+       background-image: url(/Content/kindeditor/themes/default/small_title.png) !important;
+        width: 16px;
+        height: 16px;
+    }
+      .ke-icon-addquote {
+       background-image: url(/Content/kindeditor/themes/default/quote.png) !important;
+        width: 16px;
+        height: 16px;
+    }
+    .dd-havaSelect {
+    display: block;
+    margin: 5px 0;
+    padding: 5px 10px;
+    color: #333;
+    text-decoration: none;
+    border: 1px solid #e7eaec;
+    background: #a9a9a9;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    box-sizing: border-box;
+    }
+</style>
+}
+
+@section Scripts {
+<script src="~/Content/kindeditor/kindeditor.js"></script>
+<script src="~/Content/kindeditor/lang/zh_CN.js"></script>
+<script src="~/Content/My97DatePicker/WdatePicker.js"></script>
+<script src="~/Scripts/ajaxfileupload.js"></script>
+
+@Scripts.Render("~/plugins/iCheck")
+@Scripts.Render("~/plugins/nestable")
+@Scripts.Render("~/plugins/dropZone")
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('.i-checks').iCheck({
+                checkboxClass: 'icheckbox_square-green',
+                radioClass: 'iradio_square-green',
+            });
+            var updateOutput = function (e) {
+                var list = e.length ? e : $(e.target),
+                        output = list.data('output');
+                if (window.JSON) {
+                    output.val(window.JSON.stringify(list.nestable('serialize')));//, null, 2));
+                } else {
+                    output.val('JSON browser support required for this demo.');
+                }
+            };
+            $('#nestable').nestable({
+                group: 1
+            }).on('change', updateOutput);
+
+            // output initial serialised data
+            updateOutput($('#nestable').data('output', $('#nestable-output')));
+            //默认不展开--折叠全部
+            $('#nestable').nestable('collapseAll');
+
+            //添加标签
+            $("#btnAddTags").click(function () {
+
+                $("#nestable .tag-cs").each(function () {
+                    if (!$(this).hasClass("dd-handle")) {
+                        $(this).addClass("dd-handle");
+                    }
+                });
+
+                var tagValue = $("#_hdArticleTag").val();
+                if (tagValue != "") {
+                    var tagObj = tagValue.split("^");
+                    for (var i = 0; i < tagObj.length; i++) {
+                        if (tagObj != "") {
+                            var splits = tagObj[i].split("|");
+                            var obj = $("#nestable .dd-handle[data-id='" + splits[0] + "']");
+                            obj.removeClass("dd-handle");
+                            obj.addClass("dd-havaSelect");
+                        }
+                    }
+                }
+            });
+
+            //点击标签
+            $('#nestable').on("click",".dd-handle",function () {
+                var thisObj = $(this);
+                var tagId = thisObj.attr("data-id");
+                var tagName = thisObj.text();
+                var tagHtml = '<span><button type="button" class="btn btn-outline btn-primary">' + tagName + '</button><span style="color:red;cursor:pointer;" title="删除标签" data-id="' + tagId + '" data-name="' + tagName + '" class="deleteTag">×</span></span>';
+                $("#tagCollection").append(tagHtml);
+                var t = "^" + tagId + "|" + tagName;
+                var tagsValue = $("#_hdArticleTag").val();
+                $("#_hdArticleTag").val(tagsValue + t);
+                $("#myModal5 .modal-header").children(".close").click();//关闭
+            });
+            //删除标签
+            $("#tagCollection").on("click", ".deleteTag", function () {
+                var thisObj = $(this);
+                if (confirm("确定要删除此标签吗？")) {                    
+                    var tagId = thisObj.attr("data-id");
+                    var tagName = thisObj.attr("data-name");
+                    var t = "^" + tagId + "|" + tagName;
+                    var tagsValue = $("#_hdArticleTag").val();
+                    var tagResult = tagsValue.replace(t, "");
+                    $("#_hdArticleTag").val(tagResult);
+                    thisObj.parent().remove();
+                }
+            });
+            //是否定时发布点击
+            $("#cbIsPublish").click(function () {
+                if ($(this).is(":checked")) {
+                    $("#PublishDateTime").val("");
+                    $("#PublishDateTime").show();
+                    $("#btnPublish").val("定时发表");
+                } else {
+                    $("#PublishDateTime").val("");
+                    $("#PublishDateTime").hide();
+                    $("#btnPublish").val("发表");
+                }
+            });
+            //模式点击
+            $("#formAddArticle input[name=CoverMode]").click(function () {
+                var thisObj = $(this);
+                if (thisObj.val() == "NoPicMode") {
+                    $("#morePictureVessel").empty();
+                    $("#_hdShowImages").val("");
+                    $("#divCoverImage").hide();
+                } else {
+                    $("#divCoverImage").show();
+                }
+            });
+             //预览
+            $("#btnPreView").click(function () {
+                if (checkForm(this)) {
+                    $.ajax({
+                        cache: true,
+                        type: "POST",
+                        url: '/ArticleManage/PreView',
+                        data: $('#formAddArticle').serialize(),// 你的formid
+                        async: false,
+                        error: function (request) {
+                            alert("Connection error");
+                        },
+                        success: function (data) {
+                            if (data != "") {
+                                window.open(data);
+                            }
+                        }
+                    });
+                }
+            });
+            //离开网页事件
+            $(window).bind('beforeunload', function () {
+                return '您输入的内容尚未保存，确定离开此页面吗？';
+            });
+        });
+
+        //表单校验
+        function checkForm(obj) {          
+            //验证标题
+            var title = $("#formTitle").val();
+            if (title == "") { alert("标题不能为空"); return false; }
+            //if (title.length < 5 || title.length > 30) { alert("标题字数在5~30个字数"); return false; }
+            //验证概要
+            var brief = $("#formBrief").val();
+            if (brief == "") { alert("概要不能为空"); return false; }
+            //验证作者名
+            var coverTag = $("#formCoverTag").val();
+            if (coverTag == "") { alert("作者名不能为空"); return false; }
+            if (coverTag.length < 2 || coverTag.length > 10) { alert("作者名字数在2~10个字数"); return false; }
+            //验证封面图片
+            var coverMode = $("#formAddArticle input[name=CoverMode]").filter(":checked").val();
+            if ((coverMode == "OnePicSmallMode" || coverMode == "OnePicBigMode" || coverMode == "TopBigPicMode") && $("#_hdShowImages").val() == "") {
+                alert("请上传一张封面图"); return false;
+            }
+            if ((coverMode == "ThreePicMode" || coverMode == "BigPicLeftMode") && $("#_hdShowImages").val() == "") {
+                alert("请上传三张封面图"); return false;
+            }
+            //验证标签→至少添加一个
+            if ($("#_hdArticleTag").val() == "") {
+                alert("请至少添加一个标签"); return false;
+            }
+            //内容
+            //var content = $("#editor_id").val();
+            //if (!CheckImageValid(content)) {
+            //    return false;
+            //}
+
+            var thisObj = $(obj);
+            var flag = true;
+            //if (thisObj.val() == "定时发表") {
+            //    var publishTime = $("#PublishDateTime").val();
+            //    if (publishTime == "") {
+            //        alert("发表时间不能为空");
+            //        flag = false;
+            //    }
+            //    else {
+            //        $.ajax({
+            //            type: "post",
+            //            url: "/ArticleManage/CompareDateTime",
+            //            data: { PublishTime: publishTime },
+            //            async: false,
+            //            success: function (result) {
+            //                if (result != "ok") {
+            //                    flag = false;
+            //                    alert("定时发表时间不能小于当前时间");
+            //                }
+            //            }
+            //        });                    
+            //    }
+            //}
+            if (flag) {//解除绑定
+                $(window).unbind('beforeunload');
+            }
+            return flag;
+        }
+        //判断图片是否是image.tuhu.cn
+        function CheckImageValid(describle) {
+            var isvalid = true;
+            var domain = location.host.indexOf("tuhu.cn") >= 0 ? "tuhu.cn" : "tuhu.test";
+            var hostImg1 = "http://img." + domain;
+            var hostImg2 = "http://image." + domain;
+            var newImg = /^https:\/\/img[0-9]\.tuhu\.org/ig;
+            $(describle).find("img").each(function () {
+                var imgUrl = this.src;
+                if (!(imgUrl.indexOf(hostImg1) >= 0 || imgUrl.indexOf(hostImg2) >= 0 || newImg.test(imgUrl))) {
+                    isvalid = false;
+                    return false;
+                }
+            });
+            if (!isvalid) {
+                alert('图片链接必须以http://img.tuhu.cn或http://image.tuhu.cn开始');
+                return false;
+            } else {
+                return true;
+            }
+        }
+        //上传图片地址
+        function UploadBImg() {
+            $.ajaxFileUpload({
+                url: '/ArticleManage/ImageUploadToAli',
+                secureuri: false,
+                fileElementId: 'upPicture',
+                dataType: 'json',
+                async: false,
+                success: function (result) {
+                    if (result.BImage != "" && result.SImage != "") {
+                        $("#vwPicture").attr("src", result.SImage);
+                        $("#vwPicture").show();
+                        $("#SmallImage").val(result.SImage);
+                        $("#Image").val(result.BImage);
+                    } else {
+                        alert("上传失败！");
+                    }
+                }
+            });
+        }
+        //上传更多图片
+        UploadBImg.UpMorePicture = function (_fileElementId, _callback) {
+            $.ajaxFileUpload({
+                url: '/ArticleManage/ImageUploadToAli',
+                secureuri: false,
+                fileElementId: _fileElementId || '',
+                dataType: 'json',
+                async: false,
+                success: function (result) {
+                    _callback(result, _fileElementId);
+                }
+            });
+        }
+        //更多图片添加DOM
+        UploadBImg.AddMorePictureHTML = function (result, elementId) {
+            if (elementId == "morePicture") {
+                var _MorePictureHTML = "<span data-BImage=\"{BImage}\" data-SImage=\"{SImage}\" style=\"display:block;width:40px;float:left;margin-right:50px;margin-top:10px;\">"
+                      + "<img height=\"50\" src=\"{SImage}\"  />"
+                      + "<a href=\"javascript:void(0);\" onclick=\"UploadBImg.DelMorePicture(this);\">删除</a></span>"
+                _MorePictureHTML = _MorePictureHTML.replace(/\{SImage\}/ig, result.SImage).replace(/\{BImage\}/ig, result.BImage);
+
+                var imagesPath = $("#_hdShowImages").val();
+                $("#_hdShowImages").val(imagesPath + ";" + result.BImage);
+
+                $("#morePictureVessel").append(_MorePictureHTML);
+            } else if (elementId == "diaProImage") {
+                $("#imgProPic").show();
+                $("#imgProPic").attr("src", result.BImage);
+                $("#_hdProImage").val(result.BImage);
+            }
+        }
+        //删除上传图片
+        UploadBImg.DelMorePicture = function (obj) {
+            if (confirm("确认删除？删除后不可恢复！")) {
+                var _ojb = $(obj);
+                var bimage = _ojb.parent("span").attr("data-bimage");                
+                var imagesPath = $("#_hdShowImages").val();
+                var resultPath = imagesPath.replace(";" + bimage, "");
+                $("#_hdShowImages").val(resultPath);
+                _ojb.parent("span").remove();;
+            }
+        }
+        //上传二维码图片
+        function uploadPic(_fileElementId, _callback) {
+            $.ajaxFileUpload({
+                url: '/ArticleManage/ImageUploadToAli',
+                secureuri: false,
+                fileElementId: _fileElementId || '',
+                dataType: 'json',
+                async: false,
+                success: function (result) {
+                    _callback(result, _fileElementId);
+                }
+            });
+        }
+
+        function HandlerPicResult(result, elementId) {
+            if (elementId == "qrCodeImg") {
+                $("#imgQRCodeImg").attr("src", result.BImage);
+                $("#imgQRCodeImg").show();
+                $("#_hdQRCodeImg").val(result.BImage);
+            }       
+        }
+    </script>
+
+<script>
+        KindEditor.plugin('addproduct', function (K) {
+            var editor = this, name = 'addproduct';
+            // 点击图标时执行
+            editor.clickToolbar(name, function () {
+                var dialog = K.dialog({
+                    width: 500,
+                    height:264,
+                    title: '插入商品',
+                    body: '<div style="margin-left:30px;margin-top:10px;"><form  method="post" ><div class="ke-dialog-row"><label for="remoteUrl" style="width:60px;">商品名称</label><input type="text" class="ke-input-text" id="diaProName" value="" style="width:240px;height:24px"></div><div class="ke-dialog-row"><label for="remoteUrl" style="width:60px;">商品价格</label><input type="text" class="ke-input-text" id="diaProPrice" value="" style="width:240px;height:24px"></div><div class="ke-dialog-row"><label for="remoteUrl" style="width:60px;">商品链接</label><input type="text" class="ke-input-text" id="diaProLink" value="" style="width:240px;height:24px"></div><div class="ke-dialog-row"><label for="remoteUrl" style="width:60px;">商品图片</label><input id="_hdProImage" type="hidden" value="" /><input type="file" name="diaProImage" id="diaProImage" onchange="UploadBImg.UpMorePicture(\'diaProImage\',UploadBImg.AddMorePictureHTML);"  style="width:240px;height:24px;display: inline"></div><div class="ke-dialog-row"><label for="remoteUrl" style="width:60px;"></label><img src="" width="87" height="52" id="imgProPic" style="display:none"/></div></form></div>',
+                    closeBtn: {
+                        name: '关闭',
+                        click: function (e) {
+                            dialog.remove();
+                        }
+                    },
+                    yesBtn: {
+                        name: '确定',
+                        click: function (e) {
+                            var proName = $("#diaProName").val();
+                            var proPrice = $("#diaProPrice").val();
+                            var proLink = $("#diaProLink").val();
+                            var proImage = $("#_hdProImage").val();
+                            if (IsNull(proName)) { alert("商品名称不能为空"); return; }
+                            if (IsNull(proPrice)) { alert("商品价格不能为空"); return; }
+                            if (IsNull(proLink)) { alert("商品链接不能为空"); return; }
+                            if (IsNull(proImage)) { alert("请上传商品的图片"); return; }
+                            editor.insertHtml('<div style="position: relative;padding:15px;margin: 20px 0;" class="ke-divblock-tuhu"><i style="position:absolute;width:15px;height:15px;border-style:solid;border-color:#d9d9d9;border-width:2px 0 0 2px;top:0;left:0;"></i><i style="position:absolute;width:15px;height:15px;border-style:solid;border-color:#d9d9d9;border-width:0 2px 2px 0;right:0;bottom:0;"></i>	<div style="border: 1px solid #eee;"><img src="' + proImage + '" style="display: block;width:100%;"><div style="width:94.6%;clear:both;display:table;background-color:#fafafa;padding:10px 15px;"  class="ke-divblock-delete"><p style="color: #666;font-size: 14px;float:left;">' + proName + '<br>	<span style="color: #df3448;font-size: 16px;">¥' + proPrice + '</span>	</p><a href="' + proLink + '" style="float:right;width:75px;height:24px;border:1px solid #e74c3c;border-radius:5px;font-size:12px;color:#e74c3c;text-align:center;line-height:24px;margin-top: 3px;text-decoration: none;">查看详情</a></div></div></div>');
+                            dialog.remove();
+                        }
+                    },
+                    noBtn: {
+                        name: '取消',
+                        click: function (e) {
+                            dialog.remove();
+                        }
+                    }
+                });
+            });
+
+            editor.addContextmenu({
+                title: '删除商品',
+                click: function () {
+                    var divObj = editor.cmd.commonAncestor('div');
+                    $(divObj[0]).parent().parent().remove();
+                    editor.hideMenu();
+                },
+                cond: function () {
+                    var div_html = editor.cmd.commonAncestor('div');
+                    if (div_html && div_html.hasClass("ke-divblock-delete")) {
+                        return true;
+                    }
+                    //alert(isParent(event.target, $(".ke-divblock-tuhu")[0]));
+                    //var container = editor.edit.cmd.range.startContainer
+                    //var note = container.parentNode;
+                    //if (note.length > 0) {
+                    //    alert("正确"); return true;
+                    //} else {
+                    //    alert("错误"); return false;
+                    //}
+                    
+                    //return true;
+                    //return editor.plugin.getSelectedDivBlock(editor.edit.cmd.range, function (img) {
+                    //    return img.className == 'ke-divblock-tuhu';
+                    //});
+                },
+                width:150
+            });
+        });
+        KindEditor.plugin('addvideo', function (K) {
+            var editor = this, name = 'addvideo';
+            // 点击图标时执行
+            editor.clickToolbar(name, function () {
+                var dialog = K.dialog({
+                    width: 452,
+                    height: 250,
+                    title: '插入视频',
+                    body: '<div style="margin-left:30px;margin-top:10px;"><form  method="post" ><div class="ke-dialog-row"><input type="radio" checked="checked" class="uploadType thirdParty"  name="VideoGroup"><span>第三方视频</span><input style="margin-left:20px" type="radio" class="uploadType develop"  name="VideoGroup"><span>本地视频</span></div><div class="ke-dialog-row uploadInput" style="display:none"><label for="remoteUrl" style="width:60px;">封面图</label><input type="text" style="width:320px;height:24px"  class="ke-input-text" id="diaVideoFrame" value=""></div><div class="ke-dialog-row"><label for="remoteUrl" style="width:60px;">视频URL</label><input type="text" class="ke-input-text" id="diaVideoUrl" value="" style="width:320px;height:24px"></div><div class="ke-dialog-row"><label for="remoteUrl" style="width:60px;">宽度</label><input type="text" class="ke-input-text" id="diaVideoWidth" value="100%" style="width:80px;height:24px"></div><div class="ke-dialog-row"><label for="remoteUrl" style="width:60px;">高度</label><input type="text" class="ke-input-text" id="diaVideoHeight" value="240" style="width:80px;height:24px"></div></form></div>',
+                    closeBtn: {
+                        name: '关闭',
+                        click: function (e) {
+                            dialog.remove();
+                        }
+                    },
+                    yesBtn: {
+                        name: '确定',
+                        click: function (e) {
+                            var url = $("#diaVideoUrl").val();
+                            var frame = $("#diaVideoFrame").val();
+                            var width = $("#diaVideoWidth").val();
+                            var height = $("#diaVideoHeight").val();
+                            if ($(".develop").prop("checked")) {
+                                var html = '<br /><video src="' + url + '" width="' + width + '" height="' + height + '" controls="true" preload="auto" poster="' + frame + '"></video><br />';
+                            } else {
+                                var html = '<br /><iframe frameborder="0" width="' + width + '" height="' + height + '" src="' + url + '" allowfullscreen></iframe><br />';
+                            }
+                            editor.insertHtml(html);
+                            dialog.remove();
+                        }
+                    },
+                    noBtn: {
+                        name: '取消',
+                        click: function (e) {
+                            dialog.remove();
+                        }
+                    }
+                });
+                $(".uploadType").on("click", function () {
+                    $("#diaVideoUrl").val("");
+                    $("#diaVideoFrame").val("");
+                    if ($(".develop").prop("checked")) {
+                        $(".uploadInput").show();
+                    } else {
+                        $(".uploadInput").hide();
+                    }
+                })
+            });
+
+        });
+        KindEditor.plugin('bigtitle', function (K) {
+            var editor = this, name = 'bigtitle';
+            // 点击图标时执行
+            editor.clickToolbar(name, function () {
+                //var map = {
+                //    span: '.font-weight=bold',
+                //    strong: '*',
+                //    b: '*'
+                //};
+                //if (editor.cmd.commonNode(map)) {
+                //    editor.cmd.remove(map);
+                //} else {
+                //    editor.cmd.wrap('<strong></strong>');
+                //}
+
+                //return editor.cmd.select();
+
+
+                return editor.cmd.toggle('<p style="font-size:20px;font-weight:500;color:#333;line-height: 25px;margin-bottom: 17px;font-family:微软雅黑"></p>', {
+                    span: '.font-weight=bold',
+                    strong: '*',
+                    p: '*'
+                });
+                //editor.wrap('<strong></strong>');
+                //alert(selva);
+                //return this.toggle('<strong></strong>', {
+                //    span: '.font-weight=bold',
+                //    strong: '*',
+                //    b: '*'
+                //});
+            });
+        });
+        KindEditor.plugin('smalltitle', function (K) {
+            var editor = this, name = 'smalltitle';
+            // 点击图标时执行
+            editor.clickToolbar(name, function () {
+                return editor.cmd.toggle('<p style="font-size:18px;font-weight:500;color:#333;line-height:23px;margin-bottom:17px;font-family:微软雅黑"></p>', {
+                    span: '.font-weight=bold',
+                    strong: '*',
+                    p: '*'
+                });
+            });
+        });
+        KindEditor.plugin('addquote', function (K) {
+            var editor = this, name = 'addquote';
+            // 点击图标时执行
+            editor.clickToolbar(name, function () {
+                var dialog = K.dialog({
+                    width: 500,
+                    height: 184,
+                    title: '添加引用',
+                    body: '<div style="margin-left:10px;margin-top:10px;"><textarea  style="width:480px;height:90px;font-size:14px" id="txtQuote"></textarea></div>',
+                    closeBtn: {
+                        name: '关闭',
+                        click: function (e) {
+                            dialog.remove();
+                        }
+                    },
+                    yesBtn: {
+                        name: '确定',
+                        click: function (e) {
+                            var quote = $("#txtQuote").val();
+                            if (IsNull(quote)) { alert("引用不能为空"); return; }
+                            editor.insertHtml('<p style="border-left: 4px solid #E6E6E6;padding-left: 14px;font-size: 16px;color: #999;line-height: 26px;margin-bottom: 20px;box-sizing: border-box;">' + quote + '</p>');
+                            dialog.remove();
+                        }
+                    },
+                    noBtn: {
+                        name: '取消',
+                        click: function (e) {
+                            dialog.remove();
+                        }
+                    }
+                });
+
+            });
+        });
+        //添加自定义插件
+        KindEditor.lang({ addproduct: '添加商品', addvideo:'插入视频',bigtitle:'大标题',smalltitle:'小标题',addquote:'添加引用'});
+        KindEditor.ready(function (K) {
+            K.create('#editor_id', {
+                cssPath: '/kindEditor/plugins/code/prettify.css',
+                uploadJson: '/ArticleManage/ImageUploadToAli?from=article',//处理文件上传
+                fileManagerJson: '/ArticleManage/ImagesUploadMore',
+                resizeType: 1,
+                filterMode: false,
+                pasteType:1,
+                afterBlur: function () { this.sync(); }
+            });
+        });
+
+        function IsNull(input) {
+            return $.trim(input) == "" ? true : false;
+        }
+
+        function uploadVideo(event)
+        {
+            $("#loading").show();
+            $.ajaxFileUpload({
+                url: '/ArticleManage/UploadVideo',
+                secureuri: false,
+                fileElementId: 'fileupload',
+                dataType: 'text',
+                data: {},
+                type: 'post',
+                success: function (data) {
+                    $("#loading").hide();
+                    var data = JSON.parse(data.replace(/<\/*?pre[^<>]*>/, '').replace(/<\/*?pre[^<>]*>/, ''));
+                    if (data.url != "") {
+                        alert("上传成功");
+                        $("#diaVideoUrl").val(data.url);
+                        $("#diaVideoFrame").val(data.frame);
+                    }
+                    else
+                        alert("上传失败");
+                }
+            });
+        }
+    </script>
+}
+

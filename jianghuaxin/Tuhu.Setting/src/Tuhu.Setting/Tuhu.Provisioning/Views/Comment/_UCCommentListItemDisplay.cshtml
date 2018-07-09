@@ -1,0 +1,263 @@
+﻿@model Tuhu.Provisioning.Models.CommentItem
+@using Tuhu.Provisioning.Controls
+@using MVCControlsToolkit.Core
+@using MVCControlsToolkit.Controls
+@using System.Linq.Expressions
+@using MVCControlsToolkit.Controls.Bindings
+@using ThBiz.Common.Configurations;
+@using System.Text.RegularExpressions
+@{
+    Layout = null;
+}
+<td>@(Model.CommentChannel == 0 ? "PC端" : "手机端")</td>
+<td style="width: 60px;">
+    @if (Model.ParentComment != null)
+    {
+        <div style="color: red;">回复内容</div>
+    }
+    @Html.DisplayField(m => m.CommentUserName)
+</td>
+<td style="width: 140px;">
+    @Html.DisplayField(m => m.CreateTimeDate)
+</td>
+<td style="width: 140px;">
+    @if (Model.CommentProductId != null)
+    {
+        <a href='@Model.getProductLink(Model.CommentProductId)'>@Model.CommentProductId</a>
+    }
+    @*@Html.ActionLink(Model.CommentProductId, "Products", "www.tuhu.cn", new { id = Model.getProductLink(Model.CommentProductId) }, new { target = "_blank" })*@
+</td>
+
+<td style="width: 50px;">
+    @if (Model.CommentOrderId != null)
+    {
+        <a href="@YewuDomainConfig.YewuSite/Order/Details/@Model.CommentOrderId" target="_blank">@Model.CommentOrderId.ToString()</a>
+    }
+</td>
+<td>
+    @if (Model.CommentExtAttr != null)
+    {
+        <a href="https://www.tuhu.cn/Shop/@(Regex.Match(Model.CommentExtAttr, @"InstallShopID[^ID][\s|\S]*[-]*.*InstallShop").ToString().Replace("InstallShopID", "").Replace("InstallShop", "").Replace(":", "").Replace(",", "").Replace("\"", "")).aspx" target="_blank">
+
+            @if (Model.CommentType == 3)
+            {
+                @Model.InstallShopID
+            }
+            else
+            {
+                @Regex.Match(Model.CommentExtAttr, @"InstallShop[^ID][\s|\S]*[-]*.*testUserInfo").ToString().Replace("InstallShop", "").Replace("testUserInfo", "").Replace(":", "").Replace(",", "").Replace("\"", "");
+            }
+        </a>
+    }
+</td>
+
+@if (Model.ParentComment == null)
+{
+    <td>@Html.DisplayField(m => m.CommentR1)</td>
+    <td>@Html.DisplayField(m => m.CommentR2)</td>
+    <td>@Html.DisplayField(m => m.CommentR3)</td>
+    <td>@Html.DisplayField(m => m.CommentR4)</td>
+    <td>@Html.DisplayField(m => m.CommentR5)</td>
+    <td>@Html.DisplayField(m => m.CommentR6)</td>
+    <td>@Html.DisplayField(m => m.CommentR7)</td>
+}
+else
+{
+    <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+}
+<td>
+    @if (!string.IsNullOrWhiteSpace(Model.CommentImages))
+    {
+        foreach (var img in Model.CommentImages.Split(';'))
+        {
+            <a href="@img" target="_blank"><img src="@img" width="40" height="40"></a> }
+    }
+</td>
+<!--自动审核状态-->
+<td style="width: 60px;">
+    @if (Model.AutoApproveStatus == 1)
+    {
+        <div>自动审核通过</div>
+    }
+    else if (Model.AutoApproveStatus == 0)
+    {
+        <div>未审核</div>
+    }
+    else if (Model.AutoApproveStatus == 2)
+    {
+        <div style="color: Red;">自动审核不通过</div>
+    }
+    else if (Model.AutoApproveStatus == -1)
+    {
+        <div>自动审核中</div>
+    }
+</td>
+<!--END-->
+<td style="width: 60px;">
+    @if (Model.CommentStatus == 4)
+    {
+        <div style="color: red;">可能有敏感内容</div>
+    }
+    else if (Model.CommentStatus == 5)
+    {
+        <div style="color: red;">敏感内容已屏蔽</div>
+    }
+    <label id="@Model.CommentId" style="@(Model.CommentStatus == 1 ? "color: Red;" : "display: none;")">未审核</label>
+    <label style="@(Model.CommentStatus == 2 ? null : (Model.CommentStatus == 3?null:"display: none;"))">@(Model.CommentStatus == 2 ? "审核通过" : (Model.CommentStatus == 3 ? "仅通过打分" : ""))</label>
+    <label style="@(Model.CommentStatus == 0 ? "color: Red;" : "display: none;")">审核不通过</label>
+</td>
+<td style="width: 60px;"> <a href="/Comment/CommentDetails?CommentId=@Model.CommentId" target="_blank">详细信息</a> </td>
+<td style="width: 101px;">
+    @if (Model.AutoApproveStatus != -1)
+    {
+        if (Model.CommentType == 3)
+        {
+            if (Model.CommentStatus == 0)
+            {
+            <div>
+                <input type="button" disabled="disabled" style="display:inline-block" value="审核不通过" onclick="SetCommentStatus(this,0)" data-value="@Model.CommentId" />
+                <input type="button" style="display:inline-block" value="审核通过" onclick="SetCommentStatus(this,2)" data-value="@Model.CommentId" />
+
+            </div> }
+            else if (Model.CommentStatus == 2)
+            {
+            <div>
+                <input type="button" style="display:inline-block" value="审核不通过" onclick="SetCommentStatus(this,0)" data-value="@Model.CommentId" />
+                <input type="button" disabled="disabled" style="display:inline-block" value="审核通过" onclick="SetCommentStatus(this,2)" data-value="@Model.CommentId" />
+            </div>
+            }
+            else
+            {
+            <div>
+                <input type="button" style="display:inline-block" value="审核不通过" onclick="SetCommentStatus(this,0)" data-value="@Model.CommentId" />
+                <input type="button" style="display:inline-block" value="审核通过" onclick="SetCommentStatus(this,2)" data-value="@Model.CommentId" />
+            </div>
+            }
+        }
+        else if (Model.CommentStatus == 0)
+        {
+        <div>
+            <input type="button" disabled="disabled" style="display:inline-block" value="审核不通过" onclick="SetCommentStatus(this,0)" data-value="@Model.CommentId" />
+            <input type="button" style="display:inline-block" value="审核通过" onclick="SetCommentStatus(this,2)" data-value="@Model.CommentId" />
+            <input type="button" style="display:inline-block" value="仅打分" onclick="SetCommentStatus(this,3)" data-value="@Model.CommentId" />
+        </div>
+        }
+        else if (Model.CommentStatus == 1)
+        {
+        <div>
+            <input type="button" style="display:inline-block" value="审核不通过" onclick="SetCommentStatus(this,0)" data-value="@Model.CommentId" />
+            <input type="button" style="display:inline-block" value="审核通过" onclick="SetCommentStatus(this,2)" data-value="@Model.CommentId" />
+            <input type="button" style="display:inline-block" value="仅打分" onclick="SetCommentStatus(this,3)" data-value="@Model.CommentId" />
+        </div>
+        }
+        else if (Model.CommentStatus == 4)
+        {
+        <div>
+            <input type="button" style="display:inline-block" value="无敏感内容" onclick="SetCommentStatus(this,1)" data-value="@Model.CommentId" />
+            <input type="button" style="display:inline-block" value="有敏感内容" onclick="SetCommentStatus(this,5)" data-value="@Model.CommentId" />
+        </div>
+        <div style="display: none;">
+            <input type="button" style="display:inline-block" value="审核不通过" onclick="SetCommentStatus(this,0)" data-value="@Model.CommentId" />
+            <input type="button" style="display:inline-block" value="审核通过" onclick="SetCommentStatus(this,2)" data-value="@Model.CommentId" />
+            <input type="button" style="display:inline-block" value="仅打分" onclick="SetCommentStatus(this,3)" data-value="@Model.CommentId" />
+        </div>
+        }
+        else if (Model.CommentStatus == 2)
+        {
+        <div>
+            <input type="button" style="display:inline-block" value="审核不通过" onclick="SetCommentStatus(this,0)" data-value="@Model.CommentId" />
+            <input type="button" disabled="disabled" style="display:inline-block;" value="审核通过" onclick="SetCommentStatus(this,2)" data-value="@Model.CommentId" />
+            <input type="button" style="display:inline-block" value="仅打分" onclick="SetCommentStatus(this,3)" data-value="@Model.CommentId" />
+        </div>
+        }
+        else if (Model.CommentStatus == 3)
+        {
+        <div>
+            <input type="button" style="display:inline-block" value="审核不通过" onclick="SetCommentStatus(this,0)" data-value="@Model.CommentId" />
+            <input type="button" style="display:inline-block;" value="审核通过" onclick="SetCommentStatus(this,2)" data-value="@Model.CommentId" />
+            <input type="button" disabled="disabled" style="display:inline-block" value="仅打分" onclick="SetCommentStatus(this,3)" data-value="@Model.CommentId" />
+        </div>
+        }
+    }
+</td>
+<td>
+    @if (Model.ComplaintItems != null)
+    {
+        <span id="@(Model.CommentId)_span">
+            @for (var i = 0; i < Model.ComplaintItems.Split('|').Length; i++)
+            {
+                @Model.ComplaintItems.Split('|')[i]
+                <br />
+            }
+            <a onclick="openDilag(this)" style="cursor:pointer;text-decoration:none" data-key="@Model.CommentId">&nbsp;&nbsp;&nbsp;<span>修改</span></a>
+            <a onclick="DeleteComplaintItem(this)" style="cursor:pointer;text-decoration:none" data-key="@Model.CommentId">&nbsp;&nbsp;&nbsp;<span>删除</span></a>
+        </span>
+    }
+    else
+    {
+        <span id="@(Model.CommentId)_span">
+            <input type="button" value="创建投诉类型" id="@(Model.CommentId)_button" onclick="openDilag(this)" data-key="@Model.CommentId" />
+        </span>
+    }
+</td>
+
+
+<td rowspan="@(Model.CommentType == 2 ? "3" : "2")">
+    @if (string.IsNullOrWhiteSpace(Model.OfficialReply))
+    {
+        <div class="text@(Model.CommentId)" style="display: @(Model.CommentStatus == 2 ? null : "none")">
+            <textarea style="min-height:40px;height:40px;" class="replay@(Model.CommentId)"></textarea>
+            <input type="button" value="回复" onclick="OfficialReply(this)" data-value="@Model.CommentId" id="@(Model.CommentId)_ReplyNon_Button"/>
+            <input type="button" value="修改" style="display: none" onclick="UpdateOfficialReplyNon(this)" data-value="@Model.CommentId" id="@(Model.CommentId)_ReplyUpdateNon_Button" />
+            <input type="button" value="保存" style="display: none" onclick="SaveOfficialReplyNon(this)" data-value="@Model.CommentId" id="@(Model.CommentId)_ReplySaveNon_Button" />
+            <input type="button" value="取消" style="display: none" onclick="CancelOfficialReplyNon(this)" data-value="@Model.CommentId" id="@(Model.CommentId)_ReplyCancelNon_Button" />
+            <input type="hidden" id="@(Model.CommentId)_hidden_non" value="" />
+        </div>
+    }
+    else
+    {
+        <div class="text@(Model.CommentId)" style="display: @(Model.CommentStatus == 2 ? null : "none")">
+            <textarea id="@(Model.CommentId)_textarea" readonly="true" style="min-height:40px;height:40px;background:transparent;border:none;overflow: hidden;resize: none;" class="replay@(Model.CommentId)">@Model.OfficialReply</textarea>
+            <input type="button" value="修改" onclick="UpdateOfficialReply(this)" data-value="@Model.CommentId" id="@(Model.CommentId)_ReplyUpdate_Button"/>
+            <input type="button" value="保存" style="display: none" onclick="SaveOfficialReply(this)" data-value="@Model.CommentId" id="@(Model.CommentId)_ReplySave_Button" />
+            <input type="button" value="取消" style="display: none" onclick="CancelOfficialReply(this)" data-value="@Model.CommentId" id="@(Model.CommentId)_ReplyCancel_Button"/>
+            <input type="hidden" id="@(Model.CommentId)_hidden" value=""/>
+        </div>
+    }
+</td>
+<td><a href="javascript:void(0)" onclick="javascript: LookOpr(@Model.CommentId)">查看操作历史</a></td>
+</tr>
+<tr>
+    @if (Model.CommentType == 3)
+    {
+        <th>用户信息：</th>
+        <td colspan="20" style="text-align: left;">@Model.CommentExtAttr</td>
+        @:
+        }
+</tr>
+<tr>
+
+    @if (Model.CommentType != 1)
+    {
+        <th>标题：</th>
+        <td colspan="20" style="text-align: left;">@Model.SingleTitle</td>
+        @:
+        }
+</tr>
+<tr>
+
+    <th>内容：</th>
+    <td colspan="20" style="text-align: left;">
+        @if (Model.CommentStatus == 4)
+        {
+            <div style="color: red;">可能有敏感内容</div>}
+        else if (Model.CommentStatus == 5)
+        {
+            <div style="color: red;">已屏蔽敏感内容</div>}
+        <span id="@(Model.CommentId)comentContent">@Model.CommentContent</span>
+    </td>
+
+</tr>
+<tr>
+    <td colspan="20">&nbsp;</td>
+</tr>

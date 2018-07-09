@@ -1,0 +1,820 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C3F1B986-5567-4DD7-A05F-C9C39AD4A71D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Tuhu.Provisioning.DataAccess</RootNamespace>
+    <AssemblyName>Tuhu.Provisioning.DataAccess</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autofac, Version=4.1.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.4.1.0\lib\net45\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Dapper, Version=1.50.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Dapper.1.50.2\lib\net451\Dapper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Elasticsearch.Net, Version=2.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
+      <HintPath>..\packages\Elasticsearch.Net.2.4.4\lib\net46\Elasticsearch.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Nest, Version=2.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
+      <HintPath>..\packages\NEST.2.4.4\lib\net46\Nest.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Tuhu.Component.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Tuhu.Provisioning\Lib\Tuhu.Component.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Component.Framework, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Tuhu.Provisioning\Lib\Tuhu.Component.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Framework, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\DLL\Tuhu.Framework.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DalVipCard.cs" />
+    <Compile Include="DAO\BaoYang\DalBattery.cs" />
+    <Compile Include="DAO\BaoYang\DalBaoYangInstallTypeConfig.cs" />
+    <Compile Include="DAO\BeautyYearCardDao\DalBeautyYearCardConfig.cs" />
+    <Compile Include="DAO\CarsAffairs\DalCarsAffairs.cs" />
+    <Compile Include="DAO\DalABTestPlatform.cs" />
+    <Compile Include="DAO\DalBaoYangInstallFeeConfig.cs" />
+    <Compile Include="DAO\BeautyServicePackage\BankMRActivityDal.cs" />
+    <Compile Include="DAO\BeautyServicePackage\BeautyServicePackageDal.cs" />
+    <Compile Include="DAO\CompetingProductsMonitor\CompetingProductsMonitorDAL.cs" />
+    <Compile Include="DAO\DalBaoYangOilViscosityPriorityConfig.cs" />
+    <Compile Include="DAO\DalBaoYangPackageTypeRelation.cs" />
+    <Compile Include="DAO\DALCarProductFlagshipStoreConfig.cs" />
+    <Compile Include="DAO\DalCategoryBrandRank.cs" />
+    <Compile Include="DAO\DALCommonConfigLog.cs" />
+    <Compile Include="DAO\DalCreateOrder.cs" />
+    <Compile Include="DAO\DalDictionary.cs" />
+    <Compile Include="DAO\DalFaqManage.cs" />
+    <Compile Include="DAO\DalItemRelease.cs" />
+    <Compile Include="DAO\DalLimitAreaSale.cs" />
+    <Compile Include="DAO\DalMGMTools.cs" />
+    <Compile Include="DAO\DalLiveWorkShopConfig.cs" />
+    <Compile Include="DAO\DalPaintDiscountConfig.cs" />
+    <Compile Include="DAO\DALQuestion.cs" />
+    <Compile Include="DAO\DalRewardApplication.cs" />
+    <Compile Include="DAO\DalSeckill.cs" />
+    <Compile Include="DAO\DalTask.cs" />
+    <Compile Include="DAO\DalRegion.cs" />
+    <Compile Include="DAO\DalUploadFile.cs" />
+    <Compile Include="DAO\DalVipPaintPackage.cs" />
+    <Compile Include="DAO\DalTousuConfig.cs" />
+    <Compile Include="DAO\DalVehicleAnnualInspectionAgent.cs" />
+    <Compile Include="DAO\DalVehicleType.cs" />
+    <Compile Include="DAO\DeviceConfig\DalDeviceBrand.cs" />
+    <Compile Include="DAO\Dianping\DalGroupConfig.cs" />
+    <Compile Include="DAO\Dianping\DalShopConfig.cs" />
+    <Compile Include="DAO\GroupBuyingV2Dao\DalGroupBuyCategoryConfig.cs" />
+    <Compile Include="DAO\MemberPage\DALMemberPage.cs" />
+    <Compile Include="DAO\MemberPage\DALMemberPageChannel.cs" />
+    <Compile Include="DAO\MemberPage\DALMemberPageModuleContent.cs" />
+    <Compile Include="DAO\PaymentPageConfig\DALAdvertisingConfig.cs" />
+    <Compile Include="DAO\MemberPage\DALMemberPageModule.cs" />
+    <Compile Include="DAO\PaymentPageConfig\DALPaymentPageConfig.cs" />
+    <Compile Include="DAO\AboutProductPrice\DalCarProductPrice.cs" />
+    <Compile Include="DAO\Promotion\DalPromotionCode.cs" />
+    <Compile Include="DAO\Promotion\DalPromotionConfigures.cs" />
+    <Compile Include="DAO\Promotion\DalPromotionJob.cs" />
+    <Compile Include="DAO\DALThirdShop.cs" />
+    <Compile Include="DAO\DalTipBannerConfig.cs" />
+    <Compile Include="DAO\DalBatteryFastDelivery.cs" />
+    <Compile Include="DAO\DalBeautyCode.cs" />
+    <Compile Include="DAO\DalPeccancyQueryConfig.cs" />
+    <Compile Include="DAO\DalCityActivityPageConfig.cs" />
+    <Compile Include="DAO\DalShareConfig.cs" />
+    <Compile Include="DAO\AllSort\DalSort.cs" />
+    <Compile Include="DAO\DalVehicleTypeCertificationAuditLog.cs" />
+    <Compile Include="DAO\DalWheelAdapterConfig.cs" />
+    <Compile Include="DAO\GroupBuyingV2Dao\DalGroupBuyingProductGroupConfig.cs" />
+    <Compile Include="DAO\Promotion\DalShopPromotion.cs" />
+    <Compile Include="DAO\RebateConfig\DALRebateConfig.cs" />
+    <Compile Include="DAO\RebateConfig\RebateConfigLog.cs" />
+    <Compile Include="DAO\Router\DalRouter.cs" />
+    <Compile Include="DAO\ShopDistribution\ShopDistributionDAL.cs" />
+    <Compile Include="DAO\ThirdReplaceOrder\DALThirdReplaceOrder.cs" />
+    <Compile Include="DAO\TireSecurityCode\DalTireSecurityCodeConfig.cs" />
+    <Compile Include="DAO\Tire\DalTireInsuranceYears.cs" />
+    <Compile Include="DAO\Tire\DalTireRecall.cs" />
+    <Compile Include="DAO\UnivRedemptionCode\DALUnivRedemptionCode.cs" />
+    <Compile Include="DAO\Tire\DalTireSpecParamsConfig.cs" />
+    <Compile Include="DAO\UserManager\DalUserManager.cs" />
+    <Compile Include="DAO\Vender\DALVender.cs" />
+    <Compile Include="DAO\VipBaoYangPackage\DALVipBaoYangPackage.cs" />
+    <Compile Include="DiscountManageConfigDal.cs" />
+    <Compile Include="DAO\WeChat\DALWXMaterialText.cs" />
+    <Compile Include="DAO\WeChat\DALWXMenuMaterialMapping.cs" />
+    <Compile Include="Entity\ABTestPlatform\ABTestEditLog.cs" />
+    <Compile Include="Entity\ActivityPageContentModel.cs" />
+    <Compile Include="Entity\AliPayBaoYangItem.cs" />
+    <Compile Include="DAO\ActivityBoard\DALActivityBoard.cs" />
+    <Compile Include="DAO\ActivityBoard\DALActivityBoardPower.cs" />
+    <Compile Include="DAO\ActivityBoard\DALThirdPartActivity.cs" />
+    <Compile Include="Areas\ActivityUnityDAL.cs" />
+    <Compile Include="DAO\APPDAL.cs" />
+    <Compile Include="DAO\DALAliPayBaoYang.cs" />
+    <Compile Include="DAO\DalCarInsuranceConfig.cs" />
+    <Compile Include="DAO\DalIndexModule.cs" />
+    <Compile Include="DAO\PackageActivity\DALPackageActivity.cs" />
+    <Compile Include="DAO\DalBannerConfig.cs" />
+    <Compile Include="DAO\DALMagicWindow.cs" />
+    <Compile Include="DAO\DALWeiXinCard.cs" />
+    <Compile Include="DAO\DALRegionMarketing.cs" />
+    <Compile Include="DAO\DalSimpleConfig.cs" />
+    <Compile Include="DAO\DalBaoYangPriceGuide.cs" />
+    <Compile Include="DAO\DALCompanyClient.cs" />
+    <Compile Include="DAO\DALMaPaiVip.cs" />
+    <Compile Include="DAO\DALRuntimeSwitch.cs" />
+    <Compile Include="DAO\NewCoupon\DALNewCoupon.cs" />
+    <Compile Include="DAO\Repository\Pagination.cs" />
+    <Compile Include="DAO\Repository\RepositoryBase.cs" />
+    <Compile Include="DAO\Repository\SettingDbContext.cs" />
+    <Compile Include="DAO\ShareBargain\DALShareBargain.cs" />
+    <Compile Include="DAO\ShareBargain\ShareBargainSqlText.cs" />
+    <Compile Include="DAO\TiresActivity\DALTiresActivity.cs" />
+    <Compile Include="Entity\ActivityBoard\ActivityBoardLog.cs" />
+    <Compile Include="Entity\ActivityBoard\ActivityBoardModuleType.cs" />
+    <Compile Include="Entity\ActivityBoard\ActivityBoardPermissionConfig.cs" />
+    <Compile Include="Entity\ActivityBoard\ActivityBoardType.cs" />
+    <Compile Include="Entity\ActivityBoard\ActivityBoardViewModel.cs" />
+    <Compile Include="Entity\ActivityBoard\ActivityType.cs" />
+    <Compile Include="Entity\ActivityBoard\BIActivityPageModel.cs" />
+    <Compile Include="Entity\ActivityBoard\OperationType.cs" />
+    <Compile Include="Entity\ActivityBoard\ThirdPartActivity.cs" />
+    <Compile Include="Entity\AllSort\AllSortConfig.cs" />
+    <Compile Include="Entity\AllSort\AllSortListConfig.cs" />
+    <Compile Include="Entity\AllSort\AllSortTagConfig.cs" />
+    <Compile Include="Entity\BankActivityGroupConfig.cs" />
+    <Compile Include="Entity\BankActivityWhiteUsers.cs" />
+    <Compile Include="Entity\BaoYangInstallFeeConfigModel.cs" />
+    <Compile Include="Entity\BaoYangOilViscosityPriorityConfigModel.cs" />
+    <Compile Include="Entity\BaoYangPackageTypeRelationModel.cs" />
+    <Compile Include="Entity\BaoYangPriceGuide.cs" />
+    <Compile Include="DAO\BlackListConfigDAL.cs" />
+    <Compile Include="DAO\DalBaoYangYearCard.cs" />
+    <Compile Include="DAO\DALCarTag.cs" />
+    <Compile Include="DAO\DalCityPaint.cs" />
+    <Compile Include="DAO\DALFriendLink.cs" />
+    <Compile Include="DAO\DalHomePagePopup.cs" />
+    <Compile Include="DAO\DALMDBeautyApplyConfig.cs" />
+    <Compile Include="DAO\DAlBeautyHomePageConfig.cs" />
+    <Compile Include="DAO\DalMobileBindUnbind.cs" />
+    <Compile Include="DAO\DALNuomiService.cs" />
+    <Compile Include="DAO\DALRegionActivityPageConfig.cs" />
+    <Compile Include="DAO\DALSE_GroupBuying.cs" />
+    <Compile Include="DAO\DalSprayPaintVehicle.cs" />
+    <Compile Include="DAO\DalThirdPartyCouponConfig.cs" />
+    <Compile Include="DAO\DalThirdPartyMall.cs" />
+    <Compile Include="DAO\DALUserIntergal.cs" />
+    <Compile Include="DAO\DalUserTaskSetting.cs" />
+    <Compile Include="DAO\DALVehicleMountedCouponConfig.cs" />
+    <Compile Include="DAO\DALMeiRongAcitivityConfig.cs" />
+    <Compile Include="DAO\DALRecommendGetGiftConfig.cs" />
+    <Compile Include="DAO\DALSE_HomePageConfig.cs" />
+    <Compile Include="DAO\DALShareMakeMoneyConfig.cs" />
+    <Compile Include="DAO\DalShareOrderConfig.cs" />
+    <Compile Include="DAO\DALChangeCategory.cs" />
+    <Compile Include="DAO\DalCouponActivityConfig.cs" />
+    <Compile Include="DAO\DalBaoYangPackageImageConfig.cs" />
+    <Compile Include="DAO\DalBaoYangPackageActivityConfig.cs" />
+    <Compile Include="DAO\DALBaoYangPackageBrandPriorityConfig.cs" />
+    <Compile Include="DAO\DALDecorativePattern.cs" />
+    <Compile Include="DAO\DALAnnouncementConfig.cs" />
+    <Compile Include="DAO\DALGetPromotionActivityConfig.cs" />
+    <Compile Include="DAO\DalPattern.cs" />
+    <Compile Include="DAO\DalSE_EveryDaySeckill.cs" />
+    <Compile Include="DAO\DALApplyCompensate.cs" />
+    <Compile Include="DAO\DalTirePrice.cs" />
+    <Compile Include="DAO\DALVIPAuthorizationExchangeCodeConfig.cs" />
+    <Compile Include="DAO\DALRulesDictionaryConfig.cs" />
+    <Compile Include="DAO\DALVIPAuthorizationRuleConfig.cs" />
+    <Compile Include="DAO\DALBusinessKeywordsConfig.cs" />
+    <Compile Include="DAO\ConnectionHelper.cs" />
+    <Compile Include="DAO\DalActionsetTab.cs" />
+    <Compile Include="DAO\DALActivity.cs" />
+    <Compile Include="DAO\DalActivityCalendar.cs" />
+    <Compile Include="DAO\DALActivityHome.cs" />
+    <Compile Include="DAO\DalActivityIntroduction.cs" />
+    <Compile Include="DAO\DALActivityMenu.cs" />
+    <Compile Include="DAO\DalActivitySchedule.cs" />
+    <Compile Include="DAO\DALAdvertise.cs" />
+    <Compile Include="DAO\DalAirlines.cs" />
+    <Compile Include="DAO\DalArticle.cs" />
+    <Compile Include="DAO\DALArticleCategoryTag.cs" />
+    <Compile Include="DAO\DalArticleComment.cs" />
+    <Compile Include="DAO\DALBaoyang.cs" />
+    <Compile Include="DAO\DalBaoYangConfig.cs" />
+    <Compile Include="DAO\DALCategory.cs" />
+    <Compile Include="DAO\DALCategoryTag.cs" />
+    <Compile Include="DAO\DalCityInfo.cs" />
+    <Compile Include="DAO\DALCommentReport.cs" />
+    <Compile Include="DAO\DALConfigApi.cs" />
+    <Compile Include="DAO\DalCoupon.cs" />
+    <Compile Include="DAO\DalCrmAddress.cs" />
+    <Compile Include="DAO\DalCrmUserCase.cs" />
+    <Compile Include="DAO\DALBaoYangRecommendServiceConfig.cs" />
+    <Compile Include="DAO\DALDefaultSearchConfig.cs" />
+    <Compile Include="DAO\DALDownloadApp.cs" />
+    <Compile Include="DAO\DalEmployee.cs" />
+    <Compile Include="DAO\DALExchangeCenterConfig.cs" />
+    <Compile Include="DAO\DalExternalShop.cs" />
+    <Compile Include="DAO\DalFAQ.cs" />
+    <Compile Include="DAO\DALFlagshipStoreConfig.cs" />
+    <Compile Include="DAO\DALFlashSaleProductsExtend.cs" />
+    <Compile Include="DAO\DalFlashSales.cs" />
+    <Compile Include="DAO\DalFlashSalesTwo.cs" />
+    <Compile Include="DAO\DalHomePageConfig.cs" />
+    <Compile Include="DAO\DALLogger.cs" />
+    <Compile Include="DAO\DALLuckyWheel.cs" />
+    <Compile Include="DAO\DalMonitor.cs" />
+    <Compile Include="DAO\DALOrderArea.cs" />
+    <Compile Include="DAO\DALOrderAreaProduct.cs" />
+    <Compile Include="DAO\DALPersonalCenter.cs" />
+    <Compile Include="DAO\DAlPersonalCenterFunctionConfig.cs" />
+    <Compile Include="DAO\DAlPointsTransactionDescriptionConfig.cs" />
+    <Compile Include="DAO\DALProductModuleConfig.cs" />
+    <Compile Include="DAO\DalMessagePush.cs" />
+    <Compile Include="DAO\DALMy_Center_News.cs" />
+    <Compile Include="DAO\DalNewAppSet.cs" />
+    <Compile Include="DAO\DalOprLog.cs" />
+    <Compile Include="DAO\DalOrderTrackingLog.cs" />
+    <Compile Include="DAO\DalPaymentWay.cs" />
+    <Compile Include="DAO\DalPower.cs" />
+    <Compile Include="DAO\DalProductCategory.cs" />
+    <Compile Include="DAO\DalProductInfomation.cs" />
+    <Compile Include="DAO\Promotion\DALPromotion.cs" />
+    <Compile Include="DAO\DalPurchase.cs" />
+    <Compile Include="DAO\DALQiangGou.cs" />
+    <Compile Include="DAO\DALRecommendTire.cs" />
+    <Compile Include="DAO\DALServiceTag.cs" />
+    <Compile Include="DAO\DalSetting_CouponSetting.cs" />
+    <Compile Include="DAO\DALSE_Activity.cs" />
+    <Compile Include="DAO\DALSE_BrandFlagship.cs" />
+    <Compile Include="DAO\DALSE_DictionaryConfig.cs" />
+    <Compile Include="DAO\DALShareActivityProductConfig.cs" />
+    <Compile Include="DAO\DALPointsRulesConfig.cs" />
+    <Compile Include="DAO\DALShareActivityRules.cs" />
+    <Compile Include="DAO\DALShipping.cs" />
+    <Compile Include="DAO\DalShop.cs" />
+    <Compile Include="DAO\DALTuhuNews.cs" />
+    <Compile Include="DAO\DalBaoYangActivitySetting.cs" />
+    <Compile Include="DAO\DALUserPermission.cs" />
+    <Compile Include="DAO\DALVin.cs" />
+    <Compile Include="DAO\DALWebActivityDetail.cs" />
+    <Compile Include="DAO\DALIdx.cs" />
+    <Compile Include="DAO\DALPayment.cs" />
+    <Compile Include="DAO\DALSale.cs" />
+    <Compile Include="DAO\DALWebSiteHomeAd.cs" />
+    <Compile Include="DAO\DALWechatHome.cs" />
+    <Compile Include="DAO\DalYLHUser.cs" />
+    <Compile Include="DAO\DalZeroActivity.cs" />
+    <Compile Include="DAO\Discovery\ArticleCategoryDal.cs" />
+    <Compile Include="DAO\Discovery\ArticleDal.cs" />
+    <Compile Include="DAO\Discovery\ArticleFavoriteDal.cs" />
+    <Compile Include="DAO\Discovery\BaseDal.cs" />
+    <Compile Include="DAO\Discovery\CommentDal.cs" />
+    <Compile Include="DAO\Discovery\DBContextFactory.cs" />
+    <Compile Include="DAO\Discovery\ShareImageDAL.cs" />
+    <Compile Include="DAO\Discovery\SpecialColumnDAL.cs" />
+    <Compile Include="DAO\Discovery\UserBlackListDAL.cs" />
+    <Compile Include="DAO\Impl\ProductDAL.cs" />
+    <Compile Include="DAO\Interface\IBaseDAL.cs" />
+    <Compile Include="DAO\Interface\IProductDAL.cs" />
+    <Compile Include="DAO\JobCouponConfigDAL.cs" />
+    <Compile Include="DAO\OperationCategoryDAL.cs" />
+    <Compile Include="DAO\OperationCategoryProductsDAL.cs" />
+    <Compile Include="DAO\MyCenterNewsDAL.cs" />
+    <Compile Include="DAO\DAlPointsCenterConfig.cs" />
+    <Compile Include="DAO\ProductLibraryConfigDAL.cs" />
+    <Compile Include="DAO\Push\CommonUtil.cs" />
+    <Compile Include="DAO\Push\DalPush.cs" />
+    <Compile Include="DAO\QRCodeManageDAL.cs" />
+    <Compile Include="DAO\QRCodeStatisticsConfigDAL.cs" />
+    <Compile Include="DAO\ProductVehicleInfoDao\DalProductVehicleInfo.cs" />
+    <Compile Include="DAO\SearchConfigDao\DalSearchWordConvert.cs" />
+    <Compile Include="DAO\SE_DictionaryConfigDAL.cs" />
+    <Compile Include="DAO\SE_GiftManageConfigDAL.cs" />
+    <Compile Include="DAO\SE_MDBeautyBrandConfigDAL.cs" />
+    <Compile Include="DAO\SE_MDBeautyCategoryConfigDAL.cs" />
+    <Compile Include="DAO\SE_MDBeautyCategoryProductConfigDAL.cs" />
+    <Compile Include="DAO\SE_MDBeautyPartConfigDAL.cs" />
+    <Compile Include="DAO\SE_MDRecommendConfigDAL.cs" />
+    <Compile Include="DAO\ShopSaleItemForGrouponDAL.cs" />
+    <Compile Include="DAO\DalThirdPartyExchangeCode.cs" />
+    <Compile Include="DAO\Tire\DalInstallFee.cs" />
+    <Compile Include="DAO\Tire\DalInstallNow.cs" />
+    <Compile Include="DAO\Tire\DALListActivity.cs" />
+    <Compile Include="DAO\DalYLHProduct.cs" />
+    <Compile Include="DAO\Tire\DalStockoutStatus.cs" />
+    <Compile Include="DAO\Tire\TireSql.cs" />
+    <Compile Include="DbContext\DbContext.cs">
+      <DependentUpon>DbContext.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DbContext\DbContext.generated.cs">
+      <DependentUpon>DbContext.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Entity\ActionPower.cs" />
+    <Compile Include="Entity\ActionPowerList.cs" />
+    <Compile Include="Entity\Activity.cs" />
+    <Compile Include="Entity\ActivityBuildDetail.cs" />
+    <Compile Include="Entity\ActivityCalendar.cs" />
+    <Compile Include="Entity\ActivityIntroductionModel.cs" />
+    <Compile Include="Entity\ApplyCompensate.cs" />
+    <Compile Include="Entity\BaoYangOprLog.cs" />
+    <Compile Include="Entity\BaoYangPackageActivityConfig.cs" />
+    <Compile Include="Entity\BaoYangPackageBrandPriorityConfig.cs" />
+    <Compile Include="Entity\BaoYang\InstallTypeConfig.cs" />
+    <Compile Include="Entity\BaoYang\InstallTypeVehicleConfig.cs" />
+    <Compile Include="Entity\BaoYang\PriorityVehicleSettingNew.cs" />
+    <Compile Include="Entity\BaoYang\VehicleSettingNewSearchRequest.cs" />
+    <Compile Include="Entity\BatteryFastDeliveryModel.cs" />
+    <Compile Include="Entity\Battery\BaoYangBatteryCoverArea.cs" />
+    <Compile Include="Entity\BeautyCodeModel.cs" />
+    <Compile Include="Entity\BeautyOprLog.cs" />
+    <Compile Include="Entity\BeautyService\BankMRActivityAdConfig.cs" />
+    <Compile Include="Entity\BeautyService\BankMRActivityCodeRecord.cs" />
+    <Compile Include="Entity\BeautyService\BankMRActivityConfig.cs" />
+    <Compile Include="Entity\BeautyService\BankMRActivityLimitConfig.cs" />
+    <Compile Include="Entity\BeautyService\BankMRActivityRoundConfig.cs" />
+    <Compile Include="Entity\BeautyService\BankMRActivityUser.cs" />
+    <Compile Include="Entity\BeautyService\BeautyProductModel.cs" />
+    <Compile Include="Entity\BeautyService\BeautyServiceCodeTypeConfig.cs" />
+    <Compile Include="Entity\BeautyService\BeautyServicePackage.cs" />
+    <Compile Include="Entity\BeautyService\BeautyServicePackageCode.cs" />
+    <Compile Include="Entity\BeautyService\BeautyServicePackageDetail.cs" />
+    <Compile Include="Entity\BeautyService\BeautyServicePackageDetailCode.cs" />
+    <Compile Include="Entity\BeautyService\BeautyServicePackageLimitConfig.cs" />
+    <Compile Include="Entity\BeautyService\CompanyUserSmsRecord.cs" />
+    <Compile Include="Entity\BeautyService\EnterpriseUserBeautyConfig.cs" />
+    <Compile Include="Entity\BeautyService\EnterpriseUserViewModel.cs" />
+    <Compile Include="Entity\BeautyService\Enum\SmsStatus.cs" />
+    <Compile Include="Entity\BeautyService\MrCooperateUserConfig.cs" />
+    <Compile Include="Entity\BeautyYearCard\BeautyYearCardModel.cs" />
+    <Compile Include="Entity\CarsAffairs\CarsAffairsLog.cs" />
+    <Compile Include="Entity\CategoryBrandRankModel.cs" />
+    <Compile Include="Entity\CBrandModel.cs" />
+    <Compile Include="Entity\CommonConfigLogModel.cs" />
+    <Compile Include="Entity\CommonEnum\MrVehicleType.cs" />
+    <Compile Include="Entity\BeautyService\ServiceCodeDetail.cs" />
+    <Compile Include="Entity\CarInsuranceConfig.cs" />
+    <Compile Include="Entity\CommonServices\CRMSourceType.cs" />
+    <Compile Include="Entity\CompetingProductsMonitor\CompetingProductsMonitorModel.cs" />
+    <Compile Include="Entity\DeviceConfig\DeviceModelEntity.cs" />
+    <Compile Include="Entity\DeviceConfig\DeviceBrandEntity.cs" />
+    <Compile Include="Entity\DeviceConfig\DeviceModelInfo.cs" />
+    <Compile Include="Entity\DeviceConfig\DeviceTypeEntity.cs" />
+    <Compile Include="Entity\Dianping\DianpingGroupConfig.cs" />
+    <Compile Include="Entity\Dianping\DianpingShopConfig.cs" />
+    <Compile Include="Entity\Dianping\DianpingShopSession.cs" />
+    <Compile Include="Entity\Discovery\YouXuanArticle.cs" />
+    <Compile Include="Entity\FlashSaleProductOprLog.cs" />
+    <Compile Include="Entity\FlashSaleRecordsLog.cs" />
+    <Compile Include="Entity\GiftStockModel.cs" />
+    <Compile Include="Entity\GroupBuyingV2\GroupBuyingConfigLog.cs" />
+    <Compile Include="Entity\GroupBuyingV2\GroupBuyingProductConfigEntity.cs" />
+    <Compile Include="Entity\GroupBuyingV2\LotteryGroupModel.cs" />
+    <Compile Include="Entity\GroupBuyingV2\VirtualProductCouponConfig.cs" />
+    <Compile Include="Entity\IndexModuleConfig.cs" />
+    <Compile Include="Entity\LimitAreaSaleCityModel.cs" />
+    <Compile Include="Entity\LimitAreaSaleModel.cs" />
+    <Compile Include="Entity\LiveWorkShopConfigModel.cs" />
+    <Compile Include="Entity\MemberPage\MemberPageChannelModel.cs" />
+    <Compile Include="Entity\MemberPage\MemberPageModuleListModel.cs" />
+    <Compile Include="Entity\MemberPage\MemberPageModel.cs" />
+    <Compile Include="Entity\MemberPage\MemberPageModuleContentModel.cs" />
+    <Compile Include="Entity\MemberPage\MemberPageModuleModel.cs" />
+    <Compile Include="Entity\OilBrandPriorityModel.cs" />
+    <Compile Include="Entity\PackageActivity\PackageActivityConfig.cs" />
+    <Compile Include="Entity\BaoYangRecommendServiceConfig.cs" />
+    <Compile Include="Entity\BaoYangYearCard.cs" />
+    <Compile Include="Entity\BaoYangYearCardConfigs.cs" />
+    <Compile Include="Entity\BlackListConfigModel.cs" />
+    <Compile Include="Entity\ChangeCategoryModel.cs" />
+    <Compile Include="Entity\ChannelDictionariesModel.cs" />
+    <Compile Include="Entity\CityPaintModel.cs" />
+    <Compile Include="Entity\CompanyClientConfig.cs" />
+    <Compile Include="Entity\CompanyClientConfigLog.cs" />
+    <Compile Include="Entity\CouponPrice.cs" />
+    <Compile Include="Entity\MagicWindowModel.cs" />
+    <Compile Include="Entity\MaPaiVipModel.cs" />
+    <Compile Include="Entity\Discovery\Article.cs" />
+    <Compile Include="Entity\Discovery\ArticleCategory.cs" />
+    <Compile Include="Entity\Discovery\ArticleChangeLog.cs" />
+    <Compile Include="Entity\Discovery\ArticleFavorite.cs" />
+    <Compile Include="Entity\Discovery\ArticleStatus.cs" />
+    <Compile Include="Entity\Discovery\Category.cs" />
+    <Compile Include="Entity\Discovery\CategoryStatus.cs" />
+    <Compile Include="Entity\Discovery\Comment.cs" />
+    <Compile Include="Entity\Discovery\CoverAuthor.cs" />
+    <Compile Include="Entity\Discovery\CoverMode.cs" />
+    <Compile Include="Entity\Discovery\DataOperationEnum.cs" />
+    <Compile Include="Entity\Discovery\PageModel.cs" />
+    <Compile Include="Entity\Discovery\ShareImage.cs" />
+    <Compile Include="Entity\Discovery\SpecialColumn.cs" />
+    <Compile Include="Entity\Discovery\TagFavorite.cs" />
+    <Compile Include="Entity\Discovery\UserBlackList.cs" />
+    <Compile Include="Entity\Discovery\UserObject.cs" />
+    <Compile Include="Entity\Discovery\UserOperation.cs" />
+    <Compile Include="Entity\Discovery\UserOperationEnum.cs" />
+    <Compile Include="Entity\EmailPersonsConfig.cs" />
+    <Compile Include="Entity\FilterConditionModel.cs" />
+    <Compile Include="Entity\FlashSaleProductsExtend.cs" />
+    <Compile Include="Entity\FriendLink.cs" />
+    <Compile Include="Entity\FuelCard.cs" />
+    <Compile Include="Entity\HomePageEntity.cs" />
+    <Compile Include="Entity\HomePagePopup.cs" />
+    <Compile Include="Entity\LuckyWheel.cs" />
+    <Compile Include="Entity\MDBeautyApplyConfig.cs" />
+    <Compile Include="Entity\MeiRongAcitivityConfig.cs" />
+    <Compile Include="Entity\MsgResultModel.cs" />
+    <Compile Include="Entity\NewCoupon\CouponActivityLog.cs" />
+    <Compile Include="Entity\NewCoupon\NewCouponActivity.cs" />
+    <Compile Include="Entity\NuomiServicesConfig.cs" />
+    <Compile Include="Entity\OrderCompletionJudgeCriteria.cs" />
+    <Compile Include="Entity\PackageActivity\PackageActivityLog.cs" />
+    <Compile Include="Entity\PageBase.cs" />
+    <Compile Include="Entity\PaintDiscountConfigModel.cs" />
+    <Compile Include="Entity\PatternModel.cs" />
+    <Compile Include="Entity\PaymentPageConfig\AdvertisingConfigModel.cs" />
+    <Compile Include="Entity\PaymentPageConfig\PaymentPageConfigModel.cs" />
+    <Compile Include="Entity\PersonalCenterFunctionConfig.cs" />
+    <Compile Include="Entity\PointsRulesConfig.cs" />
+    <Compile Include="Entity\PointsTransactionDescriptionConfig.cs" />
+    <Compile Include="Entity\JobCouponConfigModel.cs" />
+    <Compile Include="Entity\ProductFaqConfigModel.cs" />
+    <Compile Include="Entity\ProductLibraryConfigModel.cs" />
+    <Compile Include="Entity\ProductPrice\CarProductPriceModel.cs" />
+    <Compile Include="Entity\ProductPrice\GetCouponRules.cs" />
+    <Compile Include="Entity\ProductSalesPredic.cs" />
+    <Compile Include="Entity\ProductSearch\SearchWordBrandsConfig.cs" />
+    <Compile Include="Entity\PeccancyQueryModel.cs" />
+    <Compile Include="Entity\Promotion\BizPromotionCode.cs" />
+    <Compile Include="Entity\Promotion\BizPromotionCodeForCompletedOrder.cs" />
+    <Compile Include="Entity\Promotion\CouponRules.cs" />
+    <Compile Include="Entity\Promotion\Promotion.cs" />
+    <Compile Include="Entity\Promotion\PromotionBusinessLineModel.cs" />
+    <Compile Include="Entity\Promotion\PromotionConfigureModel.cs" />
+    <Compile Include="Entity\Promotion\PromotionConsts.cs" />
+    <Compile Include="Entity\Promotion\PromotionOrderEntity.cs" />
+    <Compile Include="Entity\Promotion\PromotionTask.cs" />
+    <Compile Include="Entity\Promotion\PromotionTaskCouponRule.cs" />
+    <Compile Include="Entity\Promotion\PromotionTaskFilterInfo.cs" />
+    <Compile Include="Entity\Promotion\PromotionTaskType.cs" />
+    <Compile Include="Entity\Promotion\SearchPromotionByCondition.cs" />
+    <Compile Include="Entity\Promotion\SelectPromotionCodeByUserCellPhonePager.cs" />
+    <Compile Include="Entity\Promotion\ShopCouponRulesModel.cs" />
+    <Compile Include="Entity\Push\PushMessageViewModel.cs" />
+    <Compile Include="Entity\Push\TagConfigModel.cs" />
+    <Compile Include="Entity\QRCodeManageModel.cs" />
+    <Compile Include="Entity\QRCodeStatisticsConfigModel.cs" />
+    <Compile Include="Entity\QueryProductsListModel.cs" />
+    <Compile Include="Entity\QueryProductsModel.cs" />
+    <Compile Include="Entity\Question.cs" />
+    <Compile Include="Entity\RebateConfig\RebateConfigModel.cs" />
+    <Compile Include="Entity\RecommendGetGiftConfig.cs" />
+    <Compile Include="Entity\RecommendTireModel.cs" />
+    <Compile Include="Entity\RegionMarketing\ActivityImageType.cs" />
+    <Compile Include="Entity\RegionMarketing\RegionMarketingLog.cs" />
+    <Compile Include="Entity\RegionMarketing\RegionMarketingModel.cs" />
+    <Compile Include="Entity\RegionModel.cs" />
+    <Compile Include="Entity\Region\BizRegion.cs" />
+    <Compile Include="Entity\Region\CPRegion.cs" />
+    <Compile Include="Entity\Region\Region.cs" />
+    <Compile Include="Entity\Region\ShopRegion.cs" />
+    <Compile Include="Entity\ReleaseItemModel.cs" />
+    <Compile Include="Entity\RewardApplicationModel.cs" />
+    <Compile Include="Entity\Router\RouterLink.cs" />
+    <Compile Include="Entity\Router\RouterList.cs" />
+    <Compile Include="Entity\Router\RouterMainLink.cs" />
+    <Compile Include="Entity\Router\RouterParameter.cs" />
+    <Compile Include="Entity\RegionVehicleIdActivityConfig.cs" />
+    <Compile Include="Entity\RegionVehicleIdActivityUrlConfig.cs" />
+    <Compile Include="Entity\RulesDictionaryConfig.cs" />
+    <Compile Include="Entity\RuntimeSwtch.cs" />
+    <Compile Include="Entity\SearchWordConvertMapDb.cs" />
+    <Compile Include="Entity\CheXingYiOrderResultInfo\CheXingYiOrderResultInfo.cs" />
+    <Compile Include="Entity\SeckillListModel.cs" />
+    <Compile Include="Entity\SE_Activity.cs" />
+    <Compile Include="Entity\SE_BrandFlagship.cs" />
+    <Compile Include="Entity\SE_BrandFlagshipDetail.cs" />
+    <Compile Include="Entity\SE_CarTagCouponConfig.cs" />
+    <Compile Include="Entity\SE_DecorativePattern.cs" />
+    <Compile Include="Entity\ProductVehicleInfoEntity\ProductInfo.cs" />
+    <Compile Include="Entity\SE_DictionaryConfigModel.cs" />
+    <Compile Include="Entity\SE_EveryDaySeckill.cs" />
+    <Compile Include="Entity\SE_FlagshipStoreConfig.cs" />
+    <Compile Include="Entity\SE_GetPromotionActivityConfig.cs" />
+    <Compile Include="Entity\SE_GetPromotionActivityCouponInfoConfig.cs" />
+    <Compile Include="Entity\SE_GiftManageConfigModel.cs" />
+    <Compile Include="Entity\SE_GroupBuyingConfig.cs" />
+    <Compile Include="Entity\SE_MDBeautyBrandConfigModel.cs" />
+    <Compile Include="Entity\SE_MDBeautyCategoryConfigModel.cs" />
+    <Compile Include="Entity\SE_MDBeautyCategoryProductConfigModel.cs" />
+    <Compile Include="Entity\SE_MDBeautyPartConfigModel.cs" />
+    <Compile Include="Entity\SE_MDRecommendConfigModel.cs" />
+    <Compile Include="Entity\SE_MDRecommendProductConfigModel.cs" />
+    <Compile Include="Entity\SE_ShareMakeMoneyConfig.cs" />
+    <Compile Include="Entity\ShareActivityRules.cs" />
+    <Compile Include="Entity\BaoYangPriorityVehicleSettingModel.cs" />
+    <Compile Include="Entity\BusinessKeywordsConfig.cs" />
+    <Compile Include="Entity\DefaultSearchConfig.cs" />
+    <Compile Include="Entity\ExchangeCenterConfig.cs" />
+    <Compile Include="Entity\PointsCenterConfig.cs" />
+    <Compile Include="Entity\BaoYangProductRecommendModel.cs" />
+    <Compile Include="Entity\MyCenterNewsModel.cs" />
+    <Compile Include="Entity\PersonalCenterConfig.cs" />
+    <Compile Include="Entity\QiangGouModel.cs" />
+    <Compile Include="Entity\ServiceTypeSetting.cs" />
+    <Compile Include="Entity\ShareActivityProductConfig.cs" />
+    <Compile Include="Entity\ShareBargainModel.cs" />
+    <Compile Include="Entity\ShareConfig.cs" />
+    <Compile Include="Entity\ShareOrderConfig.cs" />
+    <Compile Include="Entity\ShopDistribution\SDProductModel.cs" />
+    <Compile Include="Entity\ShopDistribution\ShopDistributionModel.cs" />
+    <Compile Include="Entity\ShopSaleItemForGrouponModel.cs" />
+    <Compile Include="Entity\SimpleProductModel.cs" />
+    <Compile Include="Entity\TaskModel.cs" />
+    <Compile Include="Entity\tbl_UserPromotionCode.cs" />
+    <Compile Include="Entity\tbl_UserTask.cs" />
+    <Compile Include="Entity\tbl_UserTransportation.cs" />
+    <Compile Include="Entity\BaoYangActivitySetting.cs" />
+    <Compile Include="Entity\ThirdPartyCodeBatch.cs" />
+    <Compile Include="Entity\ThirdPartyCouponConfigModel.cs" />
+    <Compile Include="Entity\ThirdPartyExchangeCode.cs" />
+    <Compile Include="Entity\ThirdPartyMallModel.cs" />
+    <Compile Include="Entity\ThirdShopModel.cs" />
+    <Compile Include="Entity\TipBannerConfigModel.cs" />
+    <Compile Include="Entity\TireCreateOrderOptionsConfigModel.cs" />
+    <Compile Include="Entity\TirePriceManageModel.cs" />
+    <Compile Include="Entity\TiresActivity\TiresActivityModel.cs" />
+    <Compile Include="Entity\TireSecurityCode\TireSecurityCodeConfig.cs" />
+    <Compile Include="Entity\Tire\InstallFeeModel.cs" />
+    <Compile Include="Entity\Tire\InstallNowModel.cs" />
+    <Compile Include="Entity\Tire\ListAct.cs" />
+    <Compile Include="Entity\Tire\RegionStickModel.cs" />
+    <Compile Include="Entity\Tire\StockoutStatusModel.cs" />
+    <Compile Include="Entity\Tire\TireInsuranceYearModels.cs" />
+    <Compile Include="Entity\Tire\TireRecallModel.cs" />
+    <Compile Include="Entity\Tire\TireSpecParamsModel.cs" />
+    <Compile Include="Entity\TousuModel.cs" />
+    <Compile Include="Entity\UnivRedemptionCode\RedemptionCodeEnum.cs" />
+    <Compile Include="Entity\UnivRedemptionCode\RedemptionCodeRequest.cs" />
+    <Compile Include="Entity\UnivRedemptionCode\RedemptionCodeModel.cs" />
+    <Compile Include="Entity\UploadFileTaskLog.cs" />
+    <Compile Include="Entity\UserIntergal.cs" />
+    <Compile Include="Entity\UserManager\UserManager.cs" />
+    <Compile Include="Entity\UserPermissionActivity.cs" />
+    <Compile Include="Entity\UserPermissionActivityProduct.cs" />
+    <Compile Include="Entity\ActivitySchedule.cs" />
+    <Compile Include="Entity\ActivityTemplate.cs" />
+    <Compile Include="Entity\AddressesModel.cs" />
+    <Compile Include="Entity\AddressObjects.cs" />
+    <Compile Include="Entity\AdProduct.cs" />
+    <Compile Include="Entity\AdvertiseModel.cs" />
+    <Compile Include="Entity\Airlines.cs" />
+    <Compile Include="Entity\AntifreezeSettingModel.cs" />
+    <Compile Include="Entity\Article.cs" />
+    <Compile Include="Entity\ArticleCategoryTagModel.cs" />
+    <Compile Include="Entity\ArticleComment.cs" />
+    <Compile Include="Entity\BaoYangModel.cs" />
+    <Compile Include="Entity\BaoYangRecommendConfig.cs" />
+    <Compile Include="Entity\BasePrimaryKey.cs" />
+    <Compile Include="Entity\BizActionsetTab.cs" />
+    <Compile Include="Entity\BizEmailProcess.cs" />
+    <Compile Include="Entity\BizHrEmployee.cs" />
+    <Compile Include="Entity\BizHrEmployeeGroup.cs" />
+    <Compile Include="Entity\BizOrder.cs" />
+    <Compile Include="Entity\BizShopSimple.cs" />
+    <Compile Include="Entity\CacheOrderProductInfo.cs" />
+    <Compile Include="Entity\CAPower.cs" />
+    <Compile Include="Entity\CityModel.cs" />
+    <Compile Include="Entity\CommentReport.cs" />
+    <Compile Include="Entity\CommentTousuType.cs" />
+    <Compile Include="Entity\ConfigApi.cs" />
+    <Compile Include="Entity\Coupon.cs" />
+    <Compile Include="Entity\CouponActivity.cs" />
+    <Compile Include="Entity\CouponActivityModel.cs" />
+    <Compile Include="Entity\CouponCategory.cs" />
+    <Compile Include="Entity\CrmPromotionCodeModel.cs" />
+    <Compile Include="Entity\CrmUserCaseModel.cs" />
+    <Compile Include="Entity\DownloadApp.cs" />
+    <Compile Include="Entity\CategoryTagModel.cs" />
+    <Compile Include="Entity\MonitorLevel.cs" />
+    <Compile Include="Entity\MonitorModule.cs" />
+    <Compile Include="Entity\OperationCategoryModel.cs" />
+    <Compile Include="Entity\OperationCategoryProductsModel.cs" />
+    <Compile Include="Entity\ExchangeCodeDetail.cs" />
+    <Compile Include="Entity\ExternalShop.cs" />
+    <Compile Include="Entity\ExternalShopType.cs" />
+    <Compile Include="Entity\FAQ.cs" />
+    <Compile Include="Entity\FlashSales.cs" />
+    <Compile Include="Entity\FlashSalesProduct.cs" />
+    <Compile Include="Entity\FlashSalesProductTwo.cs" />
+    <Compile Include="Entity\FlashSalesTwo.cs" />
+    <Compile Include="Entity\GroupsInfo.cs" />
+    <Compile Include="Entity\HrDepartment.cs" />
+    <Compile Include="Entity\HrEmploryee.cs" />
+    <Compile Include="Entity\MessagePush.cs" />
+    <Compile Include="Entity\My_Center_News.cs" />
+    <Compile Include="Entity\NewAppSet.cs" />
+    <Compile Include="Entity\OprLog.cs" />
+    <Compile Include="Entity\OrderArea.cs" />
+    <Compile Include="Entity\OrderAreaProduct.cs" />
+    <Compile Include="Entity\OrderList.cs" />
+    <Compile Include="Entity\OrderListProduct.cs" />
+    <Compile Include="Entity\OrderLists.cs" />
+    <Compile Include="Entity\OrderRelationship.cs" />
+    <Compile Include="Entity\OrderRelationshipType.cs" />
+    <Compile Include="Entity\OrderTrackingLogEntity.cs" />
+    <Compile Include="Entity\PaymentWayModel.cs" />
+    <Compile Include="Entity\PrioritySettingModel.cs" />
+    <Compile Include="Entity\ProductDescriptionModel.cs" />
+    <Compile Include="Entity\ProductInformation.cs" />
+    <Compile Include="Entity\ProductUser.cs" />
+    <Compile Include="Entity\Promotion\PromotionCode.cs" />
+    <Compile Include="Entity\Promotion\PromotionConfigures.cs" />
+    <Compile Include="Entity\Promotion\PromotionModel.cs" />
+    <Compile Include="Entity\ServiceTagModel.cs" />
+    <Compile Include="Entity\ShippingModel.cs" />
+    <Compile Include="Entity\ShopAccounting.cs" />
+    <Compile Include="Entity\ShopAppBanner.cs" />
+    <Compile Include="Entity\ShopEditOprLog.cs" />
+    <Compile Include="Entity\ShopServiceLog.cs" />
+    <Compile Include="Entity\ShopsList.cs" />
+    <Compile Include="Entity\SKUPBatteryPID.cs" />
+    <Compile Include="Entity\SKUProductCategory.cs" />
+    <Compile Include="Entity\tal_newappsetdata_v2.cs" />
+    <Compile Include="Entity\TblAdProductV2.cs" />
+    <Compile Include="Entity\tbl_EndUserCaseModel.cs" />
+    <Compile Include="Entity\tbl_LogModel.cs" />
+    <Compile Include="Entity\tbl_OrderModel.cs" />
+    <Compile Include="Entity\tbl_PotentialFormModel.cs" />
+    <Compile Include="Entity\tbl_TuhuNews.cs" />
+    <Compile Include="Entity\tbl_UserObjectModel.cs" />
+    <Compile Include="Entity\TireProductModel.cs" />
+    <Compile Include="Entity\UserGroups.cs" />
+    <Compile Include="Entity\UserPermissionModel.cs" />
+    <Compile Include="Entity\UserTaskSettingModel.cs" />
+    <Compile Include="Entity\U_ChannelPayModel.cs" />
+    <Compile Include="Entity\VehicleAnnualInspectionAgentModel.cs" />
+    <Compile Include="Entity\VehicleLevelModel.cs" />
+    <Compile Include="Entity\VehicleMountedCouponConfig.cs" />
+    <Compile Include="Entity\VehicleTypeCertificationAuditLogModel.cs" />
+    <Compile Include="Entity\VehicleTypeModel.cs" />
+    <Compile Include="Entity\Vender\VenderModel.cs" />
+    <Compile Include="Entity\Version.cs" />
+    <Compile Include="Entity\VinSprayPaint.cs" />
+    <Compile Include="Entity\VIPAuthorizationExchangeCodeConfig.cs" />
+    <Compile Include="Entity\VIPAuthorizationRuleConfig.cs" />
+    <Compile Include="Entity\VipBaoYangPackage\VipBaoYangPackageModel.cs" />
+    <Compile Include="Entity\VipBaoYangPackage\VipBaoYangPackageParentCouponConfig.cs" />
+    <Compile Include="Entity\VipCardModel.cs" />
+    <Compile Include="Entity\VipPaintPackageModel.cs" />
+    <Compile Include="Entity\VW_ProductCategoriesModel.cs" />
+    <Compile Include="Entity\VW_ProductsModel.cs" />
+    <Compile Include="Entity\WebActivity.cs" />
+    <Compile Include="Entity\WechatHome.cs" />
+    <Compile Include="Entity\WeChat\MaterialModel.cs" />
+    <Compile Include="Entity\WeChat\WechatKeywordReplyModel.cs" />
+    <Compile Include="Entity\WeChat\WechatSocialCardConfigModel.cs" />
+    <Compile Include="Entity\WeChat\WechatSubNumberModel.cs" />
+    <Compile Include="Entity\WeChat\WxAppReponseMsgConfig.cs" />
+    <Compile Include="Entity\WeChat\WxAppUserEventConfig.cs" />
+    <Compile Include="Entity\WeChat\WXMaterialTextModel.cs" />
+    <Compile Include="Entity\WeChat\WXMenuMaterialMappingModel.cs" />
+    <Compile Include="Entity\WeChat\WX_QRCodeConfigModel.cs" />
+    <Compile Include="Entity\WeixinCardModel.cs" />
+    <Compile Include="Entity\WheelAdapterConfig.cs" />
+    <Compile Include="Entity\WMSUserObject.cs" />
+    <Compile Include="Entity\VehicleOilSetting.cs" />
+    <Compile Include="Entity\WXAPPEntity.cs" />
+    <Compile Include="Entity\YearCardConfig.cs" />
+    <Compile Include="Entity\YLHProductModel.cs" />
+    <Compile Include="Entity\YLHUserInfoModel.cs" />
+    <Compile Include="Entity\YLHUserVipCardInfoModel.cs" />
+    <Compile Include="Entity\ZeroActivityApply.cs" />
+    <Compile Include="Entity\ZeroActivityDetail.cs" />
+    <Compile Include="Entity\ZTreeModel.cs" />
+    <Compile Include="Mapping\ActivePageContentEntity.cs" />
+    <Compile Include="Mapping\ActivePageHomeDeatilEntity.cs" />
+    <Compile Include="Mapping\ActivePageHomeEntity.cs" />
+    <Compile Include="Mapping\ActivePageListEntity.cs" />
+    <Compile Include="Mapping\ActivePageMenuEntity.cs" />
+    <Compile Include="Mapping\ActivePageTireSizeConfigEntity.cs" />
+    <Compile Include="Mapping\AnswerInfoListEntity.cs" />
+    <Compile Include="Mapping\BigBrandAnsQuesEntity.cs" />
+    <Compile Include="Mapping\BigBrandEntity.cs" />
+    <Compile Include="Mapping\BigBrandPageConfigEntity.cs" />
+    <Compile Include="Mapping\BigBrandPageStyleEntity.cs" />
+    <Compile Include="Mapping\BigBrandRewardPoolEntity.cs" />
+    <Compile Include="Mapping\BusniessListDeatilEntity.cs" />
+    <Compile Include="Mapping\ClientMenuEnitity.cs" />
+    <Compile Include="Mapping\CommonConfigColInfoEntity.cs" />
+    <Compile Include="Mapping\CommonConfigColValueInfoEntity.cs" />
+    <Compile Include="Mapping\CompetingProductsMonitorEntity.cs" />
+    <Compile Include="Mapping\HomePageCarActivityEntity.cs" />
+    <Compile Include="Mapping\HomePopUserGroup.cs" />
+    <Compile Include="Mapping\QcodeRecordEntity.cs" />
+    <Compile Include="Mapping\SEGetPromotionActivityConfig.cs" />
+    <Compile Include="Mapping\SE_HomePageContentPuzzle.cs" />
+    <Compile Include="Mapping\BusniessListEntity.cs" />
+    <Compile Include="Mapping\ShopDistributionEntity.cs" />
+    <Compile Include="Mapping\WechatKeywordReplyEntity.cs" />
+    <Compile Include="Mapping\WechatSubNumberEntity.cs" />
+    <Compile Include="Mapping\WXEventMsgConfigEntity.cs" />
+    <Compile Include="Mapping\WX_QRCodeConfigEntity.cs" />
+    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Request\SearchBaoYangBatteryCoverAreaRequest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="DbContext\DbContext.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DbContext.generated.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,72 @@
+﻿
+@using System.Collections
+@using Tuhu.MMS.Web.Domain.UserFilter
+@{
+    string selecttypename = ViewData["selecttypename"].ToString();
+    var configs = ViewData["config"] as IEnumerable<UserFilterValueConfig>;
+    Func<string, IEnumerable<SelectListItem>> getselectlist = colname =>
+    {
+        var selectlists = configs.Where(x => x.ColName == colname).Select(x => new SelectListItem()
+        {
+            Text = x.Name,
+            Value = x.Value
+        }).ToList();
+        selectlists.Insert(0, new SelectListItem() { Text = "请选择", Value = "" });
+        return selectlists;
+    };
+} 
+<div class="col-sm-2" style="clear: both">
+    <div class="form-group">
+        <label for="exampleInputName2">
+            订单购买状态
+        </label>
+    </div>
+</div>
+<div class="col-sm-4">
+    <div class="form-group">
+        @Html.DropDownList("typename", getselectlist("typename"), new { @class = "form-control" })
+        @*<select class="form-control" name="typename">
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+        </select>*@
+    </div>
+</div>
+
+<div class="col-sm-2" style="clear: both">
+    <div class="form-group">
+        <label for="exampleInputName2">
+            订单购买状态变更日期
+        </label>
+    </div>
+</div>
+<div class="col-sm-4">
+    <div class="form-group">
+
+        <div class="input-group">
+            <span class="input-group-addon">
+                <input type="radio" name="@selecttypename" id="optionsRadios2" value="date">
+            </span>
+            <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="text" name="loaddate_start_date" class="form-control date" placeholder="选择开始日期">
+        </div>
+        <div class="input-group" style="margin-top: 15px;">
+            <span class="input-group-addon">
+                <input type="radio" name="@selecttypename" id="optionsRadios1" value="fromtoday">
+            </span>
+            <input type="text" name="loaddate_from_date" placeholder="距今天天数(不含今天)" class="form-control">
+
+        </div>
+
+    </div>
+</div>
+<div class="col-sm-2"></div>
+<div class="col-sm-4">
+    <div class="form-group">
+        <div class="input-group date">
+            <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="text" name="loaddate_end_date" class="form-control" placeholder="选择结束日期">
+        </div>
+
+    </div>
+</div>

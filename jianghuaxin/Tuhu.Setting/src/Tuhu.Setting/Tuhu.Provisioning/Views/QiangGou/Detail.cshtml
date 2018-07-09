@@ -1,0 +1,713 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.QiangGouModel
+@{
+    ViewBag.Title = Model == null ? "创建活动" : "修改活动";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link href="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.css" rel="stylesheet" />
+<style>
+    table {
+        width: 100%;
+    }
+
+        table th {
+            background-color: #5C87B2;
+            color: #ffffff;
+        }
+
+    input[type=text] {
+        width: 150px;
+        height: 20px;
+    }
+
+    #product input {
+        width: 100%;
+    }
+
+    button {
+        margin: 10px;
+        width: 100px;
+        height: 40px;
+    }
+
+    .wrong-msg th {
+        background-color: red;
+    }
+
+    .wrong-msg td {
+        color: red;
+        font-weight: bold;
+    }
+
+    #AynchroDiff > div {
+        margin-bottom: 20px;
+    }
+
+        #AynchroDiff > div > p {
+            font-size: 14px;
+            font-weight: bold;
+        }
+</style>
+<table>
+    <tr>
+        <td colspan="2">
+            <table class="wrong-msg"></table>
+        </td>
+    </tr>
+    <tr>
+        <td width="6%">活动类型</td>
+        <td><label><input type="radio" name="ActivityType" @(Model == null || Model.ActiveType == 0 ? "checked" : "") value="0" />全网活动</label>&nbsp;&nbsp;&nbsp;&nbsp;
+            <label><input type="radio" name="ActivityType" value="1" @(Model != null && Model.ActiveType == 1 ? "checked" : "") />天天秒杀</label>&nbsp;&nbsp;&nbsp;&nbsp;
+            <label><input type="radio" name="ActivityType" value="3" @(Model != null && Model.ActiveType == 3 ? "checked" : "") />活动页秒杀</label>&nbsp;&nbsp;&nbsp;&nbsp;
+            <label><input type="radio" name="ActivityType" @(Model != null && Model.ActiveType == 4 ? "checked" : "") value="4" />限时抢购</label></td>
+    </tr>
+    <tr>
+        <td>活动名称</td>
+        <td><input type="text" name="ActivityName" value="@(Model!=null?Model.ActivityName:"")" /></td>
+    </tr>
+    <tr>
+        <td>活动时间</td>
+        <td>开始时间<input type="text" name="StartDateTime" id="StartDateTime" readonly="readonly" value="@(Model!=null?Model.StartDateTime.ToString("yyyy-MM-dd HH:mm"):"")" />&nbsp;-&nbsp;结束时间<input type="text" name="EndDateTime" id="EndDateTime" readonly="readonly" value="@(Model!=null?Model.EndDateTime.ToString("yyyy-MM-dd HH:mm"):"")" /></td>
+    </tr>
+    <tr>
+        <td>会场限购</td>
+        <td><input type="text" name="PlaceQuantity" value="@(Model!=null?Model.PlaceQuantity:null)" /></td>
+    </tr>
+    <tr>
+        <td>是否新人首单专享</td>
+        <td><select class="IsNewUserFirstOrder"><option value="0" @((Model == null || Model != null && !Model.IsNewUserFirstOrder) ? "selected" : null)>否</option><option value="1" @(Model != null && Model.IsNewUserFirstOrder ? "selected" : null)>是</option></select></td>
+    </tr>
+    <tr>
+        <td>产品</td>
+        <td>
+            <table id="product">
+                <tr>
+                    <th width="12%">PID</th>
+                    <th>排序</th>
+                    <th>名称</th>
+                    <th>原价</th>
+                    <th>促销价</th>
+                    <th>伪原价</th>
+                    <th>每人限购</th>
+                    <th>总限购</th>
+                    @*<th>安装服务</th>*@
+                    <th>安装/付款方式</th>
+                    <th>优惠券</th>
+                    <th>渠道</th>
+                    <th>是否加入会场限购</th>
+                    <th>标签</th>
+                    <th>显示</th>
+                    <th>销售数量</th>
+                    <th width="3%">操作</th>
+                </tr>
+                @if (Model != null && Model.Products.Count() > 0)
+                {
+                    foreach (var item in Model.Products.OrderBy(Q => Q.PKID))
+                    {
+                        <tr class="product-item">
+                            <td><input type="text" name="PID" value="@item.PID" onkeyup="QiangGou.CheckPID(this)" /></td>
+                            <td><input type="text" name="Position" value="@item.Position" /></td>
+                            <td><textarea name="ProductName">@(item.ProductName ?? item.DisplayName)</textarea></td>
+                            <td>@item.OriginalPrice.ToString("0.00")</td>
+                            <td><input type="text" name="Price" value="@item.Price.ToString("0.00")" /></td>
+                            <td><input type="text" name="FalseOriginalPrice" value="@(item.FalseOriginalPrice==null?item.OriginalPrice.ToString("0.00"):item.FalseOriginalPrice.Value.ToString("0.00"))" /></td>
+                            <td><input type="text" name="MaxQuantity" value="@item.MaxQuantity" /></td>
+                            <td><input type="text" name="TotalQuantity" value="@item.TotalQuantity" /></td>
+                            <td style="display:none">@item.InstallService</td>
+                            <td><select class="InstallAndPay"><option value="" @(string.IsNullOrWhiteSpace(item.InstallAndPay) ? "selected" : "")>不限</option><option value="PayOnline" @(item.InstallAndPay == "PayOnline" ? "selected" : "")> 在线支付</option><option value="InstallAtShop" @(item.InstallAndPay == "InstallAtShop" ? "selected" : "")>到店安装</option><option value="PayOnlineAndInstallAtShop" @(item.InstallAndPay == "PayOnlineAndInstallAtShop" ? "selected" : "")>在线支付且到店安装</option></select></td>
+                            <td><select class="IsUsePCode"><option value="1" @(item.IsUsePCode ? "selected" : "")>使用</option><option value="0" @(!item.IsUsePCode ? "selected" : "")>不使用</option></select></td>
+                            <td><select class="Channel"><option value="all" @(item.Channel == "all" ? "selected" : "")>全部</option><option value="pc" @(item.Channel == "pc" ? "selected" : "")>仅网站</option><option value="app" @(item.Channel == "app" ? "selected" : "")>仅APP</option></select></td>
+                            <td><select class="IsJoinPlace"><option value="0" @(item.IsJoinPlace ? "" : "selected")>否</option><option value="1" @(item.IsJoinPlace ? "selected" : "")>是</option></select></td>
+                            <td><select class="Label"><option value="" @(string.IsNullOrWhiteSpace(item.Label) ? "selected" : "")>无</option><option value="热卖" @(item.Label == "热卖" ? "selected" : "")> 热卖</option><option value="秒杀" @(item.Label == "秒杀" ? "selected" : "")>秒杀</option><option value="限量" @(item.Label == "限量" ? "selected" : "")>限量</option></select></td>
+                            <td><select class="IsShow"><option value="1" @(item.IsShow ? "selected" : "")>是</option><option value="0" @(!item.IsShow ? "selected" : "")>否</option></select></td>
+                            <td><input name="SaleOutQuantity" value="@item.SaleOutQuantity" style="width:20px"disabled="disabled"/></td>
+                            <td><a href="javascript:void(0)" onclick="$(this).parent().parent().remove()">删除</a></td>
+                        </tr>
+                    }
+                }
+                <tr id="append_product">
+                    <td colspan="15">
+                        <button onclick="QiangGou.AppendProduct('single')" style="font-size:14px;width: 80px;height: 26px;cursor:pointer;">添加商品</button>
+                        <button onclick="QiangGou.AppendSKUProducts()" style="font-size:14px;margin-left:20px;width: 115px;height: 26px;cursor:pointer;">添加多SKU商品</button>
+                        <button onclick="window.location.href='/Content/QiangGou/ExportProductExcel.xlsx'" style="font-size:14px;margin-left:20px;width: 100px;height: 26px;cursor:pointer;">导入模板下载</button>
+                        <button id="bit_excel" onclick="$(this).next().click()" style="font-size:14px;margin-left:20px;width: 80px;height: 26px;cursor:pointer;">批量导入</button><input type="file" value="" onchange="QiangGou.ImportProducts(this)" style="display:none;" />
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            @*@if (Model != null)
+                {
+                    <button onclick="QiangGou.CheckSamePIDPrice()">价格校验</button>
+                }*@
+            <button onclick="QiangGou.Save()">保存</button>
+            @*<label><input type="checkbox" checked="checked"/>aaa</label>*@
+        </td>
+    </tr>
+</table>
+<div id="AddSku" style="display:none;">
+    <table>
+        <tr>
+            <td style="width:30%;">ProductID：</td>
+            <td><input type="text" name="Sku_ProductId" value="" /></td>
+        </tr>
+        <tr>
+            <td>活动价：</td>
+            <td><input type="text" name="Sku_Price" value="" /></td>
+        </tr>
+        <tr>
+            <td>每人限购：</td>
+            <td><input type="text" name="Sku_MaxQuantity" value="" /></td>
+        </tr>
+        <tr>
+            <td>总限购：</td>
+            <td><input type="text" name="Sku_TotalQuantity" value="" /></td>
+        </tr>
+        <tr>
+            <td>安装/付款方式：</td>
+            <td><select class="Sku_InstallAndPay"><option value="" selected>不限</option><option value="PayOnline"> 在线支付</option><option value="InstallAtShop">到店安装</option><option value="PayOnlineAndInstallAtShop">在线支付且到店安装</option></select></td>
+        </tr>
+        <tr>
+            <td>优惠券：</td>
+            <td><select class="Sku_IsUsePCode"><option value="1" selected>使用</option><option value="0">不使用</option></select></td>
+        </tr>
+        <tr>
+            <td>渠道：</td>
+            <td><select class="Sku_Channel"><option value="all" selected>全部</option><option value="pc">仅网站</option><option value="app">仅APP</option></select></td>
+        </tr>
+        <tr>
+            <td>是否加入会场限购：</td>
+            <td><select class="Sku_IsJoinPlace"><option value="0" selected>否</option><option value="1">是</option></select></td>
+        </tr>
+        <tr>
+            <td>标签：</td>
+            <td><select class="Sku_Label"><option value="" selected>无</option><option value="热卖"> 热卖</option><option value="秒杀">秒杀</option><option value="限量">限量</option></select></td>
+        </tr>
+        <tr>
+            <td>显示：</td>
+            <td><select class="Sku_IsShow"><option value="1" selected>是</option><option value="0">否</option></select></td>
+        </tr>
+    </table>
+
+</div>
+<div id="AynchroDiff">
+</div>
+<script src="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.js"></script>
+<script src="../../Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<script>
+    //初始化活动时间的日期选择器
+    $("#StartDateTime").datetimepicker({
+        timeFormat: "HH:mm",
+        dateFormat: "yy-mm-dd",
+        monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+    });
+
+    $("#EndDateTime").datetimepicker({
+        timeFormat: "HH:mm",
+        dateFormat: "yy-mm-dd",
+        monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+    });
+
+    var QiangGou = {
+        SetAllChecked: function() {
+            $("#difftable tr").each(function () {
+                console.log(this);
+                $("#difftable #diffchecked").attr("checked","checked");
+            });
+
+        },
+        AppendProduct: function (type, data) {
+            if (type == 'single')
+                data = {
+                    PID: '',
+                    Price: '',
+                    MaxQuantity: '',
+                    TotalQuantity: '',
+                    InstallService:'',
+                    InstallAndPay: '',
+                    IsUsePCode: 1,
+                    Channel: 'all',
+                    IsJoinPlace: 0,
+                    Label: '',
+                    IsShow: 1,
+                    Position: '',
+                    ProductName: '',
+                    FalseOriginalPrice: ''
+                };
+            var html = '<tr class="product-item">';
+            html += '<td><input type="text" name="PID" value="' + data.PID + '" onkeyup="QiangGou.CheckPID(this)"></td>';//PID
+            html += '<td><input type="text" name="Position" value="' + data.Position + '"></td>';
+            html += '<td>' + data.ProductName + '</td>';//名称
+            html += '<td></td>';//原价
+            html += '<td><input type="text" name="Price" value="' + data.Price + '"></td>';//促销价
+            html += '<td><input type="text" name="FalseOriginalPrice" value="' + data.FalseOriginalPrice + '"></td>';//伪原价
+            html += '<td><input type="text" name="MaxQuantity" value="' + data.MaxQuantity + '"></td>';//个人限购
+            html += '<td><input type="text" name="TotalQuantity" value="' + data.TotalQuantity + '"></td>';//总限购
+            html += '<td style="display:none">' + data.InstallService + '</td>';//安装服务
+            html += '<td><select class="InstallAndPay"><option value="" ' + (data.InstallAndPay.length ? '' : 'selected') + ' >不限</option><option value="PayOnline" ' + (data.InstallAndPay == 'PayOnline' ? 'selected' : '') + ' >在线支付</option><option value="InstallAtShop" ' + (data.InstallAndPay == 'InstallAtShop' ? 'selected' : '') + '>到店安装</option><option value="PayOnlineAndInstallAtShop" ' + (data.InstallAndPay == 'PayOnlineAndInstallAtShop' ? 'selected' : '') + '>在线支付且到店安装</option></select></td>';//支付方式/安装方式
+            html += ' <td><select class="IsUsePCode"><option value="1" ' + (data.IsUsePCode == 1 ? 'selected' : '') + '>使用</option><option value="0" ' + (data.IsUsePCode == 0 ? 'selected' : '') + '>不使用</option></select></td>';//是否可以使用优惠券
+            html += '<td><select class="Channel"><option value="all" ' + (data.Channel == 'all' ? 'selected' : '') + '>全部</option><option value="pc" ' + (data.Channel == 'pc' ? 'selected' : '') + '>仅网站</option><option value="app" ' + (data.Channel == 'app' ? 'selected' : '') + '>仅APP</option></select></td>';//渠道
+            html += '<td><select  class="IsJoinPlace"><option value="0" ' + (data.IsJoinPlace == 0 ? 'selected' : '') + '>否</option><option value="1" ' + (data.IsJoinPlace == 1 ? 'selected' : '') + '>是</option></select></td>';//是否加入会场限购
+            html += ' <td><select class="Label"><option value="" ' + (data.Label.length ? '' : 'selected') + ' >无</option><option value="热卖" ' + (data.Label == "热卖" ? 'selected' : '') + ' > 热卖</option><option value="秒杀" ' + (data.Label == "秒杀" ? 'selected' : '') + ' >秒杀</option><option value="限量" ' + (data.Label == "限量" ? 'selected' : '') + ' >限量</option></select></td>';
+            html += ' <td><select class="IsShow"><option value="1" ' + (data.IsShow == 1 ? 'selected' : '') + '>是</option><option value="0"  ' + (data.IsShow == 0 ? 'selected' : '') + '>否</option></select></td>';//是否显示
+            html += '<td><input type="text" name="SaleOutQuantity" style="width:30px" disabled="disabled" value="' + data.SaleOutQuantity + '"></td>';//销售数量
+            html += '<td><a href="javascript:void(0)" onclick="$(this).parent().parent().remove()">删除</a></td>';//操作
+            html += '</tr>';
+            $("#append_product").before(html);
+            if (type == "sku")
+                QiangGou.CheckPID($("[name=PID]:last"), data,"sku");
+            else if (type == "excel")
+                QiangGou.CheckPID($("[name=PID]:last"), data);
+
+        },
+        ImportProducts: function (target) {
+            var $target = $(target);
+            $("#bit_excel").attr('disabled', true);
+            var temp = Date.parse(new Date());
+            $target.attr("id", temp).attr("name", temp);
+            if ($target.val().split('.')[1].toUpperCase() != "XLS" && $target.val().split('.')[1].toUpperCase() != "XLSX") {
+                alert("格式不符合，仅支持xlsx与xls");
+                return false;
+            }
+
+            $.ajaxFileUpload({
+                url: '/QiangGou/ExportProducts',
+                secureuri: false,
+                fileElementId: temp,
+                dataType: 'text',
+                data: {},
+                type: "post",
+                success: function (result) {
+                    //同一个file控件不支持重复上传同名文件，处理方案(用完就换新的)
+                    $("#" + temp).parent().append('<input type="file" value="" onchange="QiangGou.ImportProducts(this)" style="display:none;" />');
+                    $("#" + temp).remove();
+
+
+                    var json = $.parseJSON(result);
+
+                    if (json.code == 0)
+                        alert("导入失败!!")
+                    else if (json.code == -1)
+                        alert("请确定Excel中有数据(PID未填认为所在行无数据)");
+                    else if (json.error.length) {
+
+                        var wrongMsg = '';
+                        $.each(json.error, function (i, v) {
+                            wrongMsg += (v + "\n");
+                        });
+                        alert(wrongMsg);
+                    }
+                    else if (json.data.length) {
+                        $.each(json.data, function (i, v) {
+                            var data = {
+                                PID: v.PID,
+                                Price: v.Price == 0 ? '' : v.Price,
+                                MaxQuantity: v.MaxQuantity == 0 ? '' : v.MaxQuantity,
+                                TotalQuantity: v.TotalQuantity == 0 ? '' : v.TotalQuantity,
+                                InstallAndPay: v.InstallAndPay,
+                                IsUsePCode: v.IsUsePCode,
+                                Channel: v.Channel,
+                                IsJoinPlace: v.IsJoinPlace,
+                                Label: v.Label,
+                                IsShow: v.IsShow,
+                                ProductName: v.ProductName.length ? '<textarea name="ProductName">' + v.ProductName + '</textarea>' : '',
+                                Position: v.Position == 0 ? '' : v.Position,
+                                FalseOriginalPrice: v.FalseOriginalPrice == 0 ? '' : v.FalseOriginalPrice,
+                                InstallService:v.InstallService
+                            };
+                            QiangGou.AppendProduct("excel", data);
+                        });
+                    }
+                    $("#bit_excel").attr('disabled', false);
+                }
+            });
+        },
+
+        //"关闭": function () {
+        //    $(this).dialog("close");
+        //}
+        //  }
+        //});
+        // },
+        AppendSKUProducts: function () {
+            var flag = true;
+            var $sku = $("#AddSku");
+            $sku.find("input").val("");
+            $sku.dialog({
+                title: "添加SKU商品",
+                width: 400,
+                height: 500,
+                modal: false,
+                buttons: {
+                    "导入": function () {
+                        if (flag == false)
+                            return false;
+
+                        var dialog = $(this);
+                        console.log(dialog);
+                        var productId = dialog.find("[name=Sku_ProductId]").val().trim(),
+                            price = dialog.find("[name=Sku_Price]").val().trim(),
+                            max = dialog.find("[name=Sku_MaxQuantity]").val().trim(),
+                            total = dialog.find("[name=Sku_TotalQuantity]").val().trim(),
+                            installAndPay = dialog.find(".Sku_InstallAndPay option:selected").val(),
+                            isUsePCode = dialog.find(".Sku_IsUsePCode option:selected").val(),
+                            channel = dialog.find(".Sku_Channel option:selected").val(),
+                            isJoinPlace = dialog.find(".Sku_IsJoinPlace option:selected").val(),
+                            label = dialog.find(".Sku_Label option:selected").val(),
+                            isShow = dialog.find(".Sku_IsShow option:selected").val();
+                        if (!productId.length) {
+                            alert("ProductId为空");
+                            return false;
+                        }
+                        $.post("/QiangGou/SelectPidsByParent", { productId: productId }, function (data) {
+                            if (data.length) {
+                                if (price.length && isNaN(price)) {
+                                    alert("活动价填写有误");
+                                    return false;
+                                }
+                                if (!max.length || isNaN(max)) {
+                                    alert("个人限购填写有误");
+                                    return false;
+                                }
+                                if (!total.length || isNaN(total)) {
+                                    alert("总限购填写有误");
+                                    return false;
+                                }
+                                flag = false;
+                                $.each(data, function (i, v) {
+                                    var obj = {
+                                        PID: v,
+                                        Price: price,
+                                        MaxQuantity: max,
+                                        TotalQuantity: total,
+                                        InstallAndPay: installAndPay,
+                                        IsUsePCode: isUsePCode,
+                                        Channel: channel,
+                                        IsJoinPlace: isJoinPlace,
+                                        Label: label,
+                                        IsShow: isShow,
+                                        Position: '',
+                                        ProductName: '',
+                                        FalseOriginalPrice: ''
+                                    };
+                                    QiangGou.AppendProduct("sku", obj);
+                                });
+                                dialog.dialog("close");
+                            }
+                            else {
+                                alert("ProductId不存在或该系列产品都处于下架/缺货");
+                                return false;
+                            }
+                        });
+                    }
+                    //"关闭": function () {
+                    //    $(this).dialog("close");
+                    //}
+                }
+            });
+        },
+        CheckPID: function (target, data,type) {
+            $target = $(target);
+            var _NewPID = $target.val().trim();
+
+            if (_NewPID.indexOf("|") < 0) {
+                $target.parent().next().next().empty().append('<font color="red" class="error-pid">无此产品编号</font>');
+                return false;
+            }
+
+            var count = 0;
+            $("[name=PID]").each(function () {
+                if ($(this).val().trim() == _NewPID)
+                    count++;
+            });
+            if (count > 1)
+                $target.parent().next().next().empty().append('<font color="red" class="error-pid">产品配置重复</font>')
+            else {
+                $.ajax({
+                    type: "post",
+                    url: '/QiangGou/FetchProductByPID',
+                    async: false,
+                    data: { "PID": _NewPID },
+                    success: function (result) {
+
+                        if (!result) {
+                            $target.parent().next().next().empty().append('<font color="red"  class="error-pid">无此产品编号</font>')
+                        }
+                        if (result.CaseSensitive) {
+                            $target.parent().next().next().empty().append('<font color="red"  class="error-pid">请跟产品库配置大小写一致</font>')
+                        }
+                        else if (!result.OnSale || result.Stockout) {
+                            $target.parent().next().next().empty().append('<font color="red"  class="error-pid">此产品下架或缺货</font>')
+                        }
+                        else {
+                            if (!data || !data.ProductName.length)
+                                $target.parent().next().next().empty().html('<textarea name="ProductName">' + result.DisplayName + '</textarea>');
+                            //if (!data || data.Price <= 0)
+                                $target.parent().next().next().next().empty().text((result.cy_list_price * 1.0).toFixed(0) + ".00");
+                            if (!data || data.FalseOriginalPrice <= 0)
+                                $target.parent().next().next().next().next().next().find("input").val((result.cy_list_price * 1.0).toFixed(0) + ".00");
+                            if (!data)
+                                $target.parent().next().next().next().next().next().next().next().next().empty().text((result.InstallService));
+                            if (!data) {
+                                var totalqty = $target.parent().next().next().next().next().next().next().next().find("input").val(); 
+                                    if (totalqty < result.TotalQuantity) {
+                                        $target.parent().parent().find("[name=TotalQuantity]").val(result.TotalQuantity);                                         
+                                }
+
+                            }                              
+                            if (data) {
+                                var totalQty = Math.max(result.TotalQuantity, data.TotalQuantity);
+                                var strtotalQty = totalQty == 0 ? "" : totalQty;
+                                $target.parent().parent().find("[name=TotalQuantity]").val(strtotalQty);   
+                            }
+                                
+                            $target.parent().next().next().next().next().next().next().next().next().next().next().next().next().next().next().next().find("input").val(result.SaleOutQuantity);
+                        }
+                    }
+                });
+            }
+        },
+        Save: function () {
+            var activityName = $("[name=ActivityName]").val().trim(),//活动名称
+                   activityId = "@Request.QueryString["aid"]",//活动ID
+                   startDateTime = $("#StartDateTime").val(),//活动开始时间
+                   endDateTime = $("#EndDateTime").val(),//活动结束时间
+                   activeType = $("[name=ActivityType]:checked").val(),//活动类型
+                   PlaceQuantity = $("[name=PlaceQuantity]").val();//会场限购
+            IsNewUserFirstOrder = $(".IsNewUserFirstOrder").find("option:selected").val() == 1;//活动限购
+            if ($(".error-pid").length > 0) {
+                alert("存在错误PID和重复PID,请更正后再保存!");
+                return false;
+            }
+            //错误明细
+            var wrongMsgHtml = '';
+            if (!activityName.length)
+                wrongMsgHtml += '<tr><td>活动名称</td><td>不可为空</td></tr>';
+            if (!startDateTime.length || !endDateTime.length)
+                wrongMsgHtml += '<tr><td>活动时间</td><td>不可为空</td></tr>';
+            else if (new Date(startDateTime) >= new Date(endDateTime))
+                wrongMsgHtml += '<tr><td>活动时间</td><td>开始时间需要大于结束时间</td></tr>';
+
+            if (PlaceQuantity.length && parseInt(PlaceQuantity) + "" == "NaN")
+                wrongMsgHtml += '<tr><td>会场限购</td><td>填写的不符合标准</td></tr>';
+            if ($("#product .product-item").length == 0)
+                wrongMsgHtml += '<tr><td></td><td>没有产品</td></tr>';
+
+            $("#product .product-item").each(function () {
+                var PID = $(this).find("[name=PID]").val().trim();//PID
+                var Price = $(this).find("[name=Price]").val().trim();//促销价
+                var Position = $(this).find("[name=Position]").val().trim();//排序
+                var OriginalPrice = $(this).find("[name=Price]").parent().prev().text().trim();//原价
+                var FalseOriginalPrice = $(this).find("[name=FalseOriginalPrice]").val().trim();//伪原价
+                var MaxQuantity = $(this).find("[name=MaxQuantity]").val().trim();//个人限购
+                var TotalQuantity = $(this).find("[name=TotalQuantity]").val().trim();//总限购
+                var msgInfo = "";
+                if (Position.length && parseInt(Position) + "" == "NaN")
+                    msgInfo += "排序填写不规范<br/>";
+                if (!Price.length)
+                    msgInfo += '促销价不允许为空<br/>';
+                else if (isNaN(Price))
+                    msgInfo += "促销价填写不规范<br/>";
+                else if (parseFloat(Price) <= 0 || parseFloat(Price) > parseFloat(OriginalPrice))
+                    msgInfo += "促销价必须高于0小于等于途虎价<br/>";
+                if (!FalseOriginalPrice.length)
+                    msgInfo += '伪原价不允许为空<br/>';
+                else if (isNaN(FalseOriginalPrice))
+                    msgInfo += "伪原价填写不规范<br/>";
+                else if (parseFloat(FalseOriginalPrice) <= 0 || parseFloat(FalseOriginalPrice) < parseFloat(Price))
+                    msgInfo += "伪原价必须高于0且不小于途虎价<br/>";
+                if (MaxQuantity.length && parseInt(MaxQuantity) + "" == "NaN")
+                    msgInfo += "个人限购数量填写不规范<br/>";
+                if (activeType == 1 && !TotalQuantity.length)
+                    msgInfo += "天天秒杀总限购必须填写<br/>";
+                if (TotalQuantity.length && parseInt(TotalQuantity) + "" == "NaN")
+                    msgInfo += "总限购数量填写不规范<br/>";
+                if (msgInfo.length)
+                    wrongMsgHtml += '<tr><td>' + PID + '</td><td>' + msgInfo + '</td></tr>';
+            });
+            if (wrongMsgHtml.length) {
+                $(".wrong-msg").empty().html('<tr><th width="10%">PID</th><th>错误明细</th></tr>');
+                $(".wrong-msg").append(wrongMsgHtml).show();
+                return false;
+            }
+
+            //价格变动太大的PID
+            var priceTit10 = "";
+            var priceTit20 = "";
+            var products = [];
+            var needExamPids = [];
+            $("#product .product-item").each(function () {
+                var PID = $(this).find("[name=PID]").val().trim();//PID
+                var Price = $(this).find("[name=Price]").val().trim();//促销价
+                var Position = $(this).find("[name=Position]").val().trim();//排序
+                var OriginalPrice = $(this).find("[name=Price]").parent().prev().text().trim();//原价
+                var FalseOriginalPrice = $(this).find("[name=FalseOriginalPrice]").val().trim();//伪原价
+                var MaxQuantity = $(this).find("[name=MaxQuantity]").val().trim();//个人限购
+                var TotalQuantity = $(this).find("[name=TotalQuantity]").val().trim();//总限购
+                var InstallService = $(this).find("[name=TotalQuantity]").parent().next().text().trim();//安装服务
+                var SaleOutQuantity = $(this).find("[name=SaleOutQuantity]").val();
+                var ProductName = $(this).find("[name=ProductName]").val();
+
+                var onepro = {
+                    PID: PID,
+                    Position: Position,
+                    Price: Price,
+                    FalseOriginalPrice: FalseOriginalPrice,
+                    SaleOutQuantity: SaleOutQuantity,
+                    MaxQuantity: MaxQuantity,
+                    TotalQuantity: TotalQuantity,
+                    InstallService:InstallService,
+                    ProductName: ProductName,
+                    Label: $(this).find(".Label").val(),
+                    InstallAndPay: $(this).find(".InstallAndPay").val(),
+                    IsUsePCode: $(this).find(".IsUsePCode").val() == 1,
+                    Channel: $(this).find(".Channel").val(),
+                    IsJoinPlace: $(this).find(".IsJoinPlace").val() == 1,
+                    IsShow: $(this).find(".IsShow").val() == 1
+                };
+                products.push(onepro);
+
+                if (PID.toUpperCase().indexOf('TR-') >= 0 || PID.toUpperCase().indexOf('LG-') >= 0) {
+                    if (Math.abs(parseFloat(OriginalPrice) - parseFloat(Price)) / parseFloat(OriginalPrice) > 0.1) {
+                        priceTit10 += PID + "，";
+                        needExamPids.push(PID);
+                    }
+                }
+                else {
+                    if (Math.abs(parseFloat(OriginalPrice) - parseFloat(Price)) / parseFloat(OriginalPrice) > 0.2) {
+                        priceTit20 += PID + "，";
+                        needExamPids.push(PID);
+                    }
+                }
+            });
+
+            if (priceTit10.length || priceTit20.length) {
+                var tit = "";
+                if (priceTit10.length)
+                    tit += priceTit10 + "降价幅度超过10%，"
+                if (priceTit20.length)
+                    tit += priceTit20 + "降价幅度超过20%，"
+                tit += '需要审核,是否继续保存？';
+                if (!confirm(tit))
+                    return false;
+            }
+            var $diff = $("#AynchroDiff");
+            $.ajax({
+                type: "post",
+                url: '/QiangGou/SelectDiffActivityProducts',
+                async: false,
+                data: { Products: JSON.stringify(products), ActivityID: activityId, ActivityType: activeType },
+                success: function (result) {
+                    if (result.Status == 1) {
+                        $diff.html(result.Html);
+                        $diff.dialog({
+                            title: "商品价格校验",
+                            width: 1000,
+                            height: 800,
+                            modal: false,
+                            buttons: {
+                                "同步后保存": function () {
+                                    var checkdatas = [];
+                                    $("table input[type=checkbox]:checked").each(function () {
+                                        var AID = $(this).parent().next().text().trim();//AID
+                                        var PID = $(this).parent().next().next().next().text().trim();//PID
+                                        var ProductName = $(this).parent().next().next().next().next().text().trim();//产品名称
+                                        var Price = $(this).parent().next().next().next().next().next().text().trim();//产品促销价
+                                        var FalseOriginalPrice = $(this).parent().next().next().next().next().next().next().text().trim();//产品为原价
+                                        var InstallAndPay = $(this).parent().next().next().next().next().next().next().next().text().trim();//产品安装方式
+                                        var IsUsePCode = $(this).parent().next().next().next().next().next().next().next().next().text().trim()=='使用';//产品是否使用优惠券
+                                        var cd = {
+                                            ActivityID: AID,
+                                            PID: PID,
+                                            ProductName: ProductName,
+                                            Price: Price,
+                                            FalseOriginalPrice: FalseOriginalPrice,
+                                            InstallAndPay: InstallAndPay,
+                                            IsUsePCode: IsUsePCode,
+                                        };
+                                        checkdatas.push(cd);
+                                    });
+                                    console.log(checkdatas);
+                                    $.ajax({
+                                        type: "post",
+                                        url: '/QiangGou/Save',
+                                        data: {
+                                            ActivityName: activityName,
+                                            ActivityID: activityId,
+                                            StartDateTime: startDateTime,
+                                            EndDateTime: endDateTime,
+                                            Products: JSON.stringify(products),
+                                            QiangGouDiff: JSON.stringify(checkdatas),
+                                            ActiveType: activeType,
+                                            PlaceQuantity: PlaceQuantity,
+                                            IsNewUserFirstOrder: IsNewUserFirstOrder,
+                                            NeedExamPids: needExamPids.length ? needExamPids.join(';') : '',
+                                            NeedExam: priceTit10.length > 0 || priceTit20.length > 0
+                                        },
+                                        beforeSend: function () {
+                                            $("#AynchroDiff").text("正在处理中，请稍后！")
+                                        },
+                                        success: function (result) {
+                                            if (result.Status)
+                                                location.href = "/QiangGou/Index";
+                                            else
+                                                alert(result.Message);
+                                        },
+                                    })
+                                }
+                            }
+                        });
+                    }
+                    else
+                        $.post("/QiangGou/Save",
+                        {
+                            ActivityName: activityName,
+                            ActivityID: activityId,
+                            StartDateTime: startDateTime,
+                            EndDateTime: endDateTime,
+                            Products: JSON.stringify(products),
+                            ActiveType: activeType,
+                            PlaceQuantity: PlaceQuantity,
+                            IsNewUserFirstOrder: IsNewUserFirstOrder,
+                            NeedExamPids: needExamPids.length ? needExamPids.join(';') : '',
+                            NeedExam: priceTit10.length > 0 || priceTit20.length > 0
+                        }, function (result) {
+                            if (result.Status)
+                                location.href = "/QiangGou/Index";
+                            else
+                                alert(result.Message);
+                        });
+                }
+            });
+
+        },
+
+        CheckSamePIDPrice: function () {
+
+            $(".wrong_tit").empty().html("正在校验...");
+            var activityID = $(".activityid").text();
+            var p = [];
+            $("#product .product-item").each(function (i) {
+                var single = {
+                    ActivityID: "@Request.QueryString["aid"]",
+                    PID: $(this).find("[name=PID]").val(),
+                    Price: $(this).find("[name=Price]").val()
+                }
+                p.push(single);
+            });
+            $.post("/QiangGou/CheckPIDSamePrice",
+                { p: JSON.stringify(p) },
+                function (data) {
+
+                    var wrongMsgHtml = "";
+                    $.each(data, function (i, v) {
+                        wrongMsgHtml += '<tr><td>' + v.PID + '</td><td>' + v.Content + '</td></tr>';
+                    });
+                    $(".wrong-msg").empty().html('<tr><th width="10%">PID</th><th>明细</th></tr>').append(wrongMsgHtml);
+
+                });
+        }
+    };
+</script>

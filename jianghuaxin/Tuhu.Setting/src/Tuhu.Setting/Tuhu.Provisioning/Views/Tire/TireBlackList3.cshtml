@@ -1,0 +1,40 @@
+﻿@using Tuhu.Provisioning;
+@using Tuhu.Provisioning.DataAccess.Entity;
+@model Tuhu.Component.Common.Models.ListModel<TireBlackListLog>
+    @{
+        Layout = null;
+    }
+    @if (Model.Source.Any())
+    {
+        var id = (Model.Pager.CurrentPage - 1) * Model.Pager.PageSize;
+        <table class="table" data-count="@Model.Pager.TotalItem" width="100%">
+            <tr>
+                <th>ID</th>
+                <th>BlackNumber</th>
+                <th>操作类型</th>
+                <th>操作人</th>
+                <th>操作时间</th>
+            </tr>
+            @foreach (var item in Model.Source)
+            {
+                id += 1;
+                <tr>
+                    <td>@id</td>
+                    <td>@item.BlackNumber</td>
+                    <td>@(item.Type == 1 ? "添加" :( item.Type==2 ? "删除" : "更新" ))</td>
+                    <td>@(item.Operator)</td>
+                    <td>@item.CreateDateTime</td>
+                </tr>
+            }
+        </table>
+    }
+    else
+    {
+        <div>无数据</div>
+    }
+    @Html.Pager(Model.Pager, true, id => Url.Action("TireBlackList3", new
+{
+    BlackNumber = ViewBag.BlackNumber,
+    pageIndex = id,
+    pageSize = Model.Pager.PageSize
+}))

@@ -1,0 +1,204 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.WebCouponActivity
+
+@{
+    Layout = null;
+}
+@{
+    ViewBag.title = "Web端优惠券活动配置";
+    var coupon = ViewData["CouponRuleModel"] as Tuhu.Provisioning.DataAccess.Entity.WebCouponActivityRuleModel;
+    var time = coupon.Term == null ?
+        (coupon.ValiStartDate == null ? "" :
+        string.Format("{0}至{1}", coupon.ValiStartDate.GetValueOrDefault().ToString("yyyy-MM-dd"), coupon.ValiEndDate.GetValueOrDefault().ToString("yyyy-MM-dd"))) :
+        (coupon.DeadLineDate == null ? string.Format("自领取后{0}天", coupon.Term.ToString()) : string.Format("自领取后{0}天, 最终有效期为{1}", coupon.Term.ToString(), coupon.DeadLineDate.GetValueOrDefault().ToString("yyyy-MM-dd")));
+}
+
+<style type="text/css">
+    .middleInput {
+        width:120px;
+    }
+</style>
+
+
+<body>
+    <h2>Web优惠券活动配置<span style="color: #d43f3a;font-size:15px; font-weight: bolder">*(所有内容不能为空)</span></h2>
+    <table id="tableContainer" width="100%" style="font-size:10px;text-align:center">
+        <tr>
+            <td colspan="2" rowspan="2">
+                <label>banner:</label>
+                <img height="40" class="bannerImageArea" src="@Model.SmallBannerImageUrl"/>
+                <input type="hidden" class="bannerBigImage" value="@Model.BigBannerImageUrl"/>
+                <input type="hidden" class="bannerSmallImage" value="@Model.SmallBannerImageUrl"/>
+                <form method="post" action="" enctype="multipart/form-data">
+                    <input style="width: 150px;" type="file" id="bannerArea" name="bannerArea" onchange="UploadBannerImg()"/><br /><span style="color: #d43f3a;font-size:5px; font-weight: bolder">(请等待图片加载完成)</span>
+                </form>
+            </td>
+            <td colspan="2" rowspan="2">
+                <label>content:</label>
+                <img height="40" class="contentImageArea" src="@Model.SmallContentImageUrl" />
+                <input type="hidden" class="contentBigImage" value="@Model.BigContentImageUrl" />
+                <input type="hidden" class="contentSmallImage" value="@Model.SmallContentImageUrl"/>
+                <form method="post" action="" enctype="multipart/form-data">
+                    <input style="width: 150px;" type="file" id="ContentArea" name="ContentArea" onchange="UploadContentImg()" /><br /><span style="color: #d43f3a;font-size:5px; font-weight: bolder">(请等待图片加载完成)</span>
+                </form>
+            </td>
+            <td colspan="2"><label>是否同时发券：</label><input id="IsSendCoupon" type="checkbox" checked="@Model.IsSendCoupon" /></td>
+        </tr>
+        <tr>
+            <td><label>URL：</label></td>
+            <td align="left"><input class="middleInput" id="Url" type="text" value="@Model.Url" /></td>
+        </tr>
+        <tr>
+            <td><label>按钮文案：</label></td>
+            <td  align="left"><input class="middleInput" id="ButtonText" type="text" value="@Model.ButtonText"></td>
+            <td><label>背景色值：</label></td>
+            <td  align="left"><input class="middleInput" id="ButtonBackGroundColor" type="text" class="littleInput" value="@Model.ButtonBackGroundColor"/></td>
+            <td><label>文字色值：</label></td>
+            <td  align="left"><input class="middleInput" id="ButtonTextColor" class="littleInput" type="text" value="@Model.ButtonTextColor"/></td>
+        </tr>
+        <tr>
+            <td><label>浮层按钮文案：</label></td>
+            <td align="left"><input class="middleInput" id="layerButtonText" type="text" value="@Model.LayerButtonText" disabled="@(!Model.IsSendCoupon)" /></td>
+            <td><label>浮层按钮背景色值：</label></td>
+            <td align="left"><input class="middleInput" id="layerButtonBackGroundColor" type="text" value="@Model.LayerButtonBackGroundColor" disabled="@(!Model.IsSendCoupon)"></td>
+            <td><label>浮层按钮文字色值：</label></td>
+            <td align="left"><input class="middleInput" id="layerButtonTextColor" type="text" value="@Model.LayerButtonTextColor" disabled="@(!Model.IsSendCoupon)" /></td>
+        </tr>
+        <tr>
+            <td><label>优惠券RuleGUID(GUID)：</label></td>
+            <td align="left"><input class="middleInput" id="RuleGUID" type="text" value="@Model.PromotionRuleGUID" disabled="@(!Model.IsSendCoupon)"/></td>
+            @*<td><label>优惠券Type（整数）：</label><input id="PromotionType" type="text" value="@Model.PromotionType" disabled="@(!Model.IsSendCoupon)"/></td>*@
+            <td><label>优惠券描述：</label></td>
+            <td align="left"><input class="middleInput" id="CouponDescription" type="text" value="@coupon.Description" disabled="disabled" /></td>
+            <td><label>CodeChannel：</label></td>
+            <td align="left"><input class="middleInput" id="CodeChannel" type="text" value="@coupon.Channel" disabled="disabled" /></td>
+        </tr>
+        <tr>
+            @*<td><label>优惠券有效时间（天）:</label><input id="ValidityPeriod" type="text" /></td>*@
+            <td><label>使用金额(整数)：</label></td>
+            <td align="left"><input class="middleInput" id="UseMoney" type="text" value="@coupon.MinMoney" disabled="disabled" /></td>
+            <td><label>优惠金额(整数)：</label></td>
+            <td align="left"><input class="middleInput" id="DiscountMoney" type="text" value="@coupon.Discount" disabled="disabled" /></td>
+            <td>
+                <label>时间：</label>
+            </td>
+            <td>
+                <input id="time" name="startDate" type="text" value="@time" disabled="disabled" />
+            </td>
+        </tr>
+        <tr>
+            <td><label>部门:</label></td>
+            <td align="left">
+                <input class="middleInput" id="DepartmentName" type="text" value="@coupon.DepartmentName" disabled="disabled" />
+            </td>
+            <td><label>用途：</label></td>
+            <td align="left">
+                <input class="middleInput" id="IntentionName" type="text" value="@coupon.IntentionName" disabled="disabled" />
+            </td>
+        </tr>
+    </table>
+<input type="hidden" id="ActivityId" value="@Model.ActivityId"/>
+ <input type="hidden" id="ActivityKey" value="@Model.ActivityKey" />
+</body>
+<script src="../../Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<link rel="stylesheet" href="/Scripts/artDialog6.0.4/css/ui-dialog.css" />
+<script src="~/Scripts/artDialog6.0.4/dist/dialog-min.js"></script>
+<script src="~/Scripts/artDialog6.0.4/dist/dialog-plus-min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#RuleGUID').on('input', function () {
+
+            ruleGuidInput(this.value);
+        });
+    })
+ 
+    $("#IsSendCoupon").change(function() {
+        var isSendCoupon = document.getElementById("IsSendCoupon").checked;
+        if (!isSendCoupon) {
+            $("#RuleGUID").attr("disabled", true);
+            $("#PromotionType").attr("disabled", true);
+            $("#UseMoney").attr("disabled", true);
+            $("#DiscountMoney").attr("disabled", true);
+            $("#layerButtonText").attr("disabled", true);
+            $("#layerButtonBackGroundColor").attr("disabled", true);
+            $("#layerButtonTextColor").attr("disabled", true);
+
+        } else {
+            $("#RuleGUID").attr("disabled", false);
+            $("#PromotionType").attr("disabled", false);
+            $("#UseMoney").attr("disabled", false);
+            $("#DiscountMoney").attr("disabled", false);
+            $("#layerButtonText").attr("disabled", false);
+            $("#layerButtonBackGroundColor").attr("disabled", false);
+            $("#layerButtonTextColor").attr("disabled", false);
+        }
+    })
+    function UploadBannerImg() {
+         $.ajaxFileUpload({
+             url: '/Article/ImageUploadToAli',
+             secureuri: false,
+             fileElementId: "bannerArea",
+             dataType: 'json',
+             data: {},
+             type: "post",
+             success: function (result) {
+                 if (result.BImage != "" && result.SImage != "") {
+                     $(".bannerImageArea").attr("src", result.SImage);
+                     $(".bannerSmallImage").val(result.SImage);
+                     $(".bannerBigImage").val(result.BImage);
+                 } else {
+                     alert("上传失败！");
+                 }
+             }
+         });
+    }
+
+    function ruleGuidInput(value) {
+        $("#CouponDescription").val('');
+        $("#CodeChannel").val('');
+        $("#UseMoney").val('');
+        $("#DiscountMoney").val('');
+        $("#time").val('');
+        $("#DepartmentName").val('');
+        $("#IntentionName").val('');
+        value = value.replace('/\s+/g', '');
+        if (/^[0-9A-Fa-f]{8}[-]?([0-9A-Fa-f]{4}[-]?){3}[0-9A-Fa-f]{12}$/.test(value) === false) {
+            return;
+        }
+        $.get("GetCouponRule", { ruleGUID: value }, function (data) {
+            var coupon = data;
+            if (coupon != null) {
+                var time = (!!coupon.Term) ?
+                    (!!coupon.DeadLineDate ? ('自领取后' + coupon.Term + '天,' + '(最终有效期为' + coupon.DeadLineDate + ')') : ('自领取后' + coupon.Term + '天')) :
+                    ((!!coupon.ValiStartDate) ? (coupon.ValiStartDate + '至' + coupon.ValiEndDate) : '');
+                $("#CouponDescription").val(coupon.Description);
+                $("#CodeChannel").val(coupon.Channel);
+                $("#UseMoney").val(coupon.MinMoney);
+                $("#DiscountMoney").val(coupon.Discount);
+                $("#time").val(time);
+                $("#DepartmentName").val(coupon.DepartmentName);
+                $("#IntentionName").val(coupon.IntentionName);
+            }
+        });
+    }
+
+    function UploadContentImg() {
+        $.ajaxFileUpload({
+            url: '/Article/ImageUploadToAli',
+            secureuri: false,
+            fileElementId: "ContentArea",
+            dataType: 'json',
+            data: {},
+            type: "post",
+            success: function (result) {
+                if (result.BImage != "" && result.SImage != "") {
+                    $(".contentImageArea").attr("src", result.SImage);
+                    $(".contentSmallImage").val(result.SImage);
+                    $(".contentBigImage").val(result.BImage);
+                } else {
+                    alert("上传失败！");
+                }
+            }
+        });
+
+    }
+</script>

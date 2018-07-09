@@ -1,0 +1,279 @@
+﻿@using System.Collections
+@using Tuhu.MMS.Web.Domain.UserFilter
+@{
+    var configs = ViewData["config"] as IEnumerable<UserFilterValueConfig>;
+    Func<string, IEnumerable<SelectListItem>> getselectlist = colname =>
+    {
+        var selectlists = configs.Where(x => x.ColName == colname).Select(x => new SelectListItem()
+        {
+            Text = x.Name,
+            Value = x.Value
+        }).ToList();
+        selectlists.Insert(0, new SelectListItem() { Text = "请选择", Value = "" });
+        return selectlists;
+    };
+}
+<div class="ibox-content" v-show="SecondCategorySelect=='ListPagePV'">
+    <form id="ListPagePV">
+        <div class="row">
+            @Html.Partial("_Share/_Share_ShowViews")
+            <div class="col-sm-2" style="clear: both">
+                <div class="form-group">
+                    <label for="exampleInputName2">
+                        页面类型
+                    </label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <select class="form-control" name="typename" v-on:change="selectchange('typename')">
+                        @{
+                            foreach (var selectListItem in getselectlist("typename"))
+                            {
+                                <option value="@selectListItem.Value">@selectListItem.Text</option>
+                            }
+                        }
+                    </select>
+                   
+                </div>
+            </div>
+            <div class="col-sm-2" style="clear: both">
+                <div class="form-group">
+                    <label for="exampleInputName2">
+                        商品详情页业务线
+                    </label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    
+                    <select class="form-control" name="businesslines" v-on:change="selectchange('businesslines')">
+                        @{
+                            foreach (var selectListItem in getselectlist("businesslines"))
+                            {
+                                <option value="@selectListItem.Value">@selectListItem.Text</option>
+                            }
+                        }
+                    </select>
+
+                    @*@Html.DropDownList("businesslines", getselectlist("businesslines"), new { @class = "form-control" })*@
+                    @*<select class="form-control" name="businesslines">
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                            <option>5</option>
+                        </select>*@
+                </div>
+            </div>
+
+           
+        </div>
+
+
+        <div class="hr-line-dashed"></div>
+    </form>
+</div>
+
+
+
+
+
+<div class="ibox-content" v-show="SecondCategorySelect=='ProductDetailByCategoryPV'">
+    <form id="ProductDetailByCategoryPV">
+        <div class="row">
+            @Html.Partial("_Share/_Share_ShowViews")
+
+
+            <div class="col-sm-2" style="clear: both">
+                <div class="form-group">
+                    <label for="exampleInputName2">
+                        商品详情页业务线
+                    </label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    
+                    <select class="form-control" name="businesslines" v-on:change="selectchange('businesslines')">
+                        @{
+                            foreach (var selectListItem in getselectlist("businesslines"))
+                            {
+                                <option value="@selectListItem.Value">@selectListItem.Text</option>
+                            }
+                        }
+                    </select>
+
+                    @*@Html.DropDownList("businesslines", getselectlist("businesslines"), new { @class = "form-control" })*@
+                    @*<select class="form-control" name="businesslines">
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                            <option>5</option>
+                        </select>*@
+                </div>
+            </div>
+            <div class="col-sm-2" style="clear: both">
+                <div class="form-group">
+                    <label for="exampleInputName2">
+                        商品详情页一级类目
+                    </label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    
+                    <select class="form-control" name="category1" v-on:change="selectchange('category1')">
+                        @{
+                            foreach (var selectListItem in getselectlist("category1"))
+                            {
+                                <option value="@selectListItem.Value">@selectListItem.Text</option>
+                            }
+                        }
+                    </select>
+
+                    @*@Html.DropDownList("category1", getselectlist("category1"), new { @class = "form-control" })*@
+                    @*<select class="form-control" name="category1">
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                            <option>5</option>
+                        </select>*@
+                </div>
+            </div>
+            <div class="col-sm-2" style="clear: both">
+                <div class="form-group">
+                    <label for="exampleInputName2">
+                        商品详情页二级类目
+                    </label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <select class="form-control" name="category2" v-on:change="selectchange('category2')">
+                        @{
+                            foreach (var selectListItem in getselectlist("category2"))
+                            {
+                                <option value="@selectListItem.Value">@selectListItem.Text</option>
+                            }
+                        }
+                    </select>
+
+                    @*@Html.DropDownList("category2", getselectlist("category2"), new { @class = "form-control" })*@
+                    @*<select class="form-control" name="category2">
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                            <option>5</option>
+                        </select>*@
+                </div>
+            </div>
+            <div class="col-sm-2" style="clear: both">
+                <div class="form-group">
+                    <label for="exampleInputName2">
+                        商品详情页三级类目
+                    </label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <select class="form-control" name="category3" v-on:change="selectchange('category3')">
+                        @{
+                            foreach (var selectListItem in getselectlist("category3"))
+                            {
+                                <option value="@selectListItem.Value">@selectListItem.Text</option>
+                            }
+                        }
+                    </select>
+
+                    @*@Html.DropDownList("category3", getselectlist("category3"), new { @class = "form-control" })*@
+                    @*<select class="form-control" name="category3">
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                            <option>5</option>
+                        </select>*@
+                </div>
+            </div>
+        </div>
+
+
+        <div class="hr-line-dashed"></div>
+    </form>
+</div>
+
+
+
+
+
+<div class="ibox-content" v-show="SecondCategorySelect=='ProductDetailByPIDPV'">
+    <form id="ProductDetailByPIDPV">
+        <div class="row">
+            @Html.Partial("_Share/_Share_ShowViews")
+            <div class="col-sm-2" style="clear: both">
+                <div class="form-group">
+                    <label for="exampleInputName2">
+                        商品PID
+                    </label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <input type="text" name="pid" class="form-control" />
+                </div>
+            </div>
+            <div class="col-sm-2" style="clear: both">
+                <div class="form-group">
+                    <label for="exampleInputName2">
+                        商品名称
+                    </label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <input type="text" class="form-control" />
+                </div>
+            </div>
+        </div>
+
+
+        <div class="hr-line-dashed"></div>
+    </form>
+</div>
+
+
+
+
+<div class="ibox-content" v-show="SecondCategorySelect=='PageViewByTireSizePV'">
+    <form id="PageViewByTireSizePV">
+        <div class="row">
+            @Html.Partial("_Share/_Share_ShowViews", new ViewDataDictionary() { { "config", configs.Where(x => x.ColName == "channel") } })
+            <div class="col-sm-2" style="clear: both">
+                <div class="form-group">
+                    <label for="exampleInputName2">
+                        商品详情页轮胎规格
+                    </label>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    @Html.DropDownList("specifications", getselectlist("specifications"), new { @class = "form-control" })
+                    @*<select class="form-control" name="specifications">
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                            <option>5</option>
+                        </select>*@
+                </div>
+            </div>
+        </div>
+
+
+        <div class="hr-line-dashed"></div>
+    </form>
+</div>

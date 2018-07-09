@@ -1,0 +1,254 @@
+﻿@{
+    ViewBag.Title = "轮胎活动";
+    Layout = "~/Views/Shared/_Layout_TiresActivity.cshtml";
+}
+@model List<Tuhu.Provisioning.DataAccess.Entity.TiresActivity.TiresActivityModel>
+<style>
+    .table { text-align: center; }
+        .table tr > th { text-align: center; }
+</style>
+<div class="wrapper wrapper-content animated fadeInRight ecommerce">
+    <div class="ibox-content m-b-sm border-bottom third-search" style="padding-bottom:0">
+        <div class="row">
+            <form action="@Url.Action("TiresActivity", "TiresActivity")" method="get">
+                <div class="col-lg-12">
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" name="ActivityId" id="activity-activityId" placeholder="请输入活动ID" value="@ViewBag.ActivityId"  />
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" name="ActivityName" id="activity-activityName" placeholder="请输入活动名称" value="@ViewBag.ActivityName"  />
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" name="StartTime" id="activity-startTime" value="@ViewBag.StartTime" onclick="WdatePicker({ dateFmt :'yyyy/MM/dd HH:mm:ss'})" placeholder="活动开始日期" />
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" name="EndTime" id="activity-endTime" value="@ViewBag.EndTime" onclick="WdatePicker({ dateFmt :'yyyy/MM/dd HH:mm:ss'})" placeholder="活动结束日期" />
+                    </div>
+                    <div class="form-group col-sm-3">
+                        <button type="submit" class="btn  btn-primary" data-toggle="modal" data-target="#myModal5">搜索</button>
+                        @*<button type="button" class="btn  btn-primary" data-toggle="modal" style="margin-left:20px" id="add-tiresActivity" data-target="#myModal5">添加</button>*@
+                        @*<button type="button" class="btn  btn-primary qiehuan" style="margin-left:20px" data-toggle="modal" data-target="#myModal5">切换</button>*@
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12" style="text-align:center">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <table class="table table-bordered">
+                        <thead style="font-size:smaller">
+                            <tr>
+                                <th>活动ID</th>
+                                <th>活动名称</th>
+                                <th>开始日期</th>
+                                <th>结束日期</th>
+                                <th>创建日期</th>
+                                <th>更新日期</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td><a target="_blank" href="https://wx.tuhu.cn/react/tireList2/?activityId=@item.ActivityId&tuhu">@item.ActivityId</a></td>
+                                        <td>@item.ActivityName</td>
+                                        <td>@item.StartTime</td>
+                                        <td>@item.EndTime</td>
+                                        <td>@item.CreateDateTime</td>
+                                        <td>@item.LastUpdateDateTime</td>
+                                        <td><a onclick="EditActivity(this,'@item.ActivityId')">编辑</a>/<a onclick="DeleteActivity('@item.ActivityId')">删除</a>/<a onclick="SearchLog('@item.ActivityId')">日志</a>/<a onclick="RefreshCache('@item.ActivityId')">缓存</a></td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr><td colspan="7">无数据</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                    <div class="text-center">
+                        <div class="btn-group" id="tcdPageCode">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <table style="display:none" class="region-template">
+        <tr>
+            <td>
+                <select style="width:150px" id="provinceId">
+                    <option value="0">-请选择-</option>
+                    @foreach (var item in ViewBag.MiniRegion)
+                    {
+                        <option value="@item.RegionId">@item.RegionName</option>
+                    }
+                </select>
+            </td>
+            <td>
+                <select style="width:150px" id="cityId">
+                    <option value="0">-请选择-</option>
+                </select>
+            </td>
+            <td>
+                <input type="button" value="刷新" id="refresh-button"/>
+            </td>
+        </tr>
+    </table>
+</div>
+@section scripts{
+    <script type="text/javascript">
+            $(document).ready(function () {
+                $("#tcdPageCode").createPage({
+                    pageCount: @ViewBag.TotalPage,
+                    current: @ViewBag.CurrentPage,
+                    backFn: function (p) {
+                        //单击回调方法，p是当前页码
+                        var currentLink=window.location.href;
+                        if(currentLink.indexOf("ActivityType")!=-1){
+                            //搜索分页
+                            if (currentLink.indexOf("TiresActivity")!=-1){
+                                var reg = /pageIndex=[\d]/g;
+                                if(reg.test(currentLink)){
+                                    location.href=currentLink.replace(reg,"pageIndex="+p);
+                                }else{
+                                    location.href=currentLink+"&pageIndex="+p;
+                                }
+                            }else{
+                                location.href = "/TiresActivity/TiresActivity?pageIndex=" + p;
+                            }
+                        }else{
+                            location.href = "/TiresActivity/TiresActivity?pageIndex=" + p;
+                        }
+                    }
+                });
+            });
+
+            function EditActivity(o, activityId) {
+                location.href = "/TiresActivity/TiresActivityInfo?activityId=" + activityId;
+            }
+
+            function DeleteActivity(activityId){
+                if(confirm("是否确认删除该活动?")){
+                    $.post("DeleteTiresActivityConfig", { activityId: activityId},function(data){
+                        if(data){
+                            alert("删除成功");
+                            location.reload()
+                        }else{
+                            alert("删除失败");
+                        }
+                    });
+                }
+            }
+
+            Date.prototype.Format = function (fmt) { //author: meizz 
+                var o = {
+                    "M+": this.getMonth() + 1, //月份 
+                    "d+": this.getDate(), //日 
+                    "h+": this.getHours(), //小时 
+                    "m+": this.getMinutes(), //分 
+                    "s+": this.getSeconds(), //秒 
+                    "q+": Math.floor((this.getMonth() + 3) / 3), //季度 
+                    "S": this.getMilliseconds() //毫秒 
+                };
+                if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+                for (var k in o)
+                    if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+                return fmt;
+            };
+
+            function formatTime(val) {
+                if (val != null) {
+                    return eval('new ' + eval(val).source).Format('yyyy-MM-dd hh:mm:ss');
+                } else {
+                    return "无";
+                }
+            }
+
+            function SearchLog(activityId) {
+                var html = "<table class='table table-bordered' style='width:100%;'><tr><td>消息</td><td>操作人</td><td>时间</td></tr>";
+                var d = dialog({
+                    title: "操作日志",
+                    width: 900,
+                    height: 500,
+                    fixed: true,
+                    button: [
+                        {
+                            value: "取消"
+                        }
+                    ]
+                });
+
+                $.post("SelectOperationLog", { activityId: activityId}, function (result) {
+                    if (result.length > 0) {
+                        $.each(result, function (index) {
+                            html += "<tr><td>" + result[index].Message +  "</td><td>" + result[index].Operator + "</td><td>" + formatTime(result[index].CreatedTime) + "</td></tr>";
+                        });
+                    }
+                    html += "</table>";
+                    d.content(html);
+                    d.showModal();
+                });
+            }
+
+            function RefreshCache(activityId) {
+                var html = "<table class='region-dialog'>" + $(".region-template").html() + "</table>"
+                var d = dialog({
+                    title: "刷新缓存",
+                    width: 500,
+                    height: 70,
+                    fixed: true,
+                    button: [
+                        {
+                            value: "取消"
+                        }
+                    ]
+                });
+                d.content(html);
+                d.showModal();
+                $(".region-dialog #provinceId").change(function () {
+                    var provinceId = $(".region-dialog #provinceId").val();
+                    var provinceName = $(".region-dialog #provinceId option:selected").text();
+                    var html = "<option value=0>-请选择-</option>";
+                    var municipalities = "上海市|北京市|重庆市|天津市";
+                    if (municipalities.indexOf(provinceName) >= 0) {
+                        html += "<option value=" + provinceId + ">" + provinceName + "</option>";
+                        $(".region-dialog #cityId").empty().append(html)
+                    } else {
+                        $.get("GetChildMiniRegion", { provinceId: provinceId }, function (result) {
+                            $.each(result, function (index) {
+                                html += "<option value=" + result[index].RegionId + ">" + result[index].RegionName + "</option>";
+                            })
+                            $(".region-dialog #cityId").empty().append(html);
+                        });
+                    }
+                });
+                $(".region-dialog #refresh-button").on("click", function () {
+                    var regionId = $(".region-dialog #cityId").val();
+                    if (regionId > 0) {
+                        $.get("RefershTiresActivityCacheByRegionId", { activityId: activityId, regionId: regionId }, function (data) {
+                            if (data) {
+                                alert("刷新成功");
+                                return false;
+                            } else {
+                                alert("刷新失败");
+                                return false;
+                            }
+                        })
+                    } else {
+                        alert("请选择省市");
+                        return false;
+                    }
+                });
+            }
+
+           
+    </script>
+}

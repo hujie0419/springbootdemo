@@ -1,0 +1,107 @@
+﻿@using Tuhu.Service.Push.Models.Push
+@using Tuhu.Service.Push.Models.WeiXinPush
+@model IEnumerable<WxAppPushToken>
+@{
+    ViewBag.Title = "SelectFormIdByOpenId";
+    var configs = ViewBag.configs as IEnumerable<WxConfig>;
+
+    Func<string, string> getwxchannelname = appid =>
+    {
+         
+        if (configs != null && configs.Any())
+        {
+            var config = configs.FirstOrDefault(x => x.appId == appid);
+            if (config != null)
+            {
+                return config.name;
+            }
+        }
+        return appid;
+    };
+}
+
+@section head{
+    <link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+}
+
+
+<div class="content">
+    <h3>
+        根据openid搜索formid
+    </h3>
+    <div class="container">
+        @using (Html.BeginForm("SelectFormIdByOpenId", "PushManager", FormMethod.Post, new { @class = "form-inline" }))
+        {
+            @Html.AntiForgeryToken()
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            <div class="form-group">
+                <label>openid:</label>
+                <input type="text" id="openid" name="openid" class="form-control" value="@ViewBag.openid" />
+            </div>
+            <div class="form-group">
+                <label>查询数目:</label>
+                <select class="form-control" id="count" name="count" value="@ViewBag.count">
+                    <option value="10">10</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="1000">1000</option>
+                </select>
+
+            </div>
+            <div class="form-group">
+                <input type="submit" value="搜索" class="btn btn-default" />
+
+            </div>
+        }
+        <br />
+        <table class="table" style="background: #ffffff; font-size: 12px; width: 100%; text-align: center" border="1">
+            <tr>
+                <th>
+                    openid
+                </th>
+                <th>
+                    formid
+                </th>
+                <th>token类型</th>
+                <th>剩余个数</th>
+                <th>过期时间</th>
+                <th>渠道</th>
+
+            </tr>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @item.OpenID
+                        </td>
+                        <td>
+                            @item.Token
+                        </td>
+                        <td>
+                            @item.TokenType
+                        </td>
+                        <td>
+                            @item.RemainingCounts
+                        </td>
+                        <td>
+                            @item.ExpireTime
+                        </td>
+                        <td>
+                          @getwxchannelname(item.Channel)
+                        </td>
+
+                    </tr>
+                }
+            }
+        </table>
+    </div>
+</div>
+<script>
+    $(function() {
+        $("#count").val(@ViewBag.count);
+    });
+</script>

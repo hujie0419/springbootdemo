@@ -1,0 +1,742 @@
+﻿@model int
+<head>
+    <meta charset="utf-8">
+    <title>iview example</title>
+    <link href="~/Content/iview/iview.css" rel="stylesheet" />
+    <script src="~/Scripts/vue.min.js"></script>
+    <script src="~/Scripts/iview/iview.min.js"></script>
+
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+        table td {
+            border: solid 1px #ada9ab
+        }
+    </style>
+</head>
+
+<body>
+    <fieldset>
+        <legend>年卡编辑页</legend>
+        <div id="app" v-cloak>
+            <br />
+                <table style="width:1000px; margin-left:10%;">
+                    <tr style="border-color:mediumblue">
+                        <td> 年卡名称：<i-input v-model="cardName" placeholder="年卡名称" style="width: 200px"></i-input></td>
+                        <td>销售有效期：<Date-Picker v-model="salesBeginTime" type="datetime" format="yyyy-MM-dd HH:mm" placeholder="销售开始时间" style="width: 150px"></Date-Picker>
+                    至<Date-Picker v-model="salesEndTime" type="datetime" format="yyyy-MM-dd HH:mm" placeholder="销售截止时间" style="width: 150px"></Date-Picker></td>
+                        <td>
+                            年卡有效期：<input-Number :min="1" v-model="cardValidDays"></input-Number>天
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+                            上传图片：<img :src="cardImageUrl" style="width:200px;height:100px;" /><i-input v-model="cardImageUrl" readonly="true" placeholder="URL" style="width: 600px"></i-input>
+                            <Upload action="/BeautyYearCardConfig/UploadBeautyYearCardImage"
+                                    :format="['jpg','jpeg','png']"
+                                    :on-format-error="handleFormatError"
+                                    :max-size="10000"
+                                    :on-exceeded-size="handleMaxSize"
+                                    :on-success="handleSuccess"
+                                    :show-upload-list="false">
+                                <i-Button type="ghost" icon="ios-cloud-upload-outline">上传</i-Button>
+                            </Upload>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+                            适配车型:<br /><br />
+                            <Checkbox-Group v-model="vehicleType">
+                                <Checkbox :label=1 :disabled="disable">五座轿车</Checkbox>
+                                <Checkbox :label=2 :disabled="disable">MPV</Checkbox>
+                                <Checkbox :label=4 :disabled="disable">SUV</Checkbox>
+                                <Checkbox :label=8 :disabled="disable">MPV/SUV</Checkbox>
+                                <Checkbox :label=16 :disabled="disable">无车型</Checkbox>
+                            </Checkbox-Group>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            备注：<i-input v-model="remark" type="textarea" placeholder="备注" style="width:300px;" />
+                        </td>
+                        <td colspan="2">
+                            规则：<i-input v-model="rule" type="textarea" placeholder="规则" style="width:400px;" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+                            限购地区：
+                            <br /><br />
+                            <table>
+                                <tr>
+                                    <td style="width:200px;">省/自治区/直辖市</td>
+                                    <td style="width:800px;">市/区</td>
+                                    <td style="width:50px;"><i-button type="primary" v-on:click="addLimitArea()">添加</i-button></td>
+                                </tr>
+                                <tr v-for="item  in areaData">
+                                    <td style="width:200px;">
+                                        <i-select v-model="item.provinceId" placeholder="请选择" v-on:on-change="provinceChange(item,1)">
+                                            <i-option v-for="itemo in item.provinceData" :value="itemo.id" :key="itemo.id">{{itemo.name}}</i-option>
+                                        </i-select>
+                                    </td>
+                                    <td style="width:800px;">
+                                        <div style="border-bottom: 1px solid #e9e9e9;padding-bottom:6px;margin-bottom:6px;">
+                                            <Checkbox :indeterminate="item.indeterminate"
+                                                      :value="item.checkall"
+                                                      v-on:click.prevent.native="handleCheckAll(item)">全选</Checkbox>
+                                        </div>
+                                        <Checkbox-Group v-model="item.checkallgroup" v-on:on-change="checkAllGroupChange($event,item)">
+                                            <Checkbox v-for="itemc in item.cityData" :label="itemc.id">{{itemc.name}}</Checkbox>
+                                        </Checkbox-Group>
+                                    </td>
+                                    <td style="width:50px;"><i-button type="error" v-on:click="deleteLAComponent(item)">删除</i-button></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="3">
+                            套餐总价：<i-input style="width:100px;" v-model="totalPrice" :readonly="true"></i-input>元&nbsp;&nbsp;&nbsp;<label>年卡PID:<i-input style="width:150px;" v-model="pid" readonly /></label>&nbsp;&nbsp;&nbsp;<i-button type="primary" v-on:click="addproductData()" :disabled="disable">添加商品</i-button>
+                            <br /><br />
+                            <table>
+                                <tr>
+                                    <td style="width:250px;">产品服务PID</td>
+                                    <td style="width:100px;">数量</td>
+                                    <td style="width:150px;">套餐内单价（元）</td>
+                                    <td style="width:150px;">佣金（%）</td>
+                                    <td style="width:150px;">套餐内结算价估算（元）</td>
+                                    <td style="width:200px;">使用周期</td>
+                                    <td style="width:50px;">操作</td>
+                                </tr>
+                                <tr :checked="item.checked" v-for="item  in productData">
+                                    <td><i-input style="width:150px;" v-model="item.productId" :readonly="readOnly" v-on:on-change="pidChange(item)"></i-input>&nbsp;&nbsp;&nbsp;<i-button type="primary" v-on:click="checkproductData(item)" :disabled="disable">查看</i-button></td>
+                                    <td><input-Number v-model="item.productNumber" style="width:80px;" min="1" v-on:on-change="productChange()" :readonly="readOnly"></input-Number></td>
+                                    <td><i-input v-model="item.productPrice" style="width:80px;" v-on:on-change="productChange()" :readonly="readOnly"></i-input></td>
+                                    <td><i-input v-model="item.commission" style="width:80px;" :readonly="readOnly"></i-input></td>
+                                    <td>{{item.productPrice*(100-item.commission)/100}}</td>
+                                    <td>
+                                        <i-input style="width:50px;" v-model="item.useCycle"></i-input>次/
+                                        <i-select style="width:50px" v-model="item.cycleType">
+                                            <i-option v-for="item in cycleList" :value="item.id" :key="item.id">{{ item.name }}</i-option>
+                                        </i-select>
+                                    </td>
+                                    <td><i-button type="error" v-on:click="deleteProduct(item)" :disabled="disable">删除</i-button></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="3">
+                            <div style="text-align:center"><i-button type="warning" v-on:click="cancle()">取消</i-button>&nbsp;&nbsp;&nbsp;<i-button type="primary" v-on:click="save()">保存</i-button></div>
+                        </td>
+                    </tr>
+                </table>
+            <br />
+                <modal v-model="modal"
+                       title="产品信息"
+                       width="400px;">
+                    <table v-if="product_pid.length" style="width:auto">
+                        <tr>
+                            <td>产品pid</td>
+                            <td>产品名称</td>
+                            <td>产品描述</td>
+                        </tr>
+                        <tr>
+                            <td>{{product_pid}}</td>
+                            <td>{{product_name}}</td>
+                            <td>{{product_descroption}}</td>
+                        </tr>
+                    </table>
+                    <i-p v-else>该产品不存在！</i-p>
+                </modal>
+        </div>
+    </fieldset>
+
+
+</body>
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data() {
+            return {
+                areaData: [],
+                productData: [],
+                provinceDatas:[],
+                cycleList: [
+                    { 'id': 0, 'name': '年' },
+                    { 'id': 1, 'name': '月' },
+                    { 'id': 2, 'name': '周' },
+                    { 'id': 3, 'name': '日' }
+                ],
+                totalPrice: 0,
+                cardImageUrl: "",
+                cardName: "",
+                salesBeginTime: "",
+                salesEndTime: "",
+                cardValidDays: "",
+                vehicleType: [],
+                remark: "",
+                rule: "",
+                cardId: 0,
+                readOnly: false,
+                disable: false,
+                pid: "",
+                modal: false,
+                product_pid: '',
+                product_name: '',
+                product_descroption: '',
+            }
+        },
+        mounted: function () {
+            this.getProvinceDatas();
+            this.getAllDatas();
+        },
+        methods: {
+            save() {
+                var _this = this;
+                //参数校验
+                var CardName = this.cardName;
+                if (!CardName)
+                {
+                    this.$Notice.warning({
+                        title: '年卡名称',
+                        desc: "年卡名称必填"
+                    });
+                    return;
+                }
+                if (!this.salesBeginTime) {
+                    this.$Notice.warning({
+                        title: '销售开始时间',
+                        desc: "销售开始时间必填"
+                    });
+                    return;
+                }
+                var SalesBeginTime = this.getTimeSpan(this.salesBeginTime);
+
+                if (!this.salesEndTime) {
+                    this.$Notice.warning({
+                        title: '销售结束时间',
+                        desc: "销售结束时间必填"
+                    });
+                    return;
+                }
+                var SalesEndTime = this.getTimeSpan(this.salesEndTime);
+                var CardValidDays = this.cardValidDays;
+                if (!CardValidDays) {
+                    this.$Notice.warning({
+                        title: '年卡有效期',
+                        desc: "年卡有效期必填"
+                    });
+                    return;
+                }
+                var CardImageUrl = this.cardImageUrl;
+                if (!CardImageUrl) {
+                    this.$Notice.warning({
+                        title: '年卡图片',
+                        desc: "年卡图片必填"
+                    });
+                    return;
+                }
+                var VehicleType = this.vehicleType;
+                if (VehicleType.length<=0) {
+                    this.$Notice.warning({
+                        title: '适配车型',
+                        desc: "适配车型必填"
+                    });
+                    return;
+                }
+                if (this.areaData.length <= 0)
+                {
+                    this.$Notice.warning({
+                        title: '限购地区',
+                        desc: "限购地区必填"
+                    });
+                    return;
+                }
+                if (this.productData.length <= 0) {
+                    this.$Notice.warning({
+                        title: '年卡商品',
+                        desc: "年卡商品必填"
+                    });
+                    return;
+                }
+                var _this = this;
+
+                let areas = [];
+                var areasInsert = true;
+                this.areaData.forEach(function (x) {
+                    if (!x.provinceId) {
+                        _this.$Notice.warning({
+                            title: '限购地区省/自治区/直辖市必选',
+                            desc: "限购地区省/自治区/直辖市必选"
+                        });
+                        areasInsert = false;
+                        return;
+                    }
+                    if (!x.checkallgroup || x.checkallgroup.length <= 0) {
+                        _this.$Notice.warning({
+                            title: '限购地区市/区必选',
+                            desc: "限购地区市/区必选"
+                        });
+                        areasInsert = false;
+                        return;
+                    }
+
+
+                    areas.push({
+                        'ProvinceId': x.provinceId,
+                        'IsAllCity': x.checkall,
+                        'CityId': x.checkallgroup.reduce(function (a, b) { return a + ',' + b; }),
+                        'CardId': _this.cardId,
+                    });
+                });
+                if (areasInsert == false || areas.length <= 0) {
+                    return;
+                }
+
+
+                let products = [];
+                var productInsert = true;
+                this.productData.forEach(function (x) {
+                    if (!x.productId)
+                    {
+                        _this.$Notice.warning({
+                            title: '产品服务名称必填',
+                            desc: "产品服务名称必填"
+                        });
+                        productInsert = false;
+                        return;
+                    }
+                    if (!x.productNumber) {
+                        _this.$Notice.warning({
+                            title: '产品服务个数必填',
+                            desc: "产品服务个数必填"
+                        });
+                        productInsert = false;
+                        return;
+                    }
+                    if (!x.productPrice) {
+                        _this.$Notice.warning({
+                            title: '产品服务单价必填',
+                            desc: "产品服务单价必填"
+                        });
+                        productInsert = false;
+                        return;
+                    }
+                    if (!Number.parseInt(x.commission) && Number.parseInt(x.commission)!=0) {
+                        _this.$Notice.warning({
+                            title: '产品服务佣金必填',
+                            desc: "产品服务佣金必填"
+                        });
+                        productInsert = false;
+                        return;
+                    }
+                    if (Number.parseInt(x.commission)<0) {
+                        _this.$Notice.warning({
+                            title: '产品服务佣金不能为负数',
+                            desc: "产品服务佣金不能为负数"
+                        });
+                        productInsert = false;
+                        return;
+                    }
+                    if (!x.useCycle) {
+                        _this.$Notice.warning({
+                            title: '产品或服务使用周期必填',
+                            desc: "产品或服务使用周期必填"
+                        });
+                        productInsert = false;
+                        return;
+                    }
+                    products.push({
+                        'PKID':x.pkid,
+                        'ProductId': x.productId,
+                        'ProductNumber': x.productNumber,
+                        'ProductName': x.productName,
+                        'ProductDescription': x.productDescription,
+                        'ProductPrice': x.productPrice,
+                        'Commission': x.commission,
+                        'CycleType': x.cycleType,
+                        'UseCycle': x.useCycle,
+                        'CardId': _this.cardId,
+                    });
+                });
+                if (productInsert == false || products.length<=0)
+                {
+                    return;
+                }
+
+                let postData = {
+                    'PID': this.pid,
+                    'CardName': CardName,
+                    'SalesBeginTime':SalesBeginTime,
+                    'SalesEndTime': SalesEndTime,
+                    'CardValidDays': CardValidDays,
+                    'CardImageUrl': CardImageUrl,
+                    'AdaptVehicle': VehicleType.reduce(function (a, b) { return a + b; }),
+                    'Remark': this.remark,
+                    'Rule': this.rule,
+                    'BeautyYearCardProducts': products,
+                    'BeautyYearCardRegions': areas,
+                    'CardPrice': this.totalPrice,
+                    'PKID': _this.cardId,
+                };
+                $.ajax({
+                    url: "/BeautyYearCardConfig/SaveBeautyYearCardConfig",
+                    type: "post",
+                    async: false,
+                    data: postData,
+                    success: function (data) {
+                        console.log(data);
+                        if (data.Item1) {
+                            _this.$Message.success('保存成功！');
+                            setTimeout(function () {
+                                window.location.href = "/BeautyYearCardConfig/Index";
+                            },1500);
+                        }
+                        else {
+                            _this.$Notice.warning({
+                                title: '保存失败！',
+                                desc: data.Item2,
+                            });
+                        }
+                    },
+                    error: function () {
+                        alert("服务端异常！");
+                    }
+                });
+
+            },
+            getAllDatas() {
+                var _this = this;
+                _this.cardId =@Model;
+                if (_this.cardId > 0)
+                {
+                    _this.readOnly = true;
+                    _this.disable = true;
+                }
+                $.ajax({
+                    url: "/BeautyYearCardConfig/GetBeautyYearCardConfigDetailById",
+                    type: "post",
+                    async: false,
+                    data: {
+                        CardId:@Model
+                    },
+                    success: function (data) {
+                        if (data != null) {
+                            _this.cardName = data.CardName;
+                            _this.salesBeginTime =_this.getDates(data.SalesBeginTime);
+                            _this.salesEndTime = _this.getDates(data.SalesEndTime);
+                            _this.cardValidDays = data.CardValidDays;
+                            _this.cardImageUrl = data.CardImageUrl;
+                            if ((data.AdaptVehicle&1) > 0)
+                            {
+                                _this.vehicleType.push(1);
+                            }
+                            if ((data.AdaptVehicle&2) > 0) {
+                                _this.vehicleType.push(2);
+                            }
+                            if ((data.AdaptVehicle&4) > 0) {
+                                _this.vehicleType.push(4);
+                            }
+                            if ((data.AdaptVehicle&8)>0) {
+                                _this.vehicleType.push(8);
+                            }
+                            if ((data.AdaptVehicle&16)>0) {
+                                _this.vehicleType.push(16);
+                            }
+                            _this.remark = data.Remark;
+                            _this.rule = data.Rule;
+                            _this.pid = data.PID;
+                            _this.totalPrice = data.CardPrice;
+                            data.BeautyYearCardProducts.forEach(function (x) {
+                                _this.productData.push({
+                                    'pkid': x.PKID,
+                                    'productId': x.ProductId,
+                                    'productNumber': x.ProductNumber,
+                                    'productName': x.ProductName,
+                                    'productDescription': x.ProductDescription,
+                                    'productPrice': x.ProductPrice,
+                                    'commission': x.Commission,
+                                    'cycleType': x.CycleType,
+                                    'useCycle': x.UseCycle,
+                                });
+                            });
+                            data.BeautyYearCardRegions.forEach(function (x) {
+                                let mm = [];
+                                if (!x.IsAllCity)
+                                {
+                                    x.CityIds.forEach(function (y) { mm.push(Number.parseInt(y)) });
+                                }
+                                var e = {
+                                    'provinceId': x.ProvinceId,
+                                    'provinceData': _this.provinceDatas,
+                                    'cityData': [],
+                                    'cityIds': [],
+                                    'indeterminate': false,
+                                    'checkall': x.IsAllCity,
+                                    'checkallgroup': mm,
+                                };
+                                _this.provinceChange(e,2);
+                                _this.areaData.push(e);
+                            });
+                        }
+                    },
+                    error: function () {
+                        alert("服务端异常！");
+                    }
+                });
+            },
+            handleFormatError(file) {
+                this.$Notice.warning({
+                    title: '文件格式不正确',
+                    desc: "请选择 .jpg  or .png  or .jpeg图片"
+                });
+            },
+            handleMaxSize(file) {
+                this.$Notice.warning({
+                    title: '文件大小不符合要求',
+                    desc: "请选择不超过100KB的图片"
+                });
+            },
+            handleSuccess(res, file) {
+                if (res != null) {
+                    if (res.Item1) {
+                        this.cardImageUrl = res.Item2;
+                    }
+                    else {
+                        this.$Notice.warning({
+                            title: '上传图片失败',
+                            desc: res.Item2
+                        });
+                    }
+                }
+                else {
+                    this.$Notice.warning({
+                        title: '上传图片异常',
+                        desc: "服务端异常"
+                    });
+                }
+            },
+            addLimitArea() {
+                var _this = this;
+                _this.areaData.push({
+                    'provinceId': '',
+                    'provinceData': _this.provinceDatas,
+                    'cityData': [],
+                    'cityIds': [],
+                    'indeterminate': false,
+                    'checkall': false,
+                    'checkallgroup': [],
+                });
+            },
+            getProvinceDatas() {
+                var _this = this;
+                $.ajax({
+                    url: "/BeautyYearCardConfig/GetAllProvinces",
+                    type: "post",
+                    async: false,
+                    data: {},
+                    success: function (data) {
+                        if (data != null && data.length > 0) {
+                            $(data).each(function (i, e) {
+                                _this.provinceDatas.push({
+                                    name: e.name,
+                                    id: e.id,
+                                })
+                            })
+                        }
+                        else {
+                            _this.$Notice.warning({
+                                title: '获取省市信息异常！',
+                                desc: '获取省市信息异常！',
+                            });
+                        }
+                    },
+                    error: function () {
+                        alert("服务端异常！");
+                    }
+                });
+
+            },
+            deleteLAComponent(i) {
+                var n = this.areaData.indexOf(i);
+                vm.areaData.splice(n, 1);
+            },
+            addproductData() {
+                this.productData.push({
+                    'productNumber': '',
+                    'productPrice': '',
+                    'commission': '',
+                    'cycleType': 0,
+                    'useCycle': ''
+                });
+            },
+            checkproductData(e) {
+                if (!e.productId)
+                {
+                    this.$Notice.warning({
+                        title: 'pid信息异常！',
+                        desc: '请填写完整pid信息！',
+                    });
+                    return;
+                }
+                this.pidChange(e)
+                this.modal= true;
+            },
+            deleteProduct(item) {
+                var i = this.productData.indexOf(item);
+                this.productData.splice(i, 1);
+                this.productChange();
+            },
+            productChange() {
+                var _this = this;
+                _this.totalPrice = 0;
+                this.productData.forEach(function (x) {
+                    _this.totalPrice = _this.totalPrice + x.productNumber * x.productPrice;
+                });
+            },
+            cancle() {
+                window.location.href= "/BeautyYearCardConfig/Index";
+            },
+            provinceChange(e,edit) {
+                var _this = this;
+                var exist = this.areaData.filter(function (x) { return x.provinceId == e.provinceId; });
+                if (exist.length<=1)
+                {
+                    $.ajax({
+                        url: "/BeautyYearCardConfig/GetAllCitys",
+                        type: "post",
+                        async: false,
+                        data: {
+                            ProvinceId: e.provinceId
+                        },
+                        success: function (data) {
+                            if (data != null && data.length > 0) {
+                                e.cityData = data;
+                                e.cityIds = [];
+                                data.forEach(function (x) {
+                                    e.cityIds.push(x.id);
+                                });
+                                if (edit == 1)
+                                {
+                                    e.checkall = false;
+                                    e.checkallgroup = [];
+                                }
+                                if (e.checkall) {
+                                    e.checkallgroup = e.cityIds;
+                                }
+                            }
+                            else {
+                                _this.$Notice.warning({
+                                    title: '获取省市信息异常！',
+                                    desc: '获取省市信息异常！',
+                                });
+                            }
+                        },
+                        error: function () {
+                            alert("服务端异常！");
+                        }
+                    });
+
+                }
+                else {
+                    this.$Notice.warning({
+                        title: '重复省份',
+                        desc: '选择的省份/直辖市已经存在，清重新选择！',
+                    });
+                    e.cityData = [];
+                    return;
+                }
+
+
+            },
+            handleCheckAll(e) {
+                if (e.indeterminate) {
+                    e.checkall = false;
+                } else {
+                    e.checkall = !e.checkall;
+                }
+                e.indeterminate = false;
+
+                if (e.checkall) {
+                    e.checkallgroup = e.cityIds;
+                } else {
+                    e.checkallgroup = [];
+                }
+            },
+            checkAllGroupChange(data,e) {
+                if (data.length === e.cityData.length) {
+                    e.indeterminate = false;
+                    e.checkall = true;
+                } else if (data.length > 0) {
+                    e.indeterminate = true;
+                    e.checkall = false;
+                } else {
+                    e.indeterminate = false;
+                    e.checkall = false;
+                }
+            },
+            getDates(e)
+            {
+                var time = e instanceof Date ? e : eval('new ' + e.toString().replace(/\//g, ""));
+                console.log(time);
+                if (time < new Date(2018, 1, 1, 0, 0))
+                    time = new Date();
+                return time;
+
+            },
+            getTimeSpan(time)
+            {
+                var year = time.getFullYear();
+                var day = time.getDate();
+                var month = time.getMonth() + 1;
+                var hours = time.getHours();
+                var minutes = time.getMinutes();
+                var seconds = time.getSeconds();
+                return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
+            },
+            pidChange(e)
+            {
+                if (e.productId.trim()=='')
+                    return;
+                if (e.productId.indexOf('|')<0)
+                    return;
+
+                var _this = this;
+                $.ajax({
+                    url: "/BeautyYearCardConfig/GetSimpleProductInfo",
+                    type: "post",
+                    async: false,
+                    data: {
+                        pid: e.productId
+                    },
+                    success: function (data) {
+                        if (data != null) {
+                            e.productName = data.DisplayName;
+                            e.productDescription = data.Description;
+                            console.log(e);
+                            _this.product_pid = data.PID;
+                            _this.product_name = data.DisplayName;
+                            _this.product_descroption = data.Description;
+                        }
+                        else {
+                            _this.product_pid ='';
+                            _this.product_name = '';
+                            _this.product_descroption = '';
+                            _this.$Notice.warning({
+                                title: '校验商品(' + e.productId+')pid信息不存在！',
+                                desc: '校验商品(' + e.productId +')pid信息不存在！',
+                            });
+                        }
+                    },
+                    error: function () {
+                        alert("服务端异常！");
+                    }
+                });
+            }
+        }
+    })
+</script>

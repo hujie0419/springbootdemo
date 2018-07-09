@@ -1,0 +1,54 @@
+﻿@model IEnumerable< Tuhu.Provisioning.DataAccess.Entity.ConfigHistory >
+@{
+    ViewBag.Title = "轮胎列表页活动操作历史";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Model.Any())
+{
+    <table style="width:100%;margin-top:20px;">
+        <tr>
+            <th>活动ID</th>
+            <th>活动名称</th>
+            <th>活动状态</th>
+            <th>活动时间</th>
+            <th>浮层图片</th>
+            <th>活动图标</th>
+            <th>右侧按钮类型</th>
+            <th>优惠券GUID</th>
+            <th>按钮文字</th>
+            <th>关联PID1</th>
+            <th>关联PID2</th>
+            <th>关联PID3</th>
+            <th>操作人</th>
+            <th>操作时间</th>
+            <th>操作内容</th>
+        </tr>
+        @foreach (var opr in Model)
+        {
+            var value = Newtonsoft.Json.JsonConvert.DeserializeObject<Tuhu.Provisioning.DataAccess.Entity.Tire.ListActLog>(opr.BeforeValue);
+            <tr>
+                <td>@value.ActivityID</td>
+                <td>@value.ActivityName</td>
+                <td>@(value.Status==0?"禁用":(value.Status==1?"启用":"删除"))</td>
+                <td>@(value.StartTime.ToString("yyyy-MM-dd HH:mm")+"至" +value.EndTime.ToString("yyyy-MM-dd HH:mm"))</td>
+                <td><img src="@value.Image" width="100" height="100" /></td>
+                <td><img src="@value.Icon" width="100" height="100" /></td>
+                <td>@(value.ButtonType==0?"立即参与":"立即领券")</td>
+                <td>@(value.GetRuleGUID==null?"":value.GetRuleGUID.Value.ToString())</td>
+                <td>@value.ButtonText</td>
+                <td>@(value.Products!=null&&value.Products.Any(c=>c.Postion==1)? value.Products.Where(c => c.Postion == 1).FirstOrDefault().PID:"")</td>
+                <td>@(value.Products != null && value.Products.Any(c => c.Postion == 2) ? value.Products.Where(c => c.Postion == 2).FirstOrDefault().PID : "")</td>
+                <td>@(value.Products != null && value.Products.Any(c => c.Postion == 3) ? value.Products.Where(c => c.Postion == 3).FirstOrDefault().PID : "")</td>
+                <td>@opr.Author</td>
+                <td>@opr.ChangeDatetime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@opr.Operation</td>
+            </tr>
+
+        }
+    </table>
+}
+else
+{
+    <h1>无操作</h1>
+}

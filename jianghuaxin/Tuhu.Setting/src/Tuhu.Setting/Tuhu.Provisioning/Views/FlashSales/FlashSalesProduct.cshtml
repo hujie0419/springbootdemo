@@ -1,0 +1,304 @@
+﻿@{
+    if (ViewBag.FlashSales == null || ViewBag.ProList == null)
+    {
+        Response.Write("<script>alert('该模块不存在，请从正常来源进入');location='/Advertise/SuppliesModule'</script>");
+        Response.End();
+    }
+    var FlashSales = ViewBag.FlashSales as Tuhu.Provisioning.DataAccess.Entity.FlashSales;
+    ViewBag.Title = "产品管理 - 限时抢购活动：" + FlashSales.Name;
+    var ProList = ViewBag.ProList;
+    Layout = "../Shared/_Layout.cshtml";
+}
+<script>
+    var nodata = '<font color="#ff0000">无此编号的产品</font>';
+    var flashSalesID = '@FlashSales.PKID';
+    function Operate(PKID, cate) {
+        var _PID = $("#PID_" + PKID).val();
+        var _Position = $("#Position_" + PKID).val();
+        var _PromotionPrice = $("#PromotionPrice_" + PKID).val();
+        var _MarketPrice = $("#MarketPrice_" + PKID).val();
+        var _PromotionNum = $("#PromotionNum_" + PKID).val();
+        var _MaxNum = $("#MaxNum_" + PKID).val();
+        var _NumLeft = $("#NumLeft_" + PKID).val();
+        var _Status = (cate == 4 ? $('input:radio[name=Status_' + PKID + ']:checked').val() : $("#Status_" + PKID).val());
+        var _IsHotSale = (cate == 4 ? $('input:radio[name=IsHotSale_' + PKID + ']:checked').val() : $("#IsHotSale_" + PKID).val());
+        //cate:1:删除 2:显示禁止 3:保存 4:新增 5:设为热卖
+        if (cate == 1) { if (!confirm("确认删除吗？")) { return false; } }
+        else if (cate == 2) { if (!confirm("确认" + (_Status == 1 ? "停用" : "启用") + "吗？")) { return false; } }
+        else if (cate == 5) { if (!confirm("确认" + (_IsHotSale == "True" ? "设为普通" : "设为热卖") + "吗？")) { return false; } }
+        else if (cate == 3 || cate == 4) {
+            if (_PID == "" || _Position == "") {
+                alert("请输入产品编号、顺序号"); return false;
+            }
+            if (!/^\d+$/.test(_Position) || !/^\d+$/.test(_PromotionNum) || !/^\d+$/.test(_NumLeft) || !/^\d+$/.test(_MaxNum)) {
+                alert('排序号、限量、剩余量和单次限量须为正整数'); return false;
+            }
+            if (!/^\d+\.?\d{0,4}$/.test(_PromotionPrice) || !/^\d+\.?\d{0,4}$/.test(_MarketPrice)) {
+                alert('促销价和原价须为保留四位小数的数字'); return false;
+            }
+            if ($("#PName_" + PKID).html() == nodata) {
+                alert("此产品编号找不到对应产品，请重新输入");
+                $("#PID_" + PKID).focus();
+                return false;
+            }
+            if (IsPIDExisted(PKID)) {
+                alert("此产品编号已存在，请重新输入");
+                $("#PID_" + PKID).focus();
+                return false;
+            }
+        }
+        $.ajax({
+            type: "post",
+            url: '/FlashSales/OperateProduct',
+            data: { "FlashSalesID": flashSalesID, "PKID": PKID, "PID": _PID, "Position": _Position, "Status": _Status, "PromotionPrice": _PromotionPrice, "MarketPrice": _MarketPrice, "PromotionNum": _PromotionNum, "MaxNum": _MaxNum, "NumLeft": _NumLeft, "IsHotSale": _IsHotSale, "Cate": cate },
+            success: function (result) {
+                if (result == "OK") {
+                    if (cate == 1) {
+                        location = '/FlashSales/FlashSalesProduct?FlashSalesID=' + flashSalesID;
+                    }
+                    if (cate == 2) {
+                        $("#Status_" + PKID).val(_Status == 0 ? 1 : 0);
+                        $("#StatusChange_" + PKID).val(_Status == 0 ? "停用" : "启用");
+                        $("#StatusName_" + PKID).html("<b>" + (_Status == 0 ? "<font color=\"#006600\">已启用" : "<font color=\"#FF0000\">已停用") + "</font></b>");
+                    }
+                    if (cate == 5) {
+                        $("#IsHotSale_" + PKID).val(_IsHotSale == "True" ? "Flase" : "True");
+                        $("#IsHotSaleChange_" + PKID).val(_IsHotSale == "True" ? "设为热卖" : "设为普通");
+                        $("#IsHotSaleName_" + PKID).html("<b>" + (_IsHotSale == "True" ? "普通" : "热卖") + "</b>");
+                    }
+                    if (cate == 3 || cate == 4) {
+                        alert('保存成功');
+                        location = '/FlashSales/FlashSalesProduct?FlashSalesID=' + flashSalesID;
+                    }
+                }
+                else {
+                    alert(result);
+                }
+            }
+        });
+    }
+    function IsPIDExisted(ToCheckPKID) {
+        var IsExisted = false;
+        var ToCheckPID = $("#PID_" + ToCheckPKID).val();
+        $("#listtb :checkbox").each(function (i) {
+            if (!IsExisted) {
+                var _PKID = $(this).val();
+                var _PID = $("#PID_" + _PKID).val();
+                if (_PID == ToCheckPID && ToCheckPKID != _PKID) {
+                    IsExisted = true;
+                }
+            }
+        });
+        return IsExisted;
+    }
+    function Allchk() {
+        if ($("#chkbtn").attr("checked")) {
+            $("#listtb :checkbox").attr("checked", true);
+        } else {
+            $("#listtb :checkbox").attr("checked", false);
+        }
+    }
+    function AllOperate(cate, ifneednumandprice) {
+        var opstr = "";
+        $("#listtb :checkbox[checked]").each(function (i) {
+            var PKID = $(this).val();
+            if ($("#PName_" + PKID).html() != nodata) {
+                var _PID = $("#PID_" + PKID).val();
+                var _Position = $("#Position_" + PKID).val();
+                var _PromotionPrice = $("#PromotionPrice_" + PKID).val();
+                var _MarketPrice = $("#MarketPrice_" + PKID).val();
+                var _PromotionNum = $("#PromotionNum_" + PKID).val();
+                var _MaxNum = $("#MaxNum_" + PKID).val();
+                var _NumLeft = $("#NumLeft_" + PKID).val();
+
+                var regInt = /^\d+$/;
+                var regDecimal = /^\d+\.?\d{0,4}$/;
+
+                //alert(PKID + "," + _PID + "," + _Position + "," + _PromotionPrice + "," + _MarketPrice + "," + _PromotionNum + "," + _MaxNum + "," + _NumLeft);
+                //return false;
+                if (_PID != "" && regInt.test(_Position) && regInt.test(_PromotionNum) && regInt.test(_NumLeft) && regInt.test(_MaxNum) && regDecimal.test(_PromotionPrice) && regDecimal.test(_MarketPrice)) {
+                    opstr += (opstr == "" ? "" : "*") + PKID + "," + _PID + "," + _Position + "," + _PromotionPrice + "," + _MarketPrice + "," + _PromotionNum + "," + _MaxNum + "," + _NumLeft;
+                }
+            }
+        });
+        if (opstr == "")
+        { alert('请至少选择一项'); return false; }
+        if (confirm("确认要进行" + (cate == 1 ? "删除" : "保存") + "吗？")) {
+            $.ajax({
+                type: "post",
+                url: '/FlashSales/AllOperate',
+                data: { "opstr": opstr, "Cate": cate },
+                success: function (result) {
+                    alert(result.ReturnStr);
+                    location = '/FlashSales/FlashSalesProduct?FlashSalesID=' + flashSalesID;
+                }
+            });
+        }
+    }
+    function SetBlank(LineNo) {
+        $("#PID_" + LineNo).val("");
+        $("#Position_" + LineNo).val("0");
+        $("#PName_" + LineNo).html("");
+        $("#PromotionPrice_" + LineNo).val("0");
+        $("#PromotionNum_" + LineNo).val("0");
+        $("#MarketPrice_" + LineNo).val("0");
+        $("#MaxNum_" + LineNo).val("0");
+        $("#NumLeft_" + LineNo).val("0");
+    }
+
+
+    $(function () {
+        $(".ChangeProductName").on("input", function () {
+            var _ParentTr = $(this).parent().parent().find("td");
+            var _PID = _ParentTr.eq(1).find("input").val();
+            if (_PID != "") {
+                $.ajax({
+                    type: "post",
+                    url: '/Advertise/GetProductNamebyPID',
+                    data: { "PID": _PID },
+                    success: function (result) {
+                        if (result != "") {
+                            _ParentTr.eq(3).html(result)
+                        }
+                        else {
+                            _ParentTr.eq(3).html(nodata)
+                        }
+                    }
+                });
+            }
+        });
+        $(".ChangeProductName").on("keyup", function () {
+            $(this).trigger("input");
+        });
+        $(".pronum").on("input", function () {
+            var _ParentTr = $(this).parent().parent().find("td");
+            var _numleft = _ParentTr.eq(8).find("input");
+            var _ProNum = parseInt($(this).val());
+            var _OldNum = parseInt($(this).attr("oldnum"));
+            $(this).attr("oldnum", _ProNum);
+            _numleft.val(_ProNum - _OldNum + parseInt(_numleft.val()));
+        });
+        $(".pronum").on("keyup", function () {
+            $(this).trigger("input");
+        });
+
+        $("#listtb :checkbox").each(function (i) {
+            var _ParentTr = $(this).parent().parent().find("td");
+            var _PID = _ParentTr.eq(1).find("input").val();
+            if (_PID != "") {
+                $.ajax({
+                    type: "post",
+                    url: '/Advertise/GetProductNamebyPID',
+                    data: { "PID": _PID },
+                    success: function (result) {
+                        if (result != "") {
+                            _ParentTr.eq(3).html(result)
+                        }
+                        else {
+                            _ParentTr.eq(3).html(nodata)
+                        }
+                    }
+                });
+            }
+        });
+    });
+</script>
+<div style="clear:both;"></div>
+<div style="float:left">
+    <h2>
+        <span>产品管理 - 活动:</span> <font color="#ff0000">@FlashSales.Name</font>
+    </h2>
+</div>
+<div style="float:right">
+    <h2>
+        <a href="/FlashSales/FlashSales">返回活动管理</a>&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="javascript:void(0);" onclick="$('#addprotr').fadeToggle();SetBlank(0)">新增产品</a>
+    </h2>
+</div>
+<table style="width:100%;">
+    <tr>
+        <th width="4%" style="text-align:center;"><input type="checkbox" onclick="Allchk()" id="chkbtn" /></th>
+        <th width="18%">产品编号</th>
+        <th width="4%">排序</th>
+        <th width="18%">产品名称</th>
+        <th width="5%">促销价</th>
+        <th width="5%">原价</th>
+        <th width="5%">限量</th>
+        <th width="5%">单次限量</th>
+        <th width="5%">剩余</th>
+        <th width="9%">状态</th>
+        <th width="5%">是否热卖</th>
+        <th>操作</th>
+    </tr>
+    <tr style="background-color: #5c87b2; color: #ffffff;display:none; " id="addprotr">
+        <td style="text-align:center;">新增产品</td>
+        <td><input type="text" style="width:90%" id="PID_0" class="ChangeProductName" /></td>
+        <td><input type="text" style="width: 90%; text-align: center;" id="Position_0" /></td>
+        <td><span id="PName_0"></span></td>
+        <td><input type="text" style="width: 90%; text-align: right;" value="0" id="PromotionPrice_0" /></td>
+        <td><input type="text" style="width: 90%; text-align: right;" value="0" id="MarketPrice_0" /></td>
+        <td><input type="text" class="pronum" oldnum="0" style="width: 90%; text-align: center;" value="0" id="PromotionNum_0" /></td>
+        <td><input type="text" style="width: 90%; text-align: center;" value="0" id="MaxNum_0" /></td>
+        <td><input type="text" style="width: 90%; text-align: center; background-color: #f0f0f0;" readonly="readonly" value="0" id="NumLeft_0" /></td>
+        <td>
+            <input type="radio" name="Status_0" value="1" checked="checked" />已启用
+            <input type="radio" name="Status_0" value="0" />已停用
+        </td>
+        <td>
+            <input type="radio" name="IsHotSale_0" value="True" checked="checked" />是
+            <input type="radio" name="IsHotSale_0" value="False" />否
+        </td>
+        <td>
+            <input type="button" value="新增产品" onclick="Operate(0,4)" />
+            <input type="button" value="取消" onclick="$('#addprotr').fadeToggle();SetBlank(0);" />
+        </td>
+    </tr>
+    <tbody id="listtb">
+        @if (ProList.Count == 0)
+        {
+            <tr>
+                <td colspan="13">
+                    <div style="width:100%;padding:100px 0;text-align:center;font-size:22px;font-weight:bold;color:#cccccc;">No Data For Now</div>
+                </td>
+            </tr>
+        }
+        else
+        {
+            int _LineNo = 1;
+            foreach (var item in ProList)
+            {
+                var _ItemPKID = item.PKID;
+                <tr>
+                    <td align="center">
+                        <input type="checkbox" value="@_ItemPKID" />
+                        <input type="hidden" id="@("Status_" + _ItemPKID)" value="@item.Status" />
+                        <input type="hidden" id="@("IsHotSale_" + _ItemPKID)" value="@item.IsHotSale" />
+                    </td>
+                    <td><input type="text" style="width:90%" id="@("PID_" + _ItemPKID)" value="@item.PID" class="ChangeProductName" /></td>
+                    <td><input type="text" style="width: 90%; text-align: center;" id="@("Position_" + _ItemPKID)" value="@item.Position" /></td>
+                    <td><span id="@("PName_" + _ItemPKID)"></span></td>
+                    <td><input type="text" style="width: 90%; text-align: right;" id="@("PromotionPrice_" + _ItemPKID)" value="@item.PromotionPrice" /></td>
+                    <td><input type="text" style="width: 90%; text-align: right;" id="@("MarketPrice_" + _ItemPKID)" value="@item.MarketPrice" /></td>
+                    <td><input type="text" class="pronum" oldnum="@item.PromotionNum" style="width: 90%; text-align: center;" id="@("PromotionNum_" + _ItemPKID)" value="@item.PromotionNum" /></td>
+                    <td><input type="text" style="width: 90%; text-align: center;" id="@("MaxNum_" + _ItemPKID)" value="@item.MaxNum" /></td>
+                    <td><input type="text" style="width: 90%; text-align: center;background-color:#f0f0f0;" readonly="readonly" id="@("NumLeft_" + _ItemPKID)" value="@item.NumLeft" /></td>
+                    <td><span id="@("StatusName_" + _ItemPKID)">@Html.Raw("<b>" + (item.Status == 1 ? "<font color=\"#006600\">已启用" : "<font color=\"#FF0000\">已停用") + "</font></b>")</span></td>
+                    <td><span id="@("IsHotSaleName_" + _ItemPKID)">@Html.Raw("<b>" + (item.IsHotSale ? "热卖" : "普通") + "</b>")</span></td>
+                    <td>
+                        <input type="button" value="保存" onclick="Operate(@_ItemPKID,3)" />&nbsp;
+                        <input type="button" value="删除" onclick="Operate(@_ItemPKID,1)" />&nbsp;
+                        <input type="button" id="@("StatusChange_" + _ItemPKID)" value="@(item.Status == 0 ? "启用" : "停用")" onclick="Operate(@_ItemPKID,2)" />
+                        <input type="button" id="@("IsHotSaleChange_" + _ItemPKID)" value="@(item.IsHotSale ? "设为普通" : "设为热卖")" onclick="Operate(@_ItemPKID,5)" />
+                    </td>
+                </tr>
+                _LineNo++;
+            }
+            <tr>
+                <td colspan="13" height="30" style="background-color:#f3f3f3">
+                    <input type="button" value="批量保存" onclick="AllOperate(2)" />
+                    <input type="button" value="批量删除" onclick="AllOperate(1)" />
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,350 @@
+﻿<head>
+    <meta charset="utf-8">
+    <title>iview example</title>
+    <link href="~/Content/iview/iview.css" rel="stylesheet" />
+    <script src="~/Scripts/vue.min.js"></script>
+    <script src="~/Scripts/iview/iview.min.js"></script>
+    <style>
+        .ivu-table .demo-table-info-row td {
+            background-color: #2db7f5;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-error-row td {
+            background-color: #ff6600;
+            color: #fff;
+        }
+
+        .ivu-table td.demo-table-info-column {
+            background-color: #2db7f5;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-info-cell-name {
+            background-color: #2db7f5;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-info-cell-age {
+            background-color: #ff6600;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-info-cell-address {
+            background-color: #187;
+            color: #fff;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <fieldset>
+        <legend>美容年卡配置列表</legend>
+        <div id="app" style="margin-left:10px;margin-right:10px;" v-cloak>
+            <div>
+                <i-select v-model="modelName" style="width:200px" placeholder="请选择">
+                    <i-option v-for="item in cityList" :value="item.value" :key="item.value">{{ item.label }}</i-option>
+                </i-select>
+                <i-input v-model="keyWord" placeholder="请输入关键字" style="width: 200px"></i-input>
+                <i-select v-model="modelStatus" style="width:200px" placeholder="请选择">
+                    <i-option v-for="item in cityList2" :value="item.value" :key="item.value">{{ item.label }}</i-option>
+                </i-select>
+                门店数量所在区域：<i-select v-model="shopArea" style="width:200px" placeholder="上海市">
+                    <i-option v-for="item in provinceList" :value="item.name" :key="item.name">{{ item.name }}</i-option>
+                </i-select>
+                <i-button type="primary" icon="ios-search" v-on:click="searchPage">查询</i-button>
+                <i-button type="info" v-on:click="add()">新建</i-button>
+            </div>
+            <br />
+            <i-table :data="tableData1" :columns="tableColumns1" stripe></i-table>
+            <div style="margin: 10px;overflow: hidden">
+                <div style="float: right;">
+                    <Page :total="totalCount" :current="currentPage" :page-size="pageSize" show-total v-on:on-change="changePage"></Page>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+
+
+</body>
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data() {
+            return {
+                tableData1: this.GetDataList(),
+                tableColumns1: [
+                    {
+                        title: '套餐PKID',
+                        key: 'PKID'
+                    },
+                    {
+                        title: '名称',
+                        key: 'Name'
+                    },
+                    {
+                        title: '套餐所包含服务，单价，数量',
+                        key: 'Description',
+                        type: 'html',
+                    },
+                    {
+                        title: '套餐总价',
+                        key: 'CardPrice'
+                    },
+                    {
+                        title: '有效期(天)',
+                        key: 'CardValidDays',
+                    },
+                    {
+                        title: '状态',
+                        key: 'Status',
+
+                    },
+                    {
+                        title: '门店数量',
+                        key: 'ShopCount'
+                    },
+                    {
+                        title: '操作',
+                        key: 'action',
+                        width: 260,
+                        align: 'center',
+                        render: (h, params) => {
+                            return h('div', [
+                                h('Button', {
+                                    props: {
+                                        type: 'primary',
+                                        size: 'small'
+                                    },
+                                    style: {
+                                        marginRight: '5px'
+                                    },
+                                    on: {
+                                        click: () => {
+                                            this.edit(params.index)
+                                        }
+                                    }
+                                }, '编辑'),
+                                h('Button', {
+                                    props: {
+                                        type: 'error',
+                                        size: 'small'
+                                    },
+                                    style: {
+                                        marginRight: '5px'
+                                    },
+                                    on: {
+                                        click: () => {
+                                            this.remove(params.index)
+                                        }
+                                    }
+                                }, '删除'),
+                                h('Button', {
+                                    props: {
+                                        type: 'primary',
+                                        size: 'small'
+                                    },
+                                    on: {
+                                        click: () => {
+                                            this.getlog(params.index)
+                                        }
+                                    }
+                                }, '查看日志')
+                            ]);
+                        }
+                    }
+                ],
+
+                cityList: [
+                    {
+                        value: '1',
+                        label: '美容年卡名称'
+                    },
+                    {
+                        value: '2',
+                        label: '年卡包含的服务'
+                    }
+                ],
+                modelName: '',
+                modelStatus: '',
+                keyWord: "",
+
+                cityList2: [
+                    {
+                        value: '1',
+                        label: '全部'
+                    },
+                    {
+                        value: '2',
+                        label: '正常'
+                    },
+                    {
+                        value: '3',
+                        label: '过期'
+                    }
+                ],
+
+                provinceList: [],
+                shopArea: "",
+                currentPage: 1,
+                pageSize: 10,
+            }
+        },
+        mounted: function () {
+            this.getProvinceData();
+        },
+        methods: {
+            GetDataList() {
+                let data1 = [];
+
+                var currentpage = this.currentPage;
+                if (!currentpage) {
+                    currentpage = 1;
+                }
+                var pagesize = this.pageSize;
+                if (!pagesize) {
+                    pagesize = 10;
+                }
+                var keyword = this.keyWord;
+                var selectName = this.modelName;
+                if (!selectName) {
+                    selectName = 0;
+                }
+                else {
+                    if (!keyword) {
+                        this.$Notice.warning({
+                            title: '请输入关键字',
+                            desc: '请输入关键字'
+                        });
+                    }
+                }
+                var selectStatus = this.modelStatus;
+                if (!selectStatus) {
+                    selectStatus = 0;
+                }
+                var shopArea = this.shopArea;
+                var postData = {
+                    PageIndex: currentpage,
+                    PageSize: pagesize,
+                    KeyWord: keyword,
+                    SearchNameType: selectName,
+                    SearchStatusType: selectStatus,
+                    ShopArea: shopArea
+                };
+                var _this = this;
+                _this.totalCount = 0;
+                $.ajax({
+                    url: "/BeautyYearCardConfig/GetBeautyYearCardConfigs",
+                    type: "post",
+                    async: false,
+                    data: postData,
+                    success: function (data) {
+                        if (data != null && data.Item1 > 0 && data.Item2 != null) {
+                            $(data.Item2).each(function (i, e) {
+                                data1.push({
+                                    PKID: e.PKID,
+                                    Name: e.CardName,
+                                    Description: e.Description,
+                                    CardPrice: e.CardPrice,
+                                    CardValidDays: e.CardValidDays,
+                                    Status: e.Status,
+                                    ShopCount: e.ShopCount,
+                                })
+                            })
+                            _this.totalCount= data.Item1;
+                        }
+                    },
+                    error: function () {
+                        alert("服务端异常！");
+                    }
+                });
+                return data1;
+            },
+            formatDate(date) {
+                const y = date.getFullYear();
+                let m = date.getMonth() + 1;
+                m = m < 10 ? '0' + m : m;
+                let d = date.getDate();
+                d = d < 10 ? ('0' + d) : d;
+                return y + '-' + m + '-' + d;
+            },
+            changePage(page) {
+                // The simulated data is changed directly here, and the actual usage scenario should fetch the data from the server
+                this.currentPage = page;
+                this.tableData1 = this.GetDataList();
+            },
+            searchPage() {
+                this.tableData1 = this.GetDataList();
+            },
+            edit(a) {
+                window.location.href = '/BeautyYearCardConfig/EditBeautyYearCardConfig?CardId=' + this.tableData1[a].PKID;
+            },
+            add() {
+                window.location.href = '/BeautyYearCardConfig/EditBeautyYearCardConfig';
+            },
+            remove(a) {
+                if (confirm("确定要删除？")) {
+                    var item = this.tableData1[a];
+                    $.ajax({
+                        url: "/BeautyYearCardConfig/DeleteBeautyYearCardConfig",
+                        type: "post",
+                        async: true,
+                        data: {
+                            pkid: item.PKID
+                        },
+                        success: function (data) {
+                            if (data.Item1) {
+                                window.location.href = '/BeautyYearCardConfig/Index';
+                            }
+                            else {
+                                this.$Notice.warning({
+                                    title: '删除失败',
+                                    desc: data.Item2
+                                });
+                            }
+                        },
+                        error: function () {
+                            alert("服务端异常！");
+                        }
+                    });
+                }
+            },
+            getlog(a) {
+                var item = this.tableData1[a];
+                window.location.href = '/BeautyYearCardConfig/BeautyYearCardConfigLog?CardId=' + item.PKID;
+            },
+            getProvinceData() {
+                var _this = this;
+                $.ajax({
+                    url: "/BeautyYearCardConfig/GetAllProvinces",
+                    type: "post",
+                    async: false,
+                    data: {},
+                    success: function (data) {
+                        if (data != null && data.length > 0) {
+                            $(data).each(function (i, e) {
+                                _this.provinceList.push({
+                                    name: e.name,
+                                    id: e.id,
+                                })
+                            })
+                        }
+                        else {
+                            _this.$Notice.warning({
+                                title: '获取省市信息异常！',
+                                desc: '获取省市信息异常！',
+                            });
+                        }
+                    },
+                    error: function () {
+                        alert("服务端异常！");
+                    }
+                });
+
+            },
+        }
+    })
+</script>

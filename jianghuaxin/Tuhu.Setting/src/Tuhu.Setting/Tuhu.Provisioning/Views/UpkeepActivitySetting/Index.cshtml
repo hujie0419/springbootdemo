@@ -1,0 +1,162 @@
+﻿
+@using Tuhu.Provisioning.Models
+@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.UpkeepActivitySetting>
+@{
+    ViewBag.Title = "保养活动配置";
+}
+
+<h2>保养活动配置</h2>
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    textarea {
+        width: 100px;
+        height: 100px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background:cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+</style>
+
+<div>
+    <a href="javascript:void(0)" class="btn" onclick="UpkeepActivitySetting.Add()">添加</a>
+</div>
+<div>
+    <table style="width:100%;margin-top:20px;">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>活动编号</th>
+                <th>活动名称</th>
+                <th>活动状态</th>
+                <th>选择状态</th>
+                <th>浮层状态</th>
+                <th>浮层图片</th>
+                <th>优惠券Id</th>
+                <th>按钮文案</th>
+                <th>认证名称</th>
+                @*<th>门店认证</th>
+                    <th>关联服务</th>
+                    <th>关服务类型</th>
+                    <th>关联品牌</th>
+                    <th>关联系列</th>
+                    <th>关联产品</th>*@
+                <th>添加时间</th>
+                <th>更新时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.ActivityNum </td>
+                    <td>@item.ActivityName</td>
+                    <td>@(item.ActivityStatus ? "是" : "否")</td>
+                    <td>@(item.CheckStatus ? "是" : "否")</td>
+                    <td>@(item.LayerStatus ? "是" : "否")</td>
+                    <td><img style="width:70px;height:70px;" src="@item.LayerImage" alt="" /> </td>
+                    <td>@item.CouponId</td>
+                    <td>@item.ButtonChar</td>
+
+                    <td>
+                        @item.StoreAuthenticationName
+                        @*<textarea readonly="readonly">@item.StoreAuthentication</textarea>*@
+                    </td>
+                    @*<td>
+                            @item.StoreAuthentication
+                            <textarea readonly="readonly">@item.StoreAuthentication</textarea>
+                        </td>
+                        <td>
+                            <textarea readonly="readonly">@item.RelevanceServicesTypes</textarea>
+                        </td>
+                        <td>
+                            <textarea readonly="readonly">@item.RelevanceServicesCatalogs</textarea>
+                        </td>
+                        <td>
+                            <textarea readonly="readonly">@item.RelevanceBrands</textarea>
+                        </td>
+                        <td>
+                            <textarea readonly="readonly">@item.RelevanceSeries</textarea>
+                        </td>
+                        <td>
+                            <textarea readonly="readonly">@item.RelevanceProducts</textarea>
+                        </td>*@
+                    <td>@item.CreateTime</td>
+                    <td>@item.UpdateTime</td>
+                    <td>
+                        <a href="javascript:;" onclick="UpkeepActivitySetting.Update(@item.Id)">编辑</a>&nbsp;&nbsp;
+                        <a href="javascript:;" onclick="UpkeepActivitySetting.Delete(@item.Id)">删除</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<div id="AddItem"></div>
+<div>
+    @Html.Pager(Model.Pager, pageIndex => Url.RouteUrl(new { pageIndex }))
+</div>
+
+<script>
+    var UpkeepActivitySetting = {
+        "Add": function () {
+            $("#AddItem").load('/UpkeepActivitySetting/Edit?id=0');
+            $("#AddItem").dialog({
+                title: "添加",
+                width: 600,
+                height: 700,
+                modal: true
+            });
+        },
+        "Update": function (id) {
+            $("#AddItem").load('/UpkeepActivitySetting/Edit?id=' + id);
+            $("#AddItem").dialog({
+                title: "修改",
+                width: 600,
+                height: 700,
+                modal: true
+            });
+        },
+        "Delete":function (id){
+            if (window.confirm("您确定要删除吗？")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/UpkeepActivitySetting/Delete",
+                    data: { "id": id },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/UpkeepActivitySetting/Index";
+                        }
+                        else {
+                            alert("删除失败！");
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        }
+    }
+</script>

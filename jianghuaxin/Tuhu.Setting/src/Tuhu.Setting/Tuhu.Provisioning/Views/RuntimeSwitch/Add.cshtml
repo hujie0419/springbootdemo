@@ -1,0 +1,53 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@model RuntimeSwitch
+
+@{
+    Layout = null;
+}
+
+<div>
+    <table>
+        <tbody>
+            <tr>
+                <td>SwitchName:</td>
+                <td>
+                    @if (Model.PKID > 0)
+                    {
+                        <input type="text" readonly="readonly" class="SwitchName" value="@Model.SwitchName" /><span style="color:red">*</span>
+                    }
+                    else
+                    {
+                        <input type="text" class="SwitchName" value="@Model.SwitchName" /><span style="color:red">*</span>
+                    }
+
+                </td>
+            </tr>
+
+            <tr>
+                <td>Value:</td>
+                <td>
+                    <select class="Value">
+                        @if (Model.Value)
+                        {
+                            <option value=true selected="selected">True</option>
+                            <option value=false>False</option>
+                        }
+                        else
+                        {
+                            <option value=true>True</option>
+                            <option value=false selected="selected">False</option>
+                        }
+
+                    </select>
+                    <span style="color:red">*</span>
+                </td>
+            </tr>
+            <tr>
+                <td>Description:</td>
+                <td>
+                    <textarea class="Description">@Model.Description</textarea>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

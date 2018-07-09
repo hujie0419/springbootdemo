@@ -1,0 +1,113 @@
+﻿@{
+    Layout = null;
+}
+
+@model Tuhu.Provisioning.DataAccess.Entity.SE_HomePageMenuConfig
+
+<div class="modal-dialog">
+    <div class="modal-content" style="width:800px;">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                &times;
+            </button>
+            <h4 class="modal-title">
+                编辑首页菜单配置
+            </h4>
+        </div>
+        <div class="modal-body">
+           <form id="form1" class="form-horizontal">
+               <div class="form-group">
+                   <label class="col-sm-2 control-label">名称:</label>
+                   <div class="col-sm-4">
+                       <input type="text" id="MenuName" name="MenuName" value="@Model.MenuName" />
+                   </div>
+                   <label class="col-sm-2 control-label">排序</label>
+                   <div class="col-sm-4">
+                       <input type="text" id="PriorityLevel" name="PriorityLevel" value="@Model.PriorityLevel"/>
+                   </div>
+               </div>
+               <div class="form-group">
+                   <label class="col-sm-2 control-label">显示图片:</label>
+                   <div class="col-sm-4">
+                       <img id="imgShow" @(string.IsNullOrWhiteSpace(Model.ShowImageUrl) == false?"src="+Model.ShowImageUrl:"") width="30" height="30" style="display:inline;"/>
+                       <input type="file" id="upShowImage" name="upShowImage" onchange="UploadBgImg(this, 'imgShow', 'ShowImageUrl')" width="100" style="display:inline;"/>
+                       <input type="hidden" id="ShowImageUrl" name="ShowImageUrl" value="@Model.ShowImageUrl"  />
+                   </div>
+                   <label class="col-sm-2 control-label">显示颜色:</label>
+                   <div class="col-sm-4">
+                       <input type="text" id="ShowFontColor" name="ShowFontColor"  value="@Model.ShowFontColor"/>
+                   </div>
+               </div>
+               <div class="form-group">
+                   <label class="col-sm-2 control-label">点击图片图片:</label>
+                   <div class="col-sm-4">
+                       <img id="imgClick" @(string.IsNullOrWhiteSpace(Model.ClickImageUrl) == false ? "src=" + Model.ClickImageUrl : "") width="30" height="30" style="display:inline;" />
+                       <input type="file" id="upClickImage" name="upClickImage" onchange="UploadBgImg(this, 'imgClick', 'ClickImageUrl')" width="100" style="display:inline;" />
+                       <input type="hidden" id="ClickImageUrl" name="ClickImageUrl" value="@Model.ClickImageUrl" />
+                   </div>
+                   <label class="col-sm-2 control-label">点击颜色:</label>
+                   <div class="col-sm-4">
+                       <input type="text" id="ClickFontColor" name="ClickFontColor" value="@Model.ClickFontColor" />
+                   </div>
+               </div>
+               <div class="form-group">
+                   <label class="col-sm-2 control-label">菜单类型:</label>
+                   <div class="col-sm-10">
+                       <select id="MenuType" name="MenuType" class="form-control">
+                           <option value="home"  @(Model.MenuType.Equals("home")==true?"selected=\"selected\"":"")>首页</option>
+                           <option value="store" @(Model.MenuType.Equals("store") ==true?"selected=\"selected\"":"") >门店</option>
+                           <option value="me" @(Model.MenuType.Equals("me") ==true?"selected=\"selected\"":"") >我的</option>
+                           <option value="quora" @(Model.MenuType.Equals("quora") ==true?"selected=\"selected\"":"") >问答</option>
+                           <option value="explore" @(Model.MenuType.Equals("explore") ==true?"selected=\"selected\"":"")>发现</option>
+                           <option value="forum" @(Model.MenuType.Equals("forum") == true ? "selected=\"selected\"" : "")>论坛</option>
+                           <option value="classify" @(Model.MenuType.Equals("classify") == true ? "selected=\"selected\"" : "")>分类</option>
+                       </select>
+                   </div>
+               </div>
+               <input type="hidden" id="ID" name="ID" value="@Model.ID"/>
+           </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="btnSave" name="btnSave" class="btn btn-primary">
+                保 存
+            </button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                取 消
+            </button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        $('#btnSave').on('click', function () {
+            var data = {};
+            data.ID = $('#ID').val();
+            data.MenuName = $('#MenuName').val();
+            data.PriorityLevel = $('#PriorityLevel').val();
+            data.ShowImageUrl = $('#ShowImageUrl').val();
+            data.ClickImageUrl = $('#ClickImageUrl').val();
+            data.MenuType = $('#MenuType').val();
+            data.FK_MenuListID = $('#FKMenuListID').val();
+            data.ClickFontColor = $('#ClickFontColor').val();
+            data.ShowFontColor = $('#ShowFontColor').val();
+            if (data) {
+                $(this).attr("disabled", "disabled");
+                $.ajax({
+                    url: '/HomePageConfigV2/HomePageMenuSave',
+                    data: data,
+                    dataType: 'json',
+                    type: 'post'
+                }).done(function (result) {
+                    if (result == 1) {
+                        alert('保存成功');
+                        $('#edit').modal("hide");
+                        location.reload();
+                    } else {
+                        alert("保存失败");
+                    }
+                });
+            }
+                
+        });
+    });
+</script>

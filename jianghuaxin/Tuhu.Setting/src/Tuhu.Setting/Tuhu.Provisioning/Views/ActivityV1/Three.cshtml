@@ -1,0 +1,667 @@
+﻿@{
+    ViewBag.Title = "";
+    Layout = null;
+}
+
+<div style="float:left;margin-left:10px">
+    <form id="threeFormOne">
+        <table id="threeTableByOne" class="easyui-form">
+            <tr>
+                <td colspan="3">
+                    <center>一列</center>
+                </td>
+            </tr>
+            <tr>
+                <td>PID:</td>
+                <td colspan="2">
+                    <input type="text"  name="PID"  onchange="GetProductImage(this, 'threeTableByOne')" />
+                </td>
+            </tr>
+            <tr>
+                <td>产品名称:</td>
+                <td colspan="2">
+                    <input type="text" id="ProductName" name="ProductName"  />
+                </td>
+            </tr>
+            <tr>
+                <td>活动ID：</td>
+                <td colspan="2">
+                    <input type="text"  name="VID" />
+                </td>
+            </tr>
+            <tr>
+                <td>优惠券ID：</td>
+                <td colspan="2">
+                    <input type="text"  name="CID" onchange="BindCoupon('threeFormOne')" />
+                    @*<select name="CID" id="CID">
+
+                    </select>*@
+                </td>
+
+            </tr>
+            <tr>
+                <td>图片:</td>
+                <td>
+                    <img id="cimg" width="20" height="20" />
+                    <input type="hidden" id="hidCimg" name="hidCimg" />
+                </td>
+                <td>
+                    <input type="file" id="ThreecFile" name="ThreecFile" onchange="UploadImg(this, 'cimg', 'hidCimg', 'IsUploading', 'threeTableByOne')" />
+                    <input type="hidden" id="IsUploading" name="IsUploading" value="@(Model == null?"0":Model.IsUploading.ToString())" />
+                </td>
+            </tr>
+            <tr id="TwoPic" style="display:none;">
+                <td>图片(二):</td>
+                <td>
+                    <img id="cimgTwoPic" width="20" height="20" />
+                    <input type="hidden" id="hidCimgTwoPic" name="hidCimgTwoPic" />
+                </td>
+                <td>
+                    <input id="ThreecFileTwoPic1" type="file" name="ThreecFileTwoPic1" onchange="UploadImg(this, 'cimgTwoPic', 'hidCimgTwoPic', 'IsUploading', 'threeTableByOne')" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    活动类型:
+                </td>
+                <td colspan="2">
+                    <select id="Type" name="Type" onchange="DropDownChange('threeFormOne')">
+                        <option value="-1">请选择</option>
+                        <option value="0">轮胎</option>
+                        <option value="1">车品</option>
+                        <option value="2">链接</option>
+                        <option value="3">图片</option>
+                        <option value="4">优惠卷</option>
+                        <option value="5">保养</option>
+                        <option value="6">限购轮胎</option>
+                        <option value="7">限购车品</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>是否图片:</td>
+                <td colspan="2">
+                    <select id="IsImage" name="IsImage">
+                        <option value="0" selected="selected">模板</option>
+                        <option value="1">图片</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    显示方式:
+                </td>
+                <td colspan="2">
+                    <select id="DisplayWay" name="DisplayWay">
+                        <option value="-1">不选择</option>
+                        <option value="0">竖向</option>
+                        <option value="1">横向</option>
+
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>描述:</td>
+                <td colspan="2">
+
+                    <textarea name="Description" id="Description" style="width:280px;height:16px; font-size:12px; overflow:hidden;"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td>URL:</td>
+                <td colspan="2">
+                    <input type="text" name="Url" />
+                </td>
+            </tr>
+            <tr>
+                <td>微信URL：</td>
+                <td colspan="2">
+                    <input type="text" name="WXUrl" value="" />
+                </td>
+            </tr>
+            <tr>
+                <td>官网URL：</td>
+                <td colspan="2">
+                    <input type="text" name="PCUrl" value="" />
+                </td>
+            </tr>
+            <tr>
+                <td>排序:</td>
+                <td colspan="2">
+                    <input type="text"  name="OrderBy" />
+                </td>
+            </tr>
+            <tr style="display:none;">
+                <td>轮胎品牌:</td>
+                <td colspan="2">
+                    <select id="TireBrand" name="TireBrand">
+                        <option value="-1">不选择</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">APP处理值(IOS):</td>
+                <td>
+                    <input type="text"  name="HandlerIOS"  value="" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">APP处理值(Android):</td>
+                <td>
+                    <input type="text"  name="HandlerAndroid" value="" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">特殊通讯值(IOS):</td>
+                <td>
+                    <input type="text"  name="SOAPIOS" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">特殊通讯值(Android)：</td>
+                <td>
+                    <input type="text"  name="SOAPAndroid" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <span style="color:red;">
+                        【特殊通讯值】填写时，不用单引号【'】以及不用中括号【[]】
+                        <br />
+                        例如(不符合格式):<br />
+                        {'name':'value','key':1} 、<br />
+                        [{"name":"value","key":1} ]
+                    </span>
+
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<div style="float:left;margin-left:10px">
+    <form id="threeFormTwo">
+        <table class="easyui-form" id="threeTableByTwo" style="float:left">
+            <tr>
+                <td colspan="3">
+                    <center>二列</center>
+                </td>
+            </tr>
+            <tr>
+                <td>PID:</td>
+                <td colspan="2">
+                    <input type="text" id="PID" name="PID" onchange="GetProductImage(this, 'threeFormTwo')" />
+                </td>
+            </tr>
+            <tr>
+                <td>产品名称:</td>
+                <td colspan="2">
+                    <input type="text" id="ProductName" name="ProductName"  />
+                </td>
+            </tr>
+            <tr>
+                <td>活动ID：</td>
+                <td colspan="2">
+                    <input type="text"  id="VID" name="VID"  />
+                </td>
+            </tr>
+            <tr>
+                <td>优惠券ID：</td>
+                <td colspan="2">
+                    <input type="text" name="CID" onchange="BindCoupon('threeFormTwo')" />
+                    @*<select name="CID" id="CID">
+
+                    </select>*@
+                </td>
+
+            </tr>
+            <tr>
+                <td>图片:</td>
+                <td>
+                    <img id="cimg" width="20" height="20" />
+                    <input type="hidden" id="hidCimg" name="hidCimg" />
+                </td>
+                <td>
+                    <input id="cFile1" type="file" name="cFile1" onchange="UploadImg(this, 'cimg', 'hidCimg', 'IsUploading', 'threeFormTwo')" />
+                    <input type="hidden" id="IsUploading" name="IsUploading" value="@(Model == null?"0":Model.IsUploading.ToString())" />
+                </td>
+            </tr>
+            <tr id="TwoPic" style="display:none;">
+                <td>图片(二):</td>
+                <td>
+                    <img id="cimgTwoPic" width="20" height="20" />
+                    <input type="hidden" id="hidCimgTwoPic" name="hidCimgTwoPic" />
+                </td>
+                <td>
+                    <input id="ThreecFileTwoPic2" type="file" name="ThreecFileTwoPic2" onchange="UploadImg(this, 'cimgTwoPic', 'hidCimgTwoPic', 'IsUploading', 'threeFormTwo')" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    活动类型:
+                </td>
+                <td colspan="2">
+                    <select id="Type" name="Type" onchange="DropDownChange('threeFormTwo')">
+                        <option value="-1">请选择</option>
+                        <option value="0">轮胎</option>
+                        <option value="1">车品</option>
+                        <option value="2">链接</option>
+                        <option value="3">图片</option>
+                        <option value="4">优惠卷</option>
+                        <option value="5">保养</option>
+                        <option value="6">限购轮胎</option>
+                        <option value="7">限购车品</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>是否图片:</td>
+                <td colspan="2">
+                    <select id="IsImage" name="IsImage">
+                        <option value="0" selected="selected">模板</option>
+                        <option value="1">图片</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    显示方式:
+                </td>
+                <td colspan="2">
+                    <select id="DisplayWay" name="DisplayWay">
+                        <option value="-1">不选择</option>
+                        <option value="0">竖向</option>
+                        <option value="1">横向</option>
+
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>描述:</td>
+                <td colspan="2">
+
+                    <textarea name="Description" id="Description" style="width:280px;height:16px; font-size:12px; overflow:hidden;"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td>URL:</td>
+                <td colspan="2">
+                    <input type="text" name="Url" />
+                </td>
+            </tr>
+            <tr>
+                <td>微信URL：</td>
+                <td colspan="2">
+                    <input type="text" name="WXUrl" value="" />
+                </td>
+            </tr>
+            <tr>
+                <td>官网URL：</td>
+                <td colspan="2">
+                    <input type="text" name="PCUrl" value="" />
+                </td>
+            </tr>
+            <tr>
+                <td>排序:</td>
+                <td colspan="2">
+                    <input type="text" name="OrderBy" />
+                </td>
+            </tr>
+            <tr style="display:none;">
+                <td>轮胎品牌:</td>
+                <td colspan="2">
+                    <select id="TireBrand" name="TireBrand">
+                        <option value="-1">不选择</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">APP处理值(IOS):</td>
+                <td>
+                    <input type="text" name="HandlerIOS" value="" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">APP处理值(Android):</td>
+                <td>
+                    <input type="text" name="HandlerAndroid" value="" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">特殊通讯值(IOS):</td>
+                <td>
+                    <input type="text" name="SOAPIOS" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">特殊通讯值(Android)：</td>
+                <td>
+                    <input type="text" name="SOAPAndroid" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <span style="color:red;">
+                        【特殊通讯值】填写时，不用单引号【'】以及不用中括号【[]】
+                        <br />
+                        例如(不符合格式):<br />
+                        {'name':'value','key':1} 、<br />
+                        [{"name":"value","key":1} ]
+                    </span>
+
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+
+<div style="float:right;margin-left:10px">
+    <form id="threeFormByThree">
+        <table class="easyui-form" id="threeTableByThree" style="float:left">
+            <tr>
+                <td colspan="3">
+                    <center>二列</center>
+                </td>
+            </tr>
+            <tr>
+                <td>PID:</td>
+                <td colspan="2">
+                    <input type="text" id="PID" name="PID"  onchange="GetProductImage(this, 'threeFormByThree')"/>
+                </td>
+            </tr>
+            <tr>
+                <td>产品名称:</td>
+                <td colspan="2">
+                    <input type="text" id="ProductName" name="ProductName"  />
+                </td>
+            </tr>
+            <tr>
+                <td>活动ID：</td>
+                <td colspan="2">
+                    <input type="text"  id="VID" name="VID"  />
+                </td>
+            </tr>
+            <tr>
+                <td>优惠券ID：</td>
+                <td colspan="2">
+                    <input type="text" name="CID" onchange="BindCoupon('threeFormByThree')"  />
+                    @*<select name="CID" id="CID">
+
+                    </select>*@
+                </td>
+
+            </tr>
+            <tr>
+                <td>图片:</td>
+                <td>
+                    <img id="cimg" width="20" height="20" />
+                    <input type="hidden" id="hidCimg" name="hidCimg" />
+                </td>
+                <td>
+                    <input id="cFile2" type="file" name="cFile2" onchange="UploadImg(this, 'cimg', 'hidCimg', 'IsUploading', 'threeFormByThree')" />
+                    <input type="hidden" id="IsUploading" name="IsUploading" value="@(Model == null?"0":Model.IsUploading.ToString())" />
+                </td>
+            </tr>
+            <tr id="TwoPic" style="display:none;">
+                <td>图片(二):</td>
+                <td>
+                    <img id="cimgTwoPic" width="20" height="20" />
+                    <input type="hidden" id="hidCimgTwoPic" name="hidCimgTwoPic" />
+                </td>
+                <td>
+                    <input id="ThreecFileTwoPic3" type="file" name="ThreecFileTwoPic3" onchange="UploadImg(this, 'cimgTwoPic', 'hidCimgTwoPic', 'IsUploading', 'threeFormByThree')" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    活动类型:
+                </td>
+                <td colspan="2">
+                    <select id="Type" name="Type" onchange="DropDownChange('threeFormByThree')">
+                        <option value="-1">请选择</option>
+                        <option value="0">轮胎</option>
+                        <option value="1">车品</option>
+                        <option value="2">链接</option>
+                        <option value="3">图片</option>
+                        <option value="4">优惠卷</option>
+                        <option value="5">保养</option>
+                        <option value="6">限购轮胎</option>
+                        <option value="7">限购车品</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>是否图片:</td>
+                <td colspan="2">
+                    <select id="IsImage" name="IsImage">
+                        <option value="0" selected="selected">模板</option>
+                        <option value="1">图片</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    显示方式:
+                </td>
+                <td colspan="2">
+                    <select id="DisplayWay" name="DisplayWay">
+                        <option value="-1">不选择</option>
+                        <option value="0">竖向</option>
+                        <option value="1">横向</option>
+
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>描述:</td>
+                <td colspan="2">
+
+                    <textarea name="Description" id="Description" style="width:280px;height:16px; font-size:12px; overflow:hidden;"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td>URL:</td>
+                <td colspan="2">
+                    <input type="text" name="Url" />
+                </td>
+            </tr>
+            <tr>
+                <td>微信URL：</td>
+                <td colspan="2">
+                    <input type="text" name="WXUrl" value="" />
+                </td>
+            </tr>
+            <tr>
+                <td>官网URL：</td>
+                <td colspan="2">
+                    <input type="text" name="PCUrl" value="" />
+                </td>
+            </tr>
+            <tr>
+                <td>排序:</td>
+                <td colspan="2">
+                    <input type="text" name="OrderBy" />
+                </td>
+            </tr>
+            <tr style="display:none;">
+                <td>轮胎品牌:</td>
+                <td colspan="2">
+                    <select id="TireBrand" name="TireBrand">
+                        <option value="-1">不选择</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">APP处理值(IOS):</td>
+                <td>
+                    <input type="text" name="HandlerIOS" value="" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">APP处理值(Android):</td>
+                <td>
+                    <input type="text" name="HandlerAndroid" value="" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">特殊通讯值(IOS):</td>
+                <td>
+                    <input type="text" name="SOAPIOS" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">特殊通讯值(Android)：</td>
+                <td>
+                    <input type="text" name="SOAPAndroid" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <span style="color:red;">
+                        【特殊通讯值】填写时，不用单引号【'】以及不用中括号【[]】
+                        <br />
+                        例如(不符合格式):<br />
+                        {'name':'value','key':1} 、<br />
+                        [{"name":"value","key":1} ]
+                    </span>
+
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+
+<script type="text/javascript">
+    function GetRowThree() {
+        var list = [];
+        var date = (new Date()).Format("yyyyMMddhhmmss");
+        var row = {
+            'Group': date,
+            'PID': $('#threeTableByOne [name=PID]').val(),
+            'VID': $('#threeTableByOne [name=VID]').val(),
+            'CID': $('#threeTableByOne [name=CID]').val(),
+            'SmallImage': $('#threeTableByOne [id=cimg]').attr('src')||'', //小图路径
+            'Image': $('#threeTableByOne [name=hidCimg]').val()||'', //大图
+            'BigImg': 2,
+            'Type': $('#threeTableByOne [name=Type]').val(), //类型
+            'OrderBy': $('#threeTableByOne [name=OrderBy]').val(),
+            'LinkUrl': $('#threeTableByOne [name=Url]').val(),
+            'HandlerIOS': $('#threeTableByOne [name=HandlerIOS]').val(),
+            'HandlerAndroid': $('#threeTableByOne [name=HandlerAndroid]').val(),
+            'SOAPIOS': $('#threeTableByOne [name=SOAPIOS]').val(),
+            'SOAPAndroid': $('#threeTableByOne [name=SOAPAndroid]').val(),
+            'IsUploading': $('#threeTableByOne [name=IsImage]').val()  //$('#threeTableByOne [name=IsUploading]').val() || 0
+        };
+
+        row.DisplayWay = $('#threeTableByOne [name=DisplayWay]').val();//显示方式
+
+        row.Description = $('#threeTableByOne [name=Description]').val();//描述
+
+        if (row.Type == 4) {
+            //优惠卷
+            row.TwoSImage = $('#threeTableByOne [id=cimgTwoPic]').attr('src') || '';
+            row.TwoBImage = $('#threeTableByOne [name=hidCimgTwoPic]').val();
+        }
+
+        //if ($('#threeTableByOne [name=TireBrand]').val() != -1) {
+        //    //选择车牌
+        //    row.TireBrand = $('#threeTableByOne [name=TireBrand]').val();
+        //}
+
+        if ((row.Type == 0 || row.Type == 1 || row.Type == 6 || row.Type == 7) && row.IsUploading == 0) {
+            row.ProductName = $('#threeTableByOne [name=ProductName]').val();
+        }
+        row.WXUrl = $('#threeTableByOne [name=WXUrl]').val();
+        row.PCUrl = $('#threeTableByOne [name=PCUrl]').val();
+        var row1 = {
+            'Group': date,
+            'PID': $('#threeTableByTwo [name=PID]').val(),
+            'VID': $('#threeTableByTwo [name=VID]').val(),
+            'CID': $('#threeTableByTwo [name=CID]').val(),
+            'SmallImage': $('#threeTableByTwo [id=cimg]').attr('src')||'', //小图路径
+            'Image': $('#threeTableByTwo [name=hidCimg]').val()||'', //大图
+            'BigImg': 2,
+            'Type': $('#threeTableByTwo [name=Type]').val(), //类型
+            'OrderBy': $('#threeTableByTwo [name=OrderBy]').val(),
+            'LinkUrl': $('#threeTableByTwo [name=Url]').val(),
+            'HandlerIOS': $('#threeTableByTwo [name=HandlerIOS]').val(),
+            'HandlerAndroid': $('#threeTableByTwo [name=HandlerAndroid]').val(),
+            'SOAPIOS': $('#threeTableByTwo [name=SOAPIOS]').val(),
+            'SOAPAndroid': $('#threeTableByTwo [name=SOAPAndroid]').val(),
+            'IsUploading': $('#threeTableByTwo [name=IsImage]').val() //$('#threeTableByTwo [name=IsUploading]').val() || 0
+        };
+
+        row1.DisplayWay = $('#threeTableByTwo [name=DisplayWay]').val();//显示方式
+
+        row1.Description = $('#threeTableByTwo [name=Description]').val();//描述
+
+        if (row1.Type == 4) {
+            //优惠卷
+            row1.TwoSImage = $('#threeTableByTwo [id=cimgTwoPic]').attr('src') || '';
+            row1.TwoBImage = $('#threeTableByTwo [name=hidCimgTwoPic]').val();
+        }
+
+        //if ($('#threeTableByTwo [name=TireBrand]').val() != -1) {
+        //    //选择车牌
+        //    row1.TireBrand = $('#threeTableByTwo [name=TireBrand]').val();
+        //}
+
+        if ((row1.Type == 0 || row1.Type == 1 || row1.Type == 6 || row1.Type == 7) && row1.IsUploading == 0) {
+            row1.ProductName = $('#threeTableByTwo [name=ProductName]').val();
+        }
+
+        row1.WXUrl = $('#threeTableByTwo [name=WXUrl]').val();
+        row1.PCUrl = $('#threeTableByTwo [name=PCUrl]').val();
+        var row2 = {
+            'Group': date,
+            'PID': $('#threeTableByThree [name=PID]').val(),
+            'VID': $('#threeTableByThree [name=VID]').val(),
+            'CID': $('#threeTableByThree [name=CID]').val(),
+            'SmallImage': $('#threeTableByThree [id=cimg]').attr('src')||'', //小图路径
+            'Image': $('#threeTableByThree [name=hidCimg]').val()||'', //大图
+            'BigImg': 2,
+            'Type': $('#threeTableByThree [name=Type]').val(), //类型
+            'OrderBy': $('#threeTableByThree [name=OrderBy]').val(),
+            'LinkUrl': $('#threeTableByThree [name=Url]').val(),
+            'HandlerIOS': $('#threeTableByThree [name=HandlerIOS]').val(),
+            'HandlerAndroid': $('#threeTableByThree [name=HandlerAndroid]').val(),
+            'SOAPIOS': $('#threeTableByThree [name=SOAPIOS]').val(),
+            'SOAPAndroid': $('#threeTableByThree [name=SOAPAndroid]').val(),
+            'IsUploading': $('#threeTableByThree [name=IsImage]').val()//$('#threeTableByThree [name=IsUploading]').val() || 0
+        };
+
+
+        row2.DisplayWay = $('#threeTableByThree [name=DisplayWay]').val();//显示方式
+
+        row2.Description = $('#threeTableByThree [name=Description]').val();//描述
+
+        if (row2.Type == 4) {
+            //优惠卷
+            row2.TwoSImage = $('#threeTableByThree [id=cimgTwoPic]').attr('src') || '';
+            row2.TwoBImage = $('#threeTableByThree [name=hidCimgTwoPic]').val();
+        }
+
+        //if ($('#threeTableByThree [name=TireBrand]').val() != -1) {
+        //    //选择车牌
+        //    row2.TireBrand = $('#threeTableByThree [name=TireBrand]').val();
+        //}
+
+        if ((row2.Type == 0 || row2.Type == 1 || row2.Type == 6 || row2.Type == 7) && row2.IsUploading == 0) {
+            row2.ProductName = $('#threeTableByThree [name=ProductName]').val();
+        }
+
+        row2.WXUrl = $('#threeTableByThree [name=WXUrl]').val();
+        row2.PCUrl = $('#threeTableByThree [name=PCUrl]').val();
+        list.push(row);
+        list.push(row1);
+        list.push(row2);
+
+      
+
+        return list;
+    }
+
+
+</script>

@@ -1,0 +1,225 @@
+﻿@{
+    ViewBag.Title = "List";
+    Layout = null;
+}
+@model  IEnumerable<Tuhu.Provisioning.DataAccess.Entity.ActivityMenu>
+ 
+<form id="MenuEdit">
+    <span>颜色:</span><input type="text" value="@(Model!=null?Model.First<Tuhu.Provisioning.DataAccess.Entity.ActivityMenu>().Color:"#DF3348")" name="Color"/>
+    &nbsp;&nbsp;
+    <span>组:</span>
+    <input type="text" name="menuGroup" id="menuGroup" value="@(DateTime.Now.ToString("yyyyMMddHHmmss"))" />
+    <table id="MenuEditTable">
+        @if (Model != null)
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>菜单名称:</td>
+                    <td>
+                        <input type="text" id="MenuName" name="MenuName" value="@item.MenuName" />
+                    </td>
+                    <td>
+                        开始值:
+                    </td>
+                    <td>
+                        <input type="text" id="MenuValue" name="MenuValue" value="@item.MenuValue"/>
+                    </td>
+                    <td>
+                        结束值:
+                    </td>
+                    <td>
+                        <input type="text" id="MenuValueEnd" name="MenuValueEnd" value="@item.MenuValueEnd"/>
+                    </td>
+                    <td>
+                        导航类型:
+                    </td>
+                    <td>
+                        <select id="MenuType" name="MenuType" >
+                            @if (item.MenuType == 0)
+                            {
+                                <option value="0" selected="selected">上下滚动</option>
+                                <option value="1">左右滚动</option>
+                            }
+                            else
+                            {
+                                <option value="0">上下滚动</option>
+                                <option value="1" selected="selected">左右滚动</option>
+                            }
+                          
+                        </select>
+                    </td>
+                    <td>
+                        排序:
+                    </td>
+                    <td>
+                        <input type="number" id="Sort" name="Sort" value="@item.Sort"  />
+                    </td>
+                    <td>
+                        <input type="button" name="btnDel" id="btnDel" value="删 除" onclick="deleteRow(this)" />
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td>菜单名称:</td>
+                <td>
+                    <input type="text" id="MenuName" name="MenuName" />
+                </td>
+                <td>
+                    开始值:
+                </td>
+                <td>
+                    <input type="text" id="MenuValue" name="MenuValue" />
+                </td>
+                <td>
+                    结束值:
+                </td>
+                <td>
+                    <input type="text" id="MenuValueEnd" name="MenuValueEnd" />
+                </td>
+                <td>
+                    导航类型:
+                </td>
+                <td>
+                    <select id="MenuType" name="MenuType">
+                            <option value="0" selected="selected">上下滚动</option>
+                            <option value="1">左右滚动</option>
+                    </select>
+                </td>
+
+                <td>
+                    排序:
+                </td>
+                <td>
+                    <input type="number" id="Sort" name="Sort"  value="1" />
+                </td>
+                <td>
+                    <input type="button" name="btnDel" id="btnDel" value="删 除" onclick="deleteRow(this)" />
+                </td>
+            </tr>
+        }
+
+
+    </table>
+   
+  <center>
+      <span id="addRow" style="width:120px;  height:20px;  text-align:center; cursor:pointer; color:blue;"> 添 加 一 行 </span>
+  </center>  
+</form>
+<script type="text/javascript">
+
+    var MenuEdit = {
+        rules: {
+            MenuName: {
+                required: true,
+            },
+            MenuValue: {
+                required: true,
+                digits: true
+            },
+            MenuValueEnd: {
+                required: true,
+                digits:true
+            }
+           
+
+        },
+        messages: {
+            MenuName: {
+                required: '必填'
+            },
+            MenuValue: {
+                required: '必填组号',
+                digits: '必须输入组号'
+            },
+            MenuValueEnd: {
+                required: '必填组号',
+                digits: '必须输入组号'
+            }
+          
+        }
+    };
+    $('#MenuEdit').validate(MenuEdit);
+    $('#addRow').click(function () {
+       // var template = $('#menuTemplate').html();
+        //alert(  $(this).parent().parent().);
+        var maxOrder = 0;
+        var isAdd = false;
+        $('#MenuEditTable > tbody > tr').each(function (i) {
+            var sort = $('input[name=Sort]', this).val();
+            var name = $('input[name=MenuName]', this).val();
+            var value = $('input[name=MenuValue]', this).val();
+          
+            if (name == '' || name == null || value == '' || value == null) {
+                isAdd = true;
+                return false;
+            }
+           
+            if (sort > maxOrder) {
+                maxOrder = sort;
+            }
+        });
+        if (isAdd) {
+            alert("请输入【菜单名称】、【菜单值】");
+            return false;
+        }
+        maxOrder++;
+        $('#MenuEditTable > tbody').append('<tr> <td>菜单名称:</td> <td><input type="text" id="MenuName" name="MenuName" /></td><td>开始值:</td><td> <input type="text" id="MenuValue" name="MenuValue" /> </td>   <td>结束值:</td><td><input type="text" id="MenuValueEnd" name="MenuValueEnd" /></td>     <td> 导航类型: </td><td> <select id="MenuType" name="MenuType"> <option value="0" selected="selected">上下滚动</option><option value="1">左右滚动</option> </select> </td> <td> 排序: </td><td> <input type="number" id="Sort" name="Sort" value="' + maxOrder + '" /></td> <td> <input type="button" name="btnDel" id="btnDel" value="删 除" onclick="deleteRow(this)" /> </td></tr>');
+    });
+
+    $('input[name=btnDel]').click(function () {
+       
+        $(this).parent().parent().remove();
+    });
+
+    function deleteRow(obj){
+        $(obj).parent().parent().remove();
+    }
+
+
+    function GetActivityMenuTable() {
+        var isAdd = false;
+        $('#MenuEditTable > tbody > tr').each(function (i) {
+          
+            var name = $('input[name=MenuName]', this).val();
+            var value = $('input[name=MenuValue]', this).val();
+            var valueEnd = $('input[name=MenuValueEnd]', this).val();
+            if (name == '' || name == null || value == '' || value == null || valueEnd == '' || valueEnd == null) {
+                isAdd = true;
+                return false;
+            }
+        });
+        if (isAdd) {
+            return null;
+        }
+
+      var color=  $('#MenuEdit input[name=Color]').val();
+        var array = [];
+        $('#MenuEditTable > tbody > tr').each(function (i) {
+           
+            var name = $('input[name=MenuName]', this).val();
+            var value = $('input[name=MenuValue]', this).val();
+            var valueEnd = $('input[name=MenuValueEnd]',this).val();
+            var sort = $('input[name=Sort]', this).val();
+            var type = $('select[name=MenuType]', this).val();
+            var json = {};
+            json.ActivityID = $('#id').val(),
+            json.MenuName = name;
+            json.MenuValue = value;
+            json.MenuType = type;
+            json.Sort = sort;
+            json.Color = color;
+            json.MenuValueEnd = valueEnd;
+            array.push(json);
+            console.log(json);
+        });
+       // console.log(array);
+        return array;
+    }
+</script>
+
+   
+

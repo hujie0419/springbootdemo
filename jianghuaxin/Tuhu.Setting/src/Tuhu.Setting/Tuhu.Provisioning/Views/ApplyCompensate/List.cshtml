@@ -1,0 +1,79 @@
+﻿
+@using Tuhu.Provisioning.Models
+@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.ApplyCompensate>
+@{
+    Layout = "";
+}
+<div>
+    <table style="width:100%;margin-top:20px;">
+        <thead>
+            <tr>            
+                <th>申诉人手机号码</th>
+                <th>申诉人姓名</th>
+                <th>申诉订单号</th>
+                <th>申诉订单渠道</th>
+                <th>申诉商品名称</th>
+                <th>差价</th>
+                <th>申诉时间</th>
+                <th>审核时间</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                if (!string.IsNullOrWhiteSpace(item.OrderId) && item.OrderId.Length >= 3)
+                {
+                    var or = item.OrderId.ToUpper().Trim().Replace("TH", string.Empty);
+                    <tr>
+                        <td>@item.PhoneNumber</td>
+                        <td>@item.UserName</td>
+                        <td><a href="https://oms.tuhu.cn/Order/Details/@or" target="_blank">@item.OrderId</a></td>
+                        <td>@item.OrderChannel</td>
+                        <td>@item.ProductName</td>
+                        <td>@item.DifferencePrice</td>
+                        <td>@item.ApplyTime</td>
+                        <td>@item.AuditTime</td>
+                        @if (item.Status == 0)
+                        {
+                            <td style="color:green">待审核</td>
+                        }
+                        else if (item.Status == 1)
+                        {
+                            <td style="color:red">已驳回</td>
+                        }
+                        else if (item.Status == 2)
+                        {
+                            <td style="color:blue">已通过</td>
+                        }
+                        <td>
+
+                            @if (item.Status == 0)
+                            {
+                                <a href="javascript:;" onclick='ApplyCompensate.Audit(@item.Id,1,"驳回?")'>驳回</a><br />
+                                <a href="javascript:;" onclick='ApplyCompensate.Audit(@item.Id,2,"通过?")'>通过</a><br />
+                            }
+                            else if (item.Status == 1)
+                            {
+                                <a href="javascript:;" onclick='ApplyCompensate.Audit(@item.Id,2,"通过?")'>通过</a><br />
+                            }
+                            else if (item.Status == 2)
+                            {
+                                <a href="javascript:;" onclick='ApplyCompensate.Audit(@item.Id,1,"驳回?")'>驳回</a><br />
+
+                            }
+
+                            <a href="javascript:;" onclick="ApplyCompensate.Update(@item.Id)">详情</a>
+                        </td>
+                    </tr>
+                }
+            }
+
+        </tbody>
+    </table>
+</div>
+
+<div>
+    @Html.Pager(Model.Pager, pageIndex => Url.RouteUrl(new { pageIndex }))
+</div>

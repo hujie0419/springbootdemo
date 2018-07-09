@@ -1,0 +1,594 @@
+﻿
+@{
+    ViewBag.Title = "门店地图配置";
+}
+
+@section head{
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
+
+        .modal-mask {
+            position: fixed;
+            z-index: 9998;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, .5);
+            display: table;
+            transition: opacity .3s ease;
+        }
+
+        .modal-wrapper {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .confirm .modal-container,
+        .info .modal-container {
+            width: 300px;
+            margin: 0px auto;
+            padding: 10px 20px 40px 20px;
+            background-color: #fff;
+            border-radius: 2px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .33);
+            transition: all .3s ease;
+            font-family: Helvetica, Arial, sans-serif;
+        }
+
+        .content .modal-container {
+            width: 600px;
+            margin: 0px auto;
+            padding: 10px 20px 40px 20px;
+            background-color: #fff;
+            border-radius: 2px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .33);
+            transition: all .3s ease;
+            font-family: Helvetica, Arial, sans-serif;
+        }
+
+        .modal-header h3 {
+            margin-top: 0;
+            color: #42b983;
+        }
+
+        .modal-body {
+            font-size: 12px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .modal-default-button {
+            float: right;
+            margin-left: 4px;
+        }
+
+        .modal-enter {
+            opacity: 0;
+        }
+
+        .modal-leave-active {
+            opacity: 0;
+        }
+
+        .modal-enter .modal-container, .modal-leave-active .modal-container {
+            -webkit-transform: scale(1.1);
+            transform: scale(1.1);
+        }
+
+
+        .tableContainer {
+            width: 100%;
+        }
+
+        .tableContainer th {
+            background: #66ABEF;
+            color: #F3F7FA;
+            border: 1px solid #559BD0;
+            font-weight: 600;
+            font-family: "Microsoft Yahei";
+            text-align: center;
+        }
+
+        .tableContainer td {
+            font-size: 75%;
+            padding: 8px 3px 8px 3px;
+            font-family: "Microsoft Yahei";
+            text-align: center;
+            border: 1px solid #eee;
+        }
+
+        .horizontal-group > input, .horizontal-group > select {
+            line-height: 1.42857143;
+            width: 200px;
+            height: 30px;
+            padding: 2px 2px 2px 5px;
+            color: #555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+            -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+            -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+            transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        }
+
+        .horizontal-group > label {
+            display: inline-block;
+            height: 30px;
+            max-width: 100%;
+            margin-bottom: 5px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .horizontal-group > button {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.42857143;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            -ms-touch-action: manipulation;
+            touch-action: manipulation;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background-image: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.42857143;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            -ms-touch-action: manipulation;
+            touch-action: manipulation;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background-image: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+
+        .btn-primary {
+            font-weight: bold;
+            color: #fff;
+            background-color: #5cb85c;
+            border-color: #4cae4c;
+            width: 80px;
+        }
+
+        .btn-danger {
+            font-weight: bold;
+            color: #fff;
+            background-color: #d9534f;
+            border-color: #d43f3a;
+            width: 80px;
+        }
+
+        .pager > button {
+            float: right;
+            margin-right: 4px;
+        }
+
+        .vertical-group div {
+            margin: 5px 4px;
+        }
+
+        .vertical-group input:not([type=radio]), .vertical-group select, .vertical-group textarea {
+            width: 60%;
+            height: 30px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .vertical-group input[type=radio] {
+            width: auto;
+            height: auto;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .vertical-group input[readonly] {
+            color: #888;
+            background-color: #ccc;
+        }
+
+        .vertical-group label {
+            display: inline-block;
+            width: 20%;
+            height: 20px;
+        }
+
+    </style>
+}
+
+<h2>门店地图配置</h2>
+
+<div id="div" v-cloak>
+    <div>
+        <button type="button" style="margin-bottom:10px;" class="btn btn-primary" v-on:click="add">添加</button>
+        <table class="tableContainer">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>排序</th>
+                    <th>服务类型</th>
+                    <th>模块名称</th>
+                    <th>渠道</th>
+                    <th>是否启用</th>
+                    <th>项目Icon</th>
+                    <th>管理</th>
+                </tr>
+            </thead>
+            <tbody v-if="isLoading">
+                <tr><td colspan="8">Loading...</td></tr>
+            </tbody>
+            <tbody v-else-if="!isSuccess">
+                <tr><td colspan="8">查询失败</td></tr>
+            </tbody>
+            <tbody v-else-if="configs.length == 0">
+                <tr><td colspan="8">暂无数据</td></tr>
+            </tbody>
+            <tbody v-else>
+                <tr v-for="it in configs">
+                    <td>{{it.Id}}</td>
+                    <td>{{it.Sort}}</td>
+                    <td>{{it.Type}}</td>
+                    <td>{{it.Name}}</td>
+                    <td>{{it.Channel}}</td>
+                    <td>{{it.Status ? "启用" : "禁用"}}</td>
+                    <td><img style="height:40px" v-bind:src="it.Icon" /></td>
+                    <td>
+                        <a href="javascript:void(0)" v-on:click="edit(it)">编辑</a>
+                        &nbsp;
+                        <a href="javascript:void(0)" v-on:click="deleteItem(it.Id, it.Channel)">删除</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="dialog">
+        <div class="content">
+            <modal v-if="editDialog.show" v-on:close="editDialog.show=false">
+                <h3 slot="header">{{editDialog.title}}</h3>
+                <div slot="body" class="vertical-group">
+                    <div>
+                        <label>渠道</label>
+                        <select v-model="config.Channel">
+                            <option value="android">Android</option>
+                            <option value="ios">iOS</option>
+                        </select>
+                    </div>
+                    <div><input value="true" type="radio" v-model="config.Status" />启用<input value="false" type="radio" v-model="config.Status" />禁用</div>
+                    <div>
+                        <label>服务类型</label>
+                        <select type="number" v-model="config.Type">
+                            <option v-for="(v, k) in serviceType" v-bind:value="k">{{v}}</option>
+                        </select>
+                    </div>
+                    <div><label>模块名称</label><input type="text" v-model="config.Name" /></div>
+                    <div><label>显示顺序</label><input type="number" v-model="config.Sort" /></div>
+                    <div>
+                        <label>项目Icon</label>
+                        <input type="file" v-on:change="uploadFileChange($event)" />
+                        <template v-if="config.SIcon != ''">
+                            <img height="40" v-bind:src="config.SIcon" />
+                        </template>
+                    </div>
+                </div>
+                <div slot="footer">
+                    <button class="modal-default-button" v-on:click="editDialog.confirm">确认</button>
+                    <button class="modal-default-button" v-on:click="editDialog.cancel">取消</button>
+                </div>
+            </modal>
+        </div>
+        <div class="confirm">
+            <modal v-if="confirmDialog.show" v-on:close="confirmDialog.show=false">
+                <h3 slot="header">{{confirmDialog.title || "是否确认"}}</h3>
+                <p slot="body" v-html="confirmDialog.message"></p>
+                <div slot="footer">
+                    <button class="modal-default-button" v-on:click="confirmDialog.confirm">确认</button>
+                    <button class="modal-default-button" v-on:click="confirmDialog.cancel">取消</button>
+                </div>
+            </modal>
+        </div>
+        <div class="info">
+            <modal v-if="infoDialog.show" v-on:close="infoDialog.show=false">
+                <h3 slot="header">{{infoDialog.title || "提示"}}</h3>
+                <p slot="body">{{infoDialog.message}}</p>
+                <div slot="footer">
+                    <button class="modal-default-button" v-on:click="shwoInfoModal=false">确认</button>
+                </div>
+            </modal>
+        </div>
+    </div>
+</div>
+
+<script type="text/x-template" id="modal-template">
+    <transition name="modal">
+        <div class="modal-mask">
+            <div class="modal-wrapper">
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <slot name="header"></slot>
+                    </div>
+                    <div class="modal-body">
+                        <slot name="body"></slot>
+                    </div>
+                    <div class="modal-footer">
+                        <slot name="footer">
+                            <button class="modal-default-button" v-on:click="$emit('close')">OK</button>
+                        </slot>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</script>
+
+
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script type="text/javascript">
+
+        Vue.component('modal', {
+            template: '#modal-template'
+        });
+
+        var vm = new Vue({
+            el: "#div",
+            data: {
+                serviceType: {
+                    0: "0-全部",
+                    1: "1-轮胎",
+                    2: "2-保养",
+                    3: "3-美容",
+                    4: "4-安装",
+                    5: "5 喷漆",
+                    6: "6-改装",
+                    7: "7-美容团购"
+                },
+                configs: [],
+                isLoading: false,
+                isSuccess: false,
+                config: {
+                    Id: 0,
+                    Name: "",
+                    Sort: 0,
+                    Icon: "",
+                    SIcon: "",
+                    IconFile: "",
+                    Channel: "ios",
+                    Type: 0,
+                    Status: true,
+                },
+                editDialog: {
+                    show: false,
+                    cancel: function () { },
+                    confirm: function () { },
+                    title: "",
+                },
+                infoDialog: {
+                    show: false,
+                    message: "",
+                    title: "",
+                },
+                confirmDialog: {
+                    show: false,
+                    cancel: function () { },
+                    confirm: function () { },
+                    title: "",
+                    message: "",
+                }
+            },
+            created: function () {
+                var self = this;
+                var confirmDialog = self.confirmDialog;
+                confirmDialog.cancel = function () {
+                    confirmDialog.confirm = function () { };
+                    confirmDialog.show = false;
+                };
+                var editDialog = self.editDialog;
+                editDialog.cancel = function () {
+                    editDialog.confirm = function () { };
+                    editDialog.show = false;
+                }
+                self.load();
+            },
+            watch: {
+                "config.IconFile": function () {
+                    var self = this;
+                    if (!self.config.IconFile) {
+                        return;
+                    }
+                    self.uploadFile();
+                }
+            },
+            methods: {
+                load: function () {
+                    var self = this;
+                    self.isLoading = true;
+                    $.get("GetShopConfigs", function (response) {
+                        self.isSuccess = response.Status;
+                        self.configs = response.Data || [];
+                        self.isLoading = false;
+                    })
+                },
+
+                edit: function (item) {
+                    var self = this;
+                    self.config.Status = item.Status;
+                    self.config.Channel = item.Channel;
+                    self.config.Id = item.Id;
+                    self.config.Type = item.Type;
+                    self.config.Name = item.Name;
+                    self.config.Icon = item.Icon;
+                    self.config.Sort = item.Sort;
+                    self.config.SIcon = item.Icon;
+                    self.editDialog.show = true;
+                    self.editDialog.title = "编辑";
+                    self.editDialog.confirm = function () {
+                        self.confirmDialog.confirm = function () {
+                            var data = self.config;
+                            $.post("EditShopConfig", {
+                                Id: data.Id,
+                                Type: data.Type,
+                                Name: data.Name,
+                                Sort: data.Sort,
+                                Icon: data.Icon,
+                                Channel: data.Channel,
+                                Status: data.Status,
+                            }, function (rsp) {
+                                if (rsp.Status) {
+                                    alert("修改成功");
+                                    cleanCache(self.config.Channel);
+                                    self.confirmDialog.cancel();
+                                    self.editDialog.cancel();
+                                    self.load();
+                                }
+                                else {
+                                    alert("修改失败");
+                                }
+                            });
+                        }
+                        self.confirmDialog.message = "确认修改?"
+                        self.confirmDialog.title = "确认";
+                        self.confirmDialog.show = true;
+                    };
+
+                },
+
+                add: function () {
+                    var self = this;
+                    self.config.Status = true;
+                    self.config.Channel = "ios";
+                    self.config.Id = 0;
+                    self.config.Type = 0;
+                    self.config.Name = "";
+                    self.config.Icon = "";
+                    self.config.Sort = 0;
+                    self.config.SIcon = "";
+                    self.editDialog.show = true;
+                    self.editDialog.title = "添加";
+                    self.editDialog.confirm = function () {
+                        self.confirmDialog.confirm = function () {
+                            var data = self.config;
+                            $.post("EditShopConfig", {
+                                Id: data.Id,
+                                Type: data.Type,
+                                Name: data.Name,
+                                Sort: data.Sort,
+                                Icon: data.Icon,
+                                Channel: data.Channel,
+                                Status: data.Status,
+                            }, function (rsp) {
+                                if (rsp.Status) {
+                                    alert("添加成功");
+                                    cleanCache(self.config.Channel);
+                                    self.confirmDialog.cancel();
+                                    self.editDialog.cancel();
+                                    self.load();
+                                }
+                                else {
+                                    alert("添加失败");
+                                }
+                            });
+                        };
+                        self.confirmDialog.title = "确认";
+                        self.confirmDialog.message = "确认添加?";
+                        self.confirmDialog.show = true;
+                    };
+                },
+
+                deleteItem: function (id, channel) {
+                    var self = this;
+                    if (id <= 0 || channel === "" || channel === null || channel === undefined) {
+                        console.log(id, channel);
+                        return;
+                    }
+                    self.confirmDialog.confirm = function () {
+                        $.post("Delete", { id: id }, function (rsp) {
+                            if (rsp) {
+                                alert("删除成功");
+                                cleanCache(channel);
+                                self.confirmDialog.cancel();
+                                self.load();
+                            }
+                            else {
+                                alert("删除失败");
+                            }
+                        });
+                    };
+                    self.confirmDialog.title = "确认";
+                    self.confirmDialog.message = "确认删除?";
+                    self.confirmDialog.show = true;
+                },
+
+                uploadFileChange: function (event) {
+                    var self = this;
+                    var input = event.target;
+                    var file = input.files[0];
+                    if (file) {
+                        self.config.IconFile = file;
+                    }
+                    else self.config.IconFile = null;
+                },
+
+                uploadFile: function () {
+                    var self = this;
+                    var formData = new FormData();
+                    formData.append("file", self.config.IconFile);
+                    $.ajax({
+                        url: '/Article/AddArticleImg2',
+                        type: "post",
+                        data: formData,
+                        dataType: "json",
+                        contentType: false,
+                        processData: false,
+                        success: function (rsp) {
+                            console.log(rsp.SImage);
+                            if (rsp.BImage != "" && rsp.SImage != "") {
+                                self.config.Icon = rsp.BImage;
+                                self.config.SIcon = rsp.SImage;
+                            }
+                            else {
+                                alert("上传失败");
+                            }
+                        }
+                    });
+                }
+
+            }
+        });
+
+        var cleanCache = function (channel) {
+            $.post("RefreshShopMapConfigsCache", { channel: channel }, function (rsp) {
+                if (!rsp.Status) {
+                    alert("刷新缓存失败");
+                    console.log(rsp.Msg);
+                }
+            });
+        }
+    </script>
+}

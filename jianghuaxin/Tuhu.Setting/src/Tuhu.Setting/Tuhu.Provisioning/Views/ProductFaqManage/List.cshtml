@@ -1,0 +1,65 @@
+﻿
+@{
+    ViewBag.Title = "List";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+
+<div class="topPanel">
+<div class="toolbar">
+    <div class="btn-group">
+        <a class="btn btn-primary" onclick="$.reload()" title="reload数据"><span class="glyphicon glyphicon-refresh"></span></a>
+    </div>
+    <div class="btn-group">
+        <a id="NF-del" class="btn btn-primary" onclick="Refresh()">
+            <span>刷新缓存<span class="glyphicon glyphicon-refresh"></span></span>
+        </a>
+    </div>
+</div>
+</div>
+<div class="gridPanel">
+    <table id="gridList"></table>
+    <div id="gridPager"></div>
+</div>
+
+<script type="text/javascript">
+    function gridList() {
+        var $gridList = $('#gridList');
+        $gridList.dataGrid({
+            height: $(window).height() - 118,
+            url: "/ProductFaqManage/GetFaqProductList",
+            colModel: [
+                { label: "Pid", name: "Pid", width: 120, align: "center" },
+                { label: "商品名称", name: "ProductName", width: 360, align: "center" },
+                { label: "常见问题", name: "QuestionDetail", width: 360, align: "center" },
+                {
+                    label: "修改时间", name: "LastUpdateDateTime", width: 120, align: "center",
+                    formatter: "date", formatoptions: { srcformat: 'Y-m-d H:i:s', newformat: 'Y-m-d H:i:s'}
+                }
+            ],
+            viewrecords: true,
+            pager: "#gridPager",
+            sortname: "Pid desc",
+            rowNum: 20,
+            rowList: [10, 20, 30],
+        });
+
+        $("#btn_search").click(function () {
+            $gridList.jqGrid('setGridParam', {
+                postData: { keyword: $("#txt_keyword").val() },
+            }).trigger('reloadGrid');
+        });
+    }
+    function Refresh() {
+            $.getJSON("/ProductFaqManage/RefreshCache", function (res) {
+                if (res.Code == 1) {
+                    $.modalMsg(res.Msg, "warning");
+                } else {
+                    $.modalMsg(res.Msg, "error");
+                }
+            });
+    }
+    $(function () {
+        gridList();
+        $('#NF-addClick').on('click', top.$.nfinetab.addTab);
+    });
+</script>

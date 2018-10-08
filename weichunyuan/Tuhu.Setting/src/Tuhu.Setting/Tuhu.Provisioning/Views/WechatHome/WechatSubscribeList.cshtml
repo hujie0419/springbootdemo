@@ -1,0 +1,182 @@
+﻿
+@{
+    ViewBag.Title = "公众号关注回复配置";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<div class="topPanel">
+    <div class="search">
+        <table>
+            <tr>
+                <th class="formTitle">选择公众号</th>
+                <td class="formValue" style="padding-left:10px;">
+                    <div class="input-group">
+                        <select id="WeChatOfficialAccounts" name="WeChatOfficialAccounts" class="form-control" style="width:200px;"></select>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="topPanel">
+    <div class="toolbar">
+        <div class="btn-group">
+            <a class="btn btn-primary" onclick="$.reload()"><span class="glyphicon glyphicon-refresh"></span></a>
+        </div>
+        <div class="btn-group">
+            <a class="btn btn-primary" style="margin-right:10px;" onclick="btn_add()"><span class="fa fa-pencil-square-o">新 增</span></a>
+            <a class="btn btn-primary" style="margin-right:10px;" onclick="btn_reload()"><span class="fa fa-pencil-square-o">刷新缓存</span></a>
+        </div>
+        <div class="operate">
+            <ul class="nav nav-pills">
+                <li class="first">已选中<span>1</span>项</li>
+                <li><a id="NF-edit" onclick="btn_update()"><i class="fa fa-pencil-square-o"></i>修 改</a></li>
+                <li><a id="NF-delete" onclick="btn_start()"><i class="fa fa-pencil-square-o"></i>启 用</a></li>
+                <li><a id="NF-delete" onclick="btn_delete()"><i class="fa fa-trash-o"></i>禁 用</a></li>
+            </ul>
+            <a href="javascript:;" class="close"></a>
+        </div>
+    </div>
+</div>
+<div class="gridPanel">
+    <table id="gridList"></table>
+    <div id="gridPager"></div>
+</div>
+<script type="text/javascript">
+    function gridList() {
+        var $gridList = $('#gridList');
+        var originalId = $("#WeChatOfficialAccounts").val();
+        $gridList.dataGrid({
+            height: $(window).height() - 128,
+            url: "/WechatHome/GetWechatSubscribeGrid",
+            postData: { originalId, originalId },
+            colModel: [
+                { label: "PKID", name: "PKID", width: 50, key: true, hidden: true },
+                {
+                    label: "标 题", name: "Title", width: 220, align: "left"
+                },
+
+                { label: "描 述", name: "Descriptions", width: 120, align: "left", hidden: true },
+                {
+                    label: "图片链接", name: "PicUrl", width: 50, align: "left",
+                    formatter: function (cellvalue) {
+                        return '<img src="' + cellvalue + '" width="30" height="30" />';
+                    }
+                },
+                { label: "Urls", name: "Urls", width: 230, align: "center" },
+                {
+                    label: "有效性", name: "IsEnabled", width: 80, align: "center",
+                    formatter: function (cellvalue) {
+                        return cellvalue == true ? "<i class=\"fa fa-toggle-on\"></i>" : "<i class=\"fa fa-toggle-off\"></i>";
+                    }
+                },
+                { label: "排 序", name: "OrderBy", width: 50, align: "left" },
+                {
+                    label: "创建时间", name: "CreateDateTime", width: 120, align: "left",
+                    formatter: "date", formatoptions: { srcformat: 'Y-m-d H:i:s', newformat: 'Y-m-d H:i:s' }
+                }
+            ],
+            rowNum: 1000
+        });
+        //切换公众号
+        $("#WeChatOfficialAccounts").change(function () {
+            var originalId = $("#WeChatOfficialAccounts").val();
+            $gridList.jqGrid('setGridParam', {
+                postData: { originalId: originalId },
+            }).trigger('reloadGrid');
+        });
+    }
+
+    function btn_add() {
+        var originalId = $("#WeChatOfficialAccounts").val();
+        $.modalOpen({
+            id: "SubNumberForm",
+            title: "新增公众号回复配置",
+            url: "/WechatHome/WechatSubscribeForm?originalId=" + originalId,
+            width: "480px",
+            height: "380px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].submitForm();
+            }
+        });
+    }
+
+    function btn_update() {
+        var originalId = $("#WeChatOfficialAccounts").val();
+        var keyValue = $("#gridList").jqGridRowValue().PKID;
+        if (keyValue) {
+            $.modalOpen({
+                id: "SubNumberForm",
+                title: "编辑公众号回复配置",
+                url: "/WechatHome/WechatSubscribeForm?keyValue=" + keyValue + "&originalId=" + originalId,
+                width: "480px",
+                height: "380px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].submitForm();
+                }
+            });
+        }
+    }
+
+    function btn_delete() {
+        var keyValue = $("#gridList").jqGridRowValue().PKID;
+        if (keyValue) {
+            $.confirmForm({
+                prompt: "您确定禁用吗？",
+                loading: "正在更新请稍后......",
+                url: "/WechatHome/DeleteWechatSubsc?pkid=" + keyValue,
+                success: function () {
+                    //self.parent.window.frames["iframeE71051FA-05A1-4784-B321-96A88921AAEB"].location.reload();
+                    $("#gridList").trigger("reloadGrid");
+                }
+            })
+        }
+    }
+
+    function btn_start() {
+        var keyValue = $("#gridList").jqGridRowValue().PKID;
+        if (keyValue) {
+            $.confirmForm({
+                prompt: "您确定启用吗？",
+                loading: "正在更新请稍后......",
+                url: "/WechatHome/DeleteWechatSubsc?pkid=" + keyValue,
+                success: function () {
+                    //self.parent.window.frames["iframeE71051FA-05A1-4784-B321-96A88921AAEB"].location.reload();
+                    $("#gridList").trigger("reloadGrid");
+                }
+            })
+        }
+    }
+
+    function btn_reload() {
+        $.confirmForm({
+            prompt: "您确定刷新公众号回复缓存吗？",
+            loading: "正在刷新请稍后......",
+            url: "/WechatHome/ReloadWechatSubsc",
+            success: function () {
+            }
+        })
+    }
+    //获取所有公众号
+    function getWeChatOfficialAccounts() {
+        var weChatOfficialAccounts = '';
+        $.ajax({
+            async: false,
+            url: "/WechatHome/GetWeChatOfficialAccounts",
+            dataType: 'json',
+            success: function (res) {
+                $.map(res, function (key) {
+                    weChatOfficialAccounts += '<option value=' + key.OriginalId + '>' + key.name + '</option>';
+                })
+                $("#WeChatOfficialAccounts").empty().append(weChatOfficialAccounts);
+            }
+        });
+    }
+
+    $(function () {
+        //获取公众号
+        getWeChatOfficialAccounts();
+        //加载列表数据
+        gridList();
+    });
+
+</script>

@@ -1,0 +1,197 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.tbl_TuhuNews
+@{
+    Layout = null;
+}
+<style type="text/css">
+    #datepicker {
+        border: 1px solid red;
+    }
+
+    .wrapper {
+        margin-left: 30px;
+        margin-top: 20px;
+    }
+
+        .wrapper table {
+            border: none;
+            margin-top: 20px;
+        }
+
+        .wrapper .title {
+            text-align: right;
+        }
+
+        .wrapper .right {
+            text-align: left;
+        }
+
+    #Updtitle {
+        color: #000000;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .wrapper tr td {
+        border: none;
+    }
+
+    .but {
+        margin: 20px 0 10px 0;
+        padding: 5px 25px;
+        border: none;
+        font-size: 12px;
+        font-family: "Microsoft Yahei";
+        outline: none;
+        cursor: pointer;
+    }
+
+    #save {
+        background: #0088cc;
+        border-color: #0088cc;
+        color: #F0F0F0;
+    }
+</style>
+
+<script src="../../Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<script src="~/Scripts/jquery.ztree.all-3.5.min.js"></script>
+<script src="~/Scripts/UEditor/ueditor.config.js"></script>
+<script src="~/Scripts/UEditor/ueditor.all.min.js"></script>
+<script src="~/Scripts/UEditor/lang/zh-cn/zh-cn.js"></script>
+<script src="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.js"></script>
+<link href="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.css" rel="stylesheet" />
+<div class="wrapper">
+    <span id="Updtitle">途虎养车新闻编辑后台</span>
+
+    <table>
+        <tr>
+            <td align="right">标题:</td>
+            <td align="left"><input onkeyup="change(this)" value="@Model.Title" id="N_Title" style="width:200px;height:20px;" type="text" placeholder="  最多30个字符" maxlength="30" />&nbsp;<span class="title_error" style="color:red;display:none;">*新闻标题不能为空</span></td>
+        </tr>
+        <tr>
+            <td align="right">来源:</td>
+            <td align="left"><input onkeyup="change(this)" value="@Model.NewsFrom" id="N_From" style="width:200px;height:20px;" type="text" placeholder="  最多20个字符" maxlength="20" />&nbsp;<span class="from_error" style="color:red;display:none;">*新闻来源不能为空</span></td>
+        </tr>
+        <tr>
+            <td align="right">发布时间:</td>
+            <td align="left"><input onchange="change(this)" style="width:200px;height:20px;" id="datepicker" value="@Model.IssueTime.ToString("yyyy-MM-dd")" />&nbsp;<span class="time_error" style="color:red;display:none;">*新闻来源不能为空</span></td>
+        </tr>
+        <tr>
+            <td align="right">类别:</td>
+            <td align="left"><input class="N_type" checked="checked" type="radio" name="newtype" value="0" />途虎养车官方新闻<input class="N_type" name="newtype" type="radio" value="1" />媒体报道途虎新闻</td>
+        </tr>
+        <tr>
+            <td style="padding-bottom: 556px;" align="right">内容:</td>
+            <td align="left">
+                <textarea id="editor" name="editor"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td align="right"></td>
+            <td align="left"><input class="but" type="button" id="save" value="保存" />&nbsp;&nbsp;<input class="but" type="button" id="cancel" value="取消" /></td>
+        </tr>
+    </table>
+
+</div>
+
+
+<script type="text/javascript">
+    $("#datepicker").datepicker({
+        timeFormat: "HH:mm:ss",
+        dateFormat: "yy-mm-dd",
+        monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+    });
+
+    var ue = UE.getEditor('editor', {
+        UEDITOR_HOME_URL: "/Scripts/UEditor/",
+        allowDivTransToP: false,
+        autoHeightEnabled: false,
+        initialFrameWidth: 1050,
+        initialFrameHeight: 480,
+        zIndex: 2002,
+        enterTag: ''
+    });
+
+    function change(obj) {
+        var val = $(obj).val();
+        if (val != '' && val.length > 0) {
+            $(obj).next("span").hide();
+        } else {
+            $(obj).next("span").show();
+        }
+    }
+
+    function testcontent(isAppendTo){
+        UE.getEditor('editor').setContent(decodeURIComponent('@Model.Content'), isAppendTo);
+    }
+
+    $(function () {
+        if(@Model.Id!=0){
+            $("input[value=" +@Model.NewsType +"]").attr("checked", "checked");
+
+            ue.addListener( 'ready', function( editor ) {
+                testcontent();
+            } );
+            
+           
+        }
+
+
+        $("#N_Title").focus();
+        $("#cancel").click(function () {
+            $("#AddItem").dialog("close");
+            window.location.href = window.location.href;
+        })
+
+        $("#save").click(function () {
+            var N_Title = $("#N_Title").val();
+            var N_From = $("#N_From").val();
+            var IssueTime = $("#datepicker").val();
+            var N_Type = $("input[type='radio']:checked").val();
+            var content = ue.getContent();
+            if (N_Title == '') { $("#N_Title").next("span").show(); return; }
+            if (N_From == '') { $("#N_From").next("span").show(); return; }
+            if (IssueTime == '') { $("#datepicker").next("span").show(); return; }
+            var news = {
+                "Id":@Model.Id,
+                "Title": N_Title,
+                "NewsFrom": N_From,
+                "IssueTime": IssueTime,
+                "NewsType": N_Type,
+                "Content": encodeURIComponent(content)
+            }
+            if(@Model.Id==0){
+                $.ajax({
+                    url: "/ConfigNews/add",
+                    data: news,
+                    type: "post",
+                    dataType: "json",
+                    success: function (msg) {
+                        if (msg > 0) {
+                            $("#AddItem").dialog("close");
+                            window.location.href = window.location.href;
+                        }
+
+                    }
+
+                });
+            }else{
+                $.ajax({
+                    url: "/ConfigNews/UpdateNews",
+                    data: news,
+                    type: "post",
+                    dataType: "json",
+                    success: function (msg) {
+                        if (msg > 0) {
+                            $("#AddItem").dialog("close");
+                            window.location.href = window.location.href;
+                        }
+
+                    }
+
+                });
+            }
+
+        })
+
+    })
+</script>

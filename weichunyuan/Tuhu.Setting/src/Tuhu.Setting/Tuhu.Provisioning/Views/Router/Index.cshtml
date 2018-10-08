@@ -1,0 +1,103 @@
+﻿<link href="/Style_Router/css/bootstrap.min.css" rel="stylesheet">
+<link href="/Style_Router/font-awesome/css/font-awesome.css" rel="stylesheet">
+<link href="/Style_Router/css/animate.css" rel="stylesheet">
+<link href="/Style_Router/css/plugins/jasny/jasny-bootstrap.min.css" rel="stylesheet">
+<link href="/Style_Router/css/style.css" rel="stylesheet">
+<link href="/Style_Router/css/multiple-select.css" rel="stylesheet" />
+<style type="text/css">
+    label{
+        padding-top: 7px;
+    }
+    .inmodal .modal-header {
+        padding: 0;
+        color: #fff;
+        background-color: #1c84c6;
+        text-align: left;
+    }
+    .inmodal .modal-title {
+        font-size: 15px;
+        height: 40px;
+        line-height: 40px;
+        padding-left: 20px;}
+
+    .inmodal .modal-body span{
+        margin-bottom: 10px;
+        display: inline-block;
+    }
+
+    #myModal5 .form-horizontal .form-group{height: 40px;line-height: 28px; border-bottom: 1px solid #d9d9d9;}
+    #myModal5 .form-horizontal .control-label{text-align: left;}
+</style>
+
+<div id="wrapper">
+    <div class="white-bg" style="min-height: 904px;">
+        <div class="row" style="display: flex; justify-content: center; overflow: auto;">
+            <div class="col-lg-8" style="overflow: auto; width: 1818px;">
+                <div class="ibox" style="width: 1653px;">
+                    <div class="ibox-content clearfix">
+                        
+                        <form method="get" class="form-horizontal">
+                            <div class="form-group col-sm-2" style="margin-top: 10px;">
+                                <div class=" col-sm-12">
+                                    <select class="form-control required" id="Catagory" name="Catagory" style="display: inline;">
+                                        <option value="">请选择</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group col-sm-12" style="margin-top: 10px;">
+                                <label class="col-sm-2">APP链接:</label>
+                            </div>
+                            <div class="form-group col-sm-10">
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="LinkUrl" name="LinkUrl" size="50" data-toggle="modal">
+                                </div>
+                            </div>
+                            <div class="form-group col-sm-12">
+                                <label class="col-sm-2">没有编码链接:</label>
+                            </div>
+                            <div class="form-group col-sm-10">
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="NoLinkUrl" name="NoLinkUrl" size="50" readonly="readonly">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="ibox-content clearfix">
+                        <form method="get" class="form-horizontal">
+                            <div class="form-group col-sm-2" style="margin-top: 10px;">
+                                <div class=" col-sm-12">
+                                    <select class="form-control required" id="WeiXinCatagory" name="WeiXinCatagory" style="display: inline;">
+                                        <option value="">请选择</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group col-sm-12" style="margin-top: 10px;">
+                                <label class="col-sm-2">小程序链接:</label>
+                            </div>
+                            <div class="form-group col-sm-10">
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="WeiXinLinkUrl" name="WeiXinLinkUrl" size="50" data-toggle="modal">
+                                </div>
+                            </div>
+                            <div class="form-group col-sm-10">
+                                <div class="col-sm-10">
+                                    <input type="text" style="visibility:hidden;" class="form-control" id="WeiXinNoLinkUrl" name="WeiXinNoLinkUrl" size="50" readonly="readonly">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--页面引入跳转链接相关的js-->
+<script type="text/javascript" src="~/Scripts/layer/layer.js"></script>
+<script type="text/javascript" src="~/Scripts/Router/Router.js"></script>
+<script type="text/javascript">
+    
+    initSelectRouter(Catagory,1);             //生成选择项
+    getUrl(LinkUrl, NoLinkUrl, Catagory,1);   //进入跳转页面
+    initSelectRouter(WeiXinCatagory,2);             //生成选择项
+    getUrl(WeiXinLinkUrl, WeiXinNoLinkUrl, WeiXinCatagory,2);   //进入跳转页面
+</script>

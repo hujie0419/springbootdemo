@@ -1,0 +1,296 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "马牌活动员工专属码配置";
+}
+<h2 style="font-size:2em;color:#000;padding:0 0 10px 0;width:280px">马牌活动员工专属码配置</h2>
+<link rel="stylesheet" href="/Scripts/artDialog6.0.4/css/ui-dialog.css" />
+<style type="text/css">
+    .buttonStyle { background: #50c16a; border: none; color: azure; box-shadow: 1px 1px 1px #eee8aa; width: 50px; height: 26px; border-radius: 3px; outline: none; cursor: pointer; font-size: 15px; font-family: "Microsoft Yahei"; }
+    .buttonStyle:hover { background-color: #008b8b; border-color: #008b8b; }
+    .buttonStyleHidden { background: #808080; }
+    .buttonStyleHidden:hover { background: #808080; }
+    .ui-dialog { width: auto; }
+</style>
+
+<div style="height:34px;width:98%">
+    <div>
+        <div style="float:left;line-height:27px;">
+            <input type="text" id="Keyword" style="width:200px;height:25px" placeholder="请填写券码或者手机号查找" />&nbsp;&nbsp;&nbsp;&nbsp;
+        </div>
+        <div style="float:left">
+            &emsp;
+            <input type="button" id="btn_submit" value="查询" style="width:80px" class="buttonStyle" onclick="GetList()" />
+            <input type="button" id="btn_submit" value="添加" style="width:80px" class="buttonStyle" onclick="AddConfig()" />
+            <input type="button" id="btn_submit" value="删除" style="width:80px" class="buttonStyle" onclick="BatchDelete()" />
+        </div>
+        <div style="float:right">
+            <a href="~/MaPaiVip/DownLoadFile" target="_blank">模板下载</a>
+            <input type='text' name='textfield' id='textfield' class='txt' style="display:none " />
+            <input type="file" name="fileData" data- id="fileupload" onchange="document.getElementById('textfield').value = this.value" />
+            <input type="button" id="upload" value="批量导入" />
+        </div>
+    </div>
+</div>
+<div id="div_table">
+</div>
+<div id="PageLoadingEffects" style="display:none;">
+    <table>
+        <tr>
+            <td><img src="/Images/loading.gif" /></td>
+            <td>玩命加载中，请稍后...</td>
+        </tr>
+    </table>
+</div>
+<div style="padding-top:10px;">
+    <br />
+    <span>每页显示：</span>
+    <select onchange="selChange(this);" style="width:70px">
+        <option value="10">10</option>
+        <option value="20" selected="selected">20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+    </select><span>&nbsp;&nbsp;条</span>
+</div>
+<div class="pager" style="height:25px;padding-left:0px;margin-top:15px;text-align:left"></div>
+<input type="hidden" id="hidden_Order" />
+<script src="/Scripts/ajaxfileupload.js"></script>
+<script src="/Scripts/artDialog6.0.4/dist/dialog-min.js"></script>
+<script src="/Scripts/artDialog6.0.4/dist/dialog-plus-min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        reFresh();
+    });
+    function reFresh() {
+        //$("#PageLoadingEffects").css("display", "block");
+        pageIndex = 1;
+        pageSize = 20;
+        groupCurNum = 1;
+        initTable(1);
+    }
+
+    function selChange(e) {
+        pageSize = parseInt($(e).val());
+        pageIndex = 1;
+        groupCurNum = 1;
+        initTable(1);
+    }
+
+    function GetList() {
+        initTable(1);
+    }
+
+    function AddConfig(o) {
+        var html = "<table style='width:100%;height:100%;text-align:center'><tr><td>专属券码</td><td><input style='width:100%;height:40px' placeholder='请输入专属券码' class='couponCode'  /></td></tr></table>";
+        var d = dialog({
+            title: "添加券码",
+            width: 500,
+            height: 150,
+            button:
+            [
+                {
+                    value: "保存",
+                    callback: function () {
+                        var couponCode = $(".couponCode").val();
+                        if (couponCode != "") {
+                            $.post("InsertCouponCodeConfig", { couponCode: couponCode }, function (result) {
+                                if (result.status == "success") {
+                                    alert("添加成功");
+                                    initTable(1);
+                                } else {
+                                    alert(result.msg);
+                                }
+                            });
+                        } else {
+                            alert("请填写专属券码");
+                            return false;
+                        }
+                    }
+                },
+                {
+                    value: "取消"
+                }
+            ]
+        });
+        d.content(html);
+        d.showModal();
+    }
+
+    var groupCurNum = 1;
+    var groupSize = 25;
+    var num = 0;
+    function initTable(isFalg) {
+        pageIndex = isFalg;
+        $("#div_table").html("");
+        var keyword = $("#Keyword").val();
+        var serviceId = $("#ServiceID").val();
+        var isValid = $(".IsValid").val();
+        $("#PageLoadingEffects").css("display", "block");
+        $.ajax({
+            url: '/MaPaiVip/_MaPaiVipCouponCode',
+            type: 'POST',
+            data:
+            {
+                "keyword": keyword,
+                "pageIndex": pageIndex,
+                "pageSize": pageSize
+            },
+            success: function (html) {
+                $("#PageLoadingEffects").css("display", "none");
+                $("#div_table").append(html);
+                initPage($("#Totalcount").val());
+            }
+        });
+    }
+
+    $("#upload").on("click", function () {
+        $.ajaxFileUpload({
+            url: '/MaPaiVip/UploadFile',
+            secureuri: false,
+            fileElementId: 'fileupload',
+            dataType: 'text',
+            data: {},
+            type: 'post',
+            success: function (data) {
+                var couponCodeInfo = [];
+                var data = JSON.parse(data.replace(/<\/*?pre[^<>]*>/, '').replace(/<\/*?pre[^<>]*>/, ''));
+                var html = "<table style='width:100%;'>";
+                html += "<tr><td colspan='3' style='color:red;text-align:center'>错误消息：" + data.msg + "</td></tr>";
+                html += "<tr><td colspan='3' style='color:#bc5b5b;text-align:center'>共上传 " + (data.SuccessData.length + data.ErrorData.length) + " 条数据，验证成功 " + data.SuccessData.length + " 条，验证失败 " + data.ErrorData.length + " 条";
+                html += "<tr><th>券码</th></tr>";
+                if (data.ErrorData.length > 0) {
+                    var item = data.ErrorData;
+                    for (var i = 0; i < item.length; i++) {
+                        html += "<tr><td>" + item[i].UniquePrivilegeCode + "</td></tr>";
+                    }
+                } else if (data.SuccessData.length > 0) {
+                    html += "<tr><td colspan='3' style='text-align:center;color:green;'>验证通过，允许导入</td></tr>";
+                } else {
+                    html += "<tr><td colspan='3' style='text-align:center;color:#bc5b5b'>系统异常</td></tr>";
+                }
+                var d = dialog({
+                    title: "验证信息",
+                    width: 600,
+                    height: 400,
+                    fixed: true,
+                    button: [
+                        {
+                            value: '导入',
+                            callback: function () {
+                                var item = data.SuccessData;
+                                for (var i = 0; i < item.length; i++) {
+                                    couponCodeInfo.push({ UniquePrivilegeCode: item[i].UniquePrivilegeCode, IsDeleted: item[i].IsDeleted });
+                                }
+                                if (couponCodeInfo.length > 0) {
+                                    if (confirm("是否确认操作？")) {
+                                        $.post("BatchOperatorCouponCodeConfig", { couponCodeInfo: JSON.stringify(couponCodeInfo) }, function (result) {
+                                            if (result == true) {
+                                                alert("导入成功");
+                                                initTable(1);
+                                            } else {
+                                                alert("导入失败");
+                                            }
+                                        });
+                                    }
+                                } else {
+                                    alert("不允许导入");
+                                    return false;
+                                }
+                            }
+                        },
+                        {
+                            value: "取消"
+                        }
+                    ]
+                });
+                html += "</table>";
+                d.content(html);
+                d.showModal();
+            }
+        });
+    });
+
+    function initPage(total) {
+        $("div.pager").find("*").remove().empty();
+        //上一组
+        var prevGroup = "<a href=\"#\" id=\"prevGroup\" onclick=\"prevClick();return false;\" style=\"display:none;\">上一组</a>";
+        $("div.pager").append(prevGroup);
+        //下一组
+        var nextGroup = "<a href=\"#\" id=\"nextGroup\" onclick=\"nextClick();return false;\" style=\"display:none;\">下一组</a>";
+        $("div.pager").append(nextGroup);
+        //转业
+        num = Math.floor(total / pageSize) + (total % pageSize > 0 ? 1 : 0);
+        var turnPage = "";
+        if (total > 0) {
+            turnPage = "<a href=\"#\" id=\"turnGroup\" onclick=\"turnClick();return false;\">转到</a><input type=\"text\" id=\"txtTurn\" value=\"" + pageIndex + "\" style=\"width:30px;  padding: 1px 1px 0px 1px;\" /><span style=\"width:100px;border:0;\">页 当前页/总页：</span><span id=\"_numInfo\" style=\"width:80px;border:0;text-align:left;\">" + pageIndex + "/" + num + "</span>";
+        } else {
+            turnPage = "<input type=\"text\" id=\"txtTurn\" value=\"1\" style=\"width:30px;\" /><span style=\"width:100px;border:0;\">页 当前页/总页：</span><span id=\"_numInfo\" style=\"width:80px;border:0;text-align:left;\">" + pageIndex + "/" + (num + 1) + "</span>";
+        }
+        $("div.pager").append(turnPage);
+        pageOnPage();
+    }
+    //分页的分页
+    function pageOnPage() {
+        $("a[name='pageA']").remove();
+        var groupNums = Math.floor(num / groupSize) + (num % groupSize > 0 ? 1 : 0);
+        if (groupNums == 1 || groupNums == 0) {
+            $("#prevGroup").css("display", "none");
+            $("#nextGroup").css("display", "none");
+        }
+        else if (groupCurNum == 1 && groupNums > 1) {
+            $("#prevGroup").css("display", "none");
+            $("#nextGroup").css("display", "");
+        }
+        else if (groupCurNum < groupNums && groupNums > 1) {
+            $("#prevGroup").css("display", "");
+            $("#nextGroup").css("display", "");
+        }
+        else {
+            $("#prevGroup").css("display", "");
+            $("#nextGroup").css("display", "none");
+        }
+        var start = (groupCurNum - 1) * groupSize;
+        var end = (groupCurNum * groupSize > num ? num : groupCurNum * groupSize);
+        var temp = ""
+        for (var i = start; i < end; i++) {
+            if (i == (pageIndex - 1))
+                temp += "<a name=\"pageA\" id=\"_" + (i + 1).toString() + "\" href=\"javascript:;\" class=\"current\" onclick=\"pageClick(this," + (i + 1).toString() + ");return false;\">" + (i + 1).toString() + "</a>";
+            else
+                temp += "<a name=\"pageA\" id=\"_" + (i + 1).toString() + "\" href=\"javascript:;\" onclick=\"pageClick(this," + (i + 1).toString() + ");return false;\">" + (i + 1).toString() + "</a>";
+        }
+        if (i == 0 && start == 0 && end == 0) {
+            temp += "<a name=\"pageA\" id=\"_" + (i + 1).toString() + "\" href=\"javascript:;\" class=\"current\" onclick=\"pageClick(this," + (i + 1).toString() + ");return false;\">" + (i + 1).toString() + "</a>";
+        }
+        $("div.pager a").eq(0).after(temp);
+    }
+    function prevClick() {
+        groupCurNum -= 1;
+        pageOnPage();
+    }
+    function nextClick() {
+        groupCurNum += 1;
+        pageOnPage();
+    }
+    function turnClick() {
+        var rex = /^[0-9]*$/;
+        if (!rex.test($("#txtTurn").val()))
+            return;
+        pageIndex = parseInt($("#txtTurn").val());
+        pageIndex = (pageIndex > num ? num : pageIndex);
+        $("#txtTurn").val(pageIndex);
+        groupCurNum = Math.floor(pageIndex / groupSize) + (pageIndex % groupSize > 0 ? 1 : 0);
+        pageOnPage();
+        pageClick($("#_" + pageIndex.toString()), pageIndex);
+        //页信息
+        var nInfo = pageIndex + "/" + num;
+        $("#_numInfo").text(nInfo);
+    }
+    function pageClick(e, inum) {
+        $("a[name='pageA']").removeClass("current");
+        $(e).addClass("current");
+        pageIndex = inum;
+        initTable(inum);
+        //页信息
+        var nInfo = pageIndex + "/" + num;
+        $("#_numInfo").text(nInfo);
+    }
+</script>

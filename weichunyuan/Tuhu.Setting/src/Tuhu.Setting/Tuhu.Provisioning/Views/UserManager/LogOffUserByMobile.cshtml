@@ -1,0 +1,94 @@
+﻿@model Tuhu.Service.UserAccount.Models.User
+@{
+    ViewBag.Title = "按照手机号注销用户";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section head{
+    <link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        .title {
+            float: left;
+        }
+
+        .content {
+            clear: both;
+        }
+
+        .condition .name {
+            font-size: 16px;
+        }
+
+        .condition > div {
+            margin-bottom: 10px;
+        }
+    </style>
+}
+
+<div class="title">
+    <h2>按照手机号注销用户</h2>
+</div>
+<div class="content">
+    <div class="condition">
+        <div>
+            <span class="name">手机号：</span>
+            <input id="InputMobile" type="text" name="Mobile" value="" />
+        </div>
+        <div>
+            <button type="button" class="btn btn-primary btn-small" onclick="Search()">查询</button>
+            <button type="button" class="btn btn-primary btn-small" onclick="ClearInput()">清空</button>
+        </div>
+    </div>
+</div>
+<div class="contact" id="ForTableLogOffUserInfo" style="margin:10px 0 10px 0;">
+    <!--输出表格形式-->
+</div>
+
+<script type="text/javascript">
+    function Search() {
+        var mobile = $("#InputMobile").val();
+        if (mobile == "") {
+            alert("手机号不能为空！");
+            return;
+        }
+
+        $.post("/UserManager/LogOffUserByMobileInfo", {
+            mobileNumber: mobile
+        }, function (html, status) {
+            if (status === "success") {
+                $("#ForTableLogOffUserInfo").html(html);
+            }
+        });
+    }
+
+    function LogOffUser(userId) {
+        if (userId == "") {
+            alert("输入的userId异常！");
+            return;
+        }
+
+        var mobile = $("#InputMobile").val();
+
+        $.post('@Url.Action("LogOffUserById")',
+            {
+                userId: userId,
+                mobile: mobile
+            }, function (data) {
+                if (parseInt(data) == -1) {
+                    alert("该手机存在合作伙伴账号信息，如YLH、武汉光谷路店等，禁止注销.");
+                    return;
+                }
+                else if (parseInt(data) == 0) {
+                    alert("注销失败.");
+                    return;
+                }
+                else if (parseInt(data) == 1) {
+                    alert("注销成功.");
+                    return;
+                }
+            });
+    }
+
+    function ClearInput() {
+        window.location.reload();
+    }
+</script>

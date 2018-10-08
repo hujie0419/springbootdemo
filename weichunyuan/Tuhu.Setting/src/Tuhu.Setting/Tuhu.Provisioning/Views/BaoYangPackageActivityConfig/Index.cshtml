@@ -1,0 +1,137 @@
+﻿
+@using Tuhu.Provisioning.Models
+@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.BaoYangPackageActivityConfig>
+@{
+    ViewBag.Title = "小保养套餐活动配置";
+}
+
+<h2>小保养套餐活动配置</h2>
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    textarea {
+        width: 100px;
+        height: 100px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+
+    td {
+        width: 250px;
+    }
+</style>
+
+<div>
+    <a href="javascript:void(0)" class="btn" onclick="UpkeepActivitySetting.Add()">添加</a>
+</div>
+<div>
+    <table style="width:100%;margin-top:20px;">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>活动编号</th>
+                <th>活动名称</th>
+                <th>活动状态</th>             
+                <th>浮层图片</th>
+                <th>浮层状态</th>
+                <th>活动图标</th>
+                <th>优惠券Id</th>            
+                <th>添加时间</th>
+                <th>更新时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.ActivityNum </td>
+                    <td>@item.ActivityName</td>
+                    <td>@(item.ActivityStatus ? "是" : "否")</td>
+                
+                    <td><img style="width:70px;height:70px;" src="@item.LayerImage" alt="" /> </td>
+                    <td>@(item.CheckStatus ? "是" : "否")</td>
+                    <td><img style="width:70px;height:70px;" src="@item.ActivityImage" alt="" /> </td>
+                    <td>@item.CouponId</td>                 
+                    <td>@item.CreateTime</td>
+                    <td>@item.UpdateTime</td>
+                    <td>
+                        <a href="javascript:;" onclick="UpkeepActivitySetting.Update(@item.Id)">编辑</a>                  
+                        <a href="javascript:;" onclick="UpkeepActivitySetting.Delete(@item.Id,'@item.ActivityNum')">删除</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<div id="AddItem"></div>
+<div>
+    @Html.Pager(Model.Pager, pageIndex => Url.RouteUrl(new { pageIndex }))
+</div>
+
+<script>
+    var UpkeepActivitySetting = {
+        "Add": function () {
+            $("#AddItem").load('/BaoYangPackageActivityConfig/Edit?id=0');
+            $("#AddItem").dialog({
+                title: "添加",
+                width: 600,
+                height: 500,
+                modal: true
+            });
+        },
+        "Update": function (id) {
+            $("#AddItem").load('/BaoYangPackageActivityConfig/Edit?id=' + id);
+            $("#AddItem").dialog({
+                title: "修改",
+                width: 600,
+                height: 500,
+                modal: true
+            });
+        },
+        "Delete": function (id, num) {
+            if (window.confirm("您确定要删除吗？")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/BaoYangPackageActivityConfig/Delete",
+                    data: {
+                        "id": id,
+                        "activityNum": num
+                    },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/BaoYangPackageActivityConfig/Index";
+                        }
+                        else {
+                            alert("删除失败！");
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        }
+    }
+</script>

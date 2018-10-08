@@ -1,0 +1,148 @@
+﻿
+@using Tuhu.Provisioning.Models
+@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.ShareOrderConfig>
+@{
+    ViewBag.Title = "晒单分享朋友圈配置";
+    Layout = "~/Views/Shared/_PersonalCenterLeft.cshtml";
+}
+
+<h2>晒单分享朋友圈配置</h2>
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    textarea {
+        width: 100px;
+        height: 100px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+
+    td {
+        width: 250px;
+    }
+</style>
+
+<div>
+    <a href="javascript:void(0)" class="btn" onclick="ShareOrderConfig.Add()">添加</a>
+</div>
+<div>
+    <table style="width:100%;margin-top:20px;">
+        <thead>
+            <tr>
+                <th>全部订单提示文案</th>
+                <th>订单详情页按钮文案</th>
+                <th>预览活动简介</th>
+                <th>晒单图片活动介绍</th>
+                <th>二维码活动介绍</th>
+                @*<th>二维码活动链接</th>*@
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Prompt</td>
+                    <td>@item.ButtonValue</td>
+                    <td>@item.PreviewIntroduce</td>
+                    <td>
+                        <img src="@item.Image" style="height:50px;" />
+                    </td>
+                    <td>
+                        @item.QRCodeIntroduce
+                    </td>
+                    @*<td>
+                            @item.QRCodeLink
+                        </td>*@
+
+                    <td>@(item.Status ? "启用" : "禁用")</td>
+                    <td>
+                        <a href="javascript:;" onclick="ShareOrderConfig.Update(@item.Id)">编辑</a>&nbsp;&nbsp;
+                        <a href="javascript:;" onclick="ShareOrderConfig.LogList(@item.Id)">操作日志</a>&nbsp;&nbsp;
+                        <a href="javascript:;" onclick="ShareOrderConfig.Delete(@item.Id)">删除</a>
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+
+<div>
+    @Html.Pager(Model.Pager, pageIndex => Url.RouteUrl(new { pageIndex }))
+</div>
+<div id="AddItem"></div>
+
+<script>
+    var ShareOrderConfig = {
+        "LogList": function (e) {
+            $("#AddItem").load('/ShareOrderConfig/LogList?id=' + e);
+            $("#AddItem").dialog({
+                title: "操作日志列表",
+                width: 700,
+                height: 600,
+                modal: true
+            });
+        },
+        "Add": function () {
+            $("#AddItem").load('/ShareOrderConfig/Edit?id=0');
+            $("#AddItem").dialog({
+                title: "添加",
+                width: 600,
+                height: 600,
+                modal: true
+            });
+        },
+        "Update": function (id) {
+            $("#AddItem").load('/ShareOrderConfig/Edit?id=' + id);
+            $("#AddItem").dialog({
+                title: "修改",
+                width: 600,
+                height: 600,
+                modal: true
+            });
+        },
+        "Delete": function (id) {
+            if (window.confirm("您确定要删除吗？")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/ShareOrderConfig/Delete",
+                    data: { "id": id },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/ShareOrderConfig/Index";
+                        }
+                        else {
+                            alert("删除失败！");
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        }
+    }
+</script>  

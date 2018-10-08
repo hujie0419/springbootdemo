@@ -1,0 +1,185 @@
+﻿
+@using Tuhu.Provisioning.Models
+@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.RecommendGetGiftConfig>
+    @{
+        ViewBag.Title = "推荐有礼";
+        Layout = "~/Views/Shared/_PersonalCenterLeft.cshtml";
+    }
+
+    <h2>推荐有礼配置</h2>
+    <style>
+        body {
+            font-family: "Microsoft Yahei";
+        }
+
+        textarea {
+            width: 100px;
+            height: 100px;
+        }
+
+        .btn {
+            margin-top: 20px;
+            padding: 5px 25px;
+            border: none;
+            color: #F0F0F0;
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+            background: cornflowerblue;
+            border-color: cornflowerblue;
+        }
+
+        .table th {
+            color: white;
+            padding: 6px 5px;
+            text-align: left;
+            background-color: cornflowerblue;
+            border: solid 1px cornflowerblue;
+        }
+    </style>
+
+    <div>
+        <a href="javascript:void(0)" class="btn" onclick="RecommendGetGiftConfig.Add()">添加</a>
+    </div>
+    <div>
+        <table class="table" style="width:100%;margin-top:20px;">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>名称</th>
+                    <th>每天首次奖励额度</th>
+                    <th>用户下单奖励方式</th>
+                    <th>是否发码分享</th>
+                    <th>人群编号</th>
+                    <th>开始时间</th>
+                    <th>结束时间</th>
+                    <th>更新人</th>
+                    <th>更新时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+            {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.Name</td>
+                        <td>@item.AwardLimit</td>
+                        <td>
+                            @if (item.AwardType.Trim() == "Coupon")
+                            {   //Coupon 优惠券，Point 定额积分，Times 订单金额倍数积分奖励
+                                <label>优惠券</label>
+                            }
+                            else if (item.AwardType.Trim() == "Point")
+                            {
+                                <label>定额积分</label>
+                            }
+                            else if (item.AwardType.Trim() == "Times")
+                            {
+                                <label>订单金额倍数积分奖励</label>
+                            }
+                            else
+                            {
+                                <label></label>
+                            }
+                        </td>
+                        @if (item.IsSendCode??false)
+                        {
+                            <td>是</td>
+                            <td>@item.UserGroupId</td>
+                        }
+                        else
+                        {
+                            <td>否</td>
+                            <td>无</td>
+                        }
+                        <td>
+                            @item.StartTime
+                        </td>
+                        <td>
+                            @item.EndTime
+                        </td>
+                        <td>
+                            @(string.IsNullOrWhiteSpace(item.UpdateName)? item.CreateName:item.UpdateName)
+                        </td>
+                        <td>
+                            @item.UpdateTime
+                        </td>
+                        <td>
+                            <a href="javascript:;" onclick="RecommendGetGiftConfig.Update(@item.Id)">编辑</a>&nbsp;&nbsp;
+                            <a href="javascript:;" onclick="RecommendGetGiftConfig.ShareUpdate(@item.Id)">分享编辑</a>&nbsp;&nbsp;
+                            <a href="javascript:;" onclick="RecommendGetGiftConfig.LogList(@item.Id)">操作日志</a>&nbsp;&nbsp;
+                            <a href="javascript:;" onclick="RecommendGetGiftConfig.Delete(@item.Id)">删除</a>
+                        </td>
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    </div>
+
+    <div>
+        @Html.Pager(Model.Pager, pageIndex => Url.RouteUrl(new { pageIndex }))
+    </div>
+    <div id="AddItem"></div>
+
+    <script>
+        var RecommendGetGiftConfig = {
+            "LogList": function (e) {
+                $("#AddItem").load('/RecommendGetGiftConfig/LogList?id=' + e);
+                $("#AddItem").dialog({
+                    title: "操作日志列表",
+                    width: 600,
+                    height: 600,
+                    modal: true
+                });
+            },
+            "Add": function () {
+                $("#AddItem").load('/RecommendGetGiftConfig/Edit?id=0');
+                $("#AddItem").dialog({
+                    title: "添加",
+                    width: 800,
+                    height: 700,
+                    modal: true
+                });
+            },
+            "Update": function (id) {
+                $("#AddItem").load('/RecommendGetGiftConfig/Edit?id=' + id);
+                $("#AddItem").dialog({
+                    title: "修改",
+                    width: 700,
+                    height: 700,
+                    modal: true
+                });
+            },
+            "ShareUpdate": function (id) {
+                $("#AddItem").load('/RecommendGetGiftConfig/Share?id=' + id);
+                $("#AddItem").dialog({
+                    title: "修改",
+                    width: 'auto',
+                    height:700,
+                    modal: true
+                });
+            },
+            "Delete": function (id) {
+                if (window.confirm("您确定要删除吗？")) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/RecommendGetGiftConfig/Delete",
+                        data: { "id": id },
+                        dataType: "json",
+                        success: function (result) {
+                            if (result) {
+                                window.location.href = "/RecommendGetGiftConfig/Index";
+                            }
+                            else {
+                                alert("删除失败！");
+                            }
+                        },
+                        error: function (result) {
+                        }
+                    })
+                }
+            }
+        }
+    </script>

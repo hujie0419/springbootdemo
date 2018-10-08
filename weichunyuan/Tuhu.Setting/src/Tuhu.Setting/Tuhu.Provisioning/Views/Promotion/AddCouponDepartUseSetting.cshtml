@@ -1,0 +1,83 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@model DepartmentAndUseModel
+@{
+    Layout = null;
+}
+<table>
+    <tr>
+        <th width="100%" style="text-align:left;" colspan="2">@(Model.Type == 0 ? "部门编辑" : "部门用途编辑")</th>
+    </tr>
+    @if (Model.Type == 1)
+    {
+        <tr>
+            <td>所属部门</td>
+            <td><label>@Model.ParentName</label></td>
+        </tr>
+    }
+    <tr>
+        <td>@(Model.Type == 0 ? "部门名称" : "用途名称")</td>
+        <td><input type="text" value="@Model.DisplayName" name="DisplayName" /></td>
+    </tr>
+</table>
+<input type="hidden" name="ParentSettingId" value="@Model.ParentSettingId" />
+<input type="hidden" name="SettingId" value="@Model.SettingId" />
+<div class="button" style="display:none;">保存</div>
+<script>
+    $(function () {
+        //信息保存
+        $(".button").click(function () {
+            $(".tip").remove();
+            var button = $(this);
+            button.css("pointer-events", "none");
+
+            var DisplayName = $("[name=DisplayName]").val(),//名称
+            SettingId = $("[name=SettingId]").val(),
+            ParentSettingId = $("[name=ParentSettingId]").val()
+            if (ParentSettingId > 0) {
+                Type = 1;
+            }
+            else {
+                Type = 0;
+            }
+            //校验数据
+            var tip = "";
+            var flag = true;//是否可以提交信息
+            if (!DisplayName)
+                ShowWrongTit($("[name=DisplayName]"), '必填');
+
+            function ShowWrongTit(target, titText) {
+                flag = false;
+                target.after('<span class="tip">' + titText + '</span>');
+                button.css("pointer-events", "all");
+            }
+
+            //信息提交之前的验证
+            if (flag) {
+                var r = confirm("是否确定保存信息？");
+                if (r) {
+                    $.ajax({
+                        url: "/Promotion/SaveCouponDepartUseSetting",
+                        type: "post",
+                        data: {
+                            SettingId: SettingId,
+                            DisplayName: DisplayName,
+                            ParentSettingId: ParentSettingId,
+                            Type: Type
+                        },
+                        success: function (result) {
+                            if (result) {
+                                alert("保存成功！");
+                                window.location.reload();
+                            } else {
+                                alert("保存失败！");
+                            }
+                        }
+                    });
+                }
+                else {
+                    button.css("pointer-events", "all");
+                }
+            }
+        })
+    });
+</script>

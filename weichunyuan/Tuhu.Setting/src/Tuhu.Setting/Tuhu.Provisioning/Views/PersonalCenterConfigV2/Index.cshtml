@@ -1,0 +1,135 @@
+﻿@{
+    ViewBag.Title = "用户个人中心配置";
+    Layout = "~/Views/Shared/_LayoutPage_PersonalCenter.cshtml";
+}
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.SE_HomePageConfig>
+
+
+<div class="row ibox-content">
+    <div class="col-lg-8 ibox-content">
+        <div class="row" style="text-align:right;margin-bottom:5px;">
+            <a href="javascript:void(0)" class="btn btn-danger btn-small " id="btnAdd"  style="width: 150px;" data-toggle="modal" data-target="#edit">新 增</a>
+            @*<a href="javascript:void(0)" class="btn btn-default btn-small " id="btnReload" style="width: 80px;" >刷新缓存</a>*@
+        </div>
+
+
+        <div class="row">
+            <table class="table table-bordered" style="text-align:center;">
+                <thead>
+                    <tr>
+                        <th style="text-align:center;">
+                            ID
+                        </th>
+                        <th style="text-align:center;">
+                            名称
+                        </th>
+                       
+                        <th style="text-align:center;">
+                            状 态
+                        </th>
+                        <th style="text-align:center;">
+                            管 理
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null)
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.ID </td>
+                                <td>@item.HomePageName</td>
+                                <td>@(item.IsEnabled?"启用":"禁用")</td>
+                                <td>
+                                    <a class="btn btn-default btn-sm btnedit" href="javascript:void(0)"  data-id="@item.ID" data-toggle="modal" data-target="#edit" >编 辑</a>
+                                    <a class="btn btn-default btn-sm" href="/PersonalCenterConfigV2/HomePageModuleList?id=@item.ID" target="_self" data-id="@item.ID"  >查看模块</a>
+                                    <a class="btn btn-danger btn-sm" href="javascript:void(0)" data-id="@item.ID" onclick="deletehomepage(@item.ID)" >删 除</a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+      
+    </div>
+
+    @*<div class="col-lg-4">
+        <div class="row" style="text-align:center;">
+            <h3>预览首页</h3>
+        </div>    
+          <iframe src="/PersonalCenterConfigV2/PreViewHome" width="414" height="793" frameborder="0" scrolling="no" style="overflow-x:hidden;overflow-y:hidden;padding-bottom:49px;" ></iframe>
+      
+    </div>*@
+</div>
+<div id="edit" class="modal fade" aria-hidden="true"  role="dialog" tabindex="-1" >
+   
+</div>
+
+@section scripts{
+<script type="text/javascript">
+   
+    function deletehomepage(id) {
+        var r = confirm("您确定删除吗?");
+        if(r){
+            $.ajax({
+                url: '/PersonalCenterConfigV2/DeleteHomePage',
+                type: 'post',
+                data: { id: id }
+            }).done(function (result) {
+                if (result.Status == 0) {
+                    location.reload();
+                } else {
+                    alert("删除失败");
+                }
+            }).fail(function () {
+                alert("删除失败");
+            });
+        }
+    }
+
+    $('#btnAdd').on('click', function () {
+        var url = "/PersonalCenterConfigV2/HomePageEdit?id=0";
+        // dialogOpen("新增首页", url, "edit");
+        var dialog = $('#edit');
+        dialog.empty();
+        dialog.html(dialog.load(url));
+    });
+
+    $('.btnedit').on('click',function(){
+        var id =$(this).data("id");
+        if(id){
+            var url = "/PersonalCenterConfigV2/HomePageEdit?id="+id;
+            var dialog = $('#edit');
+            dialog.empty();
+            dialog.html(dialog.load(url));
+        }
+    });
+
+    $('#btnReload').on('click',function(){
+        $.ajax({
+            url:'/PersonalCenterConfigV2/ReloadCache',
+            type:'post',
+        }).done(function(result){
+            if(result == 1){
+                alert("刷新缓存成功");
+            }else{
+                alert("刷新缓存失败");
+            }
+        });
+    });
+    $(function () {
+        //$('#myList').droppable({
+        //    drop: function (event, ui) {
+        //        var type = ui.helper.data("type");
+        //        console.log(event);
+        //        console.log(ui);
+        //        alert(type);
+        //    }
+        //});
+    });
+
+
+</script>
+    }

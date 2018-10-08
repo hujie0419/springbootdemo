@@ -1,0 +1,112 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@model IEnumerable<PromotionBusinessLineModel>
+@{
+    ViewBag.Title = "优惠券发放业务线配置";
+}
+<style>
+    #addBusinessLine {
+        padding: 10px 0px;
+        display: block;
+        font-size: 20px;
+    }
+    #SaveBusinessLine {
+        padding: 10px 0px;
+    }
+</style>
+<h2>业务线配置</h2>
+
+<div id="container">
+    <a id="addBusinessLine" href="javascript:void(0)"><b>添加一个</b></a>
+    <div id="SaveBusinessLine" style="display: none;">
+        <input type="text" name="DisplayName"/>
+        <input type="hidden" name="PKID"/>
+        <button name="btnsave" type="button">保存</button>
+    </div>
+    <table width="50%">
+        <thead>
+        <tr>
+            <th>名字</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.DisplayName</td>
+                <td>
+                    <a  href="javascript:void(0)" name="edit"  data-name="@item.DisplayName" data-pkid="@item.PKID">编辑</a> | 
+                    <a  href="javascript:void(0)" name="del" data-pkid="@item.PKID" data-name="@item.DisplayName">删除</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    
+    
+   
+</div>
+
+
+@section scripts{
+    <script>
+        (function () {
+            var success = function (result) {
+                if (result.Code >= 0) {
+                    alert("操作成功！");
+                    location.reload();
+                } else {
+                    alert("操作失败！");
+                }
+            }
+            $("#container").delegate("a[name=del]",
+                "click",
+                function() {
+                    $.ajax({
+                        url: "/Promotion/DeleteBusinessLine",
+                        type: "post",
+                        dataType: "json",
+                        data: { PKID: $(this).data("pkid") },
+                        success: success
+                    });
+                }).delegate("a[name=edit]",
+                "click",
+                function() {
+                    clear();
+                    $("#SaveBusinessLine input[name=DisplayName]").val($(this).data("name"));
+                    $("#SaveBusinessLine input[name=PKID]").val($(this).data("pkid"));
+                    $("#SaveBusinessLine").show();
+                });
+            $("#addBusinessLine").click(function () {
+                clear();
+                $("#SaveBusinessLine").show();
+            });
+
+            $("#SaveBusinessLine [name=btnsave]").click(save);
+
+            function save() {
+                var name = $("#SaveBusinessLine input[name=DisplayName]").val();
+                if (name == '') {
+                    alert("业务线名字不能为空");
+                    return;
+                }
+                var pkid = $("#SaveBusinessLine input[name=PKID]").val() || 0;
+                
+
+                $.ajax({
+                    url: "/Promotion/SaveBusinessLine",
+                    type: "post",
+                    dataType: "json",
+                    data: { DisplayName: name, PKID: pkid },
+                    success: success
+                });
+            }
+
+            function clear() {
+                $("#SaveBusinessLine input").each(function () {
+                    $(this).val("");
+                });
+            }
+        })();
+    </script>
+}

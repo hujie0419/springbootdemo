@@ -1,0 +1,67 @@
+﻿
+@using Tuhu.Provisioning.Models
+@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.DefaultSearchConfig>
+@{
+    Layout = null;
+}
+
+<div>
+    <table style="width:100%;margin-top:20px;">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>类型</th>
+                <th>名称</th>
+                <th>关键词</th>
+                <th>添加时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+
+                    @if (item.Type == 1)
+                    {
+                        <td>
+                            默认搜索配置
+                        </td>
+
+                    }
+                    else if (item.Type == 2)
+                    {
+                        <td>
+                            业务搜索配置
+                        </td>
+                    }
+                    else if (item.Type == 3)
+                    {
+                        <td>品牌旗舰店</td>
+                    }
+                    else if (item.Type == 4)
+                    {
+                        <td>活动浮层配置</td>
+                    }
+                    else
+                    {
+                        <td></td>
+                    }
+
+                    <td>@item.Name</td>
+                    <td>@item.Keywords</td>
+                    <td>@item.CreateTime</td>
+                    <td>
+                        <a href="javascript:;" onclick="DefaultSearchConfig.Update(@item.Id)">编辑</a>&nbsp;&nbsp;
+                        <a href="javascript:;" onclick="DefaultSearchConfig.Delete(@item.Id)">删除</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div>
+    @Html.Pager(Model.Pager, pageIndex => Url.RouteUrl(new { pageIndex }))
+</div>

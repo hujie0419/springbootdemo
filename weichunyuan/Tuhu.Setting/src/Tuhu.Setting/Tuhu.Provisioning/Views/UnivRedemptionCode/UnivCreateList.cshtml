@@ -1,0 +1,448 @@
+﻿
+@{
+    ViewBag.Title = "通用兑换码生成列表";
+    Layout = "~/Views/Shared/_LayoutNew.cshtml";
+}
+
+@section css{
+    <link rel="stylesheet" href="~/Content/iview/iview.css" />
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
+        /*修改受影响的样式*/
+        body {
+            background-color: #2f4050;
+        }
+
+        .select {
+            width: 100px;
+        }
+
+        .modal-element-width {
+            width: 90%;
+        }
+
+        .row-spacing {
+            margin-bottom: 5px;
+            margin-bottom: 10px;
+        }
+
+        .modal-row {
+            margin-bottom: 10px;
+        }
+    </style>
+}
+
+<div id="div" v-cloak>
+    <tabs v-on:on-click="clickTabs">
+        <tab-pane label="运营配置" name="Batch">
+            <tab-pane-content :services="services" :cooperations="cooperations" :type="'Batch'"></tab-pane-content>
+        </tab-pane>
+        <tab-pane label="接口生成" name="Interface">
+            <tab-pane-content :services="services" :cooperations="cooperations" :type="'Interface'" v-if="isClick"></tab-pane-content>
+        </tab-pane>
+    </tabs>
+</div>
+
+
+
+
+<script type="text/template" id="tab-pane-content">
+    <div>
+        <row type="flex" justify="space-around" v-bind:align="'middle'" class="row-spacing">
+            <i-col span="8">
+                <label>选择公司:</label>
+                <i-select :filterable="true"   transfer v-model="condition.CooperateId" style="width:75%;">
+                    <i-option :value="0" :key="0">请选择</i-option>
+                    <i-option v-for="cooperation in cooperations" :value="cooperation.Id" :key="cooperation.Id">{{cooperation.Name}}</i-option>
+                </i-select>
+            </i-col>
+            <i-col span="6">
+                <label>选择服务:</label>
+                <i-select :filterable="true"   transfer v-model="condition.CodeTypeConfigId" style="width:70%;">
+                    <i-option :value="0" :key="0">请选择</i-option>
+                    <i-option v-for="service in services" :value="service.Id" :key="service.Id">{{service.Name}}</i-option>
+                </i-select>
+            </i-col>
+            <i-col span="6">
+                <label>结算类型:</label>
+                <i-select transfer v-model="condition.SettlementMethod" style="width:60%;">
+                    <i-option value="All" key="All">全部</i-option>
+                    <i-option value="None" key="None">无</i-option>
+                    <i-option value="BatchPreSettled" key="BatchPreSettled">大买断结算</i-option>
+                </i-select>
+            </i-col>
+            <i-col span="4">
+                <i-button type="success" icon="ios-search" v-on:click="search">查询</i-button>
+                <i-button type="primary" v-on:click="show=true" v-if="type==='Batch'">生成</i-button>
+            </i-col>
+        </row>
+
+        <i-table class="row-spacing"
+                 :stripe="true"
+                 :data="data"
+                 :columns="columns"
+                 :loading="loading"
+                 :size="'large'"
+                 highlight-row></i-table>
+
+        <page show-sizer
+              show-total
+              placement="top"
+              v-on:on-page-size-change="condition.PageSize=$event"
+              :current.sync="condition.PageIndex"
+              :total="total"
+              :page-size-opts="[10, 20, 50, 100, 200]"></page>
+
+        <generate-modal :show.sync="show" v-on:submit="submit"></generate-modal>
+    </div>
+</script>
+
+<script type="text/template" id="generate-modal">
+    <div>
+        <Modal title="生成兑换码" v-model="showModal" :loading="loading" :mask-closable="false" v-on:on-ok="submit">
+            <row>
+                <i-col span="6">
+                    <label>选择模板:</label>
+                </i-col>
+                <i-col span="12">
+                    <i-select filterable transfer placeholder="选择公司" v-model="configId">
+                        <i-option value="00000000-0000-0000-0000-000000000000" key="00000000-0000-0000-0000-000000000000">请选择</i-option>
+                        <i-option :value="config.ConfigId" :key="config.ConfigId" v-for="config in configs">{{config.Name}}</i-option>
+                    </i-select>
+                </i-col>
+            </row>
+            <row>
+                <i-col span="6">
+                    <label>生成数量:</label>
+                </i-col>
+                <i-col span="12">
+                    <i-input placeholder="输入生成数量" v-model="num"></i-input>
+                </i-col>
+            </row>
+        </Modal>
+    </div>
+</script>
+
+
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/iview/iview.min.js"></script>
+    <script type="text/javascript">
+        Array.prototype.firstOrDefault = function (callback) {
+            var array = this;
+            for (var i = 0; i < array.length; i++) {
+                var value = array[i];
+                if (callback(value, i)) {
+                    return value;
+                }
+            }
+            return undefined;
+        }
+        Vue.component('generate-modal', {
+            props: {
+                show: {
+                    type: Boolean,
+                    default: false,
+                },
+            },
+            template: "#generate-modal",
+            data: function () {
+                return {
+                    configs: [],
+                    configId: "00000000-0000-0000-0000-000000000000",
+                    num: 0,
+                    loading: true,
+                    showModal: false,
+                };
+            },
+            watch: {
+                show: function (value) {
+                    var vm = this;
+                    if (value) {
+                        vm.getRedemptionCodeConfigs();
+                    }
+                    else {
+                        vm.showModal = false;
+                    }
+                    vm.$emit('update:show', value);
+                },
+                showModal: function (value) {
+                    var vm = this;
+                    vm.show = value;
+                }
+            },
+            methods: {
+                getRedemptionCodeConfigs: function () {
+                    var vm = this;
+                    vm.configId = "00000000-0000-0000-0000-000000000000";
+                    vm.num = 0;
+                    $.get("GetRedemptionCodeConfigsByGenerateType", { generateType: "Batch" }, function (result) {
+                        var data = result.data || [];
+                        vm.configs = data.map(function (config) {
+                            return { ConfigId: config.ConfigId, Name: config.Name };
+                        });
+                    }).complete(function () {
+                        vm.showModal = true;
+                    });
+                },
+                submit: function () {
+                    var vm = this;
+                    if (vm.num <= 0) {
+                        vm.$Message.warning('数量必须大于0');
+                        vm.loading = false;
+                        vm.$nextTick(function () {
+                            vm.loading = true;
+                        });
+                        return;
+                    }
+                    if (!vm.configId || vm.configId === '00000000-0000-0000-0000-000000000000') {
+                        vm.$Message.warning('模板是必选的!');
+                        vm.loading = false;
+                        vm.$nextTick(function () {
+                            vm.loading = true;
+                        });
+                        return;
+                    }
+                    vm.$Modal.confirm({
+                        title: '确认！',
+                        content: '<p>确认生成？</p>',
+                        loading: true,
+                        onOk: function () {
+                            $.post("GenerateRedemptionCodeRecords", { configId: vm.configId, num: vm.num }, function (result) {
+                                if (result.status) {
+                                    vm.$Message.info("生成成功");
+                                    vm.showModal = false;
+                                    vm.$emit('submit', true);
+                                }
+                                else {
+                                    vm.$Message.warning("生成失败!" + (result.msg || ""));
+                                    vm.$emit('submit', false);
+                                }
+                            }).error(function () {
+                                vm.$Message.warning("生成失败!");
+                                vm.$emit('submit', false);
+                            }).complete(function () {
+                                vm.$Modal.remove();
+                                vm.loading = false;
+                                vm.$nextTick(function () {
+                                    vm.loading = true;
+                                });
+                            });
+                        },
+                        onCancel: function () {
+                            vm.$Modal.remove();
+                            vm.loading = false;
+                            vm.$nextTick(function () {
+                                vm.loading = true;
+                            });
+                        }
+                    })
+                }
+            }
+        });
+
+        Vue.component('tab-pane-content', {
+            props: {
+                type: {
+                    type: String,
+                    default: "Batch",
+                },
+                cooperations: {
+                    type: Array,
+                    default: [],
+                },
+                services: {
+                    type: Array,
+                    default: [],
+                },
+            },
+            template: '#tab-pane-content',
+            data: function () {
+                return {
+                    columns: [],
+                    data: [],
+                    total: 0,
+                    loading: false,
+                    condition: {
+                        SettlementMethod: "All",
+                        CooperateId: 0,
+                        CodeTypeConfigId: 0,
+                        PageIndex: 1,
+                        PageSize: 10,
+                    },
+                    show: false,
+                };
+            },
+            created: function () {
+                var vm = this;
+                vm.columns = [
+                    { title: 'ID', key: 'ConfigId', align: 'center' },
+                    { title: '批次号', key: 'BatchCode', align: 'center' },
+                    { title: '兑换码名', key: 'Name', align: 'center' },
+                    { title: '公司名', key: 'CooperateName', align: 'center' },
+                    { title: '兑换码数量', key: 'Num', align: 'center' },
+                    {
+                        title: '兑换有效期',
+                        width: 200,
+                        align: 'center',
+                        render: function (h, p) {
+                            return h('div', (p.row.StartTime + '至' + p.row.EndTime));
+                        },
+                    },
+                    { title: '创建人', key: 'CreateUser', align: 'center' },               
+                    { title: '创建时间', key: 'CreateTime', align: 'center' },
+                    {
+                        title: '是否作废', key: 'Status', align: 'center',
+                        render: function (h, p) {
+                            var des = "";
+                            if (p.row.Status === "3Invalidated") {
+                                des = "是";
+                            } else {
+                                des = "否";
+                            }
+                            return h('div', (des));
+                        }
+                    },
+                    {
+                        title: '操作',
+                        width: 100,
+                        align: 'center',
+                        render: function (h, p) {
+                            return h('div', [
+                                h('Button', {
+                                    on: {
+                                        click: function () {
+                                            window.location.href = "DownloadRedemptionCodeRecords?batchcode=" + p.row.BatchCode;
+                                        },
+                                    }
+                                }, '下载'),
+                                h('Button', {
+                                    on: {
+                                        click: function () {                                         
+                                            vm.$Modal.confirm({
+                                                title: '确认?',
+                                                content: '<p>确认作废?</p>',
+                                                loading: true,
+                                                onOk: function () {
+                                                    $.post("InvalidateRedemptionCode", { batchCode: p.row.BatchCode, remark: "setting站点根据批次作废" }, function (result) {
+                                                        if (result && result.IsSuccess) {
+                                                           vm.$Message.info('作废成功');
+                                                        } else {
+                                                            vm.$Message.warning("作废失败！" + (result.Msg || ""));
+                                                        }
+                                                    }).complete(function () {
+                                                        vm.$Modal.remove();
+                                                    });;
+                                                },
+                                                onCancel: function () {
+                                                    vm.$Modal.remove();
+                                                }
+                                            })
+                                          
+                                        }
+                                    }
+                                },"作废")
+                            ]);
+                        }
+                    }
+                ];
+            },
+            mounted: function () {
+                var vm = this;
+                vm.getRedemptionCodeRecords();
+            },
+            watch: {
+                "condition.PageIndex": function (value) {
+                    this.getRedemptionCodeRecords();
+                },
+                "condition.PageSize": function (value) {
+                    this.search();
+                },
+            },
+            methods: {
+                search: function () {
+                    var vm = this;
+                    if (vm.condition.PageIndex !== 1) {
+                        vm.condition.PageIndex = 1;
+                        return;
+                    }
+                    vm.getRedemptionCodeRecords();
+                },
+                getRedemptionCodeRecords: function () {
+                    var vm = this;
+                    vm.loading = true;
+                    var data = {
+                        SettlementMethod: vm.condition.SettlementMethod,
+                        CooperateId: vm.condition.CooperateId,
+                        CodeTypeConfigId: vm.condition.CodeTypeConfigId,
+                        PageIndex: vm.condition.PageIndex,
+                        PageSize: vm.condition.PageSize,
+                        GenerateType: vm.type,
+                    };
+                    $.get("GetRedemptionCodeRecords", data, function (result) {
+                        if (!result.status) {
+                            vm.data = [];
+                            vm.total = 0;
+                            return;
+                        }
+                        vm.total = result.total;
+                        vm.data = result.data;
+                    }).error(function () {
+                        vm.data = [];
+                        vm.total = 0;
+                    }).complete(function () {
+                        vm.loading = false;
+                    });
+                },
+                submit: function (value) {
+                    var vm = this;
+                    if (value) {
+                        vm.search();
+                    }
+                }
+            }
+        });
+
+        var vm = new Vue({
+            el: "#div",
+            data: {
+                cooperations: [],
+                services: [],
+                isClick: false,
+            },
+            created: function () {
+                this.getAllServices();
+                this.getAllCooperations();
+            },
+            methods: {
+                getAllServices: function () {
+                    var vm = this;
+                    $.get("/BeautyServicePackage/GetAllBeautyServiceCodeTypeConfig", function (data) {
+                        vm.services = (data || []).map(function (service) {
+                            return { Id: service.PKID, Name: service.Name };
+                        });
+                    });
+                },
+                getAllCooperations: function () {
+                    var vm = this;
+                    $.get("/BankMRActivity/GetAllMrCooperateUserConfigs", function (data) {
+                        vm.cooperations = (data || []).map(function (cooperation) {
+                            return {
+                                Id: cooperation.PKID,
+                                Name: (cooperation.CooperateName || '')
+                            };
+                        });
+                    });
+                },
+                clickTabs: function (value) {
+                    if (!this.isClick && value === 'Interface') {
+                        this.isClick = true;
+                    }
+                },
+            },
+        });
+    </script>
+}
+

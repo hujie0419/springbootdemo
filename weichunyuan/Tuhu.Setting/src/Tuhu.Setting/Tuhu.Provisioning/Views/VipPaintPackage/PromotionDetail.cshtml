@@ -1,0 +1,456 @@
+﻿
+@{
+    ViewBag.Title = "塞券详情";
+}
+@section head{
+    <link href="~/css/beautyPackage.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/iview/iview.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+        fieldset {
+            height: auto;
+            margin: 5px 0px 15px 0px;
+            padding: 15px 20px;
+        }
+
+            fieldset > label {
+                display: inline-block;
+                height: 30px;
+                max-width: 100%;
+                font-weight: bold;
+                margin-left: 10px;
+            }
+    </style>
+}
+
+<h2>
+    <a href="/VipPaintPackage/PackageConfig">喷漆套餐配置</a>
+    <a href="/VipPaintPackage/PromotionOperation" style="margin-left:30px;">给用户塞券</a>
+    <a href="/VipPaintPackage/PromotionRecord" style="margin-left:30px;">塞券记录</a>
+    <a href="/VipPaintPackage/PackageSmsConfig" style="margin-left:30px">短信配置</a>
+</h2>
+<h2 style="margin-top:10px;">塞券详情</h2>
+<div id="div" v-cloak>
+    <div style="margin-top:20px;">
+        <Row>
+            <i-col span="4">批次号: {{package.BatchCode}}</i-col>
+            <i-col span="4">套餐价格: {{package.PackagePrice}}</i-col>
+        </Row>
+        <Row>
+            <i-col span="4">套餐PID: {{package.PackagePid}}</i-col>
+            <i-col span="4" v-if="package.SettlementMethod=='PreSettled'">结算方式: 买断</i-col>
+            <i-col span="4" v-else-if="package.SettlementMethod=='ByPeriod'">结算方式: 据实</i-col>
+        </Row>
+        <Row>
+            <i-col span="4">套餐名称: {{package.PackageName}}</i-col>
+            <i-col span="4" style="white-space:nowrap;">优惠券: {{package.RuleId}}-{{package.PromotionName}}-{{package.Description}}</i-col>
+        </Row>
+        <Row>
+            <i-col span="4">所属大客户: {{package.VipUserName}}</i-col>
+            <i-col span="4" v-if="package.IsSendSms==true">短信: 发送</i-col>
+            <i-col span="4" v-if="package.IsSendSms==false">短信: 不发送</i-col>
+        </Row>
+    </div>
+
+    <div style="margin-top:30px;">
+        <i-input style="width:10%" placeholder="请输入手机号" v-model="searchData.mobileNumber"></i-input>
+        <i-input style="width:10%" placeholder="请输入优惠券" v-model="searchData.promotionId"></i-input>
+        <i-select style="width:10%" v-model="searchData.status" filterable>
+            <i-option value="">-请选择-</i-option>
+            <i-option value="SUCCESS">成功</i-option>
+            <i-option value="FAIL">失败</i-option>
+        </i-select>
+        <i-button type="primary" v-on:click="Search(1)">搜索</i-button>
+    </div>
+
+    <table style="margin-top:30px;" class="tableContainer">
+        <thead>
+            <tr>
+                <th>全选<input type="checkbox" v-model="checkAllFlag" v-on:click="CheckAll" /></th>
+                <th>手机号</th>
+                <th>车牌号</th>
+                <th>优惠券</th>
+                <th>券开始时间</th>
+                <th>券结束时间</th>
+                <th>塞券状态</th>
+                <th>生成的2B订单号</th>
+                <th>生成的2C订单号</th>
+                <th>备注</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="searchResult && searchResult.length <= 0 && !loading">
+                <td colspan="8">无数据</td>
+            </tr>
+            <tr v-if="loading">
+                <td colspan="8"><img src="/Images/loading.gif" /></td>
+            </tr>
+            <tr v-else v-for="(value,index) in searchResult">
+                <td><input v-if="value.Status=='SUCCESS'" type="checkbox" v-model="checkedPromotions" v-bind:value="value.PromotionId" /> {{index+1 +(pager.pageIndex - 1)*pager.pageSize}}</td>
+                <td>{{value.MobileNumber}}</td>
+                <td>{{value.CarNo}}</td>
+                <td>{{value.PromotionId}}</td>
+                <td>{{formate(value.StartDateTime)||'/'}}</td>
+                <td>{{formate(value.EndDateTime)||'/'}}</td>
+                <td v-if="value.Status=='SUCCESS'"><Tag color="green">成功</Tag></td>
+                <td v-else-if="value.Status=='FAIL'"><Tag color="red">失败</Tag></td>
+                <td v-else-if="value.Status=='Invalid'"><Tag>已作废</Tag></td>
+                <td v-else-if="value.Status=='Used'"><Tag>已使用</Tag></td>
+                <td v-else-if="value.Status=='WAIT'"><Tag>等待</Tag></td>
+                <td v-else-if="value.Status=='Running'"><Tag>塞券中</Tag></td>
+                <td v-else></td>
+                <td>{{value.ToBOrder}}</td>
+                <td>{{value.ToCOrder}}</td>
+                <td>{{value.Remarks}}</td>
+                <td v-if="fileRunningStatus.indexOf(fileStatus) != -1">塞券中,暂时无法操作,请稍后</td>
+                <td v-else-if="value.Status=='SUCCESS'"><i-button type="error" v-on:click="InvalidPromotion(value)">作废券</i-button></td>
+                <td v-else-if="value.Status=='FAIL'">
+                    <i-button type="primary" v-on:click="OpenEditOrDeleteDialog('Edit',value)">编辑</i-button>
+                    <i-button type="error" v-on:click="OpenEditOrDeleteDialog('Delete',value)">删除</i-button>
+                </td>
+                <td v-else>/</td>
+            </tr>
+        </tbody>
+    </table>
+    <Page style="margin:10px;" :total="pager.totalCount" :current.sync="pager.pageIndex" :page-size="pager.pageSize"
+          v-on:on-page-size-change="ChangePageSize" show-total show-sizer></Page>
+
+    <row style="margin-top:30px;">
+        <i-col span="4"><i-button :disabled="fileStatus!='WaitingForRepair'" v-on:click="UpdateFileTaskStatus">给该批次塞失败的手机号重新塞券</i-button></i-col>
+        <i-col span="4"><i-button :disabled="fileRunningStatus.indexOf(fileStatus) != -1" v-on:click="MultInvalidPromotion">作废选中的塞成功的优惠券</i-button></i-col>
+    </row>
+    <row style="margin-left:30px;">
+        <i-col span="4" v-if="notSuccessCount > 0"><span style="color:red;">有{{notSuccessCount}}个手机号塞券失败，请重新塞券</span></i-col>
+        <i-col span="4" v-if="fileStatus!='WaitingForRepair' && notSuccessCount == 0"><span style="color:green;">全部塞券成功</span></i-col>
+        <i-col span="4" v-if="fileStatus=='WaitingForRepair' && package.SettlementMethod=='PreSettled' && notSuccessCount == 0"><span style="color:green;">请点击重新塞券</span></i-col>
+    </row>
+
+    @*编辑或删除对话框*@
+    <Modal v-model="modal.show" :mask-closable="false" width="20%">
+        <p slot="header">
+            <spqn v-if="modal.type==='Edit'">编辑</spqn>
+            <spqn v-else-if="modal.type==='Delete'">删除</spqn>
+        </p>
+        <div style="text-align:center">
+            <table class="tableContainer">
+                <tbody>
+                    <tr>
+                        <th>手机号</th>
+                        <td>
+                            <i-input v-model="modal.model.MobileNumber" :disabled="modal.type==='Delete'"></i-input>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>车牌号</th>
+                        <td>{{modal.model.CarNo}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div slot="footer">
+            <i-button v-if="modal.type==='Edit'" v-on:click="Edit">确认</i-button>
+            <i-button v-else-if="modal.type==='Delete'" v-on:click="Delete">删除</i-button>
+            <i-button v-on:click="modal.show=false">关闭</i-button>
+        </div>
+    </Modal>
+</div>
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script src="~/Scripts/iview/iview.min.js"></script>
+    <script type="text/javascript">
+        var vue = new Vue({
+            el: "#div",
+            data: {
+                batchCode: "",
+                notSuccessCount: "",
+                searchData: {
+                    mobileNumber: "",
+                    promotionId: "",
+                    status: ""
+                },
+                checkedPromotions: [],
+                checkAllFlag: false,
+                package: [],
+                searchResult: {},
+                pager: {
+                    pageIndex: 1,
+                    pageSize: 20,
+                    totalCount: 0,
+                    totalPage: 0
+                },
+                loading: false,
+                fileStatus: "",
+                fileRunningStatus: ["Wait", "Runing", "Loaded", "Repaired"],
+                timer: "",
+                modal: {
+                    model: {},
+                    show: false,
+                    type: ""
+                }
+            },
+            created: function () {
+                this.batchcode = getQueryStringByName('batchcode');
+                this.getPromotionConfigForDetail();
+                this.Search();
+                this.GetNotSuccessPromotionDtailCount();
+                this.$Message.config({
+                    top: 150,
+                    duration: 5
+                });
+            },
+            mounted: function () {
+                this.GetFileTaskStatus();
+            },
+            computed: {
+                successCount: function () {
+                    var self = this;
+                    return (self.searchResult || []).map(function (value) {
+                        return value.Status == 'SUCCESS';
+                    }).length;
+                }
+            },
+            watch: {
+                "pager.pageIndex": function () {
+                    var self = this;
+                    self.Search(self.pager.pageIndex);
+                },
+                fileStatus: function () {
+                    var vue = this;
+                    if (vue.fileStatus) {
+                        if (vue.fileRunningStatus.indexOf(vue.fileStatus) != -1) {
+                            vue.timer = setInterval(function () { vue.GetFileTaskStatus(); vue.GetNotSuccessPromotionDtailCount(); }, 2000);
+                        }
+                        else if (vue.timer) {
+                            clearInterval(vue.timer);
+                            vue.Search(vue.pager.pageIndex);
+                        }
+                    }
+                },
+                checkedPromotions: function () {
+                    var self = this;
+                    if (self.checkedPromotions.length == self.successCount && self.successCount > 0) {
+                        self.checkAllFlag = true;
+                    }
+                    else {
+                        self.checkAllFlag = false;
+                    }
+                }
+            },
+            methods: {
+                Search: function () {
+                    var self = this;
+                    self.loading = true;
+                    $.post("SelectPromotionDetail", {
+                        batchcode: self.batchcode,
+                        mobileNumber: self.searchData.mobileNumber,
+                        promotionId: self.searchData.promotionId,
+                        status: self.searchData.status,
+                        pageIndex: self.pager.pageIndex,
+                        pageSize: self.pager.pageSize
+                    }, function (result) {
+                        if (result.Status) {
+                            self.pager.totalCount = result.TotalCount || 0;
+                            self.searchResult = result.Data || [];
+                        }
+                        else {
+                            self.pager.totalCount = 0;
+                            self.searchResult = [];
+                        }
+                        setTimeout(function () {
+                            self.loading = false;
+                        }, 200);
+                    });
+                },
+                //头部展示套餐批次相关信息
+                getPromotionConfigForDetail: function () {
+                    var vue = this;
+                    $.post("GetPromotionConfigForDetail", { batchcode: vue.batchcode }, function (result) {
+                        if (result && result.Status) {
+                            vue.package = result.Data || [];
+                        }
+                        else {
+                            vue.package = [];
+                        }
+                    });
+                },
+                //作废券
+                InvalidPromotion: function (value) {
+                    var self = this;
+                    if (value && value.PromotionId > 0) {
+                        if (!confirm("确认作废优惠券" + value.PromotionId + "?")) {
+                            return;
+                        }
+                        $.post("InvalidCodes", { promotionIds: [value.PromotionId] }, function (result) {
+                            if (result.Status) {
+                                setTimeout(function () { self.Search(self.pager.pageIndex) }, 2000);
+                                self.$Message.success("作废优惠券成功!");
+                            } else {
+                                self.$Message.success("作废优惠券失败!<br>" + result.Msg || "");
+                            }
+                        });
+                    }
+                },
+                //批量作废券
+                MultInvalidPromotion: function () {
+                    var self = this;
+                    if (!(self.checkedPromotions && self.checkedPromotions.length > 0)) {
+                        self.$Message.warning("请至少选中一条记录");
+                        return;
+                    }
+                    if (!confirm("是否确认作废选中的优惠券")) {
+                        return;
+                    }
+                    $.post("InvalidCodes", { promotionIds: self.checkedPromotions }, function (result) {
+                        if (result.Status) {
+                            setTimeout(function () { self.Search(self.pager.pageIndex) }, 2000);
+                            self.$Message.success("作废选中的券成功");
+                        } else {
+                            self.$Message.success(result.Msg || "");
+                        }
+                    });
+                },
+                ChangePageSize: function (pageSize) {
+                    var self = this;
+                    self.pager.pageSize = pageSize;
+                    self.Search(1);
+                },
+                //更新塞券任务状态
+                UpdateFileTaskStatus: function () {
+                    var vue = this;
+                    if (vue.fileStatus != 'WaitingForRepair') {
+                        return;
+                    }
+                    else if (!confirm("是否确认操作?")) {
+                        return;
+                    }
+                    $.post("UpdateFileTaskStatus", {
+                        batchcode: vue.batchcode,
+                    }, function (result) {
+                        if (result.Status) {
+                            vue.$Message.success("操作成功!请耐心等待");
+                            vue.fileStatus = 'Repaired';
+                        }
+                        else {
+                            vue.$Message.error("操作失败!");
+                        }
+                    }).error(function (response) {
+                        vue.$Message.error("操作失败!");
+                    });
+                },
+                //查看塞券任务状态
+                GetFileTaskStatus: function () {
+                    var vue = this;
+                    $.post("GetFileTaskStatus", {
+                        batchcode: vue.batchcode
+                    }, function (result) {
+                        if (result.Status) {
+                            vue.fileStatus = result.Data;
+                        }
+                    });
+                },
+                //塞券失败手机号个数
+                GetNotSuccessPromotionDtailCount: function () {
+                    var self = this;
+                    $.post("GetNotSuccessPromotionDtailCount", { batchcode: self.batchcode }, function (result) {
+                        if (result && result.Status) {
+                            self.notSuccessCount = result.Data;
+                        } else {
+                            self.notSuccessCount = "";
+                        }
+                    });
+                },
+                //打开编辑或删除对话框
+                OpenEditOrDeleteDialog: function (type, value) {
+                    var self = this;
+                    self.modal.model = {};
+                    if (type && value && value.MobileNumber && value.CarNo) {
+                        self.modal.model = JSON.parse(JSON.stringify(value));
+                        self.modal.type = type;
+                        self.modal.show = true;
+                    } else {
+                        self.modal.show = false;
+                    }
+                },
+                //编辑塞券详情记录
+                Edit: function () {
+                    var self = this;
+                    var model = self.modal.model;
+                    if (!model || model.PKID <= 0) {
+                        return;
+                    }
+                    if (!model.MobileNumber) {
+                        self.$Message.warning("请输入手机号");
+                        return;
+                    }
+                    var phoneReg = /^1[0-9]{10}$/;
+                    if (!phoneReg.test(model.MobileNumber)) {
+                        self.$Message.warning('手机号格式不正确');
+                        return;
+                    }
+                    $.post("UpdatePromotionDetail", { pkid: model.PKID, mobileNumber: model.MobileNumber },
+                        function (result) {
+                            if (result && result.Status) {
+                                setTimeout(function () { self.GetNotSuccessPromotionDtailCount() }, 2000);
+                                setTimeout(function () { self.Search(self.pager.pageIndex) }, 2000);
+                                self.$Message.success("更新成功!\n全部更改完毕后请点击重新塞券按钮");
+                                self.modal.show = false;
+                            } else {
+                                self.$Message.error("更新失败" + (result.Msg || ""));
+                            }
+                        });
+                },
+                //删除塞券详情记录
+                Delete: function () {
+                    var self = this;
+                    var model = self.modal.model;
+                    if (!model || model.PKID <= 0) {
+                        return;
+                    }
+                    $.post("DeletePromotionDetail", { pkid: model.PKID }, function (result) {
+                        if (result && result.Status) {
+                            setTimeout(function () { self.GetNotSuccessPromotionDtailCount() }, 2000);
+                            setTimeout(function () { self.Search(self.pager.pageIndex) }, 2000);
+                            self.$Message.success("删除成功!\n全部更改完毕后请点击重新塞券按钮");
+                            self.modal.show = false;
+                        } else {
+                            self.$Message.error("删除失败" + (result.Msg || ""));
+                        }
+                    });
+                },
+                CheckAll: function () {
+                    var self = this;
+                    if (self.checkAllFlag) {
+                        self.checkedPromotions = self.searchResult.filter(function (s) { return (s.Status == 'SUCCESS') })
+                            .map(function (s) { return s.PromotionId; });
+                    } else {
+                        self.checkedPromotions = [];
+                    }
+                },
+                formate: function (dateStr) {
+                    if (!dateStr) {
+                        return "";
+                    }
+                    var date = eval('new ' + dateStr.substr(1, dateStr.length - 2));
+                    var year = date.getFullYear();
+                    var month = date.getMonth() + 1;
+                    var day = date.getDate();
+                    var hour = date.getHours();
+                    if (hour < 10)
+                        hour = '0' + hour;
+                    var minutes = date.getMinutes();
+                    if (minutes < 10)
+                        minutes = '0' + minutes;
+
+                    return year + "年" + month + "月" + day + "日" + " " + hour + ":" + minutes;
+                }
+            }
+        });
+        function getQueryStringByName(name) {
+            var result = location.search.match(new RegExp("[\?\&]" + name + "=([^\&]+)", "i"));
+            if (result == null || result.length < 1) {
+                return "";
+            }
+            return result[1];
+        }
+    </script>
+}

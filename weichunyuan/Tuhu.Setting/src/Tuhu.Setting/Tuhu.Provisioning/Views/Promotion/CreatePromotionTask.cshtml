@@ -1,0 +1,875 @@
+﻿@using System.Data
+@using Tuhu.Provisioning.Models;
+@model CreatePromotionTaskModel
+@using Newtonsoft.Json
+@{
+    ViewBag.Title = "创建优惠券任务";
+    string btnName = "创建任务";
+    string promotionListIds = string.Empty;
+    string couponRulesIds = string.Empty;
+    string taskStartTime = string.Empty;
+    string taskEndTime = string.Empty;
+    string btnDisabledStyle = string.Empty;
+
+    string filterStartTime = string.Empty;
+    string filterEndTime = string.Empty;
+    string execPeriod = string.Empty;
+    System.Data.DataTable ruleData = Model.RuleData;
+    System.Data.DataTable brandData = Model.BrandData;
+    System.Data.DataTable FinanceMarkData = Model.FinanceMarkData;
+    List<DepartmentAndUse> DepartmentAndUseData = Model.DepartmentAndUseData;
+    System.Data.DataTable businessData = Model.BusinessData;
+    if (Model.PromotionTask != null)
+    {
+        if (Model.PromotionTask.PromotionTaskId != null)
+        {
+            btnName = "修改任务";
+            ViewBag.Title = "修改优惠券任务";
+
+        }
+        if (Model.PromotionTask.TaskStatus > 0)
+        {
+            btnDisabledStyle = "disabled='disabled'";
+        }
+        if (Model.PromotionTask.PromotionListIds != null)
+        {
+            promotionListIds = Model.PromotionTask.PromotionListIds;
+        }
+        if (Model.PromotionTask.CouponRulesIds != null)
+        {
+            couponRulesIds = Model.PromotionTask.CouponRulesIds;
+        }
+        if (Model.PromotionTask.TaskStartTime != null)
+        {
+            taskStartTime = Model.PromotionTask.TaskStartTime.Value.ToString("yyyy-MM-dd");
+        }
+        if (Model.PromotionTask.TaskEndTime != null)
+        {
+            taskEndTime = Model.PromotionTask.TaskEndTime.Value.ToString("yyyy-MM-dd");
+        }
+
+        if (Model.PromotionTask.FilterStartTime != null)
+        {
+            filterStartTime = Model.PromotionTask.FilterStartTime.Value.ToString("yyyy-MM-dd HH:mm");
+        }
+
+        if (Model.PromotionTask.FilterEndTime != null)
+        {
+            filterEndTime = Model.PromotionTask.FilterEndTime.Value.ToString("yyyy-MM-dd HH:mm");
+        }
+        if (Model.PromotionTask.ExecPeriod != null)
+        {
+            execPeriod = Model.PromotionTask.ExecPeriod.ToString();
+        }
+    }
+
+    var productInfo = new Dictionary<string, string>();
+    //productInfo.Add("PleaseSelect", "请选择");
+    productInfo.Add("Brand", "品牌");
+    //productInfo.Add("Category", "类别");
+    productInfo.Add("Pid", "PID");
+    productInfo.Add("SpendMoney", "购买金额");
+    productInfo.Add("PurchaseNum", "购买件数");
+
+    var orderInfo = new Dictionary<string, string>();
+    //orderInfo.Add("Area", "地区");
+    orderInfo.Add("Channel", "渠道");
+    orderInfo.Add("InstallType", "安装类型");
+    orderInfo.Add("OrderStatus", "订单状态");
+
+    var channelType = Model.ListOrderChannel;
+    //    new Dictionary<string, string>();
+    //channelType.Add("WX", "微信");
+    //channelType.Add("APP", "APP");
+    //channelType.Add("OwnChannel", "自有渠道");
+
+    var installType = new Dictionary<string, string>();
+    installType.Add("1", "到店安装");
+    installType.Add("2", "非到店安装");
+    var orderStatus = new Dictionary<string, string>();
+    orderStatus.Add("Installed", "已安装");
+    orderStatus.Add("Paid", "已付款");
+    orderStatus.Add("OrderCompleted", "订单已完成");
+
+}
+<style>
+    body {
+        color: black;
+    }
+
+    input[type=text] {
+        height: 20px;
+    }
+
+    .fieldDescriptionDiv {
+        float: left;
+        text-align: right;
+        margin-right: 10px;
+        height: 15px;
+        width: 100px;
+    }
+
+    .fieldDescription {
+        width: 50px;
+    }
+
+    .fieldInput {
+        width: 110px;
+    }
+
+    .filed-taskDescription {
+        width: 420px;
+    }
+
+    select {
+        width: 100px;
+    }
+
+    /*过滤区域Div*/
+    #filterDiv, #filterBIDev {
+        margin-top: 15px;
+        border: dotted 1px red;
+        width: 850px;
+        display: none;
+        padding: 10px;
+    }
+
+    #selectedFilterDiv {
+        margin-top: 15px;
+    }
+
+    /*filter中添加按钮样式*/
+    .btnAddFilter {
+        cursor: pointer;
+    }
+
+    /*选择的过滤值*/
+    .selectedFilterValue {
+        border: solid 1px black;
+        padding: 3px;
+        margin-right: 5px;
+        float: left;
+        margin-top: 5px;
+    }
+
+    /*优惠券所有类型*/
+    .couponDiv {
+        border: solid 1px black;
+        padding: 3px;
+        margin-right: 5px;
+        float: left;
+    }
+
+    .selectedFilterValue a {
+        margin-left: 10px;
+    }
+
+
+    .couponsDiv {
+        /*display:inline-block;*/
+        /*float:left;*/
+    }
+
+    .fieldDiv {
+        margin-top: 15px;
+    }
+
+    .fieldDivLabel {
+        width: 70px;
+        text-align: right;
+        margin-right: 10px;
+        float: left;
+    }
+
+    /*添加按钮样式*/
+    .Addbtn {
+        display: inline-block;
+        padding: 5px 20px;
+        border-radius: 5px;
+        color: #fff;
+        margin-right: 25px;
+        background-color: #688af1;
+        cursor: pointer;
+        float: right;
+    }
+
+    .wanning {
+        color: red;
+    }
+
+    .QRbtn {
+        font-size: 12px;
+        margin-top: 15px;
+        background-color: #f5940e;
+        cursor: pointer;
+    }
+</style>
+<style>
+    .file {
+        position: relative;
+        background: #d8d6d6;
+        border: 0px solid #99D3F5;
+        border-radius: 4px;
+        padding: 4px 12px;
+        overflow: hidden;
+        color: #2b2b2b;
+        text-decoration: none;
+        text-indent: 0;
+        line-height: 20px;
+        cursor: pointer;
+    }
+
+        .file input {
+            position: absolute;
+            right: 0;
+            top: 0;
+            opacity: 0;
+        }
+
+        .file:hover {
+            background: #688af1;
+            border-color: #78C3F3;
+            color: #fff;
+            text-decoration: none;
+        }
+</style>
+
+<form method="post" id="PromotionForm" enctype="multipart/form-data" style="margin-left:150px">
+    <div class="form-horizontal">
+        @{
+            if (Model.PromotionTask != null && Model.PromotionTask.PromotionTaskId != null)
+            {
+                <input type="text" id="PromotionTaskId" name="PromotionTaskId" class="fieldInput" value="@Model.PromotionTask.PromotionTaskId.Value.ToString()" style="display:none;" />
+            }
+        }
+        <div>
+            <div name="leftDiv" style="margin-bottom:20px; float: left;width:400px;">
+                <!--任务名称-->
+                <div class="fieldDiv">
+                    <div class="fieldDescriptionDiv"><span style="color:red">*</span>任务名称:</div>
+                    @{
+                        if (Model.PromotionTask != null && Model.PromotionTask.TaskName != null)
+                        {
+                            <input type="text" id="TaskName" name="TaskName" class="fieldInput" value="@Model.PromotionTask.TaskName" />
+                        }
+                        else
+                        {
+                            <input type="text" id="TaskName" name="TaskName" class="fieldInput" value="" />
+                        }
+                    }
+
+                </div>
+                <div class="fieldDiv">
+                    <div class="fieldDescriptionDiv">
+                        是否发短信:
+                    </div>
+                    <label><input type="radio" name="SendSMSType" value="1" @((Model.PromotionTask != null && Model.PromotionTask.SmsId > 0) ? "checked=checked" : "") />是</label>
+                    <label><input type="radio" name="SendSMSType" value="0" @((Model.PromotionTask == null || (Model.PromotionTask.SmsId ?? 0) == 0) ? "checked=checked" : "") style="margin-left:20px" />否</label>
+                    <br />
+
+                </div>
+                <div id="divSms" class="fieldDiv" style="@(Model.PromotionTask!=null&&Model.PromotionTask.SmsId>0?"":"display: none;") padding: 10px 0px;border:1px solid #ccc;">
+                    <div class="fieldDescriptionDiv">模板Id：</div><input type="text" id="smsId" name="SmsId" value="@((Model.PromotionTask!=null&&Model.PromotionTask.SmsId>0)?Model.PromotionTask.SmsId.ToString():"")" placeholder="请输入短信模板id" />
+                    <br /><br />
+                    <div class="fieldDescriptionDiv">模板参数：</div><input type="text" id="smsParam" name="SmsParam" value="@((Model.PromotionTask!=null&&Model.PromotionTask.SmsId>0)?Model.PromotionTask.SmsParam:"")" placeholder="请输入短信模板参数" />
+                    <br /><div class="fieldDescriptionDiv"></div><span class="wanning">例：["200", "轮胎499减100，保养199减100"]</span>
+                </div>
+                <div class="fieldDiv">
+                    <div class="fieldDescriptionDiv">
+                        任务类型:
+                    </div>
+                    @*@Html.EditorFor(model => model.TaskType, "RadioButtonListEnum")
+                        @Html.ValidationMessageFor(model => model.TaskType, "")*@
+                    <label><input type="radio" name="TaskType" id="Once" checked="checked" value="1" />单次任务</label>
+                    <label><input type="radio" name="TaskType" id="Repeat" value="2" style="margin-left:20px" />触发任务</label>
+                </div>
+                <div class="fieldDiv">
+                    <div class="fieldDescriptionDiv">
+                        选择用户:
+                    </div>
+
+                    <div>
+                        <div>
+                            <div>
+                                <span id="UploadFileSpan"><label><input type="radio" name="SelectUserType" id="UploadFile" value="1" />上传文件</label></span>
+
+                                <label><input type="radio" name="SelectUserType" id="ConditionSelect" value="2" style="margin-left:20px" />用户筛选</label>
+                                <span id="TaskActivitySpan"><label><input type="radio" name="SelectUserType" id="BiSelect" value="3" style="margin-left:20px" />运营活动</label></span>
+                            </div>
+                            <div style="margin-left:110px;margin-top:10px;" id="uploadFileDiv">
+                                <input type="text" style="width:100px;margin-right:20px" readonly="readonly" name="fileName" id="fileName" value="" />
+                                <a href="javascript:;" class="file">
+                                    选择文件
+                                    <span name="fileA">
+                                        <input type="file" name="CellphonesFile" id="CellphonesFile" onchange="uploadUserCellphoneFile()" style="cursor:pointer;" />
+                                    </span>
+                                </a>
+                                <br />
+                                <span id="UploadUserFileTip"></span>
+                                <div>
+                                    <label><input type="checkbox" @(Model.PromotionTask != null && Model.PromotionTask.IsImmediately == 1 ? "checked=checked" : "") id="excuteType" style="margin-top:10px" />审核后即时塞券</label>
+                                    <span class="wanning">200条以内立即执行，200条以上将会在凌晨执行</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div name="rightDiv" style="float:left;margin-left:40px">
+                <!--优惠券类型-->
+                <div class="fieldDiv">
+                    <div class="fieldDescriptionDiv"><span style="color:red">*</span>优惠券:</div>
+                    <input type="text" value="@couponRulesIds" id="CouponRulesIds" name="CouponRulesIds" style="display:none;" />
+                    <div style="width:80%;float:left">
+                        <div id="couponsDiv" class="couponsDiv">
+                        </div>
+                        <div id="btnAddCouponsType" class="Addbtn" style="float:left;" name="btnAddCouponsType">添加</div>
+                        <input type="text" value="@promotionListIds" id="TaskPromotionListIds" name="TaskPromotionListIds" style="display:none;" />
+                    </div>
+
+                    <div style="clear:both"></div>
+                </div>
+                <div class="fieldDiv" style="width: 550px;">
+                    <div class="fieldDescriptionDiv">
+                        <span style="color:red">*</span>
+                        任务执行时间:
+                    </div>
+                    <div id="StartTimeDiv" class="fieldDescriptionDiv" style="width:20px;margin-right:20px;">从</div>
+                    <input type="text" id="TaskStartTime" name="TaskStartTime" class="fieldInput" value="@taskStartTime" readonly="readonly" />
+                    <span style="color:red">
+                        非即时情况下 执行时间为选择日期的凌晨2点
+                    </span>
+                    <div style="margin-top: 20px; margin-left: 114px; float: none; display:none;" id="divRepeatTask">
+                        <div style="display:inline;margin-right:20px;">
+                            到
+                        </div>
+                        <input type="text" id="TaskEndTime" name="TaskEndTime" class="fieldInput" value="@taskEndTime" readonly="readonly" />
+
+                        <div style="display: inline; margin-left: 20px;display:none">
+                            执行周期:
+                        </div>
+                    </div>
+                </div>
+                <div class="fieldDiv">
+                    <div class="fieldDescriptionDiv">
+                        每人限塞1次:
+                    </div>
+                    <input type="radio" name="IsLimitOnce" id="limitOnce" checked="checked" value="1" />是
+                    <input type="radio" name="IsLimitOnce" id="notlimitOnce" value="0" style="margin-left:20px" />否
+                </div>
+                <div class="fieldDiv">
+                </div>
+            </div>
+            <!--Filter-->
+            <div id="filterDiv" style="margin-left:10px;clear: both;">
+                <div style="display:none;">
+                    品牌：<input type="text" id="Brand" name="Brand" value="@(Model.PromotionTask==null?"":Model.PromotionTask.Brand )" style="width: 80%;" /><br />
+                    PID：<input type="text" id="Pid" name="Pid" value="@(Model.PromotionTask==null?"":Model.PromotionTask.Pid)" style="width: 80%;" /><br />
+                    购买金额：<input type="text" id="SpendMoney" name="SpendMoney" value="@(Model.PromotionTask==null?"":Model.PromotionTask.SpendMoney.ToString())" style="width: 80%;" /><br />
+                    购买件数：<input type="text" id="PurchaseNum" name="PurchaseNum" value="@(Model.PromotionTask==null?"":Model.PromotionTask.PurchaseNum.ToString())" style="width: 80%;" /><br />
+                    地区：<input type="text" id="Area" name="Area" value="@(Model.PromotionTask==null?"":Model.PromotionTask.Area)" style="width: 80%;" /><br />
+                    渠道：<input type="text" id="Channel" name="Channel" value="@(Model.PromotionTask==null?"":Model.PromotionTask.Channel)" style="width: 80%;" /><br />
+                    订单类型：<input type="text" id="OrderType" name="OrderType" value="@(Model.PromotionTask==null?"":Model.PromotionTask.OrderType)" style="width: 80%;" /><br />
+                    安装类型：<input type="text" id="InstallType" name="InstallType" value="@(Model.PromotionTask==null?"":Model.PromotionTask.InstallType.ToString())" style="width: 80%;" /><br />
+                    订单状态：<input type="text" id="OrderStatus" name="OrderStatus" value="@(Model.PromotionTask==null?"":Model.PromotionTask.OrderStatus)" style="width: 80%;" /><br />
+                    车型号：<input type="text" id="Vehicle" name="Vehicle" value="@(Model.PromotionTask==null?"":Model.PromotionTask.Vehicle)" style="width: 80%;" />
+                    立即执行：<input type="text" id="IsImmediately" name="IsImmediately" value="@(Model.PromotionTask==null?0:Model.PromotionTask.IsImmediately)" style="width: 80%;" />
+                    @*产品类别老逻辑兼容**@
+                    类别：<input type="text" id="Category" name="Category" value="@(Model.PromotionTask==null?"":Model.PromotionTask.Category)" style="width: 80%;" /><br />
+                    @**产品类别新逻辑*@
+                    类别Id: <input type="text" id="ProductCategoryIds" name="ProductCategoryIds" value="@ViewBag.ProductCategoryIds" />
+                    类别ParentId:<input type="text" id="ParentCategoryIds" name="ParentCategoryIds" value="@ViewBag.ParentCategoryIds" />
+                    类别名称中文：<input type="text" id="ProductNames" name="ProductNames" value="@ViewBag.ProductNames" />
+                    类别名称：<input type="text" id="CategoryNames" name="CategoryNames" value="@ViewBag.CategoryNames" />
+                    类别NodeNo：<input type="text" id="NodeNos" name="NodeNos" value="@ViewBag.NodeNos" />
+                </div>
+                <div style="margin-left: 10px;">
+                    <div id="selectedFilterDiv">
+
+                    </div>
+                    <div style="clear:both">
+                        <div name="leftDiv2" style="float:left;width:440px">
+                            <!--订单时间-->
+                            <div class="fieldDiv" style="clear: both; ">
+                                <span><span style="color:red">*</span>订单时间:</span> 从
+                                <input type="text" id="FilterStartTime" name="FilterStartTime" class="fieldInput" value="@filterStartTime" readonly="readonly" />
+                                到
+                                <input type="text" id="FilterEndTime" name="FilterEndTime" class="fieldInput" value="@filterEndTime" readonly="readonly" />
+
+                                <div class="Addbtn" id="btnAddOrdersDateTimeFilter" type="button">添加</div>
+                            </div>
+                            <!--产品信息-->
+                            <div class="fieldDiv">
+                                <div class="fieldDivLabel">产品信息:</div>
+                                <select id="selectProductInfo">
+                                    @{
+                                        foreach (var item in productInfo)
+                                        {
+                                            <option value="@item.Key">@item.Value</option>
+                                        }
+                                    }
+                                </select>
+                                <select name="BrandListInfo" id="selBrandInfo">
+                                    @foreach (System.Data.DataRow row in brandData.Rows)
+                                    {
+                                        <option value="@row[0]">@row[1]</option>
+                                    }
+                                </select>
+                                <input type="text" id="productInfo" class="fieldInput" style="display:none" />
+                                <br /><input type="file" id="productListInfo" style="display:none" /><a href="#" id="lookPid" style="display:none">最多150个(查看)</a>
+                                <div class="Addbtn" id="btnAddProductInfoFilter" type="button" style="margin-top: -20px;">添加</div>
+                            </div>
+                            <!--地区-->
+                            <div class="fieldDiv">
+                                <div class="fieldDivLabel">地区:</div>
+                                <select id="selectProvince" name="selectProvince">
+                                    @{
+
+                                        foreach (var item in Model.ListProvince)
+                                        {
+                                            <option value="@item.PKID">@item.RegionName</option>
+                                        }
+                                    }
+                                </select>
+                                <select id="selectCity" name="selectCity">
+                                    @{
+
+                                        foreach (var item in Model.ListRegion)
+                                        {
+                                            <option value="@item.PKID">@item.RegionName</option>
+                                        }
+                                    }
+                                </select>
+                                <div class="Addbtn" id="btnAddRegionFilter" type="button">添加</div>
+                            </div>
+                            <!--车型信息-->
+                            <div class="fieldDiv" id="div-car-vehicle-info">
+                                <div class="fieldDivLabel">车型信息:</div>
+                                <select id="selectSeableInfo" name="selectSeableInfo" onchange="BrandChange(this.value)"></select>
+                                <select id="selectVehicleInfo" name="selectVehicleInfo"></select>
+                                <div class="Addbtn" id="btnAddVehicleInfoFilter" type="button">添加</div>
+                            </div>
+                        </div>
+                        <div name="rightDiv2" style="float:left;width:350px">
+                            <!--订单状态-->
+                            <div class="fieldDiv">
+                                <div class="fieldDivLabel"><span style="color:red">*</span>订单状态:</div>
+                                <select id="selectOrderState">
+                                    @{
+
+                                        foreach (var item in orderStatus)
+                                        {
+                                            <option value="@item.Key">@item.Value</option>
+                                        }
+                                    }
+                                </select>
+                                <div class="Addbtn" id="btnAddOrderStateFilter" type="button">添加</div>
+                            </div>
+                            <!--产品分类-->
+                            <div class="fieldDiv">
+                                <div class="fieldDivLabel">产品类别:</div>
+
+                                <div id="div-once-product-category" style="display:none">
+                                    <select id="selectOneCatagory" name="selectOneCatagory">
+                                        @{
+
+                                            foreach (var item in Model.CategoryOne)
+                                            {
+                                                <option value="@item.NodeNo">@item.DisplayName</option>
+                                            }
+                                        }
+                                    </select>
+                                    <select id="selectTwoCatagory" name="selectTwoCatagory" style="display:none">
+                                        <option value="0">全部</option>
+                                        @{
+                                            foreach (var item in Model.CategoryTwo)
+                                            {
+                                                <option value="@item.CategoryName">@item.DisplayName</option>
+                                            }
+                                        }
+                                    </select>
+                                    <select id="selectThreeCatagory" name="selectThreeCatagory" style="display:none;">
+                                        @{
+
+                                            @*foreach (var item in Model.ListRegion)
+                                                   {
+                                                    <option value="@item.PKID">@item.RegionName</option>
+                                                }*@
+                                        }
+                                    </select>
+                                    <div class="Addbtn" id="btnAddCategoryFilter" type="button">添加</div>
+                                </div>
+                                <!---触发任务逻辑-->
+                                <div id="div-trigger-product-category" style="display:none">
+                                    <input class="ProductCategoryIds" readonly="readonly" />
+                                    <div class="Addbtn" onclick="CreatePromotionTask.AddProductCategory()" type="button">添加</div>
+                                </div>
+                            </div>
+                            <!--渠道-->
+                            <div class="fieldDiv">
+                                <div class="fieldDivLabel">渠道:</div>
+                                <select id="selectOrderChannel">
+                                    @{
+                                        foreach (var item in Model.ListOrderChannel)
+                                        {
+                                            <option value="@item.DicKey">@item.DicType</option>
+                                        }
+                                    }
+                                </select>
+                                <a href="javascript:void(0)" id="btnViewOrderChanne">查看详情</a>
+                                <div class="Addbtn" id="btnAddOrderrChannelFilter" type="button">添加</div>
+                            </div>
+
+                            <!--安装类型-->
+                            <div class="fieldDiv">
+                                <div class="fieldDivLabel">安装类型:</div>
+                                <select id="selectInstallType">
+                                    @{
+
+                                        foreach (var item in installType)
+                                        {
+                                            <option value="@item.Key">@item.Value</option>
+                                        }
+                                    }
+                                </select>
+
+                                <div class="Addbtn" id="btnAddInstallTypeFilter" type="button">添加</div>
+                            </div>
+                            <!--订单的产品类型-->
+                            <div class="fieldDiv" id="divProductType" style="display:none;">
+                                <div class="fieldDivLabel">订单类型:</div>
+                                <label><input type="radio" name="ProductType" value=1 @((Model.PromotionTask != null && Model.PromotionTask.ProductType == 1) ? "checked=checked" : "") ; />全部</label>
+                                <label><input type="radio" name="ProductType" value=2 @((Model.PromotionTask != null && Model.PromotionTask.ProductType == 2) ? "checked=checked" : "") ; />套装产品</label>
+                                <label><input type="radio" name="ProductType" value=3 @((Model.PromotionTask != null && Model.PromotionTask.ProductType == 3) ? "checked=checked" : "") ; />非套装产品</label>
+                                <div class="Addbtn" id="btnAddProductTypeFilter" type="button">添加</div>
+                            </div>
+                        </div>
+                        <div style="clear: both; text-align: right; margin-right: 50px; padding:20px;">
+                            @*<input class="file" type="button" value="下载" id="btnFilterDown" />
+                                <input class="file" type="button" value="筛选" id="btnFilter" /> <span id="filterResult"></span>*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="filterBIDev" style="margin-left:10px;clear: both;">
+                <select id="sel_biActivity" name="PromotionTaskActivityId">
+                    <option data-description="" value="-1">--请选择活动--</option>
+                    @foreach (System.Data.DataRow row in Model.PromotionTaskActivityData.Rows)
+                    {
+                        <option data-description="@row["Description"]" value="@row["PKID"]" @((Model.PromotionTask != null && Model.PromotionTask.PromotionTaskActivityId != null && int.Parse(row["PKID"].ToString()) == Model.PromotionTask.PromotionTaskActivityId) ? "selected=selected" : "")>@row["ActivityName"]</option>
+                    }
+                </select>
+                <span class="wanning">一个活动只能对应一个任务</span><span style="margin-left:20px;" id="biActivityUsersCount"></span>
+                <div style="padding:10px;"><span id="biActivityDescription"></span></div>
+                <div style="padding:10px;">
+                    <label><input type="checkbox" @(Model.PromotionTask != null && Model.PromotionTask.IsImmediately == 1 ? "checked=checked" : "") id="biExcuteType" style="margin-top:10px" />审核后即时塞券</label>
+                    <span class="wanning">200条以内立即执行，200条以上将会在凌晨执行</span>
+                </div>
+            </div>
+            <div style="margin-left:110px;margin-top:10px;clear:both">
+                <input type="submit" value="@btnName" id="btnSave" style="width:100px;cursor:pointer; " @btnDisabledStyle />
+                <img src="https://resource.tuhu.cn/Image/Public/loading-712.gif" style="vertical-align: middle; visibility: hidden;" />&nbsp;&nbsp;
+                @if (Model.PromotionTask != null && Model.PromotionTask.PromotionTaskId != null)
+                {
+                    <input type="button" value="取消" id="btnCancel" style="width:100px; cursor:pointer;" />
+                }
+
+            </div>
+
+        </div>
+    </div>
+</form>
+<form method="post" id="PromotionFormDown" action="/Promotion/DownLoadFileFilterUser" enctype="multipart/form-data" style="margin-left:150px">
+    <div style="display:none;">
+        时间S：<input type="text" id="FilterStartTime_Down" name="FilterStartTime" /><br />
+        时间E：<input type="text" id="FilterEndTime_Down" name="FilterEndTime" /><br />
+        品牌：<input type="text" id="Brand_Down" name="Brand" value="@(Model.PromotionTask==null?"":Model.PromotionTask.Brand )" style="width: 80%;" /><br />
+        类别：<input type="text" id="Category_Down" name="Category" value="@(Model.PromotionTask==null?"":Model.PromotionTask.Category)" style="width: 80%;" /><br />
+        PID：<input type="text" id="Pid_Down" name="Pid" value="@(Model.PromotionTask==null?"":Model.PromotionTask.Pid)" style="width: 80%;" /><br />
+        购买金额：<input type="text" id="SpendMoney_Down" name="SpendMoney" value="@(Model.PromotionTask==null?"":Model.PromotionTask.SpendMoney.ToString())" style="width: 80%;" /><br />
+        购买件数：<input type="text" id="PurchaseNum_Down" name="PurchaseNum" value="@(Model.PromotionTask==null?"":Model.PromotionTask.PurchaseNum.ToString())" style="width: 80%;" /><br />
+        地区：<input type="text" id="Area_Down" name="Area" value="@(Model.PromotionTask==null?"":Model.PromotionTask.Area)" style="width: 80%;" /><br />
+        渠道：<input type="text" id="Channel_Down" name="Channel" value="@(Model.PromotionTask==null?"":Model.PromotionTask.Channel)" style="width: 80%;" /><br />
+        订单类型：<input type="text" id="OrderType_Down" name="OrderType" value="@(Model.PromotionTask==null?"":Model.PromotionTask.OrderType)" style="width: 80%;" /><br />
+        安装类型：<input type="text" id="InstallType_Down" name="InstallType" value="@(Model.PromotionTask==null?"":Model.PromotionTask.InstallType.ToString())" style="width: 80%;" /><br />
+        订单状态：<input type="text" id="OrderStatus_Down" name="OrderStatus" value="@(Model.PromotionTask==null?"":Model.PromotionTask.OrderStatus)" style="width: 80%;" /><br />
+        车型号：<input type="text" id="Vehicle_Down" name="Vehicle" value="@(Model.PromotionTask==null?"":Model.PromotionTask.Vehicle)" style="width: 80%;" />
+    </div>
+</form>
+
+<div id="couponTypeDialog" title="添加优惠券类型">
+    <!--优惠券类型-->
+    <div class="fieldDiv" style="margin-top:25px">
+        <div class="fieldDescriptionDiv">优惠券RuleId:</div>
+        <input type="text" id="selPromotionRuleId" name="selPromotionRuleId" readonly="readonly" class="fieldInput" />
+        <div colspan="3" class="RuleID" valign="middle" style="float:left;padding-right:10px">
+            <select id="selectRuleId" name="RuleID" style="width:300px">
+                <option value="">请选择优惠券类型</option>
+                @foreach (System.Data.DataRow row in ruleData.Rows)
+                {
+                    <option value="@row[0]">@row[2]</option>
+                }
+            </select>
+        </div>
+    </div>
+    <br />
+    <!--优惠券描述-->
+    <div class="fieldDiv" style="margin-top:25px">
+        <div class="fieldDescriptionDiv">
+            优惠券描述:
+        </div>
+        <input type="text" id="PromotionDescription" name="PromotionDescription" class="filed-taskDescription" />
+    </div>
+
+    <!--使用开始时间-->
+    <div class="fieldDiv" style="margin-top:25px">
+        <div class="fieldDescriptionDiv">
+            使用开始时间:
+        </div>
+        <input type="text" id="UseStartTime" name="UseStartTime" class="fieldInput" readonly="readonly" />
+
+        <div style="display:inline;margin-left:20px;">
+            使用结束时间:
+        </div>
+        <input type="text" id="UseEndTime" name="UseEndTime" class="fieldInput" readonly="readonly" />
+        <span style="color:red;"> * 开始时间默认为00:00:00，结束时间默认为：23:59:59</span>
+    </div>
+
+    <!--使用金额、优惠金额-->
+    <div class="fieldDiv" style="margin-top:25px">
+        <div class="fieldDescriptionDiv">
+            使用金额:
+        </div>
+        <input type="text" id="UseMoney" name="UseMoney" class="fieldInput" />
+
+        <div style="display:inline;margin-left:47px;">
+            优惠金额:
+        </div>
+        <input type="text" id="DiscountMoney" name="DiscountMoney" class="fieldInput" />
+    </div>
+
+    <!--发放数量-->
+    <div class="fieldDiv">
+        <div class="fieldDescriptionDiv">
+            数量:
+        </div>
+        <input type="text" id="Number" name="Number" class="fieldInput" /><span style="color:darkgrey">每个账户发放数量，上限99</span>
+    </div>
+    <br />
+    <div class="fieldDiv">
+        <div class="fieldDescriptionDiv">
+            发券后通知用户:
+        </div>
+        <label><input id="IsRemind" type="checkbox" name="IsRemind" value="1" />是</label>
+    </div>
+    <div class="fieldDiv">
+        <div class="fieldDescriptionDiv">
+            到期前提醒用户:
+        </div>
+        <label><input id="IsPush" type="checkbox" name="IsPush" value="1" />是</label>
+        <label id="PushSetting" style="display:none;"><input name="PushSetting" placeholder="请输入提前提醒的天数" /><span style="color:red;"> 多个天数用逗号隔开如3,15,30</span></label>
+    </div>
+    <div class="fieldDiv" style="margin-top: 25px">
+        <div class="fieldDescriptionDiv">
+            *部门:
+        </div>
+        <select id="DepartMentId" name="DepartMentId" onchange="GetUseList(@JsonConvert.SerializeObject(DepartmentAndUseData))">
+            <option value="">请选择部门</option>
+            @if (DepartmentAndUseData != null)
+            {
+                foreach (var item2 in DepartmentAndUseData)
+                {
+                    if (item2.Type == "0")
+                    {
+                        <option value="@item2.SettingId">@item2.DisplayName</option>
+                    }
+                }
+            }
+        </select>
+        <div style="display:inline;margin-left:20px;">
+            *用途:
+        </div>
+        <select id="IntentionId" name="IntentionId">
+            <option value="">请选择用途</option>
+            @if (DepartmentAndUseData != null)
+            {
+                foreach (var item2 in DepartmentAndUseData)
+                {
+                    if (item2.Type == "1")
+                    {
+                        <option value="@item2.SettingId">@item2.DisplayName</option>
+                    }
+                }
+            }
+        </select>
+    </div>
+    <div class="fieldDiv" style="margin-top: 25px">
+        <div class="fieldDescriptionDiv">
+            赠品券归属:
+        </div>
+        <select id="BusinessLineId" name="BusinessLineId">
+            <option value="">请选择业务线</option>
+            @if (businessData != null)
+            {
+                foreach (DataRow item2 in businessData.Rows)
+                {
+                    <option value="@(item2.GetValue<int>("PKID"))">@(item2.GetValue<string>("DisplayName"))</option>
+                }
+            }
+        </select>
+    </div>
+</div>
+
+<div id="couponTypeDialog_ReadOnly" title="优惠券类型信息" style="display: none;">
+    <div id="couponTypeDialog_ReadOnly_title" style="text-align:center;margin-top:10%">加载中...</div>
+    <div id="couponTypeDialog_ReadOnly_detail">
+        <!--优惠券类型-->
+        <div class="fieldDiv">
+            <div class="fieldDescriptionDiv">优惠券RuleId:</div>
+            <label id="lblSelPromotionRuleId" name="lblSelPromotionRuleId" class="fieldInput"></label>&nbsp;&nbsp;&nbsp;&nbsp;
+            <span class="fieldDescriptionDiv2">优惠券规则名称:</span>
+            <label id="lblPromotionType" name="lblPromotionType"></label>
+        </div>
+        <br />
+        <!--优惠券描述-->
+        <div class="fieldDiv">
+            <div class="fieldDescriptionDiv">
+                优惠券描述:
+            </div>
+            <label id="lblPromotionDescription" name="lblPromotionDescription" class="filed-taskDescription"></label>
+        </div>
+        <br />
+        <!--使用开始时间-->
+        <div class="fieldDiv">
+            <span class="fieldDescriptionDiv">
+                使用开始时间:
+            </span>
+            <label id="lblUseStartTime" name="lblUseStartTime" class="fieldInput" readonly="readonly"></label>
+
+            <span style="display: inline; margin-left: 20px;">
+                使用结束时间:
+            </span>
+            <label id="lblUseEndTime" name="lblUseEndTime" class="fieldInput" readonly="readonly"></label>
+
+        </div>
+        <br />
+        <!--使用金额、优惠金额-->
+        <div class="fieldDiv">
+            <span class="fieldDescriptionDiv">
+                使用金额:
+            </span>
+            <label id="lblUseMoney" name="lblUseMoney" class="fieldInput"></label>
+
+            <span style="display: inline; margin-left: 47px;">
+                优惠金额:
+            </span>
+            <label id="lblDiscountMoney" name="lblDiscountMoney" class="fieldInput"></label>
+        </div>
+        <br />
+        <!--发放数量-->
+        <div class="fieldDiv">
+            <span class="fieldDescriptionDiv">
+                数量:
+            </span>
+            <label id="lblNumber" name="lblNumber" class="fieldInput"></label>
+        </div>
+        <br />
+        <div class="fieldDiv">
+            <span class="fieldDescriptionDiv">
+                发券后提醒用户:
+            </span>
+            <label id="lblIsRemind" name="lblIsRemind" class="fieldInput"></label>
+        </div>
+        <br />
+        <div class="fieldDiv">
+            <span class="fieldDescriptionDiv">
+                到期前提醒用户:
+            </span>
+            <label id="lblIsPush" name="lblIsPush" class="fieldInput"></label>
+        </div>
+        <br />
+        <!--部门用途-->
+        <div class="fieldDiv">
+            <span class="fieldDescriptionDiv">
+                部门:
+            </span>
+            <label id="lblDepartMentId" name="lbDepartMentId" class="fieldInput"></label>
+
+            <span style="display: inline; margin-left: 47px;">
+                用途:
+            </span>
+            <label id="lblIntentionId" name="lblIntentionId" class="fieldInput"></label>
+        </div>
+        <div class="fieldDiv">
+            <span class="fieldDescriptionDiv">
+                赠品券归属:
+            </span>
+            <label id="lblBusinessLineId" name="lblBusinessLineId" class="fieldInput"></label>
+        </div>
+    </div>
+</div>
+
+<div id="orderChannelDetailDialog">
+    <div id="orderChannelDetailDialog_Body"></div>
+</div>
+<input type="hidden" id="hid-select-product-category" value="@Url.Action("Index","ProductCategory")" />
+<div id="lookPidsDialog" title="查看pid集合">
+
+
+</div>
+<script src="/Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<script type="text/javascript" src="/Scripts/TimeObjectUtil.js"></script>
+<script type="text/javascript" src="/Scripts/Promotion/CreatePromotion.js?V=20180918"></script>
+<script src="~/Scripts/layer/layer.js"></script>
+<script src="~/Scripts/Product/SelectProductCategoryCommon.js?v=1.2"></script>
+<link href="/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.css" rel="stylesheet" type="text/css" />
+<script src="/Scripts/jquery-ui-timepicker-addon/jquery-ui-sliderAccess.js" type="text/javascript"></script>
+<script src="/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var filterJson = @Html.Raw(string.IsNullOrEmpty(Model.FilterItemJson)?"1":Model.FilterItemJson);
+    var selectUserType = @(Model.PromotionTask==null?1: Model.PromotionTask.SelectUserType);
+    var taskType = @(Model.PromotionTask==null?1: Model.PromotionTask.TaskType);
+    var IsLimitOnce =@(Model.PromotionTask!= null&& Model.PromotionTask.IsLimitOnce ? 1 : 0);
+
+    $(document).ready(function(){
+        $("[name=RuleID]").filtrateSelect().on("change", function () {
+            var self = $(this);
+            $("#selPromotionRuleId").val(self.val());
+
+        });
+        $("#IsPush").click(function() {
+            if ($(this).prop("checked")) {
+                $("#PushSetting").show();
+            } else {
+                $("#PushSetting").hide();
+            }
+        });
+        //$("[name=FinanceMarkID]").filtrateSelect().on("change", function () {
+        //    var self = $(this);
+        //    $("#selFinanceMarkId").val(self.val());
+
+        //});
+
+        $("[name=BrandListInfo]").filtrateSelect();
+        //触发任务
+        if (taskType == 2) {
+            CreatePromotionTask.RepeatClick();
+        }
+        else {
+            CreatePromotionTask.OnceClick();
+        }
+    });
+    function GetUseList(data) {
+        var DepartMentId = $("[name=DepartMentId]").val();
+        if (!DepartMentId) {
+            return;
+        }
+        var filterDiv = $("#IntentionId");
+        filterDiv.empty();
+        $.each(data, function (i, row) {
+            if (row["ParentSettingId"] == DepartMentId) {
+                filterDiv.append($("<option></option>").val(row["SettingId"]).text(row["DisplayName"]))
+            }
+        });
+    };
+</script>

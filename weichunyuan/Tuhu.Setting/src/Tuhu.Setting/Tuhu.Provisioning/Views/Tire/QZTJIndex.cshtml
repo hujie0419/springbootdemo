@@ -1,0 +1,589 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@model Tuple<IEnumerable<TireSizeModel>, IEnumerable<string>>
+@{
+    ViewBag.Title = "轮胎强制推荐配置";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section head{
+    <link href="~/Content/sweetalert/sweetalert.css" rel="stylesheet" />
+    <style>
+        .title {
+            float: left;
+        }
+
+        .content {
+            clear: both;
+        }
+
+        .condition .name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .condition label {
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .condition > div {
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        .data_count {
+            color: #0026ff;
+        }
+
+        #EditSingle div {
+            float: left;
+            margin-right: 50px;
+            width: 188px;
+        }
+
+        #EditMany div {
+            float: left;
+            margin-right: 50px;
+            width: 188px;
+        }
+
+        span {
+            word-break: break-all;
+        }
+    </style>
+}
+<div class="title">
+    <h2>轮胎强制推荐配置</h2>
+</div>
+
+<div class="content">
+    <div class="condition">
+        <div>
+            <span class="name">轮胎规格：</span>
+            @Html.DropDownList("Tire_Width", Model.Item1.Select(T => T.Width).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "胎面宽")<b>/</b>
+            @Html.DropDownList("Tire_AspectRatio", Model.Item1.Select(T => T.AspectRatio).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "扁平比")<b>R</b>
+            @Html.DropDownList("Tire_Rim", Model.Item1.Select(T => T.Rim).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "直径")
+        </div>
+        <div>
+            <span class="name">原轮胎PID：</span>
+            <input type="text" name="PID" value="" />
+        </div>
+        <div>
+            <span class="name">推荐轮胎PID：</span>
+            <input type="text" name="RecommendPID" value="" />
+        </div>
+        <div>
+            <span class="name">轮胎品牌：</span>
+            <label><input type="checkbox" name="Brand" checked value="不限" />不限</label>
+            @foreach (var item in Model.Item2)
+            {
+                <label><input type="checkbox" name="Brand" value="@item" />@item.Split('/')[0]</label>
+            }
+        </div>
+        <div>
+            <span class="name">显示范围：</span>
+            <select class="show">
+                <option value="1">全部显示</option>
+                <option value="2">仅显示已配置</option>
+                <option value="3">仅显示未配置</option>
+                <option value="4">仅显示推荐PID重复</option>
+            </select>
+        </div>
+
+        <div>
+            <button onclick="Func.LoadList(1)" class="button_select" style="width: 400px;height: 30px;display: block;MARGIN-TOP: 12px;">查询</button>
+        </div>
+    </div>
+    <div>
+        每页显示：
+        <select class="PageSize">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>条
+        <span class="data_count"></span>
+        <button onclick="Func.ShowEditManyDialog()">批量编辑</button>
+    </div>
+    <img class="loadimg" src="~/Scripts/layer/skin/default/loading-2.gif" style="margin:5% 50%;display:none;" />
+    <div class="list">
+    </div>
+
+</div>
+
+<div id="EditSingle" style="display:none;">
+    <div class="d_pid">
+        <p>原轮胎</p>
+        <p class="pid">PID：<span></span></p>
+        <p class="name">轮胎名称：<span></span></p>
+        <p class="tiresize">轮胎规格：<span></span></p>
+    </div>
+    <div class="d_pid1 panel">
+        <p>推荐轮胎1</p>
+        <p class="pid">PID：<input type="text" name="PID" onblur="Func.CheckPID(this)" onfocus="Func.ClearDisplayName(this)" value="" /></p>
+        <p class="name"></p>
+        <p class="reason">推荐原因：<input type="text" name="Reason" value="" maxlength="16" /></p>
+        <p>轮胎图片：<input type="button" name="name" value="选择" onclick="$(this).next().click()" /><input type="file" value="" onchange="Func.UploadImage(this)" style="display:none;" /></p>
+        <img src="" width="100" height="100" />
+    </div>
+    <div class="d_pid2 panel">
+        <p>推荐轮胎2</p>
+        <p class="pid">PID：<input type="text" name="PID" onblur="Func.CheckPID(this)" onfocus="Func.ClearDisplayName(this)" value="" /></p>
+        <p class="name"></p>
+        <p class="reason">推荐原因：<input type="text" name="Reason" value="" maxlength="16" /></p>
+        <p>轮胎图片：<input type="button" name="name" value="选择" onclick="$(this).next().click()" /><input type="file" value="" onchange="Func.UploadImage(this)" style="display:none;" /></p>
+        <img src="" width="100" height="100" />
+    </div>
+    <div class="d_pid3 panel">
+        <p>推荐轮胎3</p>
+        <p class="pid">PID：<input type="text" name="PID" onblur="Func.CheckPID(this)" onfocus="Func.ClearDisplayName(this)" value="" /></p>
+        <p class="name"></p>
+        <p class="reason">推荐原因：<input type="text" name="Reason" value="" maxlength="16" /></p>
+        <p>轮胎图片：<input type="button" name="name" value="选择" onclick="$(this).next().click()" /><input type="file" value="" onchange="Func.UploadImage(this)" style="display:none;" /></p>
+        <img src="" width="100" height="100" />
+    </div>
+    <div class="d_pid4 panel">
+        <p>浮层推荐轮胎</p>
+        <p class="pid">PID：<input type="text" name="PID" onblur="Func.CheckPID(this)" onfocus="Func.ClearDisplayName(this)" value="" /></p>
+        <p class="name"></p>
+        <p class="reason">推荐语：<input type="text" name="Reason" value="" maxlength="16" /></p>
+    </div>
+</div>
+
+
+<div id="EditMany" style="display:none;">
+    <div class="d_pid">
+        <p>原轮胎</p>
+        <p class="pid">PID：<span></span></p>
+        <p class="tiresize">轮胎规格：<span></span></p>
+    </div>
+    <div class="d_pid1 panel">
+        <p>推荐轮胎1</p>
+        <p class="pid">PID：<input type="text" name="PID" onblur="Func.CheckPID(this)" onfocus="Func.ClearDisplayName(this)" value="" /></p>
+        <p class="name"></p>
+        <p class="reason">推荐原因：<input type="text" name="Reason" value="" maxlength="16" /></p>
+        <p>轮胎图片：<input type="button" name="name" value="选择" onclick="$(this).next().click()" /><input type="file" value="" onchange="Func.UploadImage(this)" style="display:none;" /></p>
+        <img src="" width="100" height="100" />
+    </div>
+    <div class="d_pid2 panel">
+        <p>推荐轮胎2</p>
+        <p class="pid">PID：<input type="text" name="PID" onblur="Func.CheckPID(this)" onfocus="Func.ClearDisplayName(this)" value="" /></p>
+        <p class="name"></p>
+        <p class="reason">推荐原因：<input type="text" name="Reason" value="" maxlength="16" /></p>
+        <p>轮胎图片：<input type="button" name="name" value="选择" onclick="$(this).next().click()" /><input type="file" value="" onchange="Func.UploadImage(this)" style="display:none;" /></p>
+        <img src="" width="100" height="100" />
+    </div>
+    <div class="d_pid3 panel">
+        <p>推荐轮胎3</p>
+        <p class="pid">PID：<input type="text" name="PID" onblur="Func.CheckPID(this)" onfocus="Func.ClearDisplayName(this)" value="" /></p>
+        <p class="name"></p>
+        <p class="reason">推荐原因：<input type="text" name="Reason" value="" maxlength="16" /></p>
+        <p>轮胎图片：<input type="button" name="name" value="选择" onclick="$(this).next().click()" /><input type="file" value="" onchange="Func.UploadImage(this)" style="display:none;" /></p>
+        <img src="" width="100" height="100" />
+    </div>
+    <div class="d_pid4 panel">
+        <p>浮层推荐轮胎</p>
+        <p class="pid">PID：<input type="text" name="PID" onblur="Func.CheckPID(this)" onfocus="Func.ClearDisplayName(this)" value="" /></p>
+        <p class="name"></p>
+        <p class="reason">推荐语：<input type="text" name="Reason" value="" maxlength="16" /></p>
+    </div>
+</div>
+@section scripts{
+    <script src="~/Content/sweetalert/sweetalert.js"></script>
+    <script src="~/Scripts/ajaxfileupload.js"></script>
+    <script>
+        Array.prototype.in_array = function (e) {
+            for (i = 0; i < this.length && this[i] != e; i++);
+            return !(i == this.length);
+        }
+        $(function () {
+            Func.LoadList(1);
+            $(".list").on("click", ".pager>a", function (event) {
+                event.preventDefault();
+                var url = $(this).attr("href");
+                if (url) {
+                    $.post(url, function (html, status) {
+                        if (status === "success") {
+                            $(".list").html(html);
+                        }
+                    });
+                }
+            })
+            //点击不限和全部 以外的复选框去除全部和不限的选中
+            $(".condition").on("change", "div input[type=checkbox]", function () {
+                if ($(this).prop("checked") && $(this).val() != "全部" && $(this).val() != "不限") {
+                    $(this).parent().parent().find("input[type=checkbox]:first").prop("checked", false);
+                }
+            })
+            //切换每页显示数量
+            $(".PageSize").on("change", function () {
+                Func.LoadList(1);
+            });
+        });
+        var Func = {
+            LoadList: function (pageIndex) {
+                $(".loadimg").show();
+                var TireSize = "";//规格
+                var Tire_Width = $("#Tire_Width option:selected").val();
+                var Tire_AspectRatio = $("#Tire_AspectRatio option:selected").val();
+                var Tire_Rim = $("#Tire_Rim option:selected").val();
+                if (Tire_Width.length && Tire_AspectRatio.length && Tire_Rim.length)
+                    TireSize = Tire_Width + '/' + Tire_AspectRatio + 'R' + Tire_Rim;
+
+                var PID = $("[name=PID]").val();
+
+                var RecommendPID = $("[name=RecommendPID]").val();
+
+                //轮胎品牌
+                var BrandArr = [];
+                $("[name=Brand]:checked").each(function () {
+                    BrandArr.push($(this).val());
+                });
+
+                //是否显示 1 全部 2 已配置  3未配置 4重复
+                var ShowType = $(".show option:selected").val();
+
+
+                var PID = $("[name=PID]").val();
+                $.post("/Tire/QZTJList", {
+                    TireSize: TireSize,
+                    PID: PID,
+                    RecommendPID: RecommendPID,
+                    Brands: BrandArr.join(','),
+                    ShowType: ShowType,
+                    pageIndex: pageIndex,
+                    pageSize: $(".PageSize>option:selected").val()
+
+                }, function (html, status) {
+                    if (status === "success") {
+                        $(".loadimg").hide();
+                        $(".list").html(html);
+                        $(".data_count").text('共' + ($("table").length ? $("table").attr("data-count") : 0) + '条数据');
+                    }
+                });
+            },
+            Delete: function (PID) {
+                swal({
+                    title: "提示",
+                    text: "确认删除？",
+                    type: "warning",//图标
+                    showCancelButton: true,//是否展示取消按钮
+                    confirmButtonColor: "#DD6B55",//确认按钮颜色
+                    confirmButtonText: "确认",//确认按钮的文本
+                    cancelButtonText: "取消",//取消按钮的文本
+                    closeOnConfirm: false,//点击确认按钮后是否关闭窗口
+                },
+                    function (isConfirm) {
+                        if (isConfirm) {
+                            //点击确认按钮后执行
+                            if (PID.length) {
+                                $.post("/Tire/DeleteQZTJ", { PID: PID }, function (result) {
+                                    if (result > 0) {
+                                        swal({
+                                            title: "删除成功！"
+                                        },
+                                            function () {
+                                                Func.LoadList($(".list .pager>a.current").text());
+                                            });
+                                    }
+                                    else if (result == -1)
+                                        swal("删除失败", "未给该PID配置数据,无法删除！", "error");
+                                    else
+                                        swal("删除失败", "服务器错误！", "error");
+                                });
+
+                            }
+                        }
+                        else {
+                            //点击取消按钮后执行
+                        }
+                    });
+            },
+            ShowEditSingleDialog: function (jsonStr) {
+                var data = JSON.parse(jsonStr);
+
+                //原轮胎
+                $("#EditSingle>.d_pid>.pid>span").text(data.PID);
+                $("#EditSingle>.d_pid>.name>span").text(data.DisplayName);
+                $("#EditSingle>.d_pid>.tiresize>span").text(data.TireSize);
+
+                //推荐轮胎1
+                $("#EditSingle>.d_pid1>.pid>input").val(data.PID1);
+                $("#EditSingle>.d_pid1>.name").text(data.ProductName1).attr("data-status", data.ProductName1.length ? 1 : 0);
+                $("#EditSingle>.d_pid1>.reason>input").val(data.Reason1);
+                $("#EditSingle>.d_pid1>img").attr("src", data.Image1.length ? ("https://img1.tuhu.org" + data.Image1) : "").attr("data-src", data.Image1);;
+
+                //推荐轮胎2
+                $("#EditSingle>.d_pid2>.pid>input").val(data.PID2);
+                $("#EditSingle>.d_pid2>.name").text(data.ProductName2).attr("data-status", data.ProductName2.length ? 1 : 0);
+                $("#EditSingle>.d_pid2>.reason>input").val(data.Reason2);
+                $("#EditSingle>.d_pid2>img").attr("src", data.Image2.length ? ("https://img1.tuhu.org" + data.Image2) : "").attr("data-src", data.Image2);;
+
+                //推荐轮胎3
+                $("#EditSingle>.d_pid3>.pid>input").val(data.PID3);
+                $("#EditSingle>.d_pid3>.name").text(data.ProductName3).attr("data-status", data.ProductName3.length ? 1 : 0);
+                $("#EditSingle>.d_pid3>.reason>input").val(data.Reason3);
+                $("#EditSingle>.d_pid3>img").attr("src", data.Image3.length ? ("https://img1.tuhu.org" + data.Image3) : "").attr("data-src", data.Image3);
+
+                //浮层推荐轮胎
+                $("#EditSingle>.d_pid4>.pid>input").val(data.PID4);
+                $("#EditSingle>.d_pid4>.name").text(data.ProductName4).attr("data-status", data.ProductName4.length ? 1 : 0);;
+                $("#EditSingle>.d_pid4>.reason>input").val(data.Reason4);
+
+                $("#EditSingle").dialog({
+                    title: "轮胎强制推荐配置",
+                    width: 1250,
+                    height: 500,
+                    modal: true,
+                    buttons: {
+                        "保存": function () {
+                            var dialog = $(this),
+                                pid = data.PID;
+                            var rproduct = [];
+                            var tit1 = [];
+                            var tit2 = [];
+
+                            dialog.find(".panel").each(function () {
+                                var r_pid = $(this).find(".pid>input").val().trim();
+                                var r_name = $(this).find(".name").text().trim();
+                                var r_reason = $(this).find(".reason>input").val().trim();
+                                var r_image = $(this).find("img").attr("data-src");
+                                var r_postion = $(this).hasClass("d_pid1") ? 1 : ($(this).hasClass("d_pid2") ? 2 : ($(this).hasClass("d_pid3") ? 3 : 4));
+                                if (r_postion == 4) r_image = " ";
+                                var obj = {
+                                    PID: pid,
+                                    Reason: r_reason,
+                                    Image: r_image,
+                                    Postion: r_postion,
+                                    RecommendPID: r_pid,
+                                };
+                                if (r_pid.length) {
+
+                                    if ($(this).find(".name").attr("data-status") == 1) {
+                                        if (r_reason.length && r_image && r_image.length)
+                                            rproduct.push(obj);
+                                        else
+                                            tit2.push(r_postion);
+                                    }
+                                    else
+                                        tit1.push(r_postion);
+                                }
+                            });
+                            var pid_repeat1 = dialog.find(".d_pid1 [name=PID]").val();
+                            var pid_repeat2 = dialog.find(".d_pid2 [name=PID]").val();
+                            var pid_repeat3 = dialog.find(".d_pid3 [name=PID]").val();
+                            var pid_repeat4 = dialog.find(".d_pid4 [name=PID]").val();
+
+                            if (tit1.length)
+                                swal("数据错误", "第" + tit1.join('，') + "个推荐的PID校验失败!", "error");
+                            else if (tit2.length)
+                                swal("数据错误", "第" + tit2.join('，') + "个推荐的轮胎数据填写不完整!", "error");
+                            else if (!rproduct.length)
+                                swal("数据错误", "三个推荐轮胎都未填写，无法保存！", "error");
+                            else if ((pid_repeat1.length && pid_repeat1 == pid_repeat2) || (pid_repeat1.length && pid_repeat1 == pid_repeat3) || (pid_repeat2.length && pid_repeat2 == pid_repeat3))
+                                swal("数据错误", "推荐轮胎出现重复PID，无法保存！", "error");
+                            else if (pid == pid_repeat1 || pid == pid_repeat2 || pid == pid_repeat3 || pid == pid_repeat4)
+                                swal("数据错误", "推荐轮胎与主PID重复，无法保存！", "error");
+                            else {
+                                $.post("/Tire/SaveQZTJSingle", { PID: pid, RProduct: JSON.stringify(rproduct) }, function (result) {
+                                    if (result > 0) {
+                                        swal({
+                                            title: "保存成功！"
+                                        },
+                                            function () {
+                                                dialog.dialog("close");
+                                                Func.LoadList($(".list .pager>a.current").text());
+
+                                            });
+                                    }
+                                    else
+                                        swal("保存失败!");
+
+                                });
+                            }
+                        },
+                        "关闭": function () {
+                            $(this).dialog("close"); //当点击取消按钮时，关闭窗口
+                        }
+                    }
+                });
+            },
+            ShowEditManyDialog: function () {
+                var $targets = $("[name=Selected]:checked");
+                if (!$targets.length) {
+                    swal("操作错误", "当前未选中,无法批量处理！", "error");
+                    return false;
+                }
+
+                var tiresizes = [];
+                var pids = [];
+                $targets.each(function () {
+                    var ts = $(this).attr("data-TireSize");
+                    var pid = $(this).attr("data-PID");
+                    if (!tiresizes.in_array(ts))
+                        tiresizes.push(ts);
+
+                    if (!pids.in_array(pid))
+                        pids.push(pid);
+                });
+                if (tiresizes.length > 1) {
+                    swal("操作错误", "批量处理需要保证所选项的轮胎规格相同！", "error");
+                    return false;
+                }
+                //原轮胎
+                $("#EditMany>.d_pid>.pid>span").text(pids.join(';'));
+                $("#EditMany>.d_pid>.tiresize>span").text(tiresizes[0]);
+
+                //推荐轮胎1
+                $("#EditMany>.d_pid1>.pid>input").val("");
+                $("#EditMany>.d_pid1>.name").text("");
+                $("#EditMany>.d_pid1>.reason>input").val("");
+                $("#EditMany>.d_pid1>img").attr("src", "");
+
+                //推荐轮胎2
+                $("#EditMany>.d_pid2>.pid>input").val("");
+                $("#EditMany>.d_pid2>.name").text("");
+                $("#EditMany>.d_pid2>.reason>input").val("");
+                $("#EditMany>.d_pid2>img").attr("src", "");
+
+                //推荐轮胎3
+                $("#EditMany>.d_pid3>.pid>input").val("");
+                $("#EditMany>.d_pid3>.name").text("");
+                $("#EditMany>.d_pid3>.reason>input").val("");
+                $("#EditMany>.d_pid3>img").attr("src", "");
+
+                //浮层推荐轮胎
+                $("#EditMany>.d_pid4>.pid>input").val("");
+                $("#EditMany>.d_pid4>.name").text("");
+                $("#EditMany>.d_pid4>.reason>input").val("");
+
+                $("#EditMany").dialog({
+                    title: "轮胎强制推荐配置",
+                    width: 1250,
+                    height: 500,
+                    modal: true,
+                    buttons: {
+                        "保存": function () {
+                            var dialog = $(this);
+                            var pidList = pids.join(';');
+                            var rproduct = [];
+                            var tit1 = [];
+                            var tit2 = [];
+                            dialog.find(".panel").each(function () {
+                                var r_pid = $(this).find(".pid>input").val().trim();
+                                var r_name = $(this).find(".name").text().trim();
+                                var r_reason = $(this).find(".reason>input").val().trim();
+                                var r_image = $(this).find("img").attr("data-src");
+                                var r_postion = $(this).hasClass("d_pid1") ? 1 : ($(this).hasClass("d_pid2") ? 2 : ($(this).hasClass("d_pid3") ? 3 : 4));
+                                if (r_postion == 4) r_image = " ";
+                                var obj = {
+                                    PID: pidList,
+                                    Reason: r_reason,
+                                    Image: r_image,
+                                    Postion: r_postion,
+                                    RecommendPID: r_pid,
+                                };
+                                if (r_pid.length) {
+
+                                    if ($(this).find(".name").attr("data-status") == 1) {
+                                        if (r_reason.length && r_image && r_image.length)
+                                            rproduct.push(obj);
+                                        else
+                                            tit2.push(r_postion);
+                                    }
+                                    else
+                                        tit1.push(r_postion);
+                                }
+                            });
+                            var pid_repeat1 = dialog.find(".d_pid1 [name=PID]").val();
+                            var pid_repeat2 = dialog.find(".d_pid2 [name=PID]").val();
+                            var pid_repeat3 = dialog.find(".d_pid3 [name=PID]").val();
+                            var pid_repeat4 = dialog.find(".d_pid4 [name=PID]").val();
+
+                            if (tit1.length)
+                                swal("数据错误", "第" + tit1.join('，') + "个推荐的PID校验失败!", "error");
+                            else if (tit2.length)
+                                swal("数据错误", "第" + tit2.join('，') + "个推荐的轮胎数据填写不完整!", "error");
+                            else if (!rproduct.length)
+                                swal("数据错误", "三个推荐轮胎都未填写，无法保存！", "error");
+                            else if ((pid_repeat1.length && pid_repeat1 == pid_repeat2) || (pid_repeat1.length && pid_repeat1 == pid_repeat3) || (pid_repeat2.length && pid_repeat2 == pid_repeat3))
+                                swal("数据错误", "推荐轮胎出现重复PID，无法保存！", "error");
+                            else {
+                                $.post("/Tire/SaveQZTJMany", { PIDS: pids.join(';'), RProduct: JSON.stringify(rproduct) }, function (result) {
+                                    if (result > 0) {
+                                        swal({
+                                            title: "保存成功！"
+                                        },
+                                            function () {
+                                                dialog.dialog("close");
+                                                Func.LoadList($(".list .pager>a.current").text());
+
+                                            });
+                                    }
+                                    else
+                                        swal("保存失败!");
+
+                                });
+                            }
+                        },
+                        "关闭": function () {
+                            $(this).dialog("close"); //当点击取消按钮时，关闭窗口
+                        }
+                    }
+                });
+            },
+            CheckPID: function (target) {
+                var $target = $(target);
+                var TireSize = $target.parent().parent().parent().find(".tiresize>span").text();
+                var pid = $target.val().trim();
+                if (pid.length) {
+                    $.post("/Tire/CheckPIDQZTJ", { TireSize: TireSize, PID: pid }, function (data) {
+                        if (data) {
+                            $target.parent().next().attr("data-status", data.Status).text(data.Message);
+                        }
+                    });
+                }
+            },
+            ClearDisplayName: function (target) {
+                var $target = $(target);
+                $target.parent().next().attr("data-status", 0).text("");
+            },
+            UploadImage: function (target) {
+                var $target = $(target);
+                var $img = $target.parent().next();
+                var now = new Date().getTime();
+                $target.attr("id", now);
+                $target.attr("name", now);
+                if ($target.val().split('.')[1].toUpperCase() != "JPG"
+                    && $target.val().split('.')[1].toUpperCase() != "JPEG"
+                    && $target.val().split('.')[1].toUpperCase() != "GIF"
+                    && $target.val().split('.')[1].toUpperCase() != "PNG"
+                    && $target.val().split('.')[1].toUpperCase() != "BMP") {
+                    swal("格式错误", "支持jpg、jpeg、gif、png、bmp", "error");
+                    return false;
+                }
+
+                $.ajaxFileUpload(
+                    {
+                        url: '/WebSiteHomeAd/ImageUploadToAli',
+                        secureuri: false,
+                        fileElementId: now,
+                        async: false,
+                        dataType: 'text',
+                        data: { filepath: "/Tire/Recommend/" },
+                        success: function (src) {
+                            if (src != null) {
+                                $img.attr("src", "https://img1.tuhu.org" + src).attr("data-src", src);
+                            }
+                            else
+                                swal("上传失败！");
+                        }
+                    });
+
+            },
+        }
+
+    </script>
+}

@@ -1,0 +1,120 @@
+﻿@using Tuhu.MMS.Web.Domain.UserFilter
+@using Tuhu.MMS.Web.Service
+@{
+    ViewBag.Title = "会员筛选输出字段筛选";
+    var jobid = ViewData["jobid"].ToString();
+    var configs = UserFilterService.UserFilterColConfigs;
+    var selectconfigs = ViewBag.userselectconfigs as IEnumerable<UserFilterResultConfig>;
+    Func<string, string, bool> getcolisadd = (basecategory, colname) =>
+    {
+        if (selectconfigs != null)
+        {
+            var result = selectconfigs.Any(x => x.IsEffective && x.BasicAttribute == basecategory && x.ColName == colname && x.JobId == Convert.ToInt32(jobid));
+            return result;
+        }
+        return false;
+    };
+}
+@Html.Hidden("jobid", jobid)
+<div id="selectfilterrule">
+    <div class="panel panel-primary">
+        <div class="panel-heading">  已选中会员筛选条件</div>
+        <div class="panel-body">
+            <div>
+                <span style="display:inline-block;margin-left: 10px;margin-right: 10px;" class="label label-default" v-for=" result in FilterRuleJobResults">
+                    {{result.TableColName}}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-success">
+        <div class="panel-heading">
+            <h3 class="panel-title">会员筛选条件</h3>
+        </div>
+        <div class="panel-body">
+            <div class="ibox-content">
+                <p>
+                    <button type="button" :class="BaseCategorySelect=='ShowStaticProperty'?'btn btn-lg btn-success':'btn btn-lg  btn-default'" v-on:click="BaseCategoryClick('ShowStaticProperty')">静态属性统计</button>
+                    <button type="button" v-on:click="BaseCategoryClick('ShowVehicle')" :class="BaseCategorySelect=='ShowVehicle'?'btn btn-lg btn-success':'btn btn-lg  btn-default'">车辆统计</button>
+                    <button type="button" v-on:click="BaseCategoryClick('ShowViews')" :class="BaseCategorySelect=='ShowViews'?'btn btn-lg btn-success':'btn btn-lg  btn-default'">浏览统计</button>
+                    <button type="button" v-on:click="BaseCategoryClick('ShowOrders')" :class="BaseCategorySelect=='ShowOrders'?'btn btn-lg btn-success':'btn btn-lg  btn-default'">订单统计</button>
+                </p>
+            </div>
+            @foreach (var basecategory in configs.Select(x => x.BaseCategory).Distinct())
+            {
+                <div id="@basecategory" v-show="BaseCategorySelect=='@basecategory'">
+                    @{
+                        var configtemps = configs.Where(x => x.BaseCategory == basecategory);
+                        Dictionary<string, string> checkexists = new Dictionary<string, string>();
+                        foreach (var userFilterColConfig in configtemps)
+                        {
+                            foreach (var tableColConfig in userFilterColConfig.TableColConfig)
+                            {
+                                string key = $"{userFilterColConfig.TableName}{tableColConfig.ColName}";
+                                if (checkexists.ContainsKey(key))
+                                {
+                                    continue;
+                                }
+                                checkexists[key] = key;
+                                <label class="checkbox-inline">
+                                    <input class="form-group" @string.Format(getcolisadd(basecategory, tableColConfig.ColName) ? "checked" : "") name="@tableColConfig.ColName" type="checkbox" v-on:click="SaveSelectUserFilterResult('@userFilterColConfig.TableName','@tableColConfig.ColName','@tableColConfig.TableColName')" value="@string.Format($"{userFilterColConfig.TableName}@@{tableColConfig.ColName}")">
+                                    <label> @tableColConfig.TableColName</label>
+                                </label>
+                            }
+                        }
+
+                    }
+                </div>
+                        }
+            @*<div class="ibox-content" v-show="BaseCategorySelect=='ShowStaticProperty'">
+                    <p>
+                        <button type="button" v-on:click="SecondCategoryClick('RegisterTime')" :class="SecondCategorySelect=='RegisterTime'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">注册时间</button>
+                        <button type="button" v-on:click="SecondCategoryClick('FirstLoginTime')" :class="SecondCategorySelect=='FirstLoginTime'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">首登APP时间</button>
+                        <button type="button" v-on:click="SecondCategoryClick('Sex')" :class="SecondCategorySelect=='Sex'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">性别</button>
+                        <button type="button" v-on:click="SecondCategoryClick('Area')" :class="SecondCategorySelect=='Area'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">所在地区</button>
+                    </p>
+                </div>
+                <div class="ibox-content" v-show="BaseCategorySelect=='ShowVehicle'">
+                    <p>
+                        <button type="button" v-on:click="SecondCategoryClick('DefaultVehicle')" :class="SecondCategorySelect=='DefaultVehicle'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">默认车型</button>
+                        <button type="button" v-on:click="SecondCategoryClick('DefaultTire')" :class="SecondCategorySelect=='DefaultTire'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">默认车型轮胎规格</button>
+                        <button type="button" v-on:click="SecondCategoryClick('DefaultTwoLevelPrice')" :class="SecondCategorySelect=='DefaultTwoLevelPrice'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">默认二级车型均价</button>
+                        <button type="button" v-on:click="SecondCategoryClick('DefaultFiveLevelPrice')" :class="SecondCategorySelect=='DefaultFiveLevelPrice'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">默认五级车型均价</button>
+                        <button type="button" v-on:click="SecondCategoryClick('DefaultVehicleKM')" :class="SecondCategorySelect=='DefaultVehicleKM'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">默认车辆公里数</button>
+                        <button type="button" v-on:click="SecondCategoryClick('DefaultVehicleRoadTime')" :class="SecondCategorySelect=='DefaultVehicleRoadTime'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">默认车辆上路时间</button>
+                    </p>
+                </div>
+                <div class="ibox-content" v-show="BaseCategorySelect=='ShowViews'">
+                    <p>
+                        <button type="button" v-on:click="SecondCategoryClick('ListPagePV')" :class="SecondCategorySelect=='ListPagePV'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'"> 列表页PV</button>
+                        <button type="button" v-on:click="SecondCategoryClick('ProductDetailByCategoryPV')" :class="SecondCategorySelect=='ProductDetailByCategoryPV'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">商品详情页(按品类)PV</button>
+                        <button type="button" v-on:click="SecondCategoryClick('ProductDetailByPIDPV')" :class="SecondCategorySelect=='ProductDetailByPIDPV'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">商品详情页(按PID)PV</button>
+                        <button type="button" v-on:click="SecondCategoryClick('PageViewByTireSizePV')" :class="SecondCategorySelect=='PageViewByTireSizePV'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'">页面浏览统计(按轮胎规格)PV</button>
+                    </p>
+                </div>
+                <div class="ibox-content" v-show="BaseCategorySelect=='ShowOrders'">
+                    <p>
+                        <button type="button" v-on:click="SecondCategoryClick('OrderByOrderChannel')" :class="SecondCategorySelect=='OrderByOrderChannel'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'"> 订单统计(按订单渠道)</button>
+                        <button type="button" v-on:click="SecondCategoryClick('OrderByCategoryYewu')" :class="SecondCategorySelect=='OrderByCategoryYewu'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'"> 订单统计(按品类/业务线)</button>
+                        <button type="button" v-on:click="SecondCategoryClick('OrderByPID')" :class="SecondCategorySelect=='OrderByPID'?'btn btn-lg btn-primary':'btn btn-lg  btn-default'"> 订单统计(按PID)</button>
+                        <button type="button" v-on:click="SecondCategoryClick('OrderByOrderType')" :class="SecondCategorySelect=='OrderByOrderType'?'btn btn-lg btn-success':'btn btn-lg  btn-default'">订单统计(活动类型)</button>
+                    </p>
+                </div>*@
+
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script src="https://res.tuhu.org/lib/vuejs/vue.min.js?v=20160704" type="text/javascript"></script>
+    <script src="https://res.tuhu.org/lib/require/require.min.js" type="text/javascript"></script>
+    <script src="~/Scripts/UserFilter.js" type="text/javascript"></script>
+    <script type="text/javascript">
+
+
+
+        require(['vue-select-filterrule']);
+
+
+    </script>
+}

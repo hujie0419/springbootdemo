@@ -1,0 +1,132 @@
+﻿@using Tuhu.Component.Framework.Identity;
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - 途虎养车运营配置系统</title>
+    <link href="https://res.tuhu.org/yewuui/UIcss/animate.css" rel="stylesheet" />
+    <link href="https://res.tuhu.org/yewuui/UIcss/bootstrap-tour.min.css" rel="stylesheet" />
+    <link href="https://res.tuhu.org/yewuui/UIcss/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://res.tuhu.org/yewuui/UIcss/custom.css" rel="stylesheet" />
+    <link href="https://res.tuhu.org/yewuui/UIcss/datepicker3.css" rel="stylesheet" />
+    <link href="https://res.tuhu.org/yewuui/UIcss/font-awesome.css" rel="stylesheet" />
+    <link href="https://res.tuhu.org/yewuui/UIcss/fullcalendar.css" rel="stylesheet" />
+    <link href="https://res.tuhu.org/yewuui/UIcss/style.css" rel="stylesheet" />
+    <link href="https://res.tuhu.org/yewuui/UIcss/summernote-bs3.css" rel="stylesheet" />
+    <link href="https://res.tuhu.org/yewuui/UIcss/summernote.css" rel="stylesheet" />
+    <link href="https://res.tuhu.org/yewuui/UIcss/switchery.css" rel="stylesheet" />
+    <link href="https://res.tuhu.org/yewuui/UIcss/toastr.min.css" rel="stylesheet" />
+    @RenderSection("css", required: false)
+    @{
+        ViewBag.UserName = ThreadIdentity.Operator.Name;
+    }
+
+</head>
+<body>
+    <div id="wrapper">
+        <nav class="navbar-default navbar-static-side" role="navigation">
+            <div class="sidebar-collapse">
+                <ul class="nav metismenu" id="side-menu">
+                    <li class="nav-header">
+                        <div class="dropdown profile-element">
+                            <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                                <span class="clear">
+                                    <span class="block m-t-xs">
+                                        <strong class="font-bold" style="font-size:18px;">途虎养车</strong>
+                                        <span class="text-muted text-xs block">运营配置系统</span>
+                                    </span>
+                                </span>
+                            </a>
+                        </div>
+                    </li>
+                    <li class="active">
+                        <a href="#"><i class="fa fa-sitemap"></i> <span class="nav-label">集团客户发码配置</span><span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level collapse in">
+                            <li>
+                                <a href="/BeautyServicePackage/PackageCode">美容兑换码配置<span class="fa arrow"></span></a>
+                                <a href="/BeautyServicePackage/ServiceCode">美容服务码配置<span class="fa arrow"></span></a>
+                                <a href="/BeautyServicePackage/ServiceCodeForImport">美容导入用户服务码配置<span class="fa arrow"></span></a>
+                                <a href="/BeautyCode/BatchImportBeautyCode">批量导入美容服务码<span class="fa arrow"></span></a>
+                                <a href="/BankMRActivity/MrCooperateUser">公司及服务配置<span class="fa arrow"></span></a>
+                                <a href="/BeautyServicePackage/UserBeautyConfig">发码权限配置<span class="fa arrow"></span></a>
+                                <a href="/UnivRedemptionCode/UnivCreateList">通用兑换码生成列表<span class="fa arrow"></span></a>
+                                <a href="/UnivRedemptionCode/UnivTmplList">通用兑换码模版列表<span class="fa arrow"></span></a>
+                                <a href="/GeneralBeautyServerCode/GeneralBeautyServerCodeSendRecords">通用服务码生成列表<span class="fa arrow"></span></a>
+                                <a href="/GeneralBeautyServerCode/Index">通用服务码模版列表<span class="fa arrow"></span></a>
+                                <a href="/UnivRedemptionCode/CouponOfBusiness">券所属业务配置<span class="fa arrow"></span></a>
+                                <a href="/UnivRedemptionCode/QueryRedemptionCode">兑换码查询<span class="fa arrow"></span></a>
+                                @*<ul class="nav nav-third-level">
+            <li>
+                <a href="#">三级类目</a>
+            </li>
+            <li>
+                <a href="#">三级类目</a>
+            </li>
+            <li>
+                <a href="#">三级类目</a>
+            </li>
+        </ul>*@
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="gray-bg">
+
+            <div class="row border-bottom" style="margin-bottom:15px;">
+                <nav class="navbar-default navbar-static-top" role="navigation">
+                    <ul class="nav navbar-top-links navbar-left"></ul>
+                    <ul class="nav navbar-top-links navbar-right">
+                        <li>
+                            <a href="javascript:;" class="static" style="font-size:14px;">
+                                <i class="fa fa-sign-out"></i>
+                                @ViewBag.UserName
+                            </a>
+                        </li>
+                    </ul>
+
+                </nav>
+            </div>
+
+
+            <div class="ibox-content">
+                <h3 class="font-bold" style="margin-bottom:18px;">
+                    @RenderSection("title", required: false)
+                    @if (!IsSectionDefined("title")) {@ViewBag.Title}
+                </h3>
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+    <script src="https://res.tuhu.org/yewuui/UIjs/jquery-2.1.1.js"></script>
+    <script src="https://res.tuhu.org/yewuui/UIjs/jquery.metisMenu.js"></script>
+    <script src="https://res.tuhu.org/yewuui/UIjs/jquery.slimscroll.min.js"></script>
+    <script src="https://res.tuhu.org/yewuui/UIjs/bootstrap-datepicker.js"></script>
+    <script src="https://res.tuhu.org/yewuui/UIjs/bootstrap-tour.min.js"></script>
+    <script src="https://res.tuhu.org/yewuui/UIjs/bootstrap.min.js"></script>
+    <script src="https://res.tuhu.org/yewuui/UIjs/icheck.min.js"></script>
+    <script src="https://res.tuhu.org/yewuui/UIjs/inspinia.js"></script>
+    <script src="https://res.tuhu.org/yewuui/UIjs/moment.min.js"></script>
+    <script src="https://res.tuhu.org/yewuui/UIjs/summernote.min.js"></script>
+    <script src="https://res.tuhu.org/yewuui/UIjs/switchery.js"></script>
+    <script src="https://res.tuhu.org/yewuui/UIjs/toastr.min.js"></script>
+    <script src="https://res.tuhu.org/yewuui/UIjs/fullcalendar.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            //导航
+            $('.dropdown').hover(function () {
+                //鼠标放上去执行某动作
+                $(this).addClass('open');
+            }, function () {
+                //鼠标移开的时候执行某个动作
+                $(this).removeClass('open');
+            });
+        });
+    </script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

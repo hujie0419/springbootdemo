@@ -1,0 +1,141 @@
+﻿@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.VehicleTireModel>
+@{
+    Layout = null;
+}
+<link href="~/Content/kkpager/kkpager_orange.css" rel="stylesheet" />
+<script src="~/Content/kkpager/kkpager.js"></script>
+@helper ShowTireSize(string pids)
+{
+if (string.IsNullOrWhiteSpace(pids))
+{
+        <span>无</span>
+}
+else
+{
+    var split = pids.Split(';');
+    if (split.Count() > 1)
+    {
+            <a target="_blank" href="https://item.tuhu.cn/Products/@(split.FirstOrDefault().Replace("|","/")).html">@split.FirstOrDefault()</a><br />
+            <a href="javascript:void(0)" onclick="Func.ShowMoreDialog(this)">更多</a>
+    }
+    else
+    {
+            <a target="_blank" href="https://item.tuhu.cn/Products/@(split.FirstOrDefault().Replace("|","/")).html">@split.FirstOrDefault()</a>
+    }
+}
+}
+@helper ShowPID(IEnumerable<Tuhu.Provisioning.DataAccess.Entity.VehicleTireRecommend> list, int postion)
+{
+
+if (list.Any(C => C.Postion == postion))
+{
+    <a target="_blank" href="https://item.tuhu.cn/Products/@(list.FirstOrDefault(C=>C.Postion==postion).PID.Replace("|","/")).html">@list.FirstOrDefault(C => C.Postion == postion).PID</a>
+}
+else
+{
+    <span>无</span>
+}
+}
+@helper ShowBIPID(IEnumerable<Tuhu.Provisioning.DataAccess.Entity.VehicleTireRecommend> list, int postion)
+{
+//item.RecommendTiresBI.Count() > 3 ? item.RecommendTiresBI.ElementAt(3).PID : "无"
+   if (list.Any(C => C.Postion == postion))
+   {
+        <a target="_blank" href="https://item.tuhu.cn/Products/@(list.FirstOrDefault(C => C.Postion == postion).PID.Replace("|", "/")).html">@list.FirstOrDefault(C => C.Postion == postion).PID</a>
+   }
+   else
+   {
+           <span>无</span>
+   }
+}
+@if (Model.Any())
+{
+    <table>
+        <tr>
+            <th><input type="checkbox" name="SelectAll" value="" />全选</th>
+            <th>品牌序列</th>
+            <th>品牌</th>
+            <th>车系</th>
+            <th>规格</th>
+            <th>车价</th>
+            <th>原配轮胎</th>
+            <th>1 BI推荐</th>
+            <th>2 人工推荐</th>
+            <th>推荐理由</th>
+            <th>3 BI推荐</th>
+            <th>4 人工推荐</th>
+            <th>推荐理由</th>
+            <th>5 BI推荐</th>
+            <th>6 BI推荐</th>
+            <th>7 人工推荐</th>
+            <th>推荐理由</th>
+            <th>操作</th>
+            <th>日志</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr class="page_content" style="display:@(Model.ToList().IndexOf(item)<ViewBag.PageSize?"":"none")">
+                <td><input type="checkbox" name="Selected" value="" /></td>
+                <td>@(item.BrandCategory ?? "其它")</td>
+                <td>@item.Brand</td>
+                <td class="vehicle" data-vehicleId="@item.VehicleId">@item.Vehicle</td>
+                <td class="tiresize">@item.TireSize</td>
+                <td>@item.MinPrice</td>
+                <td class="yuanpei" data-yuanpei="@item.TiresMatch"><a href="javascript:void(0)" onclick="Func.ShowMoreDialog('@item.TiresMatch','@item.TireSize')">查看原配信息</a></td>
+                <td>@ShowBIPID(item.RecommendTiresBI, 1)</td>
+                <td class="pid1" data-pid1="@(item.RecommendTires.Any(C=>C.Postion==2)? item.RecommendTires.FirstOrDefault(C => C.Postion == 2).PID : "")">@ShowPID(item.RecommendTires, 2)</td>
+                <td class="reason1">@(item.RecommendTires.Any(C => C.Postion == 2) && !string.IsNullOrWhiteSpace(item.RecommendTires.FirstOrDefault(C => C.Postion == 2).Reason) ? item.RecommendTires.FirstOrDefault(C => C.Postion == 2).Reason : "无" )</td>
+                <td>@ShowBIPID(item.RecommendTiresBI, 2)</td>
+                <td class="pid2" data-pid2="@(item.RecommendTires.Any(C => C.Postion == 4) ? item.RecommendTires.FirstOrDefault(C => C.Postion == 4).PID : "")">@ShowPID(item.RecommendTires, 4)</td>
+                <td class="reason2">@(item.RecommendTires.Any(C => C.Postion == 4) && !string.IsNullOrWhiteSpace(item.RecommendTires.FirstOrDefault(C => C.Postion == 4).Reason) ? item.RecommendTires.FirstOrDefault(C => C.Postion == 4).Reason : "无" )</td>
+                <td>@ShowBIPID(item.RecommendTiresBI, 3)</td>
+                <td>@ShowBIPID(item.RecommendTiresBI, 4)</td>
+                <td class="pid3" data-pid3="@(item.RecommendTires.Any(C => C.Postion == 7) ? item.RecommendTires.FirstOrDefault(C => C.Postion == 7).PID : "")">@ShowPID(item.RecommendTires, 7)</td>
+                <td class="reason3">@(item.RecommendTires.Any(C => C.Postion == 7) && !string.IsNullOrWhiteSpace(item.RecommendTires.FirstOrDefault(C => C.Postion == 7).Reason) ? item.RecommendTires.FirstOrDefault(C => C.Postion == 7).Reason : "无" )</td>
+                <td><a href="javascript:void(0);" onclick="Func.ShowEditSinglePidsDialog(this)">编辑</a>-<a href="javascript:void(0);" onclick="Func.Delete(this)">删除</a></td>
+                <td><a target="_blank" href="/Tire/ShowOprLog?vehicleID=@(item.VehicleId)&tiresize=@(item.TireSize)">查看日志</a></td>
+            </tr>
+        }
+    </table>
+    <div style="width:800px;margin:0 auto;">
+        <div id="kkpager"></div>
+    </div>
+}
+<script type="text/javascript">
+    //init
+    $(function () {
+        $(".data_count").text("共" + '@Model.Count()' + "条数据");
+        var totalPage = '@(Math.Ceiling((Model.Count() * 1.0) / ViewBag.PageSize))';//一共多少页
+        var totalRecords = '@Model.Count()';//一共多少条
+        var pageSize = '@ViewBag.PageSize';//每页多少条
+        var pageNo = 1;
+
+        //生成分页
+        //有些参数是可选的，比如lang，若不传有默认值
+        kkpager.generPageHtml({
+            pno: pageNo,
+            //总页码
+            total: totalPage,
+            //总数据条数
+            totalRecords: totalRecords,
+            mode: 'click',//默认值是link，可选link或者click
+            click: function (n) {
+                //TODO
+
+                $(".list tr.page_content").hide();
+                //alert($(".list tr.page_content").length);
+                $(".list tr.page_content").each(function (i, v) {
+                    if ((i + 1) > (n - 1) * pageSize && (i + 1) <= n * pageSize)
+                        $(v).show();
+                });
+
+                //手动选中按钮
+                this.selectPage(n);
+                return false;
+            }
+        });
+    });
+    $("[name=SelectAll]").change(function () {
+        $("[name=Selected]").prop("checked", $(this).prop("checked"));
+    })
+</script>

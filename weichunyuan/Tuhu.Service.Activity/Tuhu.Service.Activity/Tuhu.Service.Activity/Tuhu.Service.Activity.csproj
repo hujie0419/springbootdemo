@@ -1,0 +1,307 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\Microsoft.Net.Compilers.2.2.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\..\packages\Microsoft.Net.Compilers.2.2.0\build\Microsoft.Net.Compilers.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C2284A7D-64B8-4396-A219-74ED996815D7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Tuhu.Service.Activity</RootNamespace>
+    <AssemblyName>Tuhu.Service.Activity</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <WarningsAsErrors>1998</WarningsAsErrors>
+    <DocumentationFile>bin\Debug\Tuhu.Service.Activity.XML</DocumentationFile>
+    <NoWarn>1591</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <WarningsAsErrors>1998</WarningsAsErrors>
+    <DocumentationFile>bin\Release\Tuhu.Service.Activity.xml</DocumentationFile>
+    <NoWarn>1591</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\..\Tuhu.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Common.Logging, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Common.Logging.3.3.1\lib\net40\Common.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging.Core, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Common.Logging.Core.3.3.1\lib\net40\Common.Logging.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging.Log4Net1211, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Common.Logging.Log4Net1211.3.3.1\lib\net40\Common.Logging.Log4Net1211.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Tuhu, Version=2.1.2.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Tuhu.2.1.2.9\lib\net45\Tuhu.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Tuhu.Service.2.1.4\lib\net45\Tuhu.Service.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Order, Version=3.0.1.7, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Tuhu.Service.Order.3.0.1.7\lib\net45\Tuhu.Service.Order.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Shop, Version=1.3.2.3, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Tuhu.Service.Shop.1.3.2.3\lib\net45\Tuhu.Service.Shop.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Activity.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Activity.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Const\SalePromotionActivityConst.cs" />
+    <Compile Include="Enum\ActivityImageType.cs" />
+    <Compile Include="Enum\ActivityPageContentType.cs" />
+    <Compile Include="Enum\RegistrationStatus.cs" />
+    <Compile Include="Enum\SalePromotionActivityEnums.cs" />
+    <Compile Include="Models\ActivePageListModels.cs" />
+    <Compile Include="Models\ActivityImageConfig.cs" />
+    <Compile Include="Models\ActivityLevelModel.cs" />
+    <Compile Include="Models\ActivityProductInfo.cs" />
+    <Compile Include="Models\ActivityTypeModel.cs" />
+    <Compile Include="Models\ActivityBuild.cs" />
+    <Compile Include="Models\ActivityUserShareInfoModel.cs" />
+    <Compile Include="Models\Activity\ActivityPageInfoModels.cs" />
+    <Compile Include="Models\AnswerInfoListModel.cs" />
+    <Compile Include="Models\BaoYangActivitySetting.cs" />
+    <Compile Include="Models\BargainProductModel.cs" />
+    <Compile Include="Models\BigBrandAnsQuesModel.cs" />
+    <Compile Include="Models\BigBrandModel.cs" />
+    <Compile Include="Models\BigBrandPoolModel.cs" />
+    <Compile Include="Models\BigBrandQuesList.cs" />
+    <Compile Include="Models\BigBrandRealLog.cs" />
+    <Compile Include="Models\BuyLimitModel.cs" />
+    <Compile Include="Models\CarTagCouponConfigModel.cs" />
+    <Compile Include="Models\CategoryBrandRankModel.cs" />
+    <Compile Include="Models\CouponActivityConfigModel.cs" />
+    <Compile Include="Models\CreateOrderResult.cs" />
+    <Compile Include="Models\DiscoveryArticleModel.cs" />
+    <Compile Include="Models\EveryDaySeckillUserInfo.cs" />
+    <Compile Include="Models\FightGroupsPacketsLogModel.cs" />
+    <Compile Include="Models\FixedPriceActivityRoundResponse.cs" />
+    <Compile Include="Models\FixedPriceActivityStatusResult.cs" />
+    <Compile Include="Models\FlashSaleModel.cs" />
+    <Compile Include="Models\FlashSaleProductDetailModel.cs" />
+    <Compile Include="Models\GroupBuyingModel.cs" />
+    <Compile Include="Models\LuckyWheelUserlotteryCountModel.cs" />
+    <Compile Include="Models\PromotionPacketHistoryModel.cs" />
+    <Compile Include="Models\Questionnaire\QuestionModel.cs" />
+    <Compile Include="Models\Questionnaire\QuestionnaireAnswerRecordModel.cs" />
+    <Compile Include="Models\Questionnaire\QuestionnaireAnswerResultModel.cs" />
+    <Compile Include="Models\Questionnaire\QuestionnaireDptMappingModel.cs" />
+    <Compile Include="Models\Questionnaire\QuestionnaireModel.cs" />
+    <Compile Include="Models\Questionnaire\QuestionOptionModel.cs" />
+    <Compile Include="Models\Questionnaire\UserQuestionnaireURLModel.cs" />
+    <Compile Include="Models\RebateApplyPageConfig.cs" />
+    <Compile Include="Models\RecommendGetGiftConfigModel.cs" />
+    <Compile Include="Models\RegionActivityPageModel.cs" />
+    <Compile Include="Models\RegionVehicleIdActivityConfig.cs" />
+    <Compile Include="Models\Requests\ActivityPageWhiteListReRequest.cs" />
+    <Compile Include="Models\Requests\ActivityProductUserRemindLogRequest.cs" />
+    <Compile Include="Models\Requests\ActivityTypeRequest.cs" />
+    <Compile Include="Models\Requests\Activity\ActivityCustomerCouponRequests.cs" />
+    <Compile Include="Models\Requests\Activity\ActivityOrderVerifyRequests.cs" />
+    <Compile Include="Models\Requests\Activity\ActivityPageInfoRequests.cs" />
+    <Compile Include="Models\Requests\Activity\ActivityPageModuleRequest.cs" />
+    <Compile Include="Models\Requests\Activity\ActivityShareDetailRequest.cs" />
+    <Compile Include="Models\Requests\Activity\SearchPrizeListRequest.cs" />
+    <Compile Include="Models\Requests\Activity\SearchQuestionAnswerHistoryRequest.cs" />
+    <Compile Include="Models\Requests\Activity\AddStarRatingStoreRequest.cs" />
+    <Compile Include="Models\Requests\Activity\SubmitQuestionAnswerRequest.cs" />
+    <Compile Include="Models\Requests\ActivtyPageRequest.cs" />
+    <Compile Include="Models\Requests\ApplyCompensateRequest.cs" />
+    <Compile Include="Models\Requests\BargainProductRequest.cs" />
+    <Compile Include="Models\Requests\CouponActivityConfigRequest.cs" />
+    <Compile Include="Models\Requests\CreateOrderRequest.cs" />
+    <Compile Include="Models\Requests\DiscountActivtyProductRequest.cs" />
+    <Compile Include="Models\Requests\DragonBall\DragonBallActivityUpdateRequest.cs" />
+    <Compile Include="Models\Requests\DragonBall\DragonBallCreateUserMissionDetailRequest.cs" />
+    <Compile Include="Models\Requests\DragonBall\DragonBallSettingUpdateRequest.cs" />
+    <Compile Include="Models\Requests\DragonBall\DragonBallSummonRequest.cs" />
+    <Compile Include="Models\Requests\DragonBall\DragonBallUserMissionHistoryListRequest.cs" />
+    <Compile Include="Models\Requests\DragonBall\DragonBallUserMissionListRequest.cs" />
+    <Compile Include="Models\Requests\DragonBall\DragonBallUserInfoRequest.cs" />
+    <Compile Include="Models\Requests\DragonBall\DragonBallUserLootListRequest.cs" />
+    <Compile Include="Models\Requests\DragonBall\DragonBallUserMissionRewardRequest.cs" />
+    <Compile Include="Models\Requests\DragonBall\DragonBallUserShareRequest.cs" />
+    <Compile Include="Models\Requests\FightGroupsPacketsRequest.cs" />
+    <Compile Include="Models\Requests\FlashSaleDataByActivityRequest.cs" />
+    <Compile Include="Models\Requests\FlashSaleOrderRequest.cs" />
+    <Compile Include="Models\Requests\FlashSaleTiresActivityRequest.cs" />
+    <Compile Include="Models\Requests\OARedEnvelope\OARedEnvelopeDailyDataInitRequest.cs" />
+    <Compile Include="Models\Requests\OARedEnvelope\OARedEnvelopeReceiveUpdatingsRequest.cs" />
+    <Compile Include="Models\Requests\OARedEnvelope\OARedEnvelopeSettingUpdateRequest.cs" />
+    <Compile Include="Models\Requests\OARedEnvelope\OARedEnvelopeUserReceiveCallbackRequest.cs" />
+    <Compile Include="Models\Requests\OARedEnvelope\OARedEnvelopeUserInfoRequest.cs" />
+    <Compile Include="Models\Requests\OARedEnvelope\OARedEnvelopeUserReceiveRequest.cs" />
+    <Compile Include="Models\Requests\OARedEnvelope\OARedEnvelopeStatisticsUpdateRequest.cs" />
+    <Compile Include="Models\Requests\OARedEnvelope\OARedEnvelopeUserShareRequest.cs" />
+    <Compile Include="Models\Requests\OARedEnvelope\OARedEnvelopeUserVerifyRequest.cs" />
+    <Compile Include="Models\Requests\Questionnaire\GetQuestionnaireURLRequest.cs" />
+    <Compile Include="Models\Requests\HomePageTimeLineRequestModel.cs" />
+    <Compile Include="Models\Requests\OrderCountCacheRequest.cs" />
+    <Compile Include="Models\Requests\QuestionAnsRequestModel.cs" />
+    <Compile Include="Models\Requests\Questionnaire\ModifyQuestionUserAnswerResultRequest.cs" />
+    <Compile Include="Models\Requests\Questionnaire\SubmitQuestionnaireRequest.cs" />
+    <Compile Include="Models\Requests\Questionnaire\SubmitActivityQuestionUserAnswerRequest.cs" />
+    <Compile Include="Models\Requests\RebateApplyRequest.cs" />
+    <Compile Include="Models\Requests\RefreshCachePrefixRequest.cs" />
+    <Compile Include="Models\Requests\RefreshConfigSaleoutQuantityRequest.cs" />
+    <Compile Include="Models\Requests\SexAnnualVoteQueryRequest.cs" />
+    <Compile Include="Models\Requests\SortedPidsRequest.cs" />
+    <Compile Include="Models\Requests\TireActivityRequest.cs" />
+    <Compile Include="Models\Requests\UserRegistrationRequest.cs" />
+    <Compile Include="Models\Requests\UserRewardApplicationRequest.cs" />
+    <Compile Include="Models\Requests\VerificationTiresRequestModel.cs" />
+    <Compile Include="Models\Response\Activity\ActiveCustomerSettingResponse.cs" />
+    <Compile Include="Models\Response\Activity\ActivityCouponRankResponse.cs" />
+    <Compile Include="Models\Response\Activity\ActivityResponse.cs" />
+    <Compile Include="Models\Response\Activity\ActivityPrizeOrderDetailResponse.cs" />
+    <Compile Include="Models\Response\Activity\ActivityPrizeResponse.cs" />
+    <Compile Include="Models\Response\UserActivityResponse.cs" />
+    <Compile Include="Models\Response\UserRegistrationResponse.cs" />
+    <Compile Include="Models\Response\Activity\ActivityVictoryInfoResponse.cs" />
+    <Compile Include="Models\Response\DragonBall\DragonBallBroadcastResponse.cs" />
+    <Compile Include="Models\Response\DragonBall\DragonBallSettingResponse.cs" />
+    <Compile Include="Models\Response\DragonBall\DragonBallUserLootListResponse.cs" />
+    <Compile Include="Models\Response\DragonBall\DragonBallUserMissionHistoryListResponse.cs" />
+    <Compile Include="Models\Response\DragonBall\DragonBallSummonResponse.cs" />
+    <Compile Include="Models\Response\DragonBall\DragonBallUserInfoResponse.cs" />
+    <Compile Include="Models\Response\DragonBall\DragonBallUserMissionListResponse.cs" />
+    <Compile Include="Models\Response\DragonBall\DragonBallUserMissionRewardResponse.cs" />
+    <Compile Include="Models\Response\FightGroupsPacketsResponse.cs" />
+    <Compile Include="Models\Response\FlashSaleWrongCacheResponses.cs" />
+    <Compile Include="Models\Response\OARedEnvelope\OARedEnvelopeActivityInfoResponse.cs" />
+    <Compile Include="Models\Response\OARedEnvelope\OARedEnvelopeReceiveUpdatingsResponse.cs" />
+    <Compile Include="Models\Response\OARedEnvelope\OARedEnvelopeUserInfoResponse.cs" />
+    <Compile Include="Models\Response\Questionnaire\GetQuestionnaireInfoResponse.cs" />
+    <Compile Include="Models\Response\OrderCountResponse.cs" />
+    <Compile Include="Models\Response\QuestionAnsResponse.cs" />
+    <Compile Include="Models\Response\Questionnaire\ModifyQuestionUserAnswerResultResponse.cs" />
+    <Compile Include="Models\Response\Questionnaire\QuestionUserAnswerHistoryResponse.cs" />
+    <Compile Include="Models\Response\Questionnaire\SubmitActivityQuestionUserAnswerResponse.cs" />
+    <Compile Include="Models\Response\RebateApplyResponse.cs" />
+    <Compile Include="Models\Response\SeckilScheduleInfoRespnose.cs" />
+    <Compile Include="Models\Response\TiresActivityResponse.cs" />
+    <Compile Include="Models\Response\UserRewardApplicationResponse.cs" />
+    <Compile Include="Models\SalePromotionActivityLogModel.cs" />
+    <Compile Include="Models\SalePromotionActivityModel.cs" />
+    <Compile Include="Models\SalePromotionActivity\DiscountActivity.cs" />
+    <Compile Include="Models\SalePromotionActivity\SalePromotionActivityDiscountOrder.cs" />
+    <Compile Include="Models\SalePromotionActivity\SalePromotionAuditAuth.cs" />
+    <Compile Include="Models\SalePromotionActivity\UserActivityBuyNumModel.cs" />
+    <Compile Include="Models\SeckillAvailableStockoutResponse.cs" />
+    <Compile Include="Models\SeckillAvailableStockRequest.cs" />
+    <Compile Include="Models\ShopEmployeeVoteRecordModel.cs" />
+    <Compile Include="Models\ShopEmployeeVoteModel.cs" />
+    <Compile Include="Models\ShopVoteModel.cs" />
+    <Compile Include="Models\ShopVoteRecordModel.cs" />
+    <Compile Include="Models\TestReportModel.cs" />
+    <Compile Include="Models\TireActivityModel.cs" />
+    <Compile Include="Models\Requests\VehicleAdaptorTireRequestModel.cs" />
+    <Compile Include="Models\TiresActivityConfig.cs" />
+    <Compile Include="Models\TiresActivityProductConfig.cs" />
+    <Compile Include="Models\VehicleAdaptBaoyangModel.cs" />
+    <Compile Include="Models\VehicleAdaptChepinModel.cs" />
+    <Compile Include="Models\VehicleAdaptTireModel.cs" />
+    <Compile Include="Models\VehicleSortedTireSizeModel.cs" />
+    <Compile Include="Models\VerificationTiresResponseModel.cs" />
+    <Compile Include="Models\VipCardSaleConfigDetailModel.cs" />
+    <Compile Include="Models\ZeroActivityModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Models\ZeroActivityApplicationModel.cs" />
+    <Compile Include="Models\ResultModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="Activity.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Activity.generated.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Tuhu.Service.Activity.nuspec" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\Microsoft.Net.Compilers.2.2.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Net.Compilers.2.2.0\build\Microsoft.Net.Compilers.props'))" />
+  </Target>
+</Project>

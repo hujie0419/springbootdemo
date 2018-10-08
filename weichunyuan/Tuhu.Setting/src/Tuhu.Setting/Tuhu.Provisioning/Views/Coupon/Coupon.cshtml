@@ -1,0 +1,89 @@
+﻿@{
+	var CouponCategory = ViewBag.CouponCategory as Tuhu.Provisioning.DataAccess.Entity.CouponCategory;
+	var CouponList = ViewBag.CouponList;
+	ViewBag.Title = "红包管理 - 分类" + CouponCategory.Name;
+    Layout = "../Shared/_Layout.cshtml";
+}
+<style>
+	.nodata {
+		width: 98%;
+		border: 4px solid #f0f0f0;
+		color: #cccccc;
+		font-size: 22px;
+		font-weight: bold;
+		line-height: 200px;
+		margin: 0 auto;
+		text-align: center;
+	}
+	.fengefu {
+		width: 100%;
+		border-bottom: 2px solid #999999;
+		clear: both;
+	}
+</style>
+<script>
+	var CategoryID = '@CouponCategory.PKID';
+	function btnDelete(PKID) {
+		if (confirm('确定要删除吗？')) {
+			$.ajax({
+				type: "post",
+				url: '/Coupon/DeleteCoupon',
+				data: { "id": PKID },
+				success: function (result) {
+					if (result == true) {
+						window.location.href = "/Coupon/Coupon?CategoryID=" + CategoryID;
+					}
+				}
+			});
+		}
+	}
+
+	function btnAdd(PKID) {
+		$("#AddItem").load('/Coupon/AddCoupon?id=' + PKID+'&CategoryID=' + CategoryID);
+		$("#AddItem").dialog({
+			title: "红包管理",
+			width: 400,
+			height: 250,
+			modal: true
+		});
+	}
+</script>
+
+<div style="clear:both;"></div>
+<div style="float:left">
+	<h2>
+		@ViewBag.Title
+	</h2>
+</div>
+<div style="float:right">
+	<h2>
+		<a href="javascript:void(0);" onclick="btnAdd('0')">新增红包</a>
+		<a href="/Coupon/CouponCategory">返回分类管理</a>
+	</h2>
+</div>
+<div class="ModuleList">
+	<table style="width:100%;">
+		<tr>
+			<th width="10%">编号</th>
+			<th width="25%">面值</th>
+			<th width="25%">最低消费</th>
+			<th>状态</th>
+			<th width="10%">操作</th>
+		</tr>
+		@foreach (var item in CouponList)
+		{
+			<tr>
+				<td>@item.PKID</td>
+				<td>@item.ParValue</td>
+				<td>@item.MinValue</td>
+				<td>@Html.Raw(item.IsActive == 1 ? "<font color=\"#006600\">已启用</font>" : "<font color=\"#FF0000\">已停用</font>")</td>
+				<td>
+					<a href="javascript:void(0);" onclick="btnAdd('@item.PKID')">编辑</a>
+					<a href="javascript:void(0);" onclick="btnDelete('@item.PKID')">删除</a>
+				</td>
+			</tr>
+		}
+	</table>
+
+</div>
+<div id="AddItem" style="display: none"></div>

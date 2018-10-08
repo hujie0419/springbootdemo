@@ -1,0 +1,83 @@
+﻿@{
+    ViewBag.Title = "拼团类目运营管理";
+    Layout = "../Shared/_Layout.cshtml";
+}
+<link href="~/Scripts/zTree/css/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+<script src="~/Scripts/zTree/js/jquery.ztree.core-3.5.min.js" type="text/javascript"></script>
+<script src="~/Scripts/zTree/js/jquery.ztree.excheck-3.5.min.js" type="text/javascript"></script>
+<script src="../../Scripts/ajaxfileupload.js" type="text/javascript"></script>
+
+<style type="text/css">
+    input[type=button], input[type=submit] {
+        background: #0088cc none repeat scroll 0 0;
+        border: medium none #0088cc;
+        border-radius: 5px;
+        color: #f0f0f0;
+        cursor: pointer;
+        font-family: "Microsoft Yahei";
+        font-size: 12px;
+        outline: medium none;
+        padding: 5px 25px;
+    }
+</style>
+
+<div style="margin:20px 0 0 -20px;text-align:center;">
+    <input class="button1" type="button" value="新增拼团类目" onclick="OperationCategoryConfigs.AddOrEdit('添加拼团类目');" />    
+</div>
+<div style="text-align:center; margin:30px;">
+    <iframe id="TreeTableForIframe" src="" width="800" height="1000" frameborder="0"> </iframe>
+</div>
+<div id="AddOrEdit" style="display:none;"></div>
+<div id="AddOrEditProduct" style="display:none;"></div>
+
+
+<script type="text/javascript">
+    var OperationCategoryConfigs = {
+        AddOrEdit: function (t, n, p, e) {
+            $("#AddOrEdit").html("").load("/GroupBuyingV2/AddOrEditCategory?id=" + (n || 0) + "&parentId=" + (p || 0) + "&type=" + (e || 0));
+            $("#AddOrEdit").dialog({
+                title: t,
+                width: 400,
+                height: "auto",
+                modal: true,
+                resizable: false
+            });
+        },
+        AddOrEditProduct: function (t, n, e) {
+            $("#AddOrEditProduct").html("").load("/GroupBuyingV2/ProductTreeList?id=" + (n || 0) + "&type=" + (e || 0));
+            $("#AddOrEditProduct").dialog({
+                title: t || "",
+                width: (e == 0 ? 550 : 1200),
+                height: (e == 0 ? 500 : 800),
+                modal: true,
+                resizable: false
+            });
+        },
+        AjaxFileUpload: function (obj) {
+            var pobj = $(obj).parent("td");
+            var rd = Math.ceil(Math.random() * 9999) + 1;
+            var fileElId = $(obj).attr("id");
+            console.log(fileElId);
+            $.ajaxFileUpload({
+                url: '/Article/ImageUploadToAli?rd=' + rd,
+                secureuri: false,
+                fileElementId: fileElId,
+                dataType: 'json',
+                async: false,
+                success: function (result) {
+                    if (result.BImage != "" && result.SImage != "") {
+                        $(pobj).find("#vwPicture").attr("src", result.SImage).show();
+                        $(pobj).find(".maxProductPic").val(result.BImage);
+                    }
+                    else {
+                        alert("上传失败！");
+                    }
+                }
+            });
+        },
+        LoadTreeTable: function (type) {
+            $("#TreeTableForIframe").attr("src", "/GroupBuyingV2/TreeTableList?type=" + (type || 0));
+        }
+    };
+    OperationCategoryConfigs.LoadTreeTable();
+</script>

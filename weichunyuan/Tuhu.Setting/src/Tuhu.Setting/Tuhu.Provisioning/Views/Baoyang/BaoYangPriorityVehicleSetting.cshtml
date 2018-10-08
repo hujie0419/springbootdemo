@@ -1,0 +1,989 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "保养特殊车型配置";
+}
+
+<style>
+    .ModuleList, .ModuleList ul, .ModuleList ul li {
+        width: 100%;
+        float: left;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .select {
+        line-height: 1.42857143;
+        width: 200px;
+        height: 30px;
+        padding: 2px 2px 2px 5px;
+        color: #555;
+        background-color: #fff;
+        background-image: none;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+        -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+        -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    }
+
+    .vaild-result { color: #008000; }
+
+    .vaild-result:before { content: "\2714"; margin-right: 3px; }
+
+    .inVaild-result { color: #f00; }
+
+    .inVaild-result:before { content: "\2716"; margin-right: 3px; }
+
+    .ModuleList label {
+        display: inline-block;
+        height: 30px;
+        max-width: 100%;
+        margin-bottom: 5px;
+        font-weight: bold;
+        margin-left: 10px;
+    }
+    .checkbox {
+        vertical-align: middle;
+        margin: auto;
+        height: 50px;
+        padding: 0;
+    }
+
+    #isConfig { margin-left:10px; }
+
+    .ModuleList select, .ModuleList input[type=text] {
+        line-height: 1.42857143;
+        padding: 2px 2px 2px 5px;
+        color: #555;
+        min-width: 150px;
+        max-width: 150px;
+        background-color: #fff;
+        background-image: none;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+        -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+        -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    }
+    
+</style>
+<body>
+    <div>
+        <h2>
+            <span style="color:red">@ViewBag.PartName</span>特殊车型配置
+        </h2>
+    </div>
+    <input type="hidden" value="@ViewBag.PartName" id="BaoyangPartName" />
+    <input type="hidden" value="@ViewBag.Key" id="BaoyangPriority" />
+    <input type="hidden" value="" id="PageIndex" />
+
+    <div class="ModuleList">
+        <label>品牌：</label>
+        <select id="brand" name="brand" onchange="BrandChange(this.value)"></select>
+        <label>车系：</label>
+        <select id="vehicleSeries" name="vehicleSeries"></select>
+        <input type="checkbox" id="isConfig" class="checkbox" /><span style="font-weight: bold;">只显示已配置车型</span>
+        <label>车价区间：</label>
+        <input id="startPrice" type="text" />万-<input id="endPrice" type="text" />万
+        @if (ViewBag.PartName == "机油")
+        {
+            <label>粘度级别：</label>@Html.DropDownList("Viscosity", (ViewData["Viscosity"] as List<SelectListItem>), new { id = "Viscosity" })
+        }
+        <br />
+        <label>第一优先级：</label><div id="FirstPriority" style="display:inline-block;"></div>
+        <label>第二优先级：</label><div id="SecondPriority" style="display:inline-block;"></div>
+        <button class="buttonStyle" style="float:right;width:100px;" onclick="EditSku(2)">批量编辑</button>
+        <button class="buttonStyle" style="float:right;width:100px;" onclick="BatchDelete()">批量删除</button>
+        <button class="buttonStyle" style="float:right;width:100px;" onclick="Search()">查询</button>
+    </div>
+    <div id="editsku-dialog" style="display: none">
+        <div>
+            <label>第一优先级</label>
+            <div>
+                <label>PID:</label>
+                <input type="text" id="pid-level1" />
+                <input type="button" class="searchSku" value="查询" />
+            </div>
+            <div style="width: 100%; height: 30px; line-height: 20px; margin: 5px 0 5px 0;">
+                <span class="skuResult"></span>
+            </div>
+        </div>
+        <div>
+            <label>第二优先级</label>
+            <div>
+                <label>PID:</label>
+                <input type="text" id="pid-level2" />
+                <input type="button" class="searchSku" value="查询" />
+            </div>
+            <div style="width: 100%; height: 30px; line-height: 20px; margin: 5px 0 5px 0;">
+                <span class="skuResult"></span>
+            </div>
+        </div>
+    </div>
+    <div id="editbrand-dialog" style="display: none">
+        <div>
+            <label>第一优先级</label>
+            <select id="brand-level1" style="margin-left: 10px; margin-bottom: 8px;"></select>
+        </div>
+        <div>
+            <label>第二优先级</label>
+            <select id="brand-level2" style="margin-left: 10px; margin-bottom: 8px;"></select>
+        </div>
+    </div>
+    <div id="editJY-dialog" style="display:none">
+        <div>
+            <label>第一优先级</label>
+            <select id="JYSeries1" onchange="SeriesChangeOne(this.value)">
+                <option value="">请选择...</option>
+                <option value="HX3">HX3</option>
+                <option value="HX5">HX5</option>
+                <option value="HX6">HX6</option>
+                <option value="HX7">HX7</option>
+                <option value="HX8">HX8</option>
+                <option value="ULTRA">ULTRA</option>
+            </select>
+            <select id="JYbrand-level1" style="margin-left: 10px; margin-bottom: 8px;">
+                <option value="">-选择品牌-</option>
+            </select>
+        </div>
+        <div>
+            <label>第二优先级</label>
+            <select id="JYSeries2" onchange="SeriesChangeTwo(this.value)">
+                <option value="">请选择...</option>
+                <option value="HX3">HX3</option>
+                <option value="HX5">HX5</option>
+                <option value="HX6">HX6</option>
+                <option value="HX7">HX7</option>
+                <option value="HX8">HX8</option>
+                <option value="ULTRA">ULTRA</option>
+            </select>
+            <select id="JYbrand-level2" style="margin-left: 10px; margin-bottom: 8px;">
+                <option value="">-选择品牌-</option>
+            </select>
+        </div>
+    </div>
+    <div id="editBrandPrice-dialog" style="display:none">
+        <div>
+            <label>第一优先级</label>
+            <select id="BrandPrice-Level1" style="margin-left: 10px; margin-bottom: 8px;"></select>
+        </div>
+        <div>
+            <label>第二优先级</label>
+            <select id="BrandPrice-Level2" style="margin-left: 10px; margin-bottom: 8px;"></select>
+        </div>
+    </div>
+    <div id="AddItem" style="display: none"></div>
+    <div id="div_table" style="padding-top:40px">
+
+    </div>
+
+    <div id="PageLoadingEffects" style="display:none;">
+        <table>
+            <tr>
+                <td><img src="~/Content/images/Loading.gif" /></td>
+                <td>玩命加载中，请稍后...</td>
+            </tr>
+        </table>
+    </div>
+    <div>
+        <br />
+        <span>每页显示：</span>
+        <select onchange="selChange(this);" style="width:70px">
+            <option value="10" selected="selected">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select><span>&nbsp;&nbsp;条</span>
+    </div>
+    <div class="pager" style="height:25px;padding-left:0px;margin-top:15px;text-align:left"></div>
+
+</body>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        reFresh();
+        $(".searchSku").click(searchSku);
+        $.get("GetVehicleBrands", function (data) {
+            if (data.status === "success") {
+                var html = "<option value=''>-选择品牌-</option>";
+                $(data.data).each(function (index) {
+                    html += "<option value='" + data.data[index] + "'>" + data.data[index] + "</option>";
+                });
+                $("#brand").empty();
+                $("#brand").append(html);
+                BrandChange($("#brand").val());
+            } else {
+                var html = "<option value=''>无数据</option>";
+                $("#brand").empty();
+                $("#brand").append(html);
+                BrandChange("");
+            }
+        });
+        FirstAndSecond();
+    });
+
+    function BrandChange(brand) {
+        $.get("GetVehicleSeries", { brand: encodeURIComponent(brand) }, function (data) {
+            if (data.status === "success") {
+                var html = "<option value=''>-选择车系-</option>";
+                for (var item in data.data)
+                {
+                    if (data.data.hasOwnProperty(item)) {
+                        html += "<option value='" + item + "'>" + data.data[item] + "</option>";
+                    }
+                }
+                $("#vehicleSeries").empty();
+                $("#vehicleSeries").append(html);
+            } else {
+                var html = "";
+                if (brand == "") {
+                    html = "<option value=''>-选择车系-</option>";
+                } else {
+                    html = "<option value=''>无数据</option>";
+                }
+                $("#vehicleSeries").empty();
+                $("#vehicleSeries").append(html);
+            }
+        });
+    }
+
+    function SeriesChangeOne(series, brand) {
+        var priorityType = $("#BaoyangPriority").val();
+        $.get("GetJYBrandByPriorityTypeAndSeries", { priorityType: priorityType, series: series }, function (data) {
+            if (data.status === "success") {
+                var html = "<option value=''>-选择品牌-</option>";
+                $.each(data.data, function (index) {
+                    html += "<option value='" + data.data[index] + "'>" + data.data[index] + "</option>";
+                });
+                $("#JYbrand-level1").empty();
+                $("#JYbrand-level1").append(html);
+                $("#JYSeries1").val(series);
+                $("#JYbrand-level1").val(brand);
+            } else {
+                $("#JYbrand-level1").empty();
+                $("#JYbrand-level1").append("<option value=''>-选择品牌-</option>");
+            }
+        })
+    }
+
+    function SeriesChangeTwo(series, brand) {
+        var priorityType = $("#BaoyangPriority").val();
+        $.get("GetJYBrandByPriorityTypeAndSeries", { priorityType: priorityType, series: series }, function (data) {
+            if (data.status === "success") {
+                var html = "<option value=''>-选择品牌-</option>";
+                $.each(data.data, function (index) {
+                    html += "<option value='" + data.data[index] + "'>" + data.data[index] + "</option>";
+                });
+                $("#JYbrand-level2").empty();
+                $("#JYbrand-level2").append(html);
+                $("#JYSeries2").val(series);
+                $("#JYbrand-level2").val(brand);
+            } else {
+                $("#JYbrand-level2").empty();
+                $("#JYbrand-level2").append("<option value=''>-选择品牌-</option>");
+            }
+        })
+    }
+
+
+    function searchSku() {
+        var $this = $(this);
+        var pid = $this.prev().val();
+        var category = $("#editsku-dialog").attr("data-id");
+        if (pid) {
+            $.get("/Baoyang/GetProductNameByPid", { pid: pid, category: category }, function (data) {
+                if (data) {
+                    $this.parent().parent().find(".skuResult").removeClass("inVaild-result");
+                    $this.parent().parent().find(".skuResult").addClass("vaild-result");
+                    $this.parent().parent().find(".skuResult").text(data);
+                    $this.parent().parent().find(".skuResult").attr("PID", pid);
+                } else {
+                    $this.parent().parent().find(".skuResult").removeClass("Vaild-result");
+                    $this.parent().parent().find(".skuResult").addClass("inVaild-result");
+                    $this.parent().parent().find(".skuResult").text("未找到产品");
+                    $this.parent().parent().find(".skuResult").attr("PID", pid);
+                }
+            });
+        }
+    }
+
+    function Deleted(vehicleID) {
+        var partName = $("#BaoyangPartName").val();
+        //var priorityType = $("#BaoyangPriority").val();
+        if (confirm("是否确认删除？")) {
+            $.get("/Baoyang/DeletedBaoYangPriorityVehicleSetting", { vehicleID: vehicleID, partName: partName }, function (data) {
+                if (data.status == "success") {
+                    alert("操作成功!");
+                    initTable($("#PageIndex").val());
+                } else {
+                    alert("操作失败！");
+                }
+            });
+        }
+    }
+
+    function BatchDelete() {
+        var partName = $("#BaoyangPartName").val();
+        var vehicleIDs = new Array();
+        obj = document.getElementsByName("checkName");
+        for (k in obj) {
+            if (obj[k].checked) {
+                vehicleIDs.push(obj[k].value);
+            }
+        }
+        if (vehicleIDs != null && vehicleIDs.length > 0) {
+            if (confirm("是否确认删除")) {
+                $.post("/Baoyang/BatchDeletedBaoYangVehicleConfig", { vehicleIdStr: vehicleIDs.join(","), partName: partName }, function (data) {
+                    if (data.status = "success") {
+                        alert("操作成功!");
+                        initTable($("#PageIndex").val());
+                    } else {
+                        alert("操作失败！");
+                    }
+                });
+            }
+        } else {
+            alert("请选择车型");
+        }
+    }
+
+    function EditSku(type, vehicleID) {
+        var partName = $("#BaoyangPartName").val();
+        var priorityType = $("#BaoyangPriority").val();
+        var isSku = false;
+        var isBrand = false;
+        var isBrandPrice = false;
+        $.get("/Baoyang/GetRecommendConfig", function (data) {
+            var skuList = data.Sku;
+            var brandList = data.Brand;
+            var brandPriceList = data.BrandPrice;
+            if (skuList.length > 0) {
+                for (var i = 0; i < skuList.length; i++) {
+                    if (skuList[i].Name == partName) {
+                        isSku = true;
+                        break;
+                    }
+                }
+            }
+            if (brandList.length > 0) {
+                for (var i = 0; i < brandList.length; i++) {
+                    if (brandList[i].Name == partName) {
+                        isBrand = true;
+                        break;
+                    }
+                }
+            }
+            if (brandPriceList.length > 0) {
+                for (var i = 0; i < brandPriceList.length; i++) {
+                    if (brandPriceList[i].Name == partName) {
+                        isBrandPrice = true;
+                        break;
+                    }
+                }
+            }
+            if (isSku) {
+                $.get("/Baoyang/GetPriorityVehicleRules", { partName: partName, priorityType: priorityType, vehicleID: vehicleID }, function (data) {
+                    $("#pid-level1").val("");
+                    $("#pid-level2").val("");
+                    $(".skuResult").text("").removeClass("vaild-result").removeClass("inVaild-result").attr("PID", "");
+                    $("#editsku-dialog").attr("data-id", priorityType);
+                    if (data && data.length > 0) {
+                        $("#pid-level1").val(data[0].FirstPriority);
+                        $("#pid-level2").val(data[0].SecondPriority);
+                    }
+
+                    $(".searchSku").click();
+
+                    $("#editsku-dialog").dialog({
+                        title: "保养推荐产品配置",
+                        width: 500,
+                        height: 300,
+                        modal: true,
+                        draggable: false,
+                        resizable: false,
+                        buttons: {
+                            "保存": function () {
+                                var vehicleIDs = new Array();
+                                if (type == "1") {
+                                    vehicleIDs.push(vehicleID);
+                                } else if (type == "2") {
+                                    obj = document.getElementsByName("checkName");
+                                    for (k in obj) {
+                                        if (obj[k].checked) {
+                                            vehicleIDs.push(obj[k].value);
+                                        }
+                                    }
+                                }
+                                var sku1 = $("#pid-level1").parent().parent().find(".skuResult").attr("PID");
+                                sku1 = $("#pid-level1").val() == sku1 ? sku1 : "";
+                                var sku2 = $("#pid-level2").parent().parent().find(".skuResult").attr("PID");
+                                sku2 = $("#pid-level2").val() == sku2 ? sku2 : "";
+                                var isInVaild1 = $("#pid-level1").parent().parent().find(".skuResult").hasClass("inVaild-result");
+                                var isInVaild2 = $("#pid-level2").parent().parent().find(".skuResult").hasClass("inVaild-result");
+                                if (vehicleIDs.length > 0) {
+                                    if (sku1 && !isInVaild1 && ((sku2 && !isInVaild2) || !sku2)) {
+                                        var list = [];
+                                        var project = { PartName: partName, PriorityType: priorityType, FirstPriority: sku1, SecondPriority: !sku2 ? null : sku2 };
+                                        list.push(project);
+                                        if (confirm("是否确认操作？")) {
+                                            $.ajax({
+                                                type: "POST",
+                                                url: "/Baoyang/SaveVehicleSettingRecommendProducts",
+                                                data: { project: JSON.stringify(list), vehicleIDs: vehicleIDs.join(","), partName: partName },
+                                                success: function (data) {
+                                                    if (data == true) {
+                                                        alert("保存成功！");
+                                                        $("#editsku-dialog").dialog("close");
+                                                        //window.location.reload();
+                                                        initTable($("#PageIndex").val());
+                                                    } else {
+                                                        alert("保存失败！");
+                                                        $("#editsku-dialog").dialog("close");
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    } else {
+                                        alert("不符合规范！");
+                                    }
+                                } else {
+                                    alert("请选择操作的车型！");
+                                }
+                            },
+                            "取消": function () {
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+                });
+            } else if (isBrand) {
+                $("#brand-level1").empty();
+                $("#brand-level2").empty();
+                $.get("/BaoYang/GetBrands", { productCategory: priorityType }, function (brands) {
+                    if (brands) {
+                        var html = "";
+
+                        html += "<option value=''>无</option>";
+                        $.each(brands, function (index) {
+                            html += "<option value='" + brands[index] + "'>" + brands[index] + "</option>";
+                        });
+                        $("#brand-level1").append(html);
+                        $("#brand-level2").append(html);
+                    }
+
+                    $.get("/Baoyang/GetPriorityVehicleRules", { partName: partName, priorityType: priorityType, vehicleID: vehicleID }, function (data) {
+                        if (data && data.length > 0) {
+                            $("#brand-level1").val(data[0].FirstPriority);
+                            $("#brand-level2").val(data[0].SecondPriority);
+                        }
+
+                        $("#editbrand-dialog").dialog({
+                            title: "保养推荐产品配置",
+                            width: 500,
+                            height: 300,
+                            modal: true,
+                            draggable: false,
+                            resizable: false,
+                            buttons: {
+                                "保存": function () {
+                                    var brand1 = $("#brand-level1").val();
+                                    var brand2 = $("#brand-level2").val();
+                                    var vehicleIDs = new Array();
+                                    if (type == "1") {
+                                        vehicleIDs.push(vehicleID);
+                                    } else if (type == "2") {
+                                        obj = document.getElementsByName("checkName");
+                                        for (k in obj) {
+                                            if (obj[k].checked) {
+                                                vehicleIDs.push(obj[k].value);
+                                            }
+                                        }
+                                    }
+                                    if (vehicleIDs.length > 0) {
+                                        if (brand1 != "") {
+                                            var list = [];
+                                            var project = { PartName: partName, PriorityType: priorityType, FirstPriority: brand1, SecondPriority: brand2 };
+                                            list.push(project);
+                                            $.ajax({
+                                                type: "POST",
+                                                url: "/Baoyang/SaveVehicleSettingRecommendProducts",
+                                                data: { project: JSON.stringify(list), vehicleIDs: vehicleIDs.join(","), partName: partName },
+                                                success: function (data) {
+                                                    if (data == true) {
+                                                        alert("保存成功！");
+                                                        $("#editbrand-dialog").dialog("close");
+                                                        initTable($("#PageIndex").val());
+                                                    } else {
+                                                        alert("保存失败！");
+                                                        $("#editbrand-dialog").dialog("close");
+                                                    }
+                                                }
+                                            });
+                                        } else {
+                                            alert("第一优先级为必填项！");
+                                        }
+                                    } else {
+                                        alert("请选择操作的车型！");
+                                    }
+                                },
+                                "取消": function () {
+                                    $(this).dialog("close");
+                                }
+                            }
+                        });
+                    });
+                });
+
+            } else if (isBrandPrice) {
+                $("#BrandPrice-Level1").empty();
+                $("#BrandPrice-Level2").empty();
+                $.get("/BaoYang/GetVehicleSeriesByProductCategory", { productCategory: priorityType }, function (data) {
+                    if (data.status === "success") {
+                        var html = "<option value=''>-选择系列-</option>";
+                        $(data.data).each(function (index) {
+                            html += "<option value='" + data.data[index] + "'>" + data.data[index] + "</option>";
+                        });
+                        $("#BrandPrice-Level1").append(html);
+                        $("#BrandPrice-Level2").append(html);
+                    } else {
+                        var html = "<option value=''>-选择系列-</option>";
+                        $("#BrandPrice-Level1").append(html);
+                        $("#BrandPrice-Level2").append(html);
+                    }
+
+                    $.get("/Baoyang/GetPriorityVehicleRules", { partName: partName, priorityType: priorityType, vehicleID: vehicleID }, function (data) {
+                        if (data && data.length > 0) {
+                            $("#BrandPrice-Level1").val(data[0].FirstPriority);
+                            $("#BrandPrice-Level2").val(data[0].SecondPriority);
+                        }
+
+                        $("#editBrandPrice-dialog").dialog({
+                            title: "保养推荐产品配置",
+                            width: 500,
+                            height: 300,
+                            modal: true,
+                            draggable: false,
+                            resizable: false,
+                            buttons: {
+                                "保存": function () {
+                                    var brand1 = $("#BrandPrice-Level1").val();
+                                    var brand2 = $("#BrandPrice-Level2").val();
+                                    var vehicleIDs = new Array();
+                                    if (type == "1") {
+                                        vehicleIDs.push(vehicleID);
+                                    } else if (type == "2") {
+                                        obj = document.getElementsByName("checkName");
+                                        for (k in obj) {
+                                            if (obj[k].checked) {
+                                                vehicleIDs.push(obj[k].value);
+                                            }
+                                        }
+                                    }
+
+                                    if (vehicleIDs.length > 0) {
+                                        if (brand1 != "") {
+                                            var list = [];
+                                            var project = { PartName: partName, PriorityType: priorityType, FirstPriority: brand1, SecondPriority: brand2 };
+                                            list.push(project);
+                                            $.ajax({
+                                                type: "POST",
+                                                url: "/Baoyang/SaveVehicleSettingRecommendProducts",
+                                                data: { project: JSON.stringify(list), vehicleIDs: vehicleIDs.join(","), partName: partName },
+                                                success: function (data) {
+                                                    if (data == true) {
+                                                        alert("保存成功！");
+                                                        $("#editBrandPrice-dialog").dialog("close");
+                                                        initTable($("#PageIndex").val());
+                                                    } else {
+                                                        alert("保存失败！");
+                                                        $("#editBrandPrice-dialog").dialog("close");
+                                                    }
+                                                }
+                                            });
+                                        } else {
+                                            alert("第一优先级为必填项！");
+                                        }
+                                    } else {
+                                        alert("请选择操作的车型！");
+                                    }
+                                },
+                                "取消": function () {
+                                    $(this).dialog("close");
+                                }
+                            }
+                        });
+                    });
+                });
+
+            } else if (priorityType == "Oil") {
+                $("#JYbrand-level1").empty();
+                $("#JYbrand-level2").empty();
+                $("#JYbrand-level1").append("<option value=''>-选择品牌-</option>");
+                $("#JYbrand-level2").append("<option value=''>-选择品牌-</option>");
+                $("#JYSeries1").val("");
+                $("#JYSeries2").val("");
+                $.get("/Baoyang/GetJYPriorityVehicleSetting", { vehicleID: vehicleID }, function (data) {
+                    if (data.status == "success") {
+                        if (data.data.FirstPriority != "" && data.data.FirstPriority != null) {
+                            var firstType = data.data.FirstPriority.split('-')[0];
+                            var firstBrand = data.data.FirstPriority.split('-')[1];
+                            SeriesChangeOne(firstType, firstBrand);
+                        }
+                        if (data.data.SecondPriority != "" && data.data.SecondPriority != null) {
+                            var secondType = data.data.SecondPriority.split('-')[0];
+                            var secondBrand = data.data.SecondPriority.split('-')[1];
+                            SeriesChangeTwo(secondType, secondBrand);
+                        }
+                    }
+
+                    $("#editJY-dialog").dialog({
+                        title: "保养推荐产品配置",
+                        width: 500,
+                        height: 350,
+                        modal: true,
+                        draggable: false,
+                        resizable: false,
+                        buttons: {
+                            "保存": function () {
+                                var vehicleIDs = new Array();
+                                if (type == "1") {
+                                    vehicleIDs.push(vehicleID);
+                                } else if (type == "2") {
+                                    obj = document.getElementsByName("checkName");
+                                    for (k in obj) {
+                                        if (obj[k].checked) {
+                                            vehicleIDs.push(obj[k].value);
+                                        }
+                                    }
+                                }
+                                if (vehicleIDs.length > 0) {
+                                    if ($("#JYbrand-level1").val() != "") {
+                                        var list = [];
+                                        var project = "";
+                                        if ($("#JYbrand-level1").val() != "") {
+                                            project = { PartName: partName, PriorityType: $("#JYSeries1").val(), FirstPriority: $("#JYbrand-level1").val(), SecondPriority: null };
+                                            list.push(project);
+                                        }
+                                        if ($("#JYbrand-level2").val() != "") {
+                                            project = { PartName: partName, PriorityType: $("#JYSeries2").val(), FirstPriority: null, SecondPriority: $("#JYbrand-level2").val() };
+                                            list.push(project);
+                                        }
+
+                                        $.ajax({
+                                            type: "POST",
+                                            url: "/Baoyang/SaveJYVehicleSeriesSetting",
+                                            data: { project: JSON.stringify(list), vehicleIDs: vehicleIDs.join(','), partName: partName },
+                                            success: function (data) {
+                                                if (data == true) {
+                                                    alert("保存成功！");
+                                                    $("#editJY-dialog").dialog("close");
+                                                    initTable($("#PageIndex").val());
+                                                }
+                                                else {
+                                                    alert("保存失败！");
+                                                    $("#editJY-dialog").dialog("close");
+                                                }
+                                            }
+                                        });
+                                    } else {
+                                        alert("第一优先级为必填项！");
+                                    }
+                                } else {
+                                    alert("请选择操作的车型！");
+                                }
+                            },
+                            "取消": function () {
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+                });
+
+            }
+        });
+    }
+
+    function reFresh() {
+        $("#PageLoadingEffects").css("display", "block");
+        pageIndex = 1;
+        pageSize = 10;
+        groupCurNum = 1;
+        initTable(1);
+    }
+
+    var groupCurNum = 1;
+    var groupSize = 10;
+    var num = 0;
+
+    function initTable(isFalg) {
+        var first, second, pt1, pt2;
+        var fun = function (objs) {
+            var priority = { PriorityType: "", PriorityValue: "" };
+            if (objs.length == 1) {
+                priority.PriorityValue = objs.eq(0).val();
+            } else if (objs.length == 2) {
+                priority.PriorityType = objs.eq(0).val();
+                priority.PriorityValue = objs.eq(1).val();
+            }
+            return priority;
+        }
+        var fpObjs = $('#FirstPriority').children();
+        var spObjs = $("#SecondPriority").children();
+        var f = fun(fpObjs), s = fun(spObjs);
+        first = f.PriorityValue.trim(), pt1 = f.PriorityType.trim();
+        second = s.PriorityValue.trim(), pt2 = s.PriorityType.trim();
+
+        pageIndex = isFalg;
+        $("#div_table").html("");
+        $("#PageIndex").val(isFalg);
+        var isChecked = 0;
+        var partName = $("#BaoyangPartName").val();
+        var brand = $("#brand").val();
+        var vehicleID = $("#vehicleSeries").val();
+        var staPrice = $("#startPrice").val();
+        var endPrice = $("#endPrice").val();
+        var checked = document.getElementById("isConfig");
+        if (checked.checked) { isChecked = 1; }
+        var type = $("#Search_type").val();
+        var value = $("#value_Search").val();
+        var startDate = $("#startDate").val();
+        var viscosity = $("#Viscosity").val();
+        $("#PageLoadingEffects").css("display", "block");
+        $.ajax({
+            url: '/Baoyang/BaoYangVehicleConfigTable',
+            type: 'get',
+            data:
+            {
+                "pageIndex": pageIndex,
+                "pageSize": pageSize,
+                "partName": partName,
+                "brand": brand,
+                "vehicleID": vehicleID,
+                "staPrice": staPrice,
+                "endPrice": endPrice,
+                "isConfig": isChecked,
+                "firstPriority": first,
+                "secondPriority": second,
+                "priorityType1": pt1,
+                "priorityType2": pt2,
+                "viscosity": viscosity
+            },
+            success: function (html) {
+                $("#PageLoadingEffects").css("display", "none");
+                $("#div_table").append(html);
+                initPage($("#Totalcount").val());
+            }
+        });
+    }
+
+    function Search() {
+        var staPrice = $("#startPrice").val().trim();
+        var endPrice = $("#endPrice").val().trim();
+
+        if ((/^[0-9]\d*$/.test(staPrice) && /^[0-9]\d*$/.test(endPrice)) || (staPrice == "" && endPrice == "")) {
+            initTable(1);
+        } else {
+            alert("请完善车价区间，并且车价区间为整数！");
+        }
+    }
+
+    function initPage(total) {
+        $("div.pager").find("*").remove().empty();
+        //上一组
+        var prevGroup = "<a href=\"#\" id=\"prevGroup\" onclick=\"prevClick();return false;\" style=\"display:none;\">上一组</a>";
+        $("div.pager").append(prevGroup);
+        //下一组
+        var nextGroup = "<a href=\"#\" id=\"nextGroup\" onclick=\"nextClick();return false;\" style=\"display:none;\">下一组</a>";
+        $("div.pager").append(nextGroup);
+        //转业
+        num = Math.floor(total / pageSize) + (total % pageSize > 0 ? 1 : 0);
+        var turnPage = "";
+        if (total > 0) {
+            turnPage = "<a href=\"#\" id=\"turnGroup\" onclick=\"turnClick();return false;\">转到</a><input type=\"text\" id=\"txtTurn\" value=\"" + pageIndex + "\" style=\"width:30px;  padding: 1px 1px 0px 1px;\" /><span style=\"width:100px;border:0;\">页 当前页/总页：</span><span id=\"_numInfo\" style=\"width:80px;border:0;text-align:left;\">" + pageIndex + "/" + num + "</span>";
+        } else {
+            turnPage = "<input type=\"text\" id=\"txtTurn\" value=\"1\" style=\"width:30px;\" /><span style=\"width:100px;border:0;\">页 当前页/总页：</span><span id=\"_numInfo\" style=\"width:80px;border:0;text-align:left;\">" + pageIndex + "/" + (num + 1) + "</span>";
+        }
+        $("div.pager").append(turnPage);
+        pageOnPage();
+    }
+    function selChange(e) {
+        pageSize = parseInt($(e).val());
+        pageIndex = 1;
+        groupCurNum = 1;
+        initTable(1);
+    }
+    //分页的分页
+    function pageOnPage() {
+        $("a[name='pageA']").remove();
+        var groupNums = Math.floor(num / groupSize) + (num % groupSize > 0 ? 1 : 0);
+        if (groupNums == 1 || groupNums == 0) {
+            $("#prevGroup").css("display", "none");
+            $("#nextGroup").css("display", "none");
+        }
+        else if (groupCurNum == 1 && groupNums > 1) {
+            $("#prevGroup").css("display", "none");
+            $("#nextGroup").css("display", "");
+        }
+        else if (groupCurNum < groupNums && groupNums > 1) {
+            $("#prevGroup").css("display", "");
+            $("#nextGroup").css("display", "");
+        }
+        else {
+            $("#prevGroup").css("display", "");
+            $("#nextGroup").css("display", "none");
+        }
+        var start = (groupCurNum - 1) * groupSize;
+        var end = (groupCurNum * groupSize > num ? num : groupCurNum * groupSize);
+        var temp = ""
+        for (var i = start; i < end; i++) {
+            if (i == (pageIndex - 1))
+                temp += "<a name=\"pageA\" id=\"_" + (i + 1).toString() + "\" href=\"javascript:;\" class=\"current\" onclick=\"pageClick(this," + (i + 1).toString() + ");return false;\">" + (i + 1).toString() + "</a>";
+            else
+                temp += "<a name=\"pageA\" id=\"_" + (i + 1).toString() + "\" href=\"javascript:;\" onclick=\"pageClick(this," + (i + 1).toString() + ");return false;\">" + (i + 1).toString() + "</a>";
+        }
+        if (i == 0 && start == 0 && end == 0) {
+            temp += "<a name=\"pageA\" id=\"_" + (i + 1).toString() + "\" href=\"javascript:;\" class=\"current\" onclick=\"pageClick(this," + (i + 1).toString() + ");return false;\">" + (i + 1).toString() + "</a>";
+        }
+        $("div.pager a").eq(0).after(temp);
+    }
+    function prevClick() {
+        groupCurNum -= 1;
+        pageOnPage();
+    }
+    function nextClick() {
+        groupCurNum += 1;
+        pageOnPage();
+    }
+    function turnClick() {
+        var rex = /^[0-9]*$/;
+        if (!rex.test($("#txtTurn").val()))
+            return;
+        pageIndex = parseInt($("#txtTurn").val());
+        pageIndex = (pageIndex > num ? num : pageIndex);
+        $("#txtTurn").val(pageIndex);
+        groupCurNum = Math.floor(pageIndex / groupSize) + (pageIndex % groupSize > 0 ? 1 : 0);
+        pageOnPage();
+        pageClick($("#_" + pageIndex.toString()), pageIndex);
+        //页信息
+        var nInfo = pageIndex + "/" + num;
+        $("#_numInfo").text(nInfo);
+    }
+    function pageClick(e, inum) {
+        $("a[name='pageA']").removeClass("current");
+        $(e).addClass("current");
+        pageIndex = inum;
+        initTable(inum);
+        //页信息
+        var nInfo = pageIndex + "/" + num;
+        $("#_numInfo").text(nInfo);
+    }
+
+    function FirstAndSecond() {
+        var partName = $("#BaoyangPartName").val();
+        var priorityType = $("#BaoyangPriority").val();
+        var isSku = false;
+        var isBrand = false;
+        var isBrandPrice = false;
+        $.get("/Baoyang/GetRecommendConfig", function (data) {
+            var skuList = data.Sku;
+            var brandList = data.Brand;
+            var brandPriceList = data.BrandPrice;
+            if (skuList.length > 0) {
+                for (var i = 0; i < skuList.length; i++) {
+                    if (skuList[i].Name == partName) {
+                        isSku = true;
+                        break;
+                    }
+                }
+            }
+            if (brandList.length > 0) {
+                for (var i = 0; i < brandList.length; i++) {
+                    if (brandList[i].Name == partName) {
+                        isBrand = true;
+                        break;
+                    }
+                }
+            }
+            if (brandPriceList.length > 0) {
+                for (var i = 0; i < brandPriceList.length; i++) {
+                    if (brandPriceList[i].Name == partName) {
+                        isBrandPrice = true;
+                        break;
+                    }
+                }
+            }
+
+            $("#SecondPriority").empty();
+            $("#FirstPriority").empty();
+            if (isSku) {
+                $("#SecondPriority").append("<input type='text' />");
+                $("#FirstPriority").append("<input type='text' />");
+            } else if (isBrand) {
+                $.get("/BaoYang/GetBrands", { productCategory: priorityType }, function (brands) {
+                    if (brands) {
+                        var html = "<select>";
+                        html += "<option value=''>无</option>";
+                        $.each(brands, function (index) {
+                            html += "<option value='" + brands[index] + "'>" + brands[index] + "</option>";
+                        });
+                        html += "</select>";
+
+                        $("#SecondPriority").append(html);
+                        $("#FirstPriority").append(html);
+                    }
+                });
+
+            } else if (isBrandPrice) {
+                $.get("/BaoYang/GetVehicleSeriesByProductCategory", { productCategory: priorityType }, function (data) {
+                    if (data.status === "success") {
+                        var html = "<select><option value=''>-选择系列-</option>";
+                        $(data.data).each(function (index) {
+                            html += "<option value='" + data.data[index] + "'>" + data.data[index] + "</option>";
+                        });
+                        html += "</select>";
+                        $("#FirstPriority").append(html);
+                        $("#SecondPriority").append(html);
+                    } else {
+                        var html = "<select><option value=''>-选择系列-</option></select>";
+                        $("#FirstPriority").append(html);
+                        $("#SecondPriority").append(html);
+                    }
+                });
+
+            } else if (priorityType == "Oil") {
+                var html = "<option value=\"\">请选择...</option><option value=\"HX3\">HX3</option>";
+                html += "<option value=\"HX5\">HX5</option><option value=\"HX6\">HX6</option>";
+                html += "<option value=\"HX7\">HX7</option><option value=\"HX8\">HX8</option>";
+                html += "<option value=\"ULTRA\">ULTRA</option></select>";
+                $("#FirstPriority").append("<select onchange=\"SearchSeriesChange(this.value, $(this).next())\">" + html);
+                $("#SecondPriority").append("<select onchange=\"SearchSeriesChange(this.value, $(this).next())\">" + html);
+                $("#FirstPriority").append("-<select><option value=''>-选择品牌-</option></select>");
+                $("#SecondPriority").append("-<select><option value=''>-选择品牌-</option></select>");
+            }
+        });
+    }
+
+    function SearchSeriesChange(series, target) {
+        var priorityType = $("#BaoyangPriority").val();
+        $.get("GetJYBrandByPriorityTypeAndSeries", { priorityType: priorityType, series: series }, function (data) {
+            if (data.status === "success") {
+                var html = "<option value=''>-选择品牌-</option>";
+                $.each(data.data, function (index) {
+                    html += "<option value='" + data.data[index] + "'>" + data.data[index] + "</option>";
+                });
+                target.empty();
+                target.append(html);
+            } else {
+                target.empty();
+                target.append("<option value=''>-选择品牌-</option>");
+            }
+        })
+    }
+
+</script>

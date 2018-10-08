@@ -1,0 +1,832 @@
+﻿@using Tuhu.Service.Push.Models.MessageBox
+
+@{
+    ViewBag.Title = "单播模版编辑";
+    Func<MessageBoxShowType, string> getname = type =>
+    {
+        switch (type)
+        {
+            case MessageBoxShowType.Text:
+                return "文字";
+            case MessageBoxShowType.BigImageText:
+                return "大图文";
+            case MessageBoxShowType.SmallImageText:
+                return "小图文";
+            case MessageBoxShowType.ActivityText:
+                return "互动消息文字";
+            case MessageBoxShowType.OrderText:
+                return "订单文字消息";
+            default:
+                return "";
+        }
+    };
+    var showtypes = Enum.GetValues(typeof(MessageBoxShowType)).Cast<MessageBoxShowType>().Select(x => new
+    {
+        name = getname(x),
+        value = x
+    });
+
+    var batchid = ViewBag.batchid as string;
+}
+@section head{
+    <link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+}
+<style>
+    .tdtitle {
+        background-color: #e8eef4;
+        text-align: center;
+    }
+    label{
+        cursor:pointer;
+    }
+</style>
+
+@Html.Hidden("batchid", batchid)
+
+<div class="content" id="EditSinglePushTemplate">
+    <div>
+        <p></p>
+        <a href="@Url.Action("SinglePush")" class="btn btn-primary btn-small">返回列表</a>
+        <p></p>
+    </div>
+    <div style="display:none;width:auto" id="EditConfig">
+
+        <div>
+
+            <div class="modal-body form-horizontal">
+
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="aCategoryName">推送标题</label>
+                    <div class="col-sm-8">
+                        <input type="text" v-model="EditImageText.Title" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="aCategoryName">图片</label>
+                    <div class="col-sm-8">
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <img style="width: 80px" v-bind:src="EditImageText.ImageUrl" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <input id="textimageupload" required type="file" v-on:change="upTextImage(EditImageText)" accept=".png,.jpg,.jpeg,.jpe" />
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="aCategoryName">推送描述</label>
+                    <div class="col-sm-8">
+
+                        <input required type="text" v-model="EditImageText.Desctiption" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="aCategoryName">跳转链接</label>
+                    <div class="col-sm-8">
+                        <input type="text" v-model="EditImageText.JumpUrl" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="aCategoryName">排序</label>
+                    <div class="col-sm-8">
+                        <input type="number" v-model="EditImageText.Order" />
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <table style="width: 100%; table-layout: fixed">
+                    <tr>
+                        <th colspan="3" class="tdtitle">沟通计划</th>
+                    </tr>
+                    <tr>
+                        <td>计划id</td>
+                        <td colspan="2">
+                            <span v-show="batchid!=0">
+                                {{batchid}}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>计划状态</td>
+                        <td colspan="2">
+                            <span v-show="planstatus!=''">
+                                {{planstatus}}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>计划名称</td>
+                        <td colspan="2">
+                            <textarea style="width: 100%" v-model="planname" v-show="batchid!=0"></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>模版标签</td>
+                        <td colspan="2">
+                            <select v-model="TemplateTag">
+
+                                <option value="">未选择</option>
+                                <option v-for="tag in AllTemplateTags" value="{{tag.Id}}">{{tag.TagName}}</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>模版类型</td>
+                        <td colspan="2">
+                            <select v-model="TemplateType">
+                                <option v-for="tag in TemplateTypes" value="{{tag.Value}}">{{tag.Name}}</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr style="display:none">
+                        <td>模版推送优先级</td>
+                        <td colspan="2">
+                            <label>微信推送优先级：<input v-model="wxPriority" type="checkbox" /> </label><br />
+                                                                             <label>App推送优先级：<input type="checkbox" v-model="appPriority" /></label>
+</td>
+                    </tr>
+                    <template v-for="template in Templates">
+                        <tr>
+                            <td colspan="3" class="tdtitle">
+                                {{template.PushTypeDesc}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>操作</td>
+                            <td>
+                                <button v-on:click="ShowDeviceType=template.DeviceType">{{template.PKID?"编辑":"创建"}}</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>是否启用</td>
+                            <td colspan="2">
+                                <select v-model="template.IsEnable">
+                                    <option value="1">启用</option>
+                                    <option value="0">禁用</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>标题</td>
+                            <td colspan="2">
+                                <span v-show="template.PKID" style="width: 100%">
+                                    {{template.Title}}
+                                </span>
+                            </td>
+                        </tr>
+                    </template>
+                    @*<tr>
+            <td>
+                <button class="btn">关闭</button>
+            </td>
+            <td>
+                <button class="btn">保存草稿</button>
+            </td>
+            <td>
+                <button class="btn">提交发送</button>
+            </td>
+
+        </tr>*@
+                </table>
+
+            </div>
+            <div class="col-md-6">
+                <table style="width: 100%; table-layout: fixed" v-for="template in Templates" v-show="ShowDeviceType==template.DeviceType">
+                    <template v-if="template.DeviceType!=4&&template.DeviceType!=6">
+                        <tr>
+                            <th class="tdtitle" colspan="4">{{template.PushTypeDesc}}内容设置</th>
+                        </tr>
+
+                        <tr v-if="template.DeviceType==3">
+                            <td>推送形式</td>
+                            <td colspan="3">
+                                @foreach (var item in showtypes)
+                                {
+
+                                    <input type="radio" name="MessageBoxShowType" value="@item.value" v-model="MessageBoxShowType" />@item.name
+
+                                }
+                            </td>
+
+                        </tr>
+                        <template v-if="template.DeviceType==3&&MessageBoxIsImageTemplate">
+                            <tr>
+                                <td>
+                                    <a v-on:click="AddMessageImageTextConfig" href="javascript:void(0)">新增</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>推送标题</td>
+                                <td>图片缩略</td>
+                                <td>排序</td>
+                                <td>操作</td>
+                            </tr>
+                            <tr v-for="imageinfo in ImageTextInfos">
+                                <td>
+                                    {{imageinfo.Title}}
+                                </td>
+                                <td>
+                                    <img style="width: 80px" v-bind:src="imageinfo.ImageUrl" />
+                                    @*{{imageinfo.ImageUrl}}*@
+                                </td>
+                                <td>
+                                    {{imageinfo.Order}}
+                                </td>
+                                <td>
+                                    <a v-on:click="EditMessageImageTextConfig(imageinfo)" href="javascript:void(0)">编辑</a>
+                                    <a v-on:click="DeleteMessageImageTextConfig(imageinfo.Pkid)" href="javascript:void(0)">删除</a>
+                                </td>
+                            </tr>
+                        </template>
+                        <tr v-if="template.DeviceType!=3||!MessageBoxIsImageTemplate">
+                            <td>推送标题</td>
+                            <td colspan="3">
+                                <textarea style="width: 100%" v-model="template.Title"></textarea>
+                            </td>
+                        </tr>
+                        <tr v-if="template.DeviceType==1">
+                            <td>推送副标题</td>
+                            <td colspan="3">
+                                <textarea style="width: 100%" v-model="template.SubTitle"></textarea>
+                            </td>
+                        </tr>
+                        <tr v-if="template.DeviceType!=3||!MessageBoxIsImageTemplate">
+                            <td>推送内容</td>
+                            <td colspan="3">
+                                <textarea style="width: 100%" v-model="template.Content"></textarea>
+                            </td>
+                        </tr>
+
+                        <tr v-if="template.DeviceType!=3||!MessageBoxIsImageTemplate">
+                            <td>外部参数说明</td>
+                            <td>
+                                <button v-on:click="AddContentDesc(template)">添加</button>
+                            </td>
+                        </tr>
+
+                        <tr v-for="desc in template.ContentDesc" v-if="template.DeviceType!=3||!MessageBoxIsImageTemplate">
+                            <td colspan="1">
+                                <input type="text" style="width: 100%" :value="desc.Key" v-model="desc.Key" />
+                            </td>
+                            <td colspan="2">
+                                <input type="text" v-model="desc.Value" />
+                            </td>
+                            <td>
+                                <button v-on:click="DeleteContentDesc(template,desc)">
+                                    删除
+                                </button>
+                            </td>
+                        </tr>
+                        <tr v-if="template.DeviceType==1||(template.DeviceType==3&&!MessageBoxIsImageTemplate)" >
+                            <td>推送图片</td>
+                            <td>
+                                <img style="width: 80px" v-bind:src="template.ImageUrl" />
+                            </td>
+                            <td colspan="2">
+                                <input type="file" :id="'uploadimage'+template.DeviceType" v-on:change="upImage(template,template.DeviceType)" accept=".png,.jpg,.jpeg,.jpe" />
+                            </td>
+                        </tr>
+                    <tr v-if="template.DeviceType!=3||!MessageBoxIsImageTemplate">
+                            <td class="tdtitle" colspan="4">APP内操作</td>
+                        </tr>
+                        <tr v-if="template.DeviceType==3&&!MessageBoxIsImageTemplate">
+                            <td>跳转链接</td>
+                            <td colspan="3">
+                                <textarea style="width: 100%" v-model="template.AppActivity"></textarea>
+                            </td>
+                        </tr>
+                        <tr v-if="template.DeviceType!=3&&!MessageBoxIsImageTemplate">
+                            <td>键值对参数</td>
+                            <td colspan="3">
+                                <button v-on:click="AddKeyValue(template)">添加</button>
+                            </td>
+                        </tr>
+                        <template v-for="extra in template.ExtraDict" v-if="template.DeviceType!=3">
+                            <tr>
+                                <td colspan="3">
+                                    <input style="width: 100%" type="text" v-model="extra.Key" />
+                                </td>
+                                <td>
+                                    <button v-on:click="DeleteKeyValue(template,extra)">删除</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="4">
+                                    @*<input style="width: 100%" type="text" v-model="extra.Value" />*@
+                                    <textarea rows="2" style="width:100%" v-model="extra.Value" :value="extra.Value"></textarea>
+                                </td>
+                            </tr>
+                        </template>
+
+                    <tr v-if="template.DeviceType!=3||!MessageBoxIsImageTemplate">
+                            <td>外部参数说明</td>
+                            <td colspan="3">
+                                <button v-on:click="AddKeyValueDesc(template)">添加</button>
+                            </td>
+                        </tr>
+                        <tr v-for="keyvaluedesc in template.KeyValueDesc" v-if="template.DeviceType!=3||!MessageBoxIsImageTemplate">
+                            <td colspan="1">
+                                <input type="text" style="width: 80%" :value="keyvaluedesc.Key" v-model="keyvaluedesc.Key" />
+                            </td>
+                            <td colspan="2">
+                                <input style="width: 100%" type="text" v-model="keyvaluedesc.Value" />
+                            </td>
+                            <td>
+                                <button v-on:click="DeleteKeyValueDesc(template,keyvaluedesc)">删除</button>
+                            </td>
+                        </tr>
+                        <template v-if="template.DeviceType==1">
+                            <tr>
+                                <td class="tdtitle" colspan="4">
+                                    高级选项
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>消息过期周期</td>
+                                <td>
+                                    <input style="width: 50px" v-model="template.ExpireDay" type="number" />天
+                                </td>
+                                <td>
+                                    <input style="width: 50px" v-model="template.ExpireHour" type="number" />小时
+                                </td>
+                                <td>
+                                    <input style="width: 50px" v-model="template.ExpireMinute" type="number" />分钟
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>声音提醒</td>
+                                <td>
+                                    <select v-model="template.SoundType">
+                                        <option value="default">开启</option>
+                                        <option value="">关闭</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>角标数字</td>
+                                <td>
+                                    <select v-model="template.ShowBdage">
+                                        <option value="1">开启</option>
+                                        <option value="0">关闭</option>
+                                    </select>
+                                </td>
+                                <td colspan="2" v-show="template.ShowBdage==1">
+                                    <input type="number" v-model="template.Bdage" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>消息类型</td>
+                                <td>
+                                    <select v-model="template.MessageNavigationTypeId" :value="template.MessageNavigationTypeId">
+                                        <option v-for="item in MessageTypes" v-bind:value="item.PkId">
+                                            {{item.NavigationName}}
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </template>
+                        <template v-if="template.DeviceType==2">
+                            <tr>
+                                <td class="tdtitle" colspan="4">
+                                    高级选项
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>消息过期周期</td>
+                                <td>
+                                    <input style="width: 50px" v-model="template.ExpireDay" type="number" />天
+                                </td>
+                                <td>
+                                    <input style="width: 50px" v-model="template.ExpireHour" type="number" />小时
+                                </td>
+                                <td>
+                                    <input style="width: 50px" v-model="template.ExpireMinute" type="number" />分钟
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>声音提醒</td>
+                                <td colspan="3">
+                                    <select v-model="template.SoundType">
+                                        <option value="default">开启</option>
+                                        <option value="">关闭</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>震动</td>
+                                <td colspan="3">
+                                    <select v-model="template.Shake">
+                                        <option value="1">
+                                            开启
+                                        </option>
+                                        <option value="0">
+                                            关闭
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>呼吸灯</td>
+                                <td colspan="3">
+                                    <select v-model="template.Light">
+                                        <option value="1">
+                                            开启
+                                        </option>
+                                        <option value="0">
+                                            关闭
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>前台仍通知</td>
+                                <td colspan="3">
+                                    <select v-model="template.Front">
+                                        <option value="1">
+                                            开启
+                                        </option>
+                                        <option value="0">
+                                            关闭
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>消息类型</td>
+                                <td>
+                                    <select v-model="template.MessageNavigationTypeId" :value="template.MessageNavigationTypeId">
+                                        <option v-for="item in MessageTypes" v-bind:value="item.PkId">
+                                            {{item.NavigationName}}
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </template>
+                        <template v-if="template.DeviceType==3">
+                            <tr>
+                                <td class="tdtitle" colspan="4">
+                                    高级选项
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>消息过期周期</td>
+                                <td>
+                                    <input style="width: 50px" v-model="template.ExpireDay" type="number" />天
+                                </td>
+                                <td>
+                                    <input style="width: 50px" v-model="template.ExpireHour" type="number" />小时
+                                </td>
+                                <td>
+                                    <input style="width: 50px" v-model="template.ExpireMinute" type="number" />分钟
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>消息类型</td>
+                                <td>
+                                    @*<select v-model="template.MessageType" :value="template.MessageType">
+                                            <option value="1">
+                                                活动
+                                            </option>
+                                            <option value="2">发现</option>
+                                            <option value="3">系统</option>
+                                            <option value="4">物流</option>
+                                            <option value="5">论坛</option>
+                                        </select>*@
+                                    <select v-model="template.MessageNavigationTypeId" :value="template.MessageNavigationTypeId">
+                                        <option v-for="item in MessageTypes" v-bind:value="item.PkId">
+                                            {{item.NavigationName}}
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </template>
+                        <tr>
+                            <td colspan="2">
+                                <button v-on:click="SaveTemplate(template)">保存</button>
+                            </td>
+                            <td colspan="2">
+                                <button v-on:click="PreviewTemplate(template)">预览</button>
+                            </td>
+                        </tr>
+                    </template>
+
+                    <!-- 微信公众号模版消息 Begin -->
+                    <template v-if="template.DeviceType==4">
+                        <tr>
+                            <th class="tdtitle" colspan="4">{{template.PushTypeDesc}}内容设置</th>
+                        </tr>
+
+                        <tr>
+                            <td   colspan="4">
+                                <input type="checkbox" v-model="All_User_Group_Option" id="J_All_User_Group_Option" v-on:click="group_click" />
+                                <label for="J_All_User_Group_Option">全选</label>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <input type="checkbox" v-model="IsUseCurrentActiveUser" id="J_User_CurrentActive_Group" />
+                                <label for="J_User_CurrentActive_Group">近期积极互动用户</label>
+                            </td>
+                            <td colspan="3">
+                                <input type="radio" name="CurrentActiveUserOptionItem" v-model="CurrentActiveUserOptionItem" value="1" id="CurrentActiveUserOptionItem_1" /><label for="CurrentActiveUserOptionItem_1">模板消息</label>
+                                <input type="radio" name="CurrentActiveUserOptionItem" v-model="CurrentActiveUserOptionItem" value="2" id="CurrentActiveUserOptionItem_2" /><label for="CurrentActiveUserOptionItem_2">优先图文消息，模板次之</label>
+                                <input type="radio" name="CurrentActiveUserOptionItem" v-model="CurrentActiveUserOptionItem" value="3" id="CurrentActiveUserOptionItem_3" /><label for="CurrentActiveUserOptionItem_3">图文消息</label>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <input type="checkbox" v-model="IsUseOtherUser" id="J_User_Other_Group" />
+                                <label for="J_User_Other_Group">其余用户</label>
+                            </td>
+                            <td colspan="3">
+                                <input type="radio" checked /> <label>模板消息</label>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>标题</th>
+                            <th colspan="2">模版ID</th>
+                            <th>操作</th>
+                        </tr>
+                        <tr>
+                            <td>{{SelectWxTemplate.title}}</td>
+                            <td style="WORD-WRAP: break-word" colspan="2">{{SelectWxTemplate.template_id}}</td>
+                            <td>
+                                <input type="radio" v-model="template.WxTemplateID" :value="SelectWxTemplate.template_id" />
+                                <span>选中</span>
+                                <button v-on:click="ShowWxTemplates=!ShowWxTemplates">展开</button>
+                            </td>
+                        </tr>
+                        <tr v-show="ShowWxTemplates" v-for="t in NotSelectedWxTemplates">
+                            <td>
+                                {{t.title}}
+                            </td>
+                            <td style="WORD-WRAP: break-word" colspan="2">
+                                {{t.template_id}}
+                            </td>
+                            <td>
+                                <input type="radio" v-model="template.WxTemplateID" :value="t.template_id" />
+                                <span>选中</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>消息内容</td>
+                            <td colspan="3">
+                                {{SelectWxTemplate.content}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">模版可编辑参数</td>
+                        </tr>
+                        <tr>
+                            <td>头部文案</td>
+                            <td colspan="3">
+                                <textarea style="width:100%" v-model="WxTemplateTitle" placeholder="first.DATA"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>底部文案</td>
+                            <td colspan="3">
+                                <textarea style="width:100%" v-model="WxTemplateContent" placeholder="remark.DATA"></textarea>
+                            </td>
+                        </tr>
+
+                        <tr><td class="tdtitle" colspan="4">模版固定参数</td></tr>
+                        <tr v-for="key in WxTemplateContentDesc">
+                            <td colspan="2">
+                                {{key.Key}}
+                            </td>
+                            <td colspan="2">
+                                <textarea style="width:100%" rows="2" type="text" :value="key.Value" v-model="key.Value"> </textarea>
+                            </td>
+                        </tr>
+
+                        <tr><td class="tdtitle" colspan="4">模版固定参数颜色</td></tr>
+                        <tr v-for="key in WxTemplateColors">
+                            <td colspan="2" v-bind:style="{ color:key.Value}">
+                                {{key.Key}}
+                            </td>
+                            <td colspan="2">
+                                <input v-on:change="ColorChange(key.Value)" style="width: 100%" type="text" :value="key.Value" v-model="key.Value" />
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>外部参数说明</td>
+                            <td colspan="3">
+                                <button v-on:click="AddKeyValue(template)">添加</button>
+                            </td>
+                        </tr>
+                        <tr v-for="keyvaluedesc in template.ExtraDict">
+                            <td colspan="1">
+                                <input type="text" style="width: 80%" :value="keyvaluedesc.Key" v-model="keyvaluedesc.Key" />
+                            </td>
+                            <td colspan="2">
+                                <input style="width: 100%" type="text" v-model="keyvaluedesc.Value" />
+                            </td>
+                            <td>
+                                <button v-on:click="DeleteKeyValueDesc(template,keyvaluedesc)">删除</button>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>微信小程序</td>
+                            <td colspan="2">
+                                <select v-model="WxAppPlatformForWxOpen" :value="WxAppPlatformForWxOpen" v-on:change="WxAPPPlatformForWxOpenSelectChange">
+                                    <option v-for="c in WxAppConfigs" value="{{c.platform}}">
+                                        {{c.name}}
+                                    </option>
+
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>跳转链接</td>
+                            <td colspan="3">
+                                <textarea v-model="template.AppActivity" :value="template.AppActivity" style="width: 100%"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>外部参数说明</td>
+                            <td colspan="3">
+                                <button v-on:click="AddKeyValueDesc(template)">添加</button>
+                            </td>
+                        </tr>
+                        <tr v-for="keyvaluedesc in template.KeyValueDesc">
+                            <td colspan="1">
+                                <input type="text" style="width: 80%" :value="keyvaluedesc.Key" v-model="keyvaluedesc.Key" />
+
+                            </td>
+                            <td colspan="2">
+                                <input style="width: 100%" type="text" v-model="keyvaluedesc.Value" :value="keyvaluedesc.Value" />
+                            </td>
+                            <td>
+                                <button v-on:click="DeleteKeyValueDesc(template,keyvaluedesc)">删除</button>
+                            </td>
+                        </tr>
+
+                        <tr v-show="IsShowWxTemplateIdInput">
+                            <td>微信图文模板Id</td>
+                            <td colspan="3">
+                                <input type="text" v-model="WeixinMediaId" :value="WeixinMediaId" style="width: 100%" />
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="2">
+                                <button v-on:click="SaveTemplate(template)">保存</button>
+                            </td>
+                            <td colspan="2">
+                                <button v-on:click="PreviewTemplate(template)">预览</button>
+                            </td>
+                        </tr>
+                    </template>
+                    <!-- 微信公众号模版消息 End -->
+
+                    <template v-if="template.DeviceType==6">
+                        <tr>
+                            <th class="tdtitle" colspan="4">{{template.PushTypeDesc}}内容设置</th>
+                        </tr>
+                        <tr>
+                            <th>标题</th>
+                            <th colspan="2">模版ID</th>
+                            <th>操作</th>
+                        </tr>
+                        <tr>
+                            <td>{{SelectWxAPPTemplate.title}}</td>
+                            <td style="WORD-WRAP: break-word" colspan="2">{{SelectWxAPPTemplate.template_id}}</td>
+                            <td>
+                                @*<input type="radio" v-model="template.WxTemplateID" :value="SelectWxAPPTemplate.template_id" />
+                                    <span>选中</span>*@
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>消息内容</td>
+                            <td colspan="3">
+                                {{SelectWxAPPTemplate.content}}
+                            </td>
+                        </tr>
+
+                        <tr><td colspan="4">外部参数说明</td></tr>
+                        <tr v-for="key in template.ContentDesc">
+                            <td>
+                                {{key.Key}}
+                            </td>
+                            <td colspan="3">
+                                <textarea rows="2" type="text" style="width:100%" :value="key.Value" v-model="key.Value"> </textarea>
+                            </td>
+                        </tr>
+                        <tr><td class="tdtitle" colspan="4">模版固定参数颜色</td></tr>
+                        <tr v-for="key in WxAPPTemplateColors">
+                            <td colspan="2" v-bind:style="{ color:key.Value}">
+                                {{key.Key}}
+                            </td>
+                            <td colspan="2">
+                                <input v-on:change="ColorChange(key.Value)" style="width: 100%" type="text" :value="key.Value" v-model="key.Value" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>模板需要放大的关键词</td>
+                            <td colspan="3">
+                                <select v-model="WxAppEmKeyWord">
+                                    <option value="">无</option>
+                                    <option v-for="option in template.ContentDesc" v-bind:value="option.Key">
+                                        {{ option.Key }}
+                                    </option>
+                                </select>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>跳转链接</td>
+                            <td colspan="3">
+                                <textarea v-model="template.AppActivity" :value="template.AppActivity" style="width: 100%"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>外部参数说明</td>
+                            <td colspan="3">
+                                <button v-on:click="AddKeyValueDesc(template)">添加</button>
+                            </td>
+                        </tr>
+                        <tr v-for="keyvaluedesc in template.KeyValueDesc">
+                            <td colspan="1">
+                                <input type="text" style="width: 80%" :value="keyvaluedesc.Key" v-model="keyvaluedesc.Key" />
+
+                            </td>
+                            <td colspan="2">
+                                <input style="width: 100%" type="text" v-model="keyvaluedesc.Value" :value="keyvaluedesc.Value" />
+                            </td>
+                            <td>
+                                <button v-on:click="DeleteKeyValueDesc(template,keyvaluedesc)">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>微信小程序</td>
+                            <td colspan="2">
+                                <select v-model="WxAppPlatform" :value="WxAppPlatform" v-on:change="WxAPPPlatformSelectChange">
+                                    <option v-for="c in WxAppConfigs" value="{{c.platform}}">
+                                        {{c.name}}
+                                    </option>
+
+                                </select>
+                            </td>
+                        </tr>
+                        <tr v-for="t in NotSelectedWxAppTemplates">
+                            <td>
+                                {{t.title}}
+                            </td>
+                            <td style="WORD-WRAP: break-word" colspan="2">
+                                {{t.template_id}}
+                            </td>
+                            <td>
+                                <input type="radio" v-model="template.WxTemplateID" :value="t.template_id" />
+                                <span>选中</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <button v-on:click="SaveTemplate(template)">保存</button>
+                            </td>
+                            <td colspan="2">
+                                <button v-on:click="PreviewTemplate(template)">预览</button>
+                            </td>
+                        </tr>
+                    </template>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div id="diaglog" style="display:none;width:auto">
+    <span id="diaglogspan">填写预览手机号,用英文逗号隔开</span>
+    <p>
+        <textarea id="previewtargets" style="width: 100%">
+        </textarea>
+    </p>
+</div>
+<script src="https://res.tuhu.org/lib/vuejs/vue.min.js?v=20160704" type="text/javascript"></script>
+<script src="https://res.tuhu.org/lib/require/require.min.js" type="text/javascript"></script>
+
+<script src="~/Scripts/Push/SinglePush.js?v=12113"></script>
+<script src="/Scripts/ajaxfileupload.js" type="text/javascript"></script>
+
+<script>
+    require(['vue-edit-single-push'])
+</script>

@@ -1,0 +1,338 @@
+﻿@{
+    ViewBag.Title = "";
+    Layout = null;
+}
+@model Tuhu.Provisioning.DataAccess.Entity.ActivityBuildDetail
+
+
+
+<form id="editFormByOne" class="easyui-form editForm">
+    <table id="editTableByOne">
+        <tr>
+            <td>PID:</td>
+            <td colspan="2">
+                <input type="text" id="PID" name="PID" value="@(Model == null?"":Model.PID)" onchange="GetProductImage(this, 'editTableByOne')" />
+            </td>
+        </tr>
+        <tr>
+            <td>产品名称:</td>
+            <td colspan="2">
+                <input type="text" id="ProductName" name="ProductName" style="width:300px;" value="@Model.ProductName" />
+            </td>
+        </tr>
+        <tr>
+            <td>活动ID：</td>
+            <td colspan="2">
+                <input type="text" id="VID" name="VID" value="@(Model == null?"":Model.VID)"  />
+            </td>
+        </tr>
+        <tr>
+            <td>优惠卷ID：</td>
+            <td colspan="2">
+                <input type="text" name="CID" value="@(Model == null?"":Model.CID)" onchange="BindCoupon('editFormByOne')" />
+               @*@MvcHtmlString.Create(ViewBag.CIDHtml)*@
+            </td>
+
+        </tr>
+        <tr>
+            <td>图片:</td>
+            <td>
+                <img id="cimg" width="20" height="20" src="@(Model== null?"":Model.SmallImage)" />
+                <input type="hidden" id="hidCimg" name="hidCimg" value="@(Model == null?"":Model.Image)" />
+            </td>
+            <td>
+                <input id="cFile" type="file" name="cFile" onchange="UploadImg(this, 'cimg', 'hidCimg', 'IsUploading', 'editTableByOne')" />
+                <input type="hidden" id="IsUploading" name="IsUploading" value="@(Model == null?"0":Model.IsUploading.ToString())" />
+            </td>
+        </tr>
+        <tr id="TwoPic" style="display:@(Model.TwoSImage ==""?"none":"");">
+            <td>图片(二):</td>
+            <td>
+                <img id="cimgTwoPic" width="20" height="20"  src="@(Model.TwoSImage == ""?"":Model.TwoSImage)" />
+                <input type="hidden" id="hidCimgTwoPic" name="hidCimgTwoPic" value="@(Model.TwoBImage == ""?"":Model.TwoBImage)" />
+            </td>
+            <td>
+                <input id="FileTwoPic" type="file" name="FileTwoPic" onchange="UploadImg(this, 'cimgTwoPic', 'hidCimgTwoPic', 'IsUploading', 'editTableByOne')" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                活动类型:
+            </td>
+            <td colspan="2">
+                <select id="Type" name="Type" onchange="DropDownChange('oneFormByOne')">
+                    <option value="-1">请选择</option>
+                    @if (Model != null && Model.Type == 0)
+                    {
+                        <option value="0" selected="selected">轮胎</option>
+                    }
+                    else
+                    {
+                        <option value="0">轮胎</option>
+                    }
+
+                    @if (Model != null && Model.Type == 1)
+                    {
+                        <option value="1" selected="selected">车品</option>
+                    }
+                    else
+                    {
+                        <option value="1">车品</option>
+                    }
+
+                    @if (Model != null && Model.Type == 2)
+                    {
+                        <option value="2" selected="selected">链接</option>
+                    }
+                    else
+                    {
+                        <option value="2">链接</option>
+                    }
+
+                    @if (Model != null && Model.Type == 3)
+                    {
+                        <option value="3" selected="selected">图片</option>
+                    }
+                    else
+                    {
+                        <option value="3">图片</option>
+                    }
+
+                    @if (Model != null && Model.Type == 4)
+                    {
+                        <option value="4" selected="selected">优惠卷</option>
+                    }
+                    else
+                    {
+                        <option value="4">优惠卷</option>
+                    }
+
+                    @if (Model != null && Model.Type == 5)
+                    {
+                        <option value="5" selected="selected">保养</option>
+                    }
+                    else
+                    {
+                        <option value="5">保养</option>
+                    }
+                    @if (Model != null && Model.Type == 6)
+                    {
+                        <option value="6" selected="selected">限购轮胎</option>
+                    }
+                    else
+                    {
+                        <option value="6">限购轮胎</option>
+                    }
+                    @if (Model != null && Model.Type == 7)
+                    {
+                        <option value="7" selected="selected">限购车品</option>
+                    }
+                    else
+                    {
+                        <option value="7">限购车品</option>
+                    }
+
+
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>是否图片:</td>
+            <td colspan="2">
+                <select name="IsImage" id="IsImage">
+                    @if (Model != null && Model.IsUploading == 0)
+                    {
+                        <option value="0" selected="selected">模板</option>
+                    }
+                    else
+                    {
+                        <option value="0">模板</option>
+                    }
+
+                    @if (Model != null && Model.IsUploading == 1)
+                    {
+                        <option value="1" selected="selected">图片</option>
+                    }
+                    else
+                    {
+                        <option value="1">图片</option>
+                    }
+
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>显示方式:</td>
+            <td>
+                <select name="DisplayWay" id="DisplayWay">
+                    @if (Model != null && Model.DisplayWay == -1)
+                    {
+                        <option value="-1" selected="selected">不选择</option>
+                    }
+                    else
+                    {
+                        <option value="-1" >不选择</option>
+                    }
+
+                    @if (Model != null && Model.DisplayWay == 0)
+                    {
+                        <option value="0" selected="selected">竖向</option>
+                    }
+                    else
+                    {
+                        <option value="0">竖向</option>
+                    }
+
+                    @if (Model != null && Model.DisplayWay == 1)
+                    {
+                        <option value="1" selected="selected">横向</option>
+                    }
+                    else
+                    {
+                        <option value="1">横向</option>
+                    }
+
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>描述:</td>
+            <td colspan="2">
+               @if (Model != null && Model.Description != null)
+               {
+                <textarea name="Description"  id="Description" style="width:280px;height:16px; font-size:12px; overflow:hidden;">@Model.Description</textarea>
+               }
+               else
+               {
+                <textarea name="Description"  id="Description" style="width:280px;height:16px; font-size:12px; overflow:hidden;"></textarea>
+               }
+             </td>
+        </tr>
+        <tr>
+            <td>URL:</td>
+            <td colspan="2">
+                <input type="text" name="Url" value="@(Model == null?"":Model.LinkUrl)" />
+            </td>
+        </tr>
+        <tr>
+            <td>微信Url:</td>
+            <td colspan="2">
+                <input type="text" name="WXUrl" value="@(Model == null?"":Model.WXUrl)" />
+            </td>
+        </tr>
+        <tr>
+            <td>官网URL：</td>
+            <td colspan="2">
+                <input type="text" name="PCUrl" value="@(Model == null?"":Model.PCUrl)" />
+            </td>
+        </tr>
+        <tr>
+            <td>排序:</td>
+            <td colspan="2">
+                <input type="text" name="OrderBy" value="@(Model == null?"":Model.OrderBy)" />
+            </td>
+        </tr>
+        <tr style="display:none;">
+            <td>轮胎品牌:</td>
+            <td colspan="2">
+                <select id="TireBrand" name="TireBrand">
+                    <option value="-1">不选择</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">APP处理值(IOS):</td>
+            <td>
+                <input type="text" name="HandlerIOS" value="@(Model == null || Model.HandlerIOS ==  ""?"":Model.HandlerIOS)" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">APP处理值(Android):</td>
+            <td>
+                <input type="text" name="HandlerAndroid" value="@(Model == null||Model.HandlerAndroid == ""?"":Model.HandlerAndroid)" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">特殊通讯值(IOS):</td>
+            <td>
+                <input type="text" name="SOAPIOS" value="@(Model == null?"":Model.SOAPIOS)" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">特殊通讯值(Android)：</td>
+            <td>
+                <input type="text" name="SOAPAndroid" value="@(Model == null?"":Model.SOAPAndroid)" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <span style="color:red;">
+                    【特殊通讯值】填写时，不用单引号【'】以及不用中括号【[]】
+                    <br />
+                    例如(不符合格式):<br />
+                    {'name':'value','key':1} 、<br />
+                    [{"name":"value","key":1} ]
+                </span>
+
+            </td>
+        </tr>
+    </table>
+
+</form>
+
+<script type="text/javascript">
+  
+
+    function getDataRow() {
+        var date = (new Date()).Format("yyyyMMddhhmmss");
+        var data = {
+            'Group':date,
+            'PID': $('#editTableByOne [name=PID]').val(),
+            'VID': $('#editTableByOne [name=VID]').val(),
+            'CID': $('#editTableByOne [name=CID]').val(),
+            'SmallImage': $('#editTableByOne [id=cimg]').attr('src') || '', //小图路径
+            'Image': $('#editTableByOne [name=hidCimg]').val(), //大图
+            'BigImg': 0,
+            'Type': $('#editTableByOne [name=Type]').val(), //类型
+            'OrderBy': $('#editTableByOne [name=OrderBy]').val(),
+            'LinkUrl': $('#editTableByOne [name=Url]').val(),
+            'HandlerIOS': $('#editTableByOne [name=HandlerIOS]').val(),
+            'HandlerAndroid': $('#editTableByOne [name=HandlerAndroid]').val(),
+            'SOAPIOS': $('#editTableByOne [name=SOAPIOS]').val(),
+            'SOAPAndroid': $('#editTableByOne [name=SOAPAndroid]').val(),
+            'IsUploading': $('#editTableByOne [name=IsImage]').val(), //$('#editTableByOne [name=IsUploading]').val()||0
+            'DisplayWay': $('#editTableByOne [name=DisplayWay]').val(),//显示方式
+            'Description': $('#editTableByOne [name=Description]').val() //描述
+        };
+
+        if (data.Type == 4) {
+            //优惠卷
+            data.TwoSImage = $('#editTableByOne [id=cimgTwoPic]').attr('src') || '';
+            data.TwoBImage = $('#editTableByOne [name=hidCimgTwoPic]').val();
+        }
+
+        //if ($('#editTableByOne [name=TireBrand]').val() != -1) {
+        //    //选择车牌
+        //    data.TireBrand = $('#editTableByOne [name=TireBrand]').val();
+        //}
+
+        if ((data.Type == 0 || data.Type == 1 || data.Type == 6 || data.Type == 7) && data.IsUploading == 0) {
+            data.ProductName = $('#editTableByOne [name=ProductName]').val();
+        }
+
+
+        var wxurl = $('#editTableByOne [name=WXUrl]').val();
+        if (wxurl != "") {
+            data.WXUrl = wxurl;
+        }
+
+        data.PCUrl = $('#editTableByOne [name=PCUrl]').val();
+
+        console.log(data);
+        return data;
+
+    }
+
+
+
+</script>

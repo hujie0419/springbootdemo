@@ -1,0 +1,187 @@
+﻿
+@{
+    ViewBag.Title = "搜索联想词标签配置";
+}
+
+<h2>搜索联想词标签配置</h2>
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    textarea {
+        width: 100px;
+        height: 100px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+</style>
+<div style="position:relative;display:none">
+    <span style="margin-left:100px;width:18px;overflow:hidden;">
+        <select style="width:118px;margin-left:-100px" onchange="this.parentNode.nextSibling.value=this.value">
+            <option value="">请选择 </option>
+            <option value="csdn">csdn </option>
+            <option value="123">123</option>
+            <option value="write.blog.csdn.net/postedit">write.blog.csdn.net/postedit </option>
+        </select>
+    </span><input name="box" style="width:100px;position:absolute;left:0px;">
+</div>
+<div>
+    <table>
+        <tbody>
+            <tr>
+                <td>
+                    <a href="javascript:void(0)" class="btn" onclick="SearchWordBrandsConfig.Add()">添加</a>
+                </td>
+                <td>
+                    <label for="keyword">联想词 : </label>
+                    <input id="keyword" name="keyword" type="text" list="keyslist" onkeyup="changeValue()" />
+                    <datalist id="keyslist">
+                    </datalist>
+                </td>
+                <td><input type="button" style="margin-top:0" class="btn" onclick="SearchWordBrandsConfig.SearchList()" value="搜索" /></td>
+                <td><input type="button" style="margin-top:0" class="btn" onclick="SearchWordBrandsConfig.Refresh()" value="刷新缓存" /></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="listdata"></div>
+<script>
+
+    $(function () {
+        $(".listdata").load("/SearchWordBrandsConfig/list");
+        $(".listdata").on("click", ".pager>a", function (event) {
+            event.preventDefault();
+            debugger;
+            $.ajax({
+                type: "POST",
+                url: this.href,
+                data: { "keyword": $("#keyword").val() },
+                success: function (result) {
+                    $(".listdata").html(result);
+                },
+                error: function (result) {
+                    alert("失败!")
+                }
+            });
+        });
+    })
+    var SearchWordBrandsConfig = {
+        "SearchList": function () {
+            $.ajax({
+                type: "POST",
+                url: "/SearchWordBrandsConfig/List",
+                data: { "keyword": $("#keyword").val() },
+                success: function (result) {
+                    $(".listdata").html(result);
+                },
+                error: function (result) {
+                    alert("失败!")
+                }
+            });
+        },
+        "Add": function () {
+            $("#AddItem").load('/SearchWordBrandsConfig/Edit?id=0');
+            $("#AddItem").dialog({
+                title: "添加",
+                width: 400,
+                height: 400,
+                modal: true
+            });
+        },
+        "Update": function (id) {
+            $("#AddItem").load('/SearchWordBrandsConfig/Edit?id=' + id);
+            $("#AddItem").dialog({
+                title: "修改 id=" + id,
+                width: 400,
+                height: 400,
+                modal: true
+            });
+        },
+        "Delete": function (id) {
+            if (window.confirm("您确定要删除吗？")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/SearchWordBrandsConfig/Delete",
+                    data: { "id": id },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/SearchWordBrandsConfig/Index";
+                        }
+                        else {
+                            alert("删除失败！");
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        },
+        "Refresh": function () {
+            if (window.confirm("您确定要刷新缓存吗？")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/SearchWordBrandsConfig/Refresh",
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            alert("刷新成功");
+                        }
+                        else {
+                            alert("删除失败！");
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        }
+    }
+    var oldValue = "";
+    function changeValue() {
+        if ($("#keyword").val() === oldValue)
+            return;
+        oldValue = $("#keyword").val();
+        $.ajax({
+            type: "GET",
+            url: "/SearchWordBrandsConfig/GetSuggest",
+            data: {
+                "keyWord": $("#keyword").val() },
+            dataType: "json",
+            success: function (result) {
+                if (result != "") {
+                    $("#keyslist").html("");
+                    var html = "";
+                    $.each(result, function (one) {
+                        html += ("<option value='" + result[one] + "'>");
+                    });
+                    $("#keyslist").html("").html(html);
+                }
+                else {
+                }
+            },
+            error: function (result) {
+            }
+        })
+    }
+</script>  

@@ -1,0 +1,60 @@
+﻿@using Tuhu.Provisioning.Models
+@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.ExchangeCenterConfig>
+@{
+    Layout = "";
+}
+<div>
+    <table style="width:100%;margin-top:20px;">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>优惠券Id</th>
+                <th>优惠券名称</th>
+                <th>兑换周期（天）</th>
+                <th>兑换积分值</th>
+                <th>兑换截至时间</th>
+                <th>优惠券总量</th>
+                <th>优惠券剩余数量</th>
+                <th>配置位置</th>
+                <th>PID</th>
+                <th>用户等级</th>
+                <th>顺序</th>
+                <th>兑换类型</th>
+                <th>中奖概率</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.CouponId</td>
+                    <td>@item.CouponName</td>
+                    <td>@item.Period</td>
+                    <td>@item.PointsValue</td>
+                    <td>@item.EndTime</td>
+                    <td>@item.CouponSum</td>
+                    <td>@item.CouponSurplus</td>
+                    <td>@item.Postion</td>
+                    <td>@item.PID</td>
+                    <td>@item.UserRank</td>
+                    <td>@item.Sort</td>
+                    <td>@(item.ExchangeCenterType == null ? "" : item.ExchangeCenterType == true ? "抽奖" : "兑换")</td>
+                    <td>@(item.Chance != null ? item.Chance + "" : "")</td>
+                    <td>@(item.Status ? "启用" : "禁用")</td>
+                    <td>
+                        <a href="javascript:;" onclick="ExchangeCenterConfig.Update(@item.Id)">编辑</a>&nbsp;&nbsp;
+                        <a href="javascript:;" onclick="ExchangeCenterConfig.Copy(@item.Id)">复制</a>&nbsp;&nbsp;
+                        <a href="javascript:;" onclick="ExchangeCenterConfig.Delete(@item.Id)">删除</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div>
+    @Html.Pager(Model.Pager, pageIndex => Url.RouteUrl(new { pageIndex }))
+</div>

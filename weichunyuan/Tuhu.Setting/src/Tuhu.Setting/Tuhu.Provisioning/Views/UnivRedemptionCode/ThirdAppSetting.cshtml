@@ -1,0 +1,421 @@
+﻿
+@{
+    ViewBag.Title = "第三方OpenApp配置【这里只提供大客户来源的编辑】";
+    Layout = "~/Views/Shared/_LayoutNew.cshtml";
+}
+<head>
+    <meta charset="utf-8">
+    <title>iview example</title>
+    <link href="~/Content/iview/iview.css" rel="stylesheet" />
+    <script src="~/Scripts/vue.min.js"></script>
+    <script src="~/Scripts/iview/iview.min.js"></script>
+    <style>
+        .ivu-table .demo-table-info-row td {
+            background-color: #2db7f5;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-error-row td {
+            background-color: #ff6600;
+            color: #fff;
+        }
+
+        .ivu-table td.demo-table-info-column {
+            background-color: #2db7f5;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-info-cell-name {
+            background-color: #2db7f5;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-info-cell-age {
+            background-color: #ff6600;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-info-cell-address {
+            background-color: #187;
+            color: #fff;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+
+@section title{
+    <a href="/UnivRedemptionCode/GroupSetting">套餐分组配置</a>&nbsp;&nbsp;&gt;&nbsp;&nbsp;@ViewBag.Title
+}
+<body>
+
+    <div id="app" style="margin-left:10px;margin-right:10px;" v-cloak>
+        <br />
+        <i-input v-model="searchKey" placeholder="OpenApp名称" style="width:200px;"></i-input> <i-button type="primary" shape="circle" icon="ios-search" v-on:click="search">查询</i-button>
+        <i-Button type="primary" v-on:click="editSetting()">新增</i-Button>
+        <br /><br />
+        <i-table :data="tabledata" :columns="tableColumns" :loading="loading"></i-table>
+        <div style="margin: 10px;overflow: hidden">
+            <div style="float: right;">
+                <Page :total="totalCount" :current="currentPage" :page-size="pageSize" show-total v-on:on-change="changePage"></Page>
+            </div>
+        </div>
+        <div>
+            <Modal title="添加OpenApp配置" v-model="showModal" width="600"
+                   :mask-closable="false"
+                   v-on:on-ok="saveSetting"
+                   v-on:on-cancel="cancelSetting">
+                <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                    <i-col span="5">
+                        <div class="modal-label">AppId:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-input v-model="editData.AppId" readonly="readonly" placeholder="AppId由服务端自动生成" style="color:red"></i-input>
+                    </i-col>
+                    <i-col span="5">
+                        <div class="modal-label">AppSecret:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-input v-model="editData.AppSecret" readonly="readonly" placeholder="AppSecret由服务端自动生成"></i-input>
+                    </i-col>
+                    <i-col span="5">
+                        <div class="modal-label">第三方名称:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-input v-model="editData.AppName" placeholder="第三方app名称"></i-input>
+                    </i-col>
+                    <i-col span="5">
+                        <div class="modal-label">私匙:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-input v-model="editData.PrivateKey" placeholder="私匙"></i-input>
+                    </i-col>
+                    <i-col span="5">
+                        <div class="modal-label">获取大客户用户地址:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-input v-model="editData.BigCustomerUrlInstanse.GetUserUrl" placeholder="获取大客户用户地址"></i-input>
+                    </i-col>
+                    <i-col span="5">
+                        <div class="modal-label">核销通知大客户地址:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-input v-model="editData.BigCustomerUrlInstanse.VerifyUrl" placeholder="核销通知大客户地址"></i-input>
+                    </i-col>
+                    <i-col span="5">
+                        <div class="modal-label">选择订单来源:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-select filterable style="width:70%" v-model="editData.OrderChannel">
+                            <i-option v-for="channel in OrderChannels" :value="channel" :key="channel">{{channel}}</i-option>
+                        </i-select>
+                    </i-col>
+                    <i-col span="5">
+                        <div class="modal-label">选择签名类型:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-select filterable style="width:70%" v-model="editData.SignType">
+                            <i-option v-for="sType in SignTypes" :value="sType" :key="sType">{{sType}}</i-option>
+                        </i-select>
+                    </i-col>
+                    <i-col span="5">
+                        <div class="modal-label">选择加密类型:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-select filterable style="width:70%" v-model="editData.EncryptType">
+                            <i-option v-for="eType in EncryptTypes" :value="eType" :key="eType">{{eType}}</i-option>
+                        </i-select>
+                    </i-col>
+                    <i-col span="5">
+                        <div class="modal-label">选择大客户状态:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-select filterable style="width:70%" v-model="editData.BigCustomerStatus">
+                            <i-option v-for="bcStatus in BigCustomerStatusList" :value="bcStatus.Id" :key="bcStatus.Id">{{bcStatus.Name}}</i-option>
+                        </i-select>
+                    </i-col>
+                </row>
+            </Modal>
+        </div>
+
+    </div>
+</body>
+@section scripts{
+    <script>
+        var vue = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    tabledata: [],
+                    tableColumns: [
+                        {
+                            title: 'Id',
+                            key: 'Id',
+                            width: 100,
+                        },
+                        {
+                            title: 'AppId',
+                            key: 'AppId'
+                        },
+                        {
+                            title: 'AppName',
+                            key: 'AppName'
+                        },
+                        {
+                            title: 'OrderChannel',
+                            key: 'OrderChannel',
+                            width: 180,
+                        },
+                        {
+                            title: '创建时间',
+                            key: 'CreateTimeString',
+                            width: 180,
+                        },
+                        {
+                            title: '操作',
+                            key: 'action',
+                            width: 260,
+                            align: 'center',
+                            render: (h, params) => {
+                                return h('div', [
+                                    h('Button', {
+                                        props: {
+                                            type: 'primary',
+                                            size: 'small'
+                                        },
+                                        attrs: {
+                                            disabled: function (row) {
+                                                console.log(params);
+                                                if (row.OrderChannel == "大客户") {
+
+                                                }
+                                                else {
+                                                    return "disabled";
+                                                }
+                                            }(params.row),
+                                        },
+                                        style: {
+                                            marginRight: '5px'
+                                        },
+                                        on: {
+                                            click: () => {
+                                                this.editSetting(params.row)
+                                            }
+                                        }
+                                    }, '编辑'),
+                                ]);
+                            }
+                        }
+                    ],
+                    currentPage: 1,
+                    pageSize: 10,
+                    editData: {
+                        BigCustomerUrlInstanse: {
+                            GetUserUrl: '',
+                            VerifyUrl: ''
+                        }
+                    },
+                    showModal: false,
+                    totalCount: 0,
+                    searchKey: '',
+                    loading: false,
+                    EncryptTypes: [
+                        "RSA"
+                    ],
+                    SignTypes: [
+                        "Sha256"
+                    ],
+                    OrderChannels: [
+                        "大客户"
+                    ],
+                    BigCustomerStatusList: [
+                        { Id: "Informal", Name: "测试" },
+                        { Id: "formal", Name: "正式" }
+                    ]
+                }
+            },
+            mounted: function () {
+                this.GetDataList();
+            },
+            methods: {
+                GetDataList() {
+                    var _this = this;
+
+                    _this.loading = true;
+                    _this.totalCount = 0;
+                    var keyword = _this.searchKey;
+
+                    var pageSize = _this.pageSize;
+                    if (!pageSize) {
+                        pageSize = 10;
+                    }
+                    var pageIndex = _this.currentPage;
+                    if (!pageIndex) {
+                        pageIndex = 1;
+                    }
+
+                    $.ajax({
+                        url: "/UnivRedemptionCode/GetThirdAppSettings",
+                        type: "POST",
+                        //async: false,
+                        data: {
+                            PageIndex: pageIndex,
+                            PageSize: pageSize,
+                            KeyWord: keyword
+                        },
+                        success: function (data) {
+                            if (data != null && data.total > 0) {
+                                _this.totalCount = data.total;
+                                _this.tabledata = data.result;
+                            }
+                            else {
+                                _this.tabledata = [];
+                            }
+                            _this.loading = false;
+                        },
+                        error: function () {
+                            alert("服务端异常！");
+                            _this.tabledata = [];
+                            _this.loading = false;
+                        }
+                    });
+
+                },
+                changePage(page) {
+                    // The simulated data is changed directly here, and the actual usage scenario should fetch the data from the server
+                    this.currentPage = page;
+                    this.GetDataList();
+                },
+                editSetting(item) {
+                    var _this = this;
+                    if (_this.showModal)
+                        return;
+                    _this.showModal = true;
+                    var pkid = 0;
+
+                    if (!item) {
+                    }
+                    else {
+                        pkid = item.Id;
+                    }
+
+
+                    $.post("/UnivRedemptionCode/GetThirdAppSettingsDetail", { pkid: pkid },
+                        function (data) {
+                            if (data.result != null) {
+                                _this.editData = data.result
+                            }
+                            else {
+                                alert("服务端异常！");
+                                window.location.href = '/UnivRedemptionCode/ThirdAppSetting';
+                            }
+                        }, "JSON")
+                },
+                saveSetting() {
+                    var _this = this;
+                    var name = _this.editData.AppName;
+                    if (!name) {
+                        _this.$Notice.warning({
+                            title: '第三方名称:不能为空！',
+                            desc: '第三方名称:不能为空！'
+                        });
+                        return;
+                    }
+                    var orderChannel = _this.editData.OrderChannel;
+                    if (!orderChannel) {
+                        _this.$Notice.warning({
+                            title: '订单来源:不能为空！',
+                            desc: '订单来源:不能为空！'
+                        });
+                        return;
+                    }
+                    var signType = _this.editData.SignType;
+                    if (!signType) {
+                        _this.$Notice.warning({
+                            title: '签名类型:不能为空！',
+                            desc: '签名类型:不能为空！'
+                        });
+                        return;
+                    }
+                    var encryptType = _this.editData.EncryptType;
+                    if (!encryptType) {
+                        _this.$Notice.warning({
+                            title: '加密类型:不能为空！',
+                            desc: '加密类型:不能为空！'
+                        });
+                        return;
+                    }
+                    var bigCustomerStatus = _this.editData.BigCustomerStatus;
+                    if (!bigCustomerStatus) {
+                        _this.$Notice.warning({
+                            title: '大客户状态:不能为空！',
+                            desc: '大客户状态:不能为空！'
+                        });
+                        return;
+                    }
+                    $.ajax({
+                        url: "/UnivRedemptionCode/SaveThirdAppSetting",
+                        type: "POST",
+                        async: true,
+                        data: { model: _this.editData },
+                        success: function (data) {
+                            if (data.result) {
+                                window.location.href = '/UnivRedemptionCode/ThirdAppSetting';
+                            }
+                            else {
+                                alert(data.msg);
+                            }
+                        },
+                        error: function () {
+                            alert("服务端异常！");
+                            _this.tabledata = [];
+                        }
+                    });
+                },
+                cancelSetting() {
+                    var _this = this;
+                },
+                removeSetting(item) {
+                    var _this = this;
+                    if (!confirm("确认要删除该条分组配置？")) {
+                        return;
+                    }
+                    $.ajax({
+                        url: "/UnivRedemptionCode/DeleteThirdAppSetting",
+                        type: "POST",
+                        //async: false,
+                        data: { pkid: item.Id },
+                        success: function (data) {
+                            if (data.result) {
+                                window.location.href = '/UnivRedemptionCode/ThirdAppSetting';
+                            }
+                            else {
+                                alert(data.msg);
+                            }
+                        },
+                        error: function () {
+                            alert("服务端异常！");
+                            _this.tabledata = [];
+                        }
+                    });
+
+                },
+                search() {
+                    var keyword = this.searchKey;
+                    if (!keyword) {
+                        this.$Notice.warning({
+                            title: '请输入关键词',
+                            desc: '请输入关键词'
+                        });
+                        return;
+                    }
+                    this.GetDataList();
+                }
+            },
+        });
+
+
+    </script>
+}

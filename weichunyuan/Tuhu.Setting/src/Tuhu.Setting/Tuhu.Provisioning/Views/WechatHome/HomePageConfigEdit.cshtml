@@ -1,0 +1,52 @@
+﻿
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+@model  Tuhu.Provisioning.DataAccess.Entity.HomePageConfiguation
+
+
+<form id="form1">
+
+
+    <table class="form">
+        
+        <tr>
+            <th class="formTitle">配置名称：</th>
+            <td class="formValue">
+                <input type="text" class="form-control required" id="Name" value="@Model.Name" name="Name"/>
+            </td>           
+        </tr>
+        <tr>
+            <th class="formTitle">key：</th>
+            <td class="formValue">
+                <input type="text" class="form-control required" id="ID" value="@Model.KeyValue" name="KeyValue" disabled />
+            </td>
+        </tr>
+          
+      
+    </table>
+    <input type="hidden" id="ID" name="ID" value="@Model.ID"/>
+</form>
+
+<script type="text/javascript">
+   
+
+    function submitForm() {
+        if (!$('#form1').formValid()) {
+            return false;
+        }
+
+        $.submitForm({
+            url: "/WechatHome/SaveHomePageConfig",
+            param: $("#form1").formSerialize(),
+            success: function () {
+              //  self.parent.$("#gridList").resetSelection();
+                self.parent.$("#gridList").trigger("reloadGrid");
+                self.parent.$('#loadingPage').hide();
+                self.parent.window.frames[0].location.reload();
+            }
+        })
+    }
+</script>
+

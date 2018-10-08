@@ -1,0 +1,409 @@
+﻿
+    @{
+        ViewBag.Title = "末类投诉编辑";
+    }
+    <link href="~/Content/sweetalert/sweetalert.css" rel="stylesheet" />
+
+    <style>
+        .error {
+            color: red;
+            display: none;
+        }
+    </style>
+    <div>
+    <h2>末类投诉编辑  |  @Html.ActionLink("订单关联投诉编辑", "LastLevelTousuEdit", "TousuConfig", new { target = "_blank" })  |  @Html.ActionLink("首类投诉编辑", "TopLevelTousuEdit", "TousuConfig", new { target = "_blank" })</h2>
+    </div>
+    <div>
+        <label>一级投诉：</label>
+
+        <select id="TopLevelOptions" name="TopLevelOptions" class="form-control" style="width:200px;" onchange="Func.TopLevelOptionChange(this.value)"></select>
+
+     
+
+    </div>
+    <div>
+        <label>二级投诉：</label>
+        <select id="SecondLevelOptions" name="SecondLevelOptions" class="form-control" style="width:200px;" onchange="Func.SecondLevelOptionChange(this.value)"></select>
+    </div>
+
+            <div>
+            <label>三级投诉：</label>
+            <select id="ThirdLevelOptions" name="ThirdLevelOptions" class="form-control" style="width:200px;" onchange="Func.ThirdLevelOptionChange(this.value)"></select>
+        </div>
+        <div>
+            <label>四级投诉：</label>
+            <select id="FourthLevelOptions" name="FourthLevelOptions" class="form-control" style="width:200px;" onchange="Func.FourthLevelOptionChange(this.value)"></select>
+        </div>
+
+
+    <button class="select" onclick="Func.LoadList(1)">搜索</button>
+                     
+   <div class="beforetable">
+                          每页显示：
+                          <select class="PageSize">
+                              <option value="10">10</option>
+                              <option value="20">20</option>
+                              <option value="50">50</option>
+                              <option value="100">100</option>
+                          </select>条
+                          <span class="data_count"></span>
+                      </div>
+<div class="list">
+</div>
+    <div id="UpdateItem" style="display:none;">
+        <span>业务系统显示名称：</span>
+        <input type="text" class="dictext-update" onfocus="$(this).next().hide()" disabled="disabled" />
+        <span />
+
+        <span>APP显示名称：</span>
+        <input type="text" class="appName-update" onfocus="$(this).next().hide()" />
+        <span class="error">请填写APP显示名称</span>
+
+
+        <input type="text" class="dicvalue-update" onfocus="$(this).next().hide()" style="display:none" />
+
+    </div>
+    <script src="~/Content/sweetalert/sweetalert.js"></script>
+    <script>
+        var Func = {
+            LoadList: function (index) {
+                var topLevelDicValue = $("#TopLevelOptions").val(),
+                    selectedDicValue = $("#SecondLevelOptions").val()
+               
+                    SecondDicValue = $("#SecondLevelOptions").val(),
+                    ThirdDicValue = $("#ThirdLevelOptions").val(),
+                    FourthDicValue = $("#FourthLevelOptions").val(),
+                        selectedDicValue = FourthDicValue.replace("末级投诉", "") || ThirdDicValue.replace("末级投诉", "") || SecondDicValue.replace("末级投诉", "") || topLevelDicValue.replace("末级投诉", ""),
+
+                    showLevel = 2;
+                if (selectedDicValue == SecondDicValue) {
+                    showLevel = 3
+                }
+                else if (selectedDicValue == ThirdDicValue) {
+                    showLevel = 4
+                }
+                else if (selectedDicValue == FourthDicValue) {
+                    showLevel = 5
+                }
+                pageSize = $(".PageSize>option:selected").val();
+                $.get("/TousuConfig/LastLevelTousuItemNameList", {
+                    dicValue: selectedDicValue,
+                    showLevel: showLevel,
+                    pageIndex: index,
+                    pageSize: pageSize
+                }, function (html, status) {
+                    if (status === "success") {
+                        $(".list").html(html);
+                        $(".data_count").text('共' + ($("table").length ? $("table").attr("data-count") : 0) + '条数据');
+
+                    }
+                });
+            },
+            TopLevelOptionChange: function (selectedText) {
+
+                //  Func.OrderTypeOptionChange($("#OrderTypeOptions").val());
+
+                $(".TopLevelOption").find("[name=toplevelcheckbox]").each(function () {
+                    if ($(this).val() == selectedText)
+                        $(this).prop("checked", true);
+                })
+                $.ajax({
+                    url: "/TousuConfig/GetTousuModelListByDicValue",
+                    type: "POST",
+                    data: {
+                        dicValue: selectedText,
+                    },
+                    dataType: "json",
+                    async: false,
+                    success: function (data) {
+                        var html = "";
+                        var n = data.length;
+                        var nodatahtml = null;
+                        var i = 1;
+                        if (n > 0) {
+
+                            for (var j = 0; j < n; j++) {
+                                if (data[j].HasThirdLevel) {
+                                    if (i == 1) {
+                                        html += "<option value='" + data[j].DicValue + "'" + " selected>" + data[j].DicText + "</option>";
+                                        i++;
+                                    }
+                                    else {
+                                        html += "<option value='" + data[j].DicValue + "'>" + data[j].DicText + "</option>";
+                                    }
+
+                                }
+                                else {
+                                    nodatahtml = '';
+
+                                }
+                            }
+                            if (nodatahtml == '') {
+                                html += "<option value='" + "末级投诉" + "'>" + "末级投诉" + "</option>";
+                            }
+
+                            $("#SecondLevelOptions").empty();
+                            $("#SecondLevelOptions").append(html);
+                            $("#SecondLevelOptions").enable = true;
+
+
+
+
+                        }
+                        // SecondLevelOptionChange($("#SecondLevelOptions").val())
+
+                        else {
+                            html = "<option value='" + "" + "'>" + "" + "</option>";
+                            $("#SecondLevelOptions").empty();
+                            $("#SecondLevelOptions").append(html);
+                            $("#SecondLevelOptions").enable = false;
+                        }
+                    },
+                    error: function () {
+                        alert("请求失败！");
+                        var html = "<option value=''>无数据</option>";
+                        $("#SecondLevelOptions").empty();
+                        $("#SecondLevelOptions").append(html);
+
+                    },
+                });
+                setTimeout(function () {
+                    Func.SecondLevelOptionChange($("#SecondLevelOptions").val());
+                }, 1000);
+            },
+
+            LoadTopLevelTousu: function () {
+                $.ajax({
+                    url: "/TousuConfig/GetTopLevelTousuList",
+                    type: "POST",
+                    data: {},
+                    dataType: "json",
+                    async: false,
+                    success: function (data) {
+                        var html = "";
+                        var n = data.length;
+                        if (n > 0) {                         
+                            for (var j = 0; j < n; j++) {
+                                html += "<option value='" + data[j].DicValue + "'>" + data[j].DicText + "</option>";
+                            }
+                        }
+                      
+                        $("#TopLevelOptions").empty();
+                        $("#TopLevelOptions").append(html);
+                        Func.TopLevelOptionChange($("#TopLevelOptions").val());
+                    },
+                    error: function () {
+                        alert("请求失败！");
+                      
+                        $("#TopLevelOptions").empty();
+                        $("#TopLevelOptions").append(html);
+                        Func.TopLevelOptionChange("");
+                    },
+                });
+            },
+
+          
+
+            SecondLevelOptionChange: function (selectedText) {
+
+                $.ajax({
+                    url: "/TousuConfig/GetTousuModelListByDicValue",
+                    type: "POST",
+                    data: {
+                        dicValue: selectedText,
+                    },
+                    dataType: "json",
+                    async: false,
+                    success: function (data) {
+                        var html = "";
+                        var n = data.length;
+                        var nodatahtml = null;
+                        var i = 1;
+                        if (n > 0) {
+                            for (var j = 0; j < n; j++) {
+                                if (data[j].HasFourthLevel) {
+                                    if (i == 1) {
+                                        html += "<option value='" + data[j].DicValue + "'" + " selected>" + data[j].DicText + "</option>";
+                                        i++;
+                                    }
+                                    else {
+                                        html += "<option value='" + data[j].DicValue + "'>" + data[j].DicText + "</option>";
+                                    }
+                                }
+                                else {
+                                    nodatahtml = '';
+                                }
+                            }
+                            if (nodatahtml == '') {
+                                html += "<option value='" + "末级投诉" + "'>" + "末级投诉" + "</option>";
+                            }
+
+                            $("#ThirdLevelOptions").empty();
+                            $("#ThirdLevelOptions").append(html);
+                            $("#ThirdLevelOptions").enable = true;
+
+                        }
+                        else {
+                            html = "<option value='" + "" + "'>" + "" + "</option>";
+                            $("#ThirdLevelOptions").empty();
+                            $("#ThirdLevelOptions").append(html);
+                            $("#ThirdLevelOptions").enable = false;
+
+                        }
+                    },
+                    error: function () {
+                        alert("请求失败！");
+                        var html = "<option value=''>无数据</option>";
+                        $("#ThirdLevelOptions").empty();
+                        $("#ThirdLevelOptions").append(html);
+
+                    },
+                });
+                setTimeout(function () {
+                    Func.ThirdLevelOptionChange($("#ThirdLevelOptions").val());
+                }, 1000);
+            },
+
+            ThirdLevelOptionChange: function (selectedText) {
+
+                $.ajax({
+                    url: "/TousuConfig/GetTousuModelListByDicValue",
+                    type: "POST",
+                    data: {
+                        dicValue: selectedText,
+                    },
+                    dataType: "json",
+                    async: false,
+                    success: function (data) {
+                        var html = "";
+                        var n = data.length;
+                        var nodatahtml = null;
+                        var i = 1;
+                        if (n > 0) {
+                            for (var j = 0; j < n; j++) {
+                                if (data[j].HasFifthLevel) {
+                                    if (i == 1) {
+                                        html += "<option value='" + data[j].DicValue + "'" + " selected>" + data[j].DicText + "</option>";
+                                        i++;
+                                    }
+                                    else {
+                                        html += "<option value='" + data[j].DicValue + "'>" + data[j].DicText + "</option>";
+                                    }
+                                }
+                                else {
+                                    nodatahtml = '';
+                                }
+                            }
+                            if (nodatahtml == '') {
+                                html += "<option value='" + "末级投诉" + "'>" + "末级投诉" + "</option>";
+                            }
+
+                            $("#FourthLevelOptions").empty();
+                            $("#FourthLevelOptions").append(html);
+                            $("#FourthLevelOptions").enable = true;
+
+                        }
+                        else {
+                            html = "<option value='" + "" + "'>" + "" + "</option>";
+                            $("#FourthLevelOptions").empty();
+                            $("#FourthLevelOptions").append(html);
+                            $("#FourthLevelOptions").enable = false;
+
+                        }
+                    },
+                    error: function () {
+                        alert("请求失败！");
+                        var html = "<option value=''>无数据</option>";
+                        $("#FourthLevelOptions").empty();
+                        $("#FourthLevelOptions").append(html);
+
+                    },
+                });
+
+            },
+
+            UpdateItem(json) {
+                json = JSON.parse(json);
+
+                //赋值
+
+                $("#UpdateItem").find(".dictext-update").val(json.DicText);
+
+                $("#UpdateItem").find(".dicvalue-update").val(json.DicValue);
+                $("#UpdateItem").find(".appName-update").val(json.AppDisplayName);
+
+                $("#UpdateItem").dialog({
+                    title: "修改",
+                    width: 800,
+                    height: 600,
+                    modal: true,
+                    buttons: {
+                        "保存": function () {
+                            var dialog = $(this);
+
+                            var
+                                DicValue = dialog.find(".dicvalue-update").val().trim(),
+                                AppDisplayName = dialog.find(".appName-update").val().trim(),
+                                oldAppDisplayName = json.DicText
+
+                            flag = true;
+
+
+
+                            if (!AppDisplayName.length) {
+                                dialog.find(".appName-update").parent().find(".error").show();
+                                flag = false;
+                            }
+
+
+                            if (flag) {
+                                $.post("/TousuConfig/UpdateTopLevelTouSu", {
+                                    DicValue: DicValue,
+                                    AppDisplayName: AppDisplayName,
+                                    oldAppDisplayName: oldAppDisplayName
+                                }, function (result) {
+                                    if (result > 0) {
+                                        swal({
+                                            title: "更新成功！"
+                                        },
+                                            function () {
+
+                                                Func.LoadList(1);
+                                            });
+                                    }
+                                    else
+                                        swal("更新失败!");
+                                });
+
+
+                            }
+
+                        },
+                        "关闭": function () {
+                            $(this).dialog("close"); //当点击取消按钮时，关闭窗口
+                        }
+                    }
+                });
+            }
+        }
+        $(function () {
+
+            $(".PageSize").change(function () {
+                Func.LoadList(1);
+            });
+            $(".list").on("click", ".pager>a", function (event) {
+                event.preventDefault();
+                var url = $(this).attr("href");
+                if (url) {
+                    $.post(url, function (html, status) {
+                        if (status === "success") {
+                            $(".list").html(html);
+                        }
+                    });
+                }
+            })
+            Func.LoadTopLevelTousu();
+            Func.LoadList(1);
+        })
+     
+    </script>

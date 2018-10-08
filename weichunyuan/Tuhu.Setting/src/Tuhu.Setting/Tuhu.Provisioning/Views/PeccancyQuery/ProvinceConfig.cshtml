@@ -1,0 +1,59 @@
+﻿@{
+    ViewBag.Title = "违章查询城市后台配置";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>违章查询城市后台配置</h2>
+<link href="~/Scripts/kkpager/kkpager_blue.css" rel="stylesheet" />
+<link rel="stylesheet" href="~/Content/PeccancyQuery/PeccancyQuery.css" />
+<link rel="stylesheet" href="~/Content/Public/Public.css" />
+<div>
+    <label>1.设置省份</label>
+    <a target="_blank" href="/PeccancyQuery/CityConfig">2.设置城市</a>
+</div>
+
+<div id="div">
+    <fieldset id="searchField">
+        <select id="province" onchange="Search(1)">
+            <option value=-1>-请选择省份-</option>
+        </select>
+        <button type="button" class="btn btn-primary" id="search" onclick="Search(1)">查询</button>
+        <button class="btn btn-add" onclick="Add()">新增</button>
+        <button class="btn btn-basic" onclick="RefreshCache()">刷新缓存</button>
+    </fieldset>
+    <div id="loadingData" style="display: none; width: 100%; text-align: center; border: 1px solid #eee; padding: 8px 0 8px 0">
+        <img src="/Images/loading.gif" style="height: 16px" />
+        <span style="vertical-align: top; margin-left: 5px;">正在光速加载中，请稍候！</span>
+    </div>
+    <div>
+        <table class="tableContainer" id="showArea" style="display:none">
+            <thead>
+                <tr style="white-space: nowrap;">
+                    <th>序号</th>
+                    <th>省份ID</th>
+                    <th>省份名称</th>
+                    <th>省份简称</th>
+                    <th>操作</th>
+                    <th>操作历史</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <table class="tableContainer" style="display:none" id="Template">
+        <tr>
+            <td style="white-space: nowrap;">$number$</td>
+            <td>$provinceId$</td>
+            <td>$provinceName$</td>
+            <td style="white-space: nowrap;">$provinceSimpleName</td>
+            <td style="white-space: nowrap;">$operate$</td>
+            <td style="white-space:nowrap;">$history$</td>
+        </tr>
+    </table>
+</div>
+
+<div id="noData" style="display: none; width: 100%; text-align: center; border: 1px solid #eee; padding: 8px 0 8px 0">
+    <span style="vertical-align: top; margin-left: 5px; font-weight: bolder">无数据！</span>
+</div>
+<div id="kkpager" colspan="8"></div>
+<script src="~/Scripts/PeccancyQuery/ProvinceConfig.js"></script>
+<script src="~/Scripts/kkpager/kkpager.min.js"></script>

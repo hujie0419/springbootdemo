@@ -1,0 +1,103 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.BaoYangModel
+
+@{
+    Layout = null;
+    
+}
+
+<form id="BaoyangindexconfigListItemForm">
+    @Html.HiddenFor(T => T.PKID)
+    <table>
+        <tr>
+            <td>@Html.LabelFor(T => T.byType) (xby)</td>
+            <td>@Html.TextBoxFor(T => T.byType) <span>@Html.ValidationMessageFor(T => T.byType)</span></td>
+
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(T => T.byValue) (小保养)</td>
+            <td>@Html.TextBoxFor(T => T.byValue) <span>@Html.ValidationMessageFor(T => T.byValue)</span></td>
+
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(T => T.ImgCode)</td>
+            <td>@Html.TextBoxFor(T => T.ImgCode) <span>@Html.ValidationMessageFor(T => T.ImgCode)</span></td>
+
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(T => T.StrUrl)</td>
+            <td>@Html.TextBoxFor(T => T.StrUrl) <span>@Html.ValidationMessageFor(T => T.StrUrl)</span></td>
+
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(T => T.sequence)</td>
+            <td>@Html.TextBoxFor(T => T.sequence) <span>@Html.ValidationMessageFor(T => T.sequence)</span></td>
+
+        </tr>
+        <tr>
+            <td></td>
+            <td><input type="button" id="submit" value="保存"/></td>
+            @Html.ValidationMessageFor(T => T.PKID)
+        </tr>
+    </table>
+</form>
+
+<script src="~/Scripts/jquery.validate.unobtrusive.js"></script>
+<script>
+    $("#submit").click(function () {
+        var isvalidate = $("#BaoyangindexconfigListItemForm").validate({
+            rules: {
+                PKID: {
+                    required: false
+                }
+            },
+            messages: {
+                PKID: "1111"
+            }
+
+        }).form();
+        var tempCode = encodeURIComponent($("#ImgCode").val(), true);
+        $("#ImgCode").val(tempCode);
+
+        var params = $("#BaoyangindexconfigListItemForm").serialize();
+ 
+
+         if (isvalidate) {
+             $.ajax({
+                 type: "post",
+                 url: "/Baoyang/BaoyangpageconfigListItem",
+                 data: params + "&type=index",
+                 success: function (data) {
+                     GetBaoYangIndexConfigItemList();
+                     $(".ui-button").click();
+                 },
+                 error: function () {
+                     alert('网络异常');
+                 }
+             });
+         }
+    });
+    //刷新主模块列表
+    function GetBaoYangIndexConfigItemList() {
+        $.ajax({
+            type: "post",
+            url: "/Baoyang/GetBaoyangIndexConfigItemList",
+            success: function (data) {
+                if (data != null && data.length > 0) {
+                    var HTMLDIV = "";
+                    $.each(data, function (i, j) {
+                        HTMLDIV = HTMLDIV + '<li id="' + j.PKID + '"><a>';
+                        if (j.isActivity) {
+                            HTMLDIV = HTMLDIV + '<div class="mark"><i class="i-arr"></i><span>' + j.Description + '</span></div>';
+                        }
+                        HTMLDIV = HTMLDIV + '<i class="icon iconfont" data-id=' + j.PKID + '>' + j.ImgCode + '</i><span><span style="display:inline-block;width:36px;white-space:pre-wrap;">' + j.byValue + '</span><span class="indexedit" data-ediid="' + j.PKID + '">编辑</span></span></a></li>';
+                    });
+                    $("#listdiv").empty();
+                    $("#listdiv").html(HTMLDIV);
+                }
+            },
+            error: function () {
+                alert('网络异常');
+            }
+        });
+    }
+</script>

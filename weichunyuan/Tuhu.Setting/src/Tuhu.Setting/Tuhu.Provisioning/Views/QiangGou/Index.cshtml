@@ -1,0 +1,132 @@
+﻿@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.QiangGouModel>
+@{
+    ViewBag.Title = "限时抢购/天天秒杀配置";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var select = ViewBag.Select as Tuhu.Provisioning.DataAccess.Entity.QianggouSelectModel;
+}
+<link href="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.css" rel="stylesheet" />
+                      <link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+<div style="clear:both;"></div>
+<div style="float:left">
+    <h2>
+        <span>活动配置</span>
+        <span style="color:#08c;margin-left:10px;">
+            <a href="/QiangGou/Detail">新建活动</a>
+        </span>
+    </h2>
+</div>
+
+<div style="clear:both;float:left">
+    <h3 class="hd">
+        <a href="/QiangGou/Index?type=0" style="@(Model.Any(Q => Q.ActiveType == 0) ? "color:red;" : "")">全网活动</a>&nbsp;&nbsp;&nbsp;
+        <a href="/QiangGou/Index?type=1" style="@(Model.Any(Q => Q.ActiveType == 1) ? "color:red;" : "")">闪购</a>&nbsp;&nbsp;&nbsp;
+        <a href="/QiangGou/Index?type=3" style="@(Model.Any(Q => Q.ActiveType == 3) ? "color:red;" : "")">活动页秒杀</a>&nbsp;&nbsp;&nbsp;
+        <a href="/QiangGou/Index?type=4" style="@(Model.Any(Q => Q.ActiveType == 4) ? "color:red;" : "")">限时抢购</a>&nbsp;&nbsp;&nbsp;
+
+    </h3>
+</div>
+<div style="clear:both;float:left;margin-bottom:10px;">
+    <form>
+        <input type="hidden" name="type" value="@select.type" />
+        <b>活动ID：</b><input type="text" value="@select.aid" name="aid" />&nbsp;&nbsp;&nbsp;&nbsp;
+        <b>活动名称：</b><input type="text" value="@select.aname" name="aname" />&nbsp;&nbsp;&nbsp;&nbsp;
+        <b>开始时间：</b><input type="text" style="width:150px;" value="@(select.stime==null?"":select.stime.Value.ToString("yyyy-MM-dd HH:mm"))" name="stime" id="stime" readonly />&nbsp;&nbsp;&nbsp;&nbsp;
+        <b>结束时间：</b><input type="text" style="width:150px;" value="@(select.etime==null?"":select.etime.Value.ToString("yyyy-MM-dd HH:mm"))" name="etime" id="etime" readonly />&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="submit" value="搜索" />
+    </form>
+</div>
+<table style="width:100%;">
+    <tr>
+        <th width="15%">活动ID</th>
+        <th width="15%">活动名称</th>
+        <th width="20%">开始时间</th>
+        <th width="20%">结束时间</th>
+        <th width="10%">管理</th>
+        <th width="10%">操作历史</th>
+        <th width="10%">手动刷新缓存</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.ActivityID</td>
+            <td><a href="https://www.tuhu.cn/spages/FlashSalesActivity/@(item.ActivityID).aspx">@item.ActivityName</a></td>
+            <td>@item.StartDateTime.ToString("yyyy-MM-dd HH:mm")</td>
+            <td>@item.EndDateTime.ToString("yyyy-MM-dd HH:mm")</td>
+            <td><a href="/QiangGou/Detail?aid=@item.ActivityID">编辑</a>&nbsp;&nbsp;&nbsp;<a href="javascript:void(0);" onclick="DelActivity('@item.ActivityID')">删除</a></td>
+            <td><a href="javascript:void(0)" onclick="QiangGou.LookOpr('@item.ActivityID')">查看操作历史</a></td>
+            <td><a href="javascript:void(0)" onclick="QiangGou.RefreshCache('@item.ActivityID') " >手动刷新缓存</a></td>
+        </tr>
+    }
+
+
+</table>
+<div id="AddItem"></div>
+                      <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="width: 800px;height: 800px">
+                          <div class="modal-dialog">
+                              <div class="modal-content">
+                                  <div class="modal-header">
+                                      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                          &times;
+                                      </button>
+                                      <h4 class="modal-title" id="myModalLabel">
+                                          日志
+                                      </h4>
+                                  </div>
+                                  <div class="modal-body">
+
+                                  </div>
+                              </div><!-- /.modal-content -->
+                          </div><!-- /.modal -->
+                      </div>
+<script src="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.js"></script>
+                      <script src="~/Content/ProductVehicleType/js/bootstrap.min.js"></script>
+<script>
+    //初始化活动时间的日期选择器
+    $("#stime").datetimepicker({
+        timeFormat: "HH:mm",
+        dateFormat: "yy-mm-dd",
+        monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+    });
+
+    $("#etime").datetimepicker({
+        timeFormat: "HH:mm",
+        dateFormat: "yy-mm-dd",
+        monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+    });
+    function DelActivity(aid) {
+        var r = confirm("您确定删除吗?");
+        if (r) {
+            $.ajax({
+                url: '/QiangGou/DelActivity',
+                type: 'post',
+                data: { aid: aid },
+                success: function (result) {
+                    if (result.Status === 1)
+                        location.reload();
+                    else {
+                        alert("删除失败");
+                    }
+                }
+            })
+
+        }
+    };
+    var QiangGou = {
+        LookOpr: function (aid) {
+            $('#myModal').modal('show');
+            $("#myModal .modal-body").html("").load('/QiangGou/ListBoostrap?logId=' + aid);
+        },
+        RefreshCache: function (aid) {
+            $.ajax({
+                type: "POST",
+                url: "/QiangGou/RefreshCache",
+                data: { aid: aid },
+                success: function (r) {
+                    alert(r.Message);
+                }
+            })
+        }
+    };
+</script>

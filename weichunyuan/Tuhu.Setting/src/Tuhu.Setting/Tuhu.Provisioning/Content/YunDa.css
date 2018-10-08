@@ -1,0 +1,12 @@
+﻿.kuaiDiBG{background:url(../../Content/KuaiDi/YunDa.jpg) no-repeat;width:820px;height:400px;position:relative;}
+    .kuaiDiBG{background-position:0px -98px;}
+    .kuaiDiBG div{position:absolute;background-color:rgba(255,255,255,.8)}
+    .From{left: 110px;top: 0px;}
+    .FromDe{display:none;}
+    .FromAddr{left: 120px;top: 38px;width: 270px;}
+    .FromTel{left: 180px;top: 154px;width: 260px;}
+    .To{top: 154px;left: 522px;}
+    .ToDe{left:479px;}
+    .ToAddr{left: 509px;top: 53px;width: 270px;}
+    .ToTel{left:723px;top:0px;}
+    .remark{display:none}

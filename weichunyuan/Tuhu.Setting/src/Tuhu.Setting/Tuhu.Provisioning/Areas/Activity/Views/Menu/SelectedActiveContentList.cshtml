@@ -1,0 +1,141 @@
+﻿
+@{
+    ViewBag.Title = "SelectedActiveContentList";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+
+<div class="gridPanel">
+    <table id="gridList"></table>
+</div>
+
+
+
+
+<script type="text/javascript">
+    var keyValue = $.request("keyValue");
+    // console.log(keyValue);
+    function gridList() {
+        var $gridList = $('#gridList');
+        $gridList.dataGrid({
+            grouping: true,
+            groupingView: {
+                groupField: ["GROUP"]
+            },
+            height: $(window).height() - 128,
+            url: "/Activity/ActivityUnity/GetGridTreeJson?keyValue=" + keyValue,
+            colModel: [
+                { label: "PKID", name: "PKID", width: 50, key: true },
+                { label: "活动ID", name: "FKActiveID", hidden: true },
+                { label: "行类型", name: "RowType", hidden: true },
+                { label: "组 号", name: "GROUP", width: 150, align: "center" },
+                {
+                    label: "活动类型", name: "Type", width: 120, align: "left",
+                    formatter: function (cellValue) {
+                        if (cellValue == 0 || cellValue == 6)
+                            return "轮 胎"
+                        else if (cellValue == 1 || cellValue == 7)
+                            return "车 品";
+                        else if (cellValue == 2)
+                            return "链 接";
+                        else if (cellValue == 3)
+                            return "图 片";
+                        else if (cellValue == 4)
+                            return "优惠券";
+                        else if (cellValue == 5)
+                            return "保 养";
+                        else if (cellValue == 8)
+                            return "活动规则";
+                        else if (cellValue == 9)
+                            return "秒 杀";
+                        else if (cellValue == 10 || cellValue == 11)
+                            return "轮 毂";
+                        else if (cellValue == 12)
+                            return "其 它";
+                        else if (cellValue == 13)
+                            return "大翻盘";
+                        else if (cellValue == -2)
+                            return "导航栏";
+                        else if (cellValue == 16)
+                            return "保养定价";
+                        else if (cellValue == 18)
+                            return "优惠券礼包";
+                        else if (cellValue == 20)
+                            return "新大翻牌";
+                        else if (cellValue == 21)
+                            return "答题抽奖";
+                        else if (cellValue == 17)
+                            return "视 频";
+                        else if (cellValue == 19)
+                            return "商品池";
+                        else if (cellValue == 22)
+                            return "红包抽奖";
+                        else if (cellValue == 23)
+                            return "拼团";
+                        else if (cellValue == 24)
+                            return "文案";
+                        else if (cellValue == 25)
+                            return "文字链";
+                        else if (cellValue == 26)
+                            return "滑动优惠券";
+                        else if (cellValue == 27)
+                            return "倒计时";
+                        else if (cellValue == 28)
+                            return "摇奖机";
+                        else if (cellValue == 29)
+                            return "分车型头图";
+                        else if (cellValue == 30)
+                            return "新商品池"; 
+                        else
+                            return "";
+                    }
+                },
+                {
+                    label: "渠 道", name: "Channel", width: 120, align: "left",
+                    formatter: function (cellValue) {
+                        if (cellValue == "all")
+                            return "全 部"
+                        else if (cellValue == "wap")
+                            return "移动端";
+                        else if (cellValue == "www")
+                            return "官 网"
+                        else
+                            return "";
+                    }
+                },
+                {
+                    label: "图 片", name: "Image", width: 120, align: "left",
+                    formatter: function (cellValue) {
+                        if (cellValue) {
+                            return `<img width="30" height="30" src="${cellValue}" />`;
+                        }
+                    }
+                },
+                { label: "PID", name: "PID", width: 120, align: "left" },
+                { label: "产品名称", name: "ProductName", width: 280, align: "left" },
+                { label: "排序", name: "OrderBy", width: 80, align: "center", hidden: true },
+                {
+                    label: "创建时间", name: "CreateDateTime", width: 120, align: "left",
+                    formatter: "date", formatoptions: { srcformat: 'Y-m-d H:i:s', newformat: 'Y-m-d H:i:s', hidden: true }
+                }
+            ],
+            caption: "配置信息列表",
+            rowNum: 1000
+        });
+    }
+
+
+    function submitForm(obj) {
+        var group = $("#gridList").jqGridRowValue().GROUP;
+        if (group) {
+            $(obj).parent().parent().find("input").val(group);
+            self.$.modalClose();
+        } else {
+            $.modalMsg("请选择要添加的组号","warning")
+        }
+    }
+
+    $(function () {
+        gridList();
+    });
+
+</script>

@@ -1,0 +1,211 @@
+﻿@{
+    var FlashSales = ViewBag.FlashSales as Tuhu.Provisioning.DataAccess.Entity.FlashSalesTwo;
+    ViewBag.Title = "产品管理 - 限时抢购活动：" + FlashSales.ActivityName;
+    var ProList = ViewBag.ProList;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .button1 {
+        border-radius: 0px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        font-family: "Microsoft Yahei";
+        outline: none;
+        cursor: pointer;
+        background: #0088cc;
+        border-color: #0088cc;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: #0088cc;
+        border: solid 1px #0088cc;
+    }
+</style>
+<h2>产品管理 </h2>
+<div style="clear:both;"></div>
+<div style="float:left">
+    <table style="width:100%;">
+        <tbody>
+            <tr>
+                <td>Title：</td>
+                <td>@FlashSales.ActivityName</td>
+                <td>ActivityID：</td>
+                <td>@FlashSales.ActivityID</td>
+                <td>ActivityTime：</td>
+                <td>
+                    <p>
+                        <input type="text" value="@FlashSales.StartDateTime" readonly="readonly" />TO
+                        <input type="text" value="@FlashSales.EndDateTime" readonly="readonly" />
+                    </p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div style="float:right">
+    <input type="button" style="float:right;" class="button1" value="保存" onclick="save()" />
+</div>
+
+<table style="width:100%;">
+    <tr>
+        <th width="4%" style="text-align:center;">PKID</th>
+        <th width="15%">产品编号</th>
+        <th width="25%">产品名称</th>
+        <th width="5%">原价</th>
+        <th width="5%">促销价</th>
+        <th width="5%">每人限购</th>
+        <th width="5%">总限购</th>
+        <th width="5%">剩余数量</th>
+        <th width="9%">产品状态</th>
+        <th width="10%">安装/支付方式</th>
+        <th width="5%">使用优惠券</th>
+        @*<th>操作</th>*@
+    </tr>
+    <tr style="background-color: #5c87b2; color: #ffffff;display:none; " id="addprotr">
+        <td style="text-align:center;">新增产品</td>
+        <td><span id="@("PID_0" )"></span></td>
+        <td><input type="text" style="width:90%" id="DisplayName_0" class="ChangeProductName" /></td>
+        <td><span id="@("cy_list_price__0")"></span></td>
+        <td><span id="@("Price_0")"></span></td>
+        <td><span id="@("MaxQuantity_0")"></span></td>
+        <td><span id="@("TotalQuantity_0")"></span></td>
+        <td><span id="@("RestQuantity_0")"></span></td>
+        <td><input type="text" style="width: 90%; text-align: center; background-color: #f0f0f0;" readonly="readonly" value="0" id="Label_0" /></td>
+    </tr>
+    <tbody id="listtb">
+        @if (ProList.Count == 0)
+        {
+            <tr>
+                <td colspan="13">
+                    <div style="width:100%;padding:100px 0;text-align:center;font-size:22px;font-weight:bold;color:#cccccc;">No Data For Now</div>
+                </td>
+            </tr>
+        }
+        else
+        {
+            int _LineNo = 1;
+            foreach (var item in ProList)
+            {
+                var _ItemPKID = item.PKID;
+                var productName = item.DisplayName;
+                if (item.ProductName != null)
+                {
+                    productName = item.ProductName;
+                }
+                var selectOption = "";
+                if (item.Label == "热卖")
+                {
+                    selectOption = "<option value=\"热卖\" selected=true>热卖</option><option value=\"秒杀\">秒杀</option><option value=\"限量\">限量</option><option value=\"\">无</option>";
+                }
+                else if (item.Label == "秒杀")
+                {
+                    selectOption = "<option value=\"热卖\" >热卖</option><option value=\"秒杀\" selected=true>秒杀</option><option value=\"限量\">限量</option><option value=\"\">无</option>";
+                }
+                else if (item.Label == "限量")
+                {
+                    selectOption = "<option value=\"热卖\" >热卖</option><option value=\"秒杀\">秒杀</option><option value=\"限量\" selected=true>限量</option><option value=\"\">无</option>";
+                }
+                else
+                {
+                    selectOption = "<option value=\"热卖\" >热卖</option><option value=\"秒杀\">秒杀</option><option value=\"限量\" >限量</option><option value=\"\" selected=true>无</option>";
+                }
+                <tr>
+                    <td align="center">
+                        <input type="text" readonly="readonly" style="width:50px;" value="@_ItemPKID" />
+                    </td>
+                    <td><span id="@("PID_" + _ItemPKID)">@item.PID</span></td>
+                    <td><input type="text" style="width:90%" id="@("DisplayName_" + _ItemPKID)" value="@productName" class="ChangeProductName" /></td>
+                    <td><span id="@("cy_list_price_" + _ItemPKID)">@item.cy_list_price</span></td>
+                    <td><span id="@("Price_" + _ItemPKID)">@item.Price</span></td>
+                    <td><span id="@("MaxQuantity_" + _ItemPKID)">@item.MaxQuantity</span></td>
+                    <td><span id="@("TotalQuantity_" + _ItemPKID)">@item.TotalQuantity</span></td>
+                    <td><span id="@("RestQuantity_" + _ItemPKID)">@item.RestQuantity</span></td>
+                    <td>
+                        <select id="@("Label_" + _ItemPKID)">
+                            @Html.Raw(
+                              selectOption
+                           )
+                        </select>
+
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(item.InstallAndPay))
+                        {
+                            if (item.InstallAndPay == "InstallAtShop")
+                            {
+                                <label>到店安装</label>
+                            }
+                            else if (item.InstallAndPay == "PayOnline")
+                            {
+
+                                <label>在线支付</label>
+
+                            }
+                            else if (item.InstallAndPay == "PayOnlineAndInstallAtShop")
+                            {
+                                <label>到店安装且在线支付</label>
+                            }
+                        }
+
+                    </td>
+
+                    <td>
+                        @if (item.IsUsePcode)
+                        {
+                            <label>是</label>
+                        }
+                        else
+                        {
+                            <label style="color:red;">否</label>
+                        }
+                    </td>
+                    @*<td>
+                            <input type="button" value="保存" onclick="save(@_ItemPKID)" />&nbsp;
+                        </td>*@
+                </tr>
+                _LineNo++;
+            }
+
+        }
+    </tbody>
+</table>
+<script type="text/javascript">
+    function save() {
+        var dataArray = new Array();
+        $('#listtb > tr').each(function (i) {
+            if (i >= 0) {
+                var columns = $(this).children();
+                var jsonData = { "ProductName": "", "Label": "", "PKID": "" };
+                jsonData.ProductName = columns.eq(2).find("input[type='text']").val();
+                jsonData.Label = columns.eq(8).find("select").val();
+                jsonData.PKID = columns.eq(0).find("input[type='text']").val();
+                dataArray[i] = jsonData;
+            }
+        });
+
+        var dataList = JSON.stringify(dataArray);
+        console.log(dataList);
+
+        $.ajax({
+            url: "/FlashSalesTwo/SaveProductTwo",
+            data: { "dataList": dataList },
+            type: "post",
+            dataType: "json"
+        }).done(function (data) {
+            if (data.data == 1) {
+                window.location.href = "/FlashSalesTwo/FlashSalesV1";
+            }
+            else if (data.data == 0) {
+                alert("保存失败")
+            }
+            else {
+                alert(data.data);//弹出express.message
+            }
+        })
+    };
+</script>

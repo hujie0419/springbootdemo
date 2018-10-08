@@ -1,0 +1,245 @@
+﻿@{
+    ViewBag.Title = "会员升级任务配置";
+    Layout = "~/Views/Shared/_PersonalCenterLeft.cshtml";
+}
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.tbl_UserTask>
+<h2>会员升级任务配置</h2>
+<style type="text/css"> 
+
+    .toolar {
+        margin-bottom: 5px;
+    }
+    input[type=text] {
+        width: 200px;
+    }
+
+    textarea {
+        width: 300px;
+        height: 60px;
+    }
+</style>
+
+<script type="text/javascript" src="~/Scripts/layer/layer.js"></script>
+
+<div class="toolar">
+    <span>APP版本:</span>
+    <select id="selAppType" style="width:120px; margin-right:20px;">
+        <option value="1">Android</option>
+        <option value="0">IOS</option>
+    </select>
+    <input type="button" value="添加" class="btn" name="add" />
+    <input type="button" value="编辑" class="btn" name="edit" />
+    <input type="button" value="删除" class="btn" name="delete" />
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>选择</th>
+            <th>ID</th>
+            <th>
+                名称
+            </th>
+            <th>
+                描述
+            </th>
+            <th>
+                APP版本
+            </th>
+            <th>
+                APP处理值
+            </th>
+            <th>
+                APP通信值
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td> <input type="checkbox" value="@item.ID" /> </td>
+                <td>@item.ID</td>
+                <td>@item.TaskName</td>
+                <td>@item.Description</td>
+                <td>@(item.APPType == 1 ? "Android" : "IOS")</td>
+                <td>@item.APPHandler</td>
+                <td>@item.APPConnect</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<div id="edit"></div>
+<script type="text/javascript">
+
+    $('input[type=checkbox]').click(function () {
+        if ($(this).attr("checked") == undefined) {
+            $(this).attr("checked", "checked");
+            console.log("没有选中");
+        } else {
+            $(this).removeAttr("checked");
+            console.log("选中");
+        }
+        return true;
+    });
+
+
+    $('table tbody tr').click(function () {
+        $('table tbody tr').each(function (i) {
+            $(this).find('input[type=checkbox]').removeAttr('checked')
+        });
+
+        if ($(this).find('input[type=checkbox]').attr("checked") == undefined) {
+            $(this).find('input[type=checkbox]').attr("checked", "checked");
+
+        } else {
+            $(this).find('input[type=checkbox]').removeAttr("checked");
+        }
+    });
+
+
+    var SaleTable = {
+        getCheckRow: function () {
+            var row = undefined;
+            $('table tbody tr').each(function (i) {
+
+                if ($(this).find('input[type=checkbox]').attr('checked') != undefined) {
+                    //  console.log($(this).find('input[type=checkbox]').val());
+                    row = $(this).find('input[type=checkbox]').val();
+                }
+            });
+            return row;
+        }
+    };
+
+
+    $('input[name=add]').click(function () {
+
+        $("#edit").html("").load('/UserPermission/TaskEdit?appType=' + $('#selAppType').val());
+        $('#edit').dialog({
+            title: '编辑',
+            width: 417,
+            height: 400,
+            modal: true,
+            resizable: false,
+            buttons: {
+                "保存": function () {
+                    var data = GetForm();
+                    $.ajax({
+                        type: 'post',
+                        url: '/UserPermission/SaveTask',
+                        data: data,
+                        dataType: 'json',
+                        success: function (result) {
+                            console.log(result);
+
+                            if (result.status == 1) {
+                                $('#edit').dialog("close");
+                                alert("保存成功!");
+                                location.reload();
+
+
+                            } else {
+                                alert("保存失败！");
+                            }
+
+                        },
+                        error: function () {
+                            alert("失败");
+                        }
+                    });
+
+                },
+                "取 消": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    });
+
+
+    $('input[name=edit]').click(function () {
+
+        // console.log(  SaleTable.getCheckRow());
+        if (SaleTable.getCheckRow() == undefined || SaleTable.getCheckRow() == "") {
+            alert("请选择编辑的行");
+            return;
+        }
+        $("#edit").html("").load('/UserPermission/TaskEdit?id=' + SaleTable.getCheckRow());
+        $('#edit').dialog({
+            title: '编辑',
+            width: 417,
+            height: 400,
+            modal: true,
+            resizable: false,
+
+            buttons: {
+                "保存": function () {
+                    var data = GetForm();
+                    $.ajax({
+                        type: 'post',
+                        url: '/UserPermission/SaveTask',
+                        data: data,
+                        dataType: 'json',
+                        success: function (result) {
+
+                            if (result.status == 1) {
+                                $('#edit').dialog("close");
+                                alert("保存成功!");
+                                location.reload();
+
+                            } else {
+                                alert("保存失败！");
+                            }
+                        },
+                        error: function () {
+                            alert("失败");
+                        }
+                    });
+
+
+                },
+                "取 消": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    });
+
+    $('#selAppType').change(function () {
+        var value = $(this).val();
+        location.href = "/UserPermission/TaskList?appType=" + value;
+    });
+    $(function () {
+        $('table tbody tr').each(function (i) {
+            $(this).find('input[type=checkbox]').removeAttr('checked')
+        });  //不选中任何行
+
+        var sel = location.search.split('=')[1];
+        if (sel != undefined) {
+            $('#selAppType').val(sel);
+        }
+    });
+
+    $('input[name=delete]').click(function () {
+        if (SaleTable.getCheckRow() == undefined || SaleTable.getCheckRow() == "") {
+            alert("请选择编辑的行");
+            return;
+        }
+        var is = confirm("您确定删除吗?");
+        if (is) {
+            $.ajax({
+                url: '/UserPermission/DeleteTask',
+                type: 'post',
+                data: { id: SaleTable.getCheckRow() },
+                dataType: 'json',
+                success: function (result) {
+                    if (result.status == 1) {
+                        location.reload();
+                    } else {
+                        alert('删除失败');
+                    }
+                }
+            });
+        }
+    });
+</script>

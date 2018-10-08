@@ -1,0 +1,182 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@model IEnumerable<AdColumnModel>
+@{
+    ViewBag.Title = "车品首页配置";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@helper Show(string ID, string Remark, int? Width, int? Height)
+{
+var url = "https://image.tuhu.cn";
+var Now = DateTime.Now;
+//根据ID获取对应的广告位||null
+var AdColumn = Model == null ? null : Model.Where(a => String.Compare(ID, a.ID, true) == 0) == null || Model.Where(a => String.Compare(ID, a.ID, true) == 0).Count() == 0 ? null : Model.Where(a => String.Compare(ID, a.ID, true) == 0).FirstOrDefault();
+if (AdColumn != null)
+{
+    //获取广告位下的合法广告||null
+    var advertises = AdColumn.Advertises == null || AdColumn.Advertises.Where(ad => ad.State == 1 && ad.BeginDateTime <= Now && ad.EndDateTime >= Now).Count() <= 0 ? null : AdColumn.Advertises.Where(ad => ad.State == 1 && ad.BeginDateTime <= Now && ad.EndDateTime >= Now);
+    //包装合法广告信息
+    var p_advertises = advertises == null ? null : advertises.OrderBy(ad => ad.Position).Select(ad => new AdvertiseModel
+    {
+        BeginDateTime = ad.BeginDateTime,
+        EndDateTime = ad.EndDateTime,
+        Image = url + ad.Image,
+        Url = ad.Url,
+        bgColor = ad.bgColor
+    });
+    //广告位下有合法广告
+    if (advertises != null && advertises.Any())
+    {
+        //该广告位下是banner
+        if (String.Compare(Remark, "banner", true) == 0)
+        {
+            foreach (var img in p_advertises)
+            {
+                    <li data-bgcolor="@img.bgColor">
+                        <img src="@img.Image" width="@Width" height="@Height" />
+                    </li>
+            }
+         }
+         else if (String.Compare(Remark, "advertise", true) == 0)
+         {
+                //var OkImg = p_advertises.Where(i => i.BeginDateTime <= DateTime.Now && i.EndDateTime >= DateTime.Now);
+                <img src="@(p_advertises.Count() > 0 ? p_advertises.FirstOrDefault().Image : url + AdColumn.DefaultImage)" width="@Width" height="@Height" />
+         }
+    }
+    else//没有合法广告
+    {
+        if (String.Compare(Remark, "banner", true) == 0)
+        {
+                <li data-bgcolor="@AdColumn.DefaultbgColor">
+                    <img src="@(url+AdColumn.DefaultImage)" width="@Width" height="@Height" />
+                </li>}
+        else if (String.Compare(Remark, "advertise", true) == 0)
+        {
+                <img src="@(url+AdColumn.DefaultImage)" width="@Width" height="@Height" />}
+         }
+}
+else//没有此广告位
+{
+    if (String.Compare(Remark, "banner", true) == 0)
+    {
+            <li>
+                <img width="@Width" height="@Height" />
+            </li>
+    }
+    else if (String.Compare(Remark, "advertise", true) == 0)
+    {
+            <img width="@Width" height="@Height" />
+    }
+}
+}
+@section head{
+    <link href="~/Styles/HomeConfig.css" rel="stylesheet" />
+    <link href="~/Styles/iconfont/ux_1440569396_7310162/iconfont.css" rel="stylesheet" />
+}
+<h2>车品首页配置</h2> <div class="updateCouchbase"> 配置完成后请及时更新缓存 <span class="updatebutton">更新缓存</span></div>
+
+<div class="clearfix  bgc" style="background-color:#007fe6;">
+    <div class="clearfix" style="background-color:#fff;height:320px;overflow:hidden;width:1200px;margin:0 auto;">
+        <div style="float:right;margin:0;height:320px;width:580px;">
+            <div class="slide img-edit" id="banner_slide">
+                <p class="configure" data-id="AutoProduct_Banner" data-type="banner">AutoProduct_Banner - <span>编辑</span></p>
+                <a href="javascript:void(0);" class="prev i-icon"></a>
+                <a href="javascript:void(0);" class="next i-icon"></a>
+                <ul>
+                    @Show("AutoProduct_Banner", "banner", 860, 425)
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        //点击编辑  进入编辑页面
+        $(".configure").click(function () {
+            var id = $(this).attr("data-id"),
+            remark = $(this).attr("data-type");
+            var description = $(this).attr("data-description");
+            window.location.href = "/ChePin/Config?id=" + id + "&remark=" + remark;
+        });
+
+        //#region banner轮播
+        var focusImg = function (options) {
+            var duration = typeof (options.duration) == "number" ? options.duration : 5000;
+            var $tag = $(options.tag);
+            var i = 0, loopNum;
+            var count = $tag.find("ul li").length;
+            var init = function () {
+
+                if (count == 1) {
+                    setBg(i);
+                    $tag.find(".prev,.next").hide();
+                    return false;
+                } else {
+                    setBg(i);
+                    $nav = $("<div class='nav'></div>");
+                    for (var j = 0; j < count; j++) {
+                        $nav.append("<span></span>");
+                    }
+                    $tag.append($nav);
+                    $tag.find("ul li").eq(i).addClass("active");
+                    $nav.children("span").eq(i).addClass("active");
+                    i = 1;
+                    loopNum = setTimeout(next, duration);
+                    $tag.on("click", ".prev", prev);
+                    $tag.on("click", ".next", next);
+                    $tag.on("mouseover", ".nav span", function () {
+                        i = $(this).index();
+                        active(i);
+                        i += 1;
+                    }).on("mouseout", ".nav span", function () {
+                        loopNum = setTimeout(next, duration);
+                    });
+                }
+            }
+            var setBg = function (index) {
+                $tag.parents(".full-bg").css("background-color", $tag.find("ul li").eq(index).data("bgcolor"));
+            }
+            var active = function (index) {
+                clearTimeout(loopNum);
+                setBg(index);
+                $tag.find(".nav span").removeClass("active").eq(index).addClass("active");
+                $tag.find("ul li").hide().removeClass("active").eq(index).fadeIn().addClass("active");
+
+            }
+            var next = function () {
+                if (i == count) {
+                    active(0);
+                    i = 1;
+                } else {
+                    active(i);
+                    i += 1;
+                }
+                loopNum = setTimeout(next, duration);
+            }
+            var prev = function () {
+                i = $tag.find(".nav span").filter(".active").index();
+                if (i > 0) {
+                    active(i - 1);
+                } else {
+                    active(count - 1);
+                }
+            }
+            init();
+        }
+        focusImg({ tag: "#banner_slide", duration: 5000 });
+        //#endregion
+
+        $(".updatebutton").click(function () {
+            if (confirm("是否更新缓存？")) {
+                $.post("/ChePin/UpdateToCouchBase", {}, function (data) {
+                    if (data)
+                        alert("更新成功！");
+                    else
+                        alert("更新失败！");
+                });
+            }
+
+        });
+    </script>
+}

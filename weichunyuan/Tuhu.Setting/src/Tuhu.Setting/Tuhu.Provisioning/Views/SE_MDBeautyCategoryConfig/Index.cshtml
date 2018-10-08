@@ -1,0 +1,143 @@
+﻿@{
+    ViewBag.Title = "门店美容商品类目配置";
+    Layout = "../Shared/_Layout.cshtml";
+}
+
+<link href="~/Scripts/zTree/css/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+<script src="~/Scripts/zTree/js/jquery.ztree.core-3.5.min.js" type="text/javascript"></script>
+<script src="~/Scripts/zTree/js/jquery.ztree.excheck-3.5.min.js" type="text/javascript"></script>
+
+<style type="text/css">
+        input[type=button], input[type=submit],input[type=reset] {
+            background: #0088cc none repeat scroll 0 0;
+            border: medium none #0088cc;
+            border-radius: 5px;
+            color: #f0f0f0;
+            cursor: pointer;
+            font-family: "Microsoft Yahei";
+            font-size: 12px;
+            outline: medium none;
+            padding: 5px 25px;
+        }
+</style>
+
+<div style="margin:20px 0 0 0;">
+    <div>
+        <input type="button" value="添加类目" onclick="SE_MDBeautyCategoryConfig.AddOrEdit(true,false);" />
+        &nbsp;
+        <input type="button" value="添加子类目" onclick="SE_MDBeautyCategoryConfig.AddOrEdit(true,true);" />
+        &nbsp;
+        <input type="button" value="编辑" onclick="SE_MDBeautyCategoryConfig.AddOrEdit(false,false);" />
+    </div>
+    <ul id="SE_MDBeautyCategoryConfigTree" style="width:18%;border:2px solid #808080;background-color:#ccc;float:left;" class="ztree"></ul>
+    <div id="LOAD_SE_MDBeautyCategoryProductConfig" style="width:70%;float:left;margin:0 30px;">
+          @Html.Action("Index", "SE_MDBeautyCategoryProductConfig")
+    </div>
+    <div style="clear:both;"></div>
+</div>
+
+<div id="SE_MDBeautyCategoryConfig_Index"></div>
+
+<div  style="border:1px solid #808080;background-color:#ccc;color:red;font-size:14.7px;">
+    <h2>产品同步日志</h2>
+    @{
+        List<string> data = Tuhu.Provisioning.Controllers.SE_MDBeautyCategoryProductConfigController.CachingLogsHelp.Get<List<string>>() ?? null;
+        if (data != null)
+        {
+            for (int i = 0; i < data.Count; i++)
+            {
+                <label>
+                 @(data[i])
+                </label><br/>
+            }
+        }
+    }
+</div>
+
+<script type="text/javascript">
+    var seleectItem;    //类目选中项
+    var zTreeSetting = {
+        setting :{
+                    data: {
+                        simpleData: { enable: true }
+                    },
+                    callback:{
+                        onClick:function(i,j,k){
+                            seleectItem = zTreeSetting.getItems();
+                            zTreeSetting.LOAD_SE_MDBeautyCategoryProductConfig();
+                            console.log(seleectItem);
+                        }
+                    },
+                    view: {
+                        addDiyDom:function(treeId, treeNode) {
+                            var aObj = $("#" + treeNode.tId + "_a");
+                            var editStr = "<sapn id='IsDisable_" +treeNode.id+ "' style='margin:0 0 0 5px;color:red;'>"+ (treeNode.disabled == true ? "禁用" : "启用") +"</span>";
+                            aObj.append(editStr);
+                        }
+                    }
+                },
+        zTreeJson:@Html.Raw(ViewBag.ZTreeJson),
+        zTreeInit:function(){
+            $.fn.zTree.init($("#SE_MDBeautyCategoryConfigTree"),zTreeSetting.setting,zTreeSetting.zTreeJson);
+        },
+        getItems:function(){
+            return $.fn.zTree.getZTreeObj("SE_MDBeautyCategoryConfigTree").getSelectedNodes()[0];
+        },
+        expandAll:function(isExpandAll){
+                    $.fn.zTree.getZTreeObj("SE_MDBeautyCategoryConfigTree").expandAll(isExpandAll || false);
+        },
+        LOAD_SE_MDBeautyCategoryProductConfig:function(){
+            $.cookie('SE_MDBeautyCategoryProductConfigPageIndex', null, { path: '/',expires: -1 });
+            $.cookie("SE_MDBeautyCategoryProductConfigPageIndex",1,{path:'/'});
+            var _pageIndex = 1;
+            $("#LOAD_SE_MDBeautyCategoryProductConfig").html("")
+                .load('/SE_MDBeautyCategoryProductConfig/Index?pageIndex='+(_pageIndex||1) + "&categoryIds="+  ((seleectItem == null) ? "" : (seleectItem.childs || "")));
+        }
+    };
+    zTreeSetting.zTreeInit();
+    //zTreeSetting.expandAll(true);
+    //setTimeout(zTreeSetting.expandAll,500);
+
+    var SE_MDBeautyCategoryConfig = {
+        AddOrEdit:function(_state,_child)
+        {
+            seleectItem = seleectItem || null;
+            var _title = (_state || false) == true ? "新增美容类目" : "编辑美容类目";
+            var dialogConfig = { title:_title,width:330, height:310, modal:true };
+
+            if(!_child && _state){
+                $("#SE_MDBeautyCategoryConfig_Index").html("")
+                    .load('/SE_MDBeautyCategoryConfig/Edit')
+                    .dialog(dialogConfig);
+            }
+            else if(_child && _state)
+            {
+                if(seleectItem != null){
+                    $("#SE_MDBeautyCategoryConfig_Index").html("")
+                    .load('/SE_MDBeautyCategoryConfig/Edit?parentId='+seleectItem.id)
+                    .dialog(dialogConfig);
+                }
+                else{
+                    alert("请选择要添加的父类目！");
+                }
+            }
+            else if(!_child && !_state){
+                if(seleectItem != null){
+                    $("#SE_MDBeautyCategoryConfig_Index").html("")
+                    .load('/SE_MDBeautyCategoryConfig/Edit?id='+ seleectItem.id)
+                    .dialog(dialogConfig);
+                }
+                else{
+                    alert("请选择类目中需要编辑的项！");
+                }
+            }
+        }
+    };
+
+   
+    (function NoticeMsg(){
+        var _Messages = '@(TempData["UpdateBeautyAvailableCategories"] ?? "")';
+        if(_Messages.length > 0)
+            console.log(_Messages);
+    })();
+</script>

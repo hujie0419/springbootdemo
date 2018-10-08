@@ -1,0 +1,139 @@
+﻿
+@using Tuhu.Provisioning.Controllers;
+@using Tuhu.Provisioning.DataAccess.Entity;
+@model Tuhu.Provisioning.DataAccess.Entity.CategoryTagModel
+@{
+    Layout = null;
+    ViewBag.Title = "编辑大模块";
+}
+
+@helper SelectVehicleHtml() {
+    IEnumerable<CategoryTagModel> _VehicleList = ViewBag.VehicleList;
+    if (_VehicleList != null && _VehicleList.Count() > 0)
+    {
+            <text>
+                <tr>
+                    <td align="right">标签品牌：</td>
+                    <td>
+                        <select id="parentId" name="parentId">
+                            @{ 
+                                foreach (var item in _VehicleList)
+                                {
+                                    @:<option value="@item.id"  @(item.id == Model.parentId ? "selected=selected" : "") >@item.name</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                </tr>
+            </text>
+    }
+    else
+    {
+        @Html.HiddenFor(m => m.parentId, new { @name = "parentId" });
+    }
+}
+
+@using (Html.BeginForm("SaveBigModule", "CategoryTag", FormMethod.Post, new { @id = Model.id, @parentId = Model.parentId }))
+{
+    <input id="id" name="id" type="hidden" value="@Model.id" />
+    @Html.HiddenFor(m => m.isParent, new { @name = "isParent" });
+
+    <table style="background:#ffffff;font-size:12px;width:100%;">
+        @SelectVehicleHtml()
+        <tr>
+            <td align="right">标签名称：</td>
+            <td>@Html.TextBoxFor(m => m.name, new { @name = "name" })</td>
+        </tr>
+        <tr>
+            <td align="right">标签值：</td>
+            <td>@Html.TextBoxFor(m =>m.code,new { @name = "code" })</td>
+        </tr>
+        <tr>
+            <td align="right">标签描述：</td>
+            <td>
+                @Html.TextAreaFor(m=> m.describe, new { @name = "describe", @rows = 2, @cols = 45 })
+            </td>
+        </tr>
+        <tr>
+            <td align="right">标签图标：</td>
+            <td>
+                <input style="width:150px;" type="file" id="upicoimgurl" name="upicoimgurl" onchange="CategoryTagConfigs.UploadBImg(this, 'vwicoimgurl', 'image');" />
+                <br />
+                <img height="40" src="@Model.image" id="vwicoimgurl" style="width:100px;height:100px;" />
+                <br />
+                @Html.TextBoxFor(m => m.image, new { @name = "image"})
+            </td>
+        </tr>
+        <tr>
+            <td align="right">标签类型：</td>
+            <td>
+                @Html.DropDownListFor(m => m.type, new List<SelectListItem>()
+                {
+                    new SelectListItem() { Value = "0",Text = "文章",Selected = true },
+                    new SelectListItem() { Value = "1",Text = "专题"}
+                })
+            </td>
+        </tr>
+        <tr>
+            <td align="right">专题ID：</td>
+            <td>
+                @Html.TextBoxFor(m => m.topicsId, new { @name = "topicsId" })
+            </td>
+        </tr>
+        <tr>
+            <td align="right">是否禁用该模块：</td>
+            <td>
+                @Html.RadioButtonFor(m => m.disable, true, new { @name = "disable" }) 是
+                @Html.RadioButtonFor(m => m.disable, false, new { @name = "disable"}) 否
+            </td>
+        </tr>
+        <tr>
+            <td align="right">显示顺序：</td>
+            <td>@Html.TextBoxFor(m => m.sort, new { @name = "sort" })</td>
+        </tr>
+        <tr>
+            <td align="right">是否首页显示：</td>
+            <td>
+                @Html.RadioButtonFor(m => m.isHomePage, true, new { @name = "isHomePage" }) 是
+                @Html.RadioButtonFor(m => m.isHomePage, false, new { @name = "isHomePage" }) 否
+            </td>
+        </tr>
+        <tr>
+            <td align="right">创建时间：</td>
+            <td>
+                @Html.TextBoxFor(m => m.createTime, new { @name = "createTime" })
+            </td>
+        </tr>
+        <tr>
+            <td align="right">更新时间：</td>
+            <td>
+                @Html.TextBoxFor(m => m.updateTime, new { @name = "updateTime" })
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right">昵称：</td>
+            <td>@Html.TextBoxFor(m => m.nickName, new { @name = "nickName" })</td>
+        </tr>
+        <tr>
+            <td align="right">显示数量：</td>
+            <td>
+               <input type="number" value="@Model.showNum" name="showNum" />           
+            </td>
+        </tr>      
+        <tr>
+            <td align="right">是否列表显示：</td>
+            <td>
+                @Html.RadioButtonFor(m => m.isShowList, true, new { @name = "isShowList" }) 是
+                @Html.RadioButtonFor(m => m.isShowList, false, new { @name = "isShowList" }) 否
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right"></td>
+            <td>
+                <input type="submit" value="保存" />
+            </td>
+        </tr>
+    </table>
+}

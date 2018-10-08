@@ -1,0 +1,202 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity.Discovery;
+@using Tuhu.Provisioning.Business.Discovery;
+@model List<Article>
+@{
+    ViewBag.Title = "统计";
+    var pagerModel = ViewData["PagerModel"] as PagerModel;
+}
+@section Styles {
+    @Styles.Render("~/plugins/footableStyles")
+    <style type="text/css">
+        #myModal5 .form-group {
+            height: 40px;
+        }
+
+        #myModal6 .form-group {
+            height: 40px;
+        }
+
+        .control-label {
+            line-height: 34px;
+        }
+        .search-result p span, .ibox-content .op span {
+            margin-right: 10px;
+        }
+
+        .ibox-content h2 .op {
+            float: right;
+            font-size: 14px;
+        }
+
+        .input-group .form-search {
+            position: relative;
+            z-index: 2;
+            float: left;
+            margin-bottom: 0;
+            height: 36px;
+            border-radius: 0;
+            display: table-cell;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+
+        .input-group-btn {
+            padding-left: 10px;
+            float: left;
+        }
+
+        .input-group input.pkid {
+            width: 100px;
+        }
+
+        .input-group .marleft {
+            margin-left: 0 !important;
+        }
+
+        .input-group input.title {
+            width: 268px;
+        }
+
+        .input-group input.btn-search {
+            padding: 6px 12px;
+            height: 36px;
+            border-top-left-radius: 3px !important;
+            border-bottom-left-radius: 3px !important;
+        }
+
+        .input-group .fontDesc {
+            float: left;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-left: 10px;
+        }
+
+        .bgc {
+            background-color: #c1bebe;
+        }
+
+        .copy-tips {
+            position: fixed;
+            z-index: 999;
+            bottom: 50%;
+            left: 50%;
+            margin: 0 0 -20px -80px;
+            background-color: rgba(0,0,0,0.2);
+            filter: progid:DXImageTransform.Microsoft.Gradient(startColorstr=#30000000,endColorstr=#30000000);
+            padding: 6px;
+        }
+
+        .copy-tips-wrap {
+            padding: 10px 20px;
+            text-align: center;
+            border: 1px solid #f4d9a6;
+            background-color: #fffdee;
+            font-size: 14px;
+        }
+
+        .zclip {
+            margin-top: -12px;
+        }
+    </style>
+}
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>作者管理</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="@Url.Action("Index", "Home")">首页</a>
+            </li>
+            <li class="active">
+                <strong>统计列表</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-2">
+    </div>
+</div>
+<div class="wrapper wrapper-content animated fadeInRight ecommerce">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-content">
+                    <div class="search-form">
+                        <form action="@Url.Action("ArticleStatistic", "ArticleManage")" method="get">
+                            <div class="input-group">
+                                <span style="line-height:36px;">
+                                    <span class="fontDesc marleft">ID: </span><input style="display:none" type="text" name="Type" class="form-search input-lg type" value="@ViewBag.Type" />
+                                    <input type="text" placeholder="文章ID" name="PKID" class="form-search input-lg pkid" value="@ViewBag.PKID" />
+                                    <span class="fontDesc">标题: </span><input type="text" placeholder="文章标题" name="Title" class="form-search input-lg" value="@ViewBag.BigTitle" />
+                                    <span class="fontDesc">开始时间: </span><input type="text" placeholder="开始时间" name="StartDate" id="d4311" class="form-search input-lg" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',maxDate:'#F{$dp.$D(\'d4312\')||\'2020-10-01\'}'})" value="@ViewBag.StartTime">
+                                    <span class="fontDesc">结束时间: </span><input type="text" placeholder="结束时间" name="EndDate" id="d4312" class="form-search input-lg" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',minDate:'#F{$dp.$D(\'d4311\')}',maxDate:'2020-10-01'})" value="@ViewBag.EndTime">
+                                </span>
+                                <div class="input-group-btn">
+                                    <input class="btn btn-lg btn-primary btn-search" name="OperationType" type="submit" value="搜索" />
+                                    <input class="btn btn-lg btn-primary btn-search" name="OperationType" style="margin-left:10px" type="submit" value="导出" />
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                    <table class="table table-bordered" style="margin-top:20px" data-page-size="500">
+                        <thead>
+                            <tr>
+                                <th>文章ID</th>
+                                <th>文章标题</th>
+                                <th>阅读量</th>
+                                <th>评论量</th>
+                                <th>分享数</th>
+                                <th>收藏数</th>
+                                <th>发布时间</th>
+                                <th>作者</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Count > 0)
+                            {
+                                foreach (var author in Model)
+                                {
+                                    <tr>
+                                        <td>@author.PKID</td>
+                                        <td>@author.BigTitle</td>
+                                        <td>@(author.ClickCount ?? 0)</td>
+                                        <td>@(ArticleBll.SelectCommentCount(author.PKID))</td>
+                                        <td>@(author.ShareCountNum ?? 0)</td>
+                                        <td>@(ArticleBll.SelectVoteByArticleId(author.PKID))</td>
+                                        <td>@author.PublishDateTime</td>
+                                        <td>@author.CoverTag</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="7">
+                                    <div class="text-center">
+                                        <div class="btn-group" id="tcdPageCode"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+@section Scripts {
+   <script src="~/Content/My97DatePicker/WdatePicker.js"></script>
+    <script src="~/Scripts/CommentFile/jquery.page.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#tcdPageCode").createPage({
+                pageCount: @pagerModel.TotalPage,
+                current: @pagerModel.CurrentPage,
+                backFn: function (p) {
+                    //单击回调方法，p是当前页码
+                    location.href ="/ArticleManage/ArticleStatistic?pageIndex="+p+"&type="+@ViewBag.Type +"&pkid=" +$("input[name='PKID']").val()+"&title=" +$("input[name='Title']").val()+"&startDate=" +$("input[name='StartDate']").val()+"&endDate=" +$("input[name='EndDate']").val();
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,563 @@
+﻿@{
+    ViewBag.Title = "机油推荐配置";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 style="padding:10px 0px;">
+    <a target="_blank" href="/OilBrandPriority/OilBrandPhonePriority">机油品牌推荐优先级配置</a>
+    <span> 机油推荐配置</span>
+</h2>
+<link rel="stylesheet" href="~/Scripts/multiple/multiple-select.css" />
+<link href="~/Content/iview/iview.css" rel="stylesheet" />
+<link href="~/Content/Public/Public.css" rel="stylesheet" type="text/css" />
+<link href="~/Content/BaoYangActivitySetting/Vue.css" rel="stylesheet" type="text/css" />
+
+<style>
+    fieldset {
+        height: auto;
+        margin: 5px 0px 15px 0px;
+        padding: 15px 20px;
+    }
+
+        fieldset > label {
+            display: inline-block;
+            height: 30px;
+            max-width: 100%;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+    .ms-drop ul > li.multiple {
+        margin-left: 30px;
+    }
+</style>
+
+<div id="div" v-cloak>
+    <div style="margin-top:15px;">
+        <a target="_blank" href="/OilViscosityConfig/OilViscosityPriorityConfig">1. 按粘度推荐机油</a>
+        <a target="_blank" href="/OilViscosityConfig/OilLevelPriority">2.等级推荐规则</a>
+        <label>3.配置的地区里只显示0W或5W机油</label>
+    </div>
+    <fieldset>
+        <label>城市:</label>
+        <select style="width:900px;" id="region" data-placeholder="-请选择地区-" multiple="multiple"></select>
+        <button class="btn btn-primary" v-on:click="Search(1)">查询</button>
+        <button style="float:right;margin:5px 5px;" class="btn btn-primary" v-on:click="OpenMultEditDialog()">批量编辑</button>
+        <button style="float:right;margin:5px 5px;" class="btn btn-danger" v-on:click="OpenMultDelDialog()">批量删除</button>
+    </fieldset>
+    <table class="tableContainer">
+        <thead>
+            <tr>
+                <th><input type="checkbox" v-model="checkAllFlag" v-on:click="CheckAll()" />全选</th>
+                <th>城市</th>
+                <th>机油粘度</th>
+                <th>操作</th>
+                <th>日志</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="loading">
+                <td colspan="10"><img src="~/Images/loading.gif" /></td>
+            </tr>
+            <tr v-else-if="SearchResult.length > 0" v-for="(item,index) in SearchResult">
+                <td>
+                    <input type="checkbox" v-model="multEditModel.regionIds" v-bind:value="item.RegionId" />{{index+1+(pager.pageIndex-1)* pager.pageSize}}
+                </td>
+                <td>{{item.ProvinceName}}-{{item.CityName}}</td>
+                <td>{{item.OilViscosity}}</td>
+                <td>
+                    <button class="btn btn-primary" v-on:click="OpenEditDialog(item)">编辑</button>
+                    <button class="btn btn-danger" style="margin-left:5px;" v-on:click="Delete(item)">删除</button>
+                </td>
+                <td><button class="btn btn-primary" v-on:click="WatchHistroy(item)">查看</button></td>
+            </tr>
+            <tr v-else>
+                <td colspan="10">根据筛选条件未能查询到相关结果</td>
+            </tr>
+        </tbody>
+    </table>
+    <Page style="margin:10px;" :total="pager.totalCount" :current.sync="pager.pageIndex" :page-size="pager.pageSize" show-total></Page>
+    <Modal v-model="editDialog.show" :mask-closable="false" width="40%">
+        <p slot="header">
+            <span>编辑 {{configModel.ProvinceName}}-{{configModel.CityName}} 的机油粘度</span>
+        </p>
+        <div>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>机油粘度:</th>
+                        <td style="text-align:left;"><select style="width:400px;" id="oilViscosity" data-placeholder="-请选择机油粘度-" multiple="multiple"></select></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div slot="footer">
+            <Button type="button" class="btn btn-basic" v-on:click="Edit()">编辑</Button>
+            <Button type="button" class="btn btn-basic" v-on:click="editDialog.show=false">取消</Button>
+        </div>
+    </Modal>
+    <Modal v-model="multEditDialog.show" :mask-closable="false" width="40%">
+        <p slot="header">
+            <span>批量编辑</span>
+        </p>
+        <div>
+            <table>
+                <tr>
+                    <th>机油粘度:</th>
+                    <td style="text-align:left;">
+                        <select style="width:900px;" id="multOilViscosity" data-placeholder="-请选择机油粘度-" multiple="multiple"></select>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div slot="footer">
+            <Button type="button" class="btn btn-basic" v-on:click="MultEdit()">确认</Button>
+            <Button type="button" class="btn btn-basic" v-on:click="multEditDialog.show=false">取消</Button>
+        </div>
+    </Modal>
+    <Modal v-model="multDeleteDialog.show" :mask-closable="false" width="40%">
+        <p slot="header">批量删除</p>
+        <div>
+            <table>
+                <tr>
+                    <td>
+                        <label>您确认删除这些地区配置数据吗?</label>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div slot="footer">
+            <Button type="button" class="btn btn-basic" v-on:click="MultDelete()">确认</Button>
+            <Button type="button" class="btn btn-basic" v-on:click="multDeleteDialog.show=false">取消</Button>
+        </div>
+    </Modal>
+    <Modal v-model="showLog.show" :mask-closable="false" width="40%">
+        <p slot="header">
+            <span>日志详情</span>
+        </p>
+        <div style="text-align:center">
+            <table>
+                <thead>
+                    <tr>
+                        <th>操作人</th>
+                        <th>时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-show="showLog.logs.length>0" v-for="log in showLog.logs">
+                        <td>{{log.OperateUser}}</td>
+                        <td>{{log.CreateTime | DatePrase}}</td>
+                        <td>{{log.Remarks}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div slot="footer">
+            <Button type="button" class="btn btn-basic" v-on:click="showLog.show=false">关闭</Button>
+        </div>
+    </Modal>
+</div>
+<script src="~/Scripts/vue.min.js"></script>
+<script src="~/Scripts/multiple/multiple-select.js"></script>
+<script src="~/Scripts/iview/iview.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#region").multipleSelect({
+            filter: true,
+            multiple: true,
+            multipleWidth: 150,
+            width: 700,
+            maxHeight: 500,
+            noneSelectedText: "选择城市",
+            selectAllText: "全选",
+            allSelected: "已全选",
+            noMatchesFound: "无地区数据",
+            minimumCountSelected: 1000
+        });
+        $("#oilViscosity").multipleSelect({
+            filter: true,
+            multiple: true,
+            multipleWidth: 150,
+            width: 400,
+            maxHeight: 500,
+            noneSelectedText: "-请选择机油粘度-",
+            selectAllText: "全选",
+            allSelected: "已全选",
+            noMatchesFound: "无机油粘度数据",
+            minimumCountSelected: 1000
+        });
+        $("#multOilViscosity").multipleSelect({
+            filter: true,
+            multiple: true,
+            multipleWidth: 150,
+            width: 400,
+            maxHeight: 500,
+            noneSelectedText: "-请选择机油粘度-",
+            selectAllText: "全选",
+            allSelected: "已全选",
+            noMatchesFound: "无机油粘度数据",
+            minimumCountSelected: 1000
+        });
+    });
+    function DatePrase(value) {
+        if (value) {
+            return eval('new ' + eval(value).source).Format('yyyy-MM-dd hh:mm:ss');
+        }
+    };
+    Vue.filter('DatePrase', DatePrase);
+    var vue = new Vue({
+        el: "#div",
+        data: {
+            allOilViscosity: [],
+            configModel: {
+                PKID: 0,
+                ProvinceName: "",
+                CityName: "",
+                RegionId: 0,
+                OilViscosity: "",
+                OilViscosities: []
+            },
+            multEditModel: {
+                regionIds: [],
+                oilViscosity: ""
+            },
+            pager: {
+                pageIndex: 1,
+                pageSize: 20,
+                totalPage: 0,
+                totalCount: 0
+            },
+            loading: false,
+            SearchResult: [],
+            checkAllFlag: false,
+            editDialog: {
+                show: false
+            },
+            multEditDialog: {
+                show: false
+            },
+            multDeleteDialog: {
+                show: false
+            },
+            showLog: {
+                show: false,
+                logs: [],
+            }
+        },
+        created: function () {
+            var self = this;
+            self.GetAllRegion();
+            self.GetAllOilViscosity();
+            self.$Notice.config({
+                top: 150,
+                duration: 0
+            });
+        },
+        watch: {
+            "pager.pageIndex": function () {
+                var self = this;
+                self.Search(self.pager.pageIndex);
+            },
+            "multEditModel.regionIds": function () {
+                var self = this;
+                if (self.multEditModel.regionIds.length == self.SearchResult.length && self.multEditModel.regionIds.length > 0) {
+                    self.checkAllFlag = true;
+                }
+                else {
+                    self.checkAllFlag = false;
+                }
+            }
+        },
+        methods: {
+            GetAllRegion: function () {
+                $.post("GetAllRegion", function (result) {
+                    $("#region").empty();
+                    var html = '';
+                    if (result && result.Status && result.Data && result.Data.length > 0) {
+                        for (var i = 0; i < result.Data.length; i++) {
+                            html += '<optgroup label="' +
+                                result.Data[i].RegionName +
+                                '">'
+                            var childRegion = result.Data[i].ChildRegions;
+                            if (childRegion && childRegion.length > 0) {
+                                for (var j = 0; j < childRegion.length; j++) {
+                                    html += '<option value="' +
+                                        childRegion[j].RegionId +
+                                        '">' +
+                                        childRegion[j].RegionName +
+                                        '</option>';
+                                }
+                            }
+                            else {
+                                html += '<option value="' +
+                                    result.Data[i].RegionId +
+                                    '">' +
+                                    result.Data[i].RegionName +
+                                    '</option>';
+                            }
+                            html += '</optgroup>';
+                        }
+
+                    }
+                    else {
+                        html = '<option value=-1>-无地区数据-</option>';
+                    }
+                    $("#region").append(html);
+                    $("#region").multipleSelect("refresh")
+                });
+            },
+            GetAllOilViscosity: function () {
+                $.post("GetAllGroupedOilViscosity", function (result) {
+                    $("#oilViscosity").empty();
+                    $("#multOilViscosity").empty();
+                    var html = '';
+                    if (result && result.Status && result.Data) {
+                        for (var key in result.Data) {
+                            html += '<optgroup label="' +
+                                key +
+                                '">'
+                            var childRegion = result.Data[key];
+                            if (childRegion && childRegion.length > 0) {
+                                for (var j = 0; j < childRegion.length; j++) {
+                                    html += '<option value="' +
+                                        childRegion[j] +
+                                        '">' +
+                                        childRegion[j] +
+                                        '</option>';
+                                }
+                            }
+                            html += '</optgroup>';
+                        }
+                    }
+                    $("#oilViscosity").append(html);
+                    $("#oilViscosity").multipleSelect("refresh");
+                    $("#multOilViscosity").append(html);
+                    $("#multOilViscosity").multipleSelect("refresh");
+                });
+            },
+            Search: function (pageIndex) {
+                var self = this;
+                var regionIds = $("#region").multipleSelect("getSelects");
+                if (!(regionIds && regionIds.length > 0)) {
+                    self.ShowNotice("warning", "请选择城市");
+                    return;
+                }
+                self.multEditModel.regionIds = [];
+                self.pager.pageIndex = pageIndex;
+                self.loading = true;
+                $.post("SelectOilViscosityRegionConfig", { regionIds: regionIds, pageIndex: self.pager.pageIndex, pageSize: self.pager.pageSize }, function (result) {
+                    if (result.Status) {
+                        self.SearchResult = result.Data;
+                        self.pager.totalCount = result.TotalCount;
+                        self.pager.totalPage = result.TotalPage;
+                    }
+                    else {
+                        alert("查询失败" + (result.Msg || ""));
+                        self.SearchResult = [];
+                        self.pager.totalPage = 0;
+                        self.pager.totalCount = 0;
+                        self.pager.pageIndex = 1;
+                    }
+                    self.loading = false;
+                });
+            },
+            CheckAll: function () {
+                var self = this;
+                self.multEditModel.regionIds = [];
+                if (self.checkAllFlag) {
+                    self.SearchResult.forEach(function (item) {
+                        self.multEditModel.regionIds.push(item.RegionId);
+                    });
+                }
+            },
+            OpenEditDialog: function (item) {
+                var self = this;
+                self.configModel.PKID = item.PKID;
+                self.configModel.RegionId = item.RegionId;
+                self.configModel.ProvinceName = item.ProvinceName;
+                self.configModel.CityName = item.CityName;
+                self.configModel.OilViscosity = item.OilViscosity;
+                self.configModel.OilViscosities = item.OilViscosities;
+                $("#oilViscosity").multipleSelect('setSelects', self.configModel.OilViscosities);
+                self.editDialog.show = true;
+            },
+            OpenMultEditDialog: function () {
+                var self = this;
+                if (self.multEditModel.regionIds.length < 1) {
+                    self.ShowNotice("info", "请先勾选要编辑的记录");
+                    return;
+                }
+                self.multEditDialog.show = true;
+            },
+            OpenMultDelDialog: function () {
+                var self = this;
+                if (self.multEditModel.regionIds.length < 1) {
+                    self.ShowNotice("info", "请先勾选要编辑的记录");
+                    return;
+                }
+                self.multDeleteDialog.show = true;
+            },
+            Edit: function () {
+                var self = this;
+                var model = self.configModel;
+                if (!confirm("是否确认编辑" + model.CityName + "的机油粘度配置数据 ? ")) {
+                    return;
+                }
+                if (model.RegionId < 1) {
+                    return;
+                }
+                var regionIds = new Array();
+                regionIds.push(model.RegionId);
+                var editOilViscosity = $("#oilViscosity").multipleSelect('getSelects');
+                if (editOilViscosity.length < 1) {
+                    self.ShowNotice("warning", "粘度不能为空");
+                    return;
+                }
+                else {
+                    model.OilViscosity = editOilViscosity.join(",");
+                }
+                $.post("MultAddOrEditOilViscosityRegionConfig", { regionIds: regionIds, oilViscosity: model.OilViscosity }, function (data) {
+                    if (data && data.Status) {
+                        setTimeout(function () { self.RefreshCache(regionIds) }, 3000);
+                        self.ShowNotice("success", ("更新成功!" + (data.Msg || "")));
+                        self.editDialog.show = false;
+                        setTimeout(function () { self.Search(self.pager.pageIndex) }, 2000);
+                    }
+                    else {
+                        self.ShowNotice("error", ("更新失败!" + (data.Msg || "")));
+                    }
+                });
+            },
+            MultEdit: function () {
+                var self = this;
+                var model = self.multEditModel;
+                if (!confirm("确认更新这些地区的机油粘度配置")) {
+                    return;
+                }
+                if (model.regionIds.length < 1) {
+                    self.ShowNotice("warning", "请先勾选要编辑的记录");
+                    return;
+                }
+                var viscosities = $("#multOilViscosity").multipleSelect('getSelects');
+                if (!(viscosities && viscosities.length > 0)) {
+                    self.ShowNotice("warning", "机油粘度不能为空");
+                    return;
+                }
+                model.oilViscosity = viscosities.join(",");
+                $.post("MultAddOrEditOilViscosityRegionConfig", { regionIds: model.regionIds, oilViscosity: model.oilViscosity }, function (data) {
+                    if (data && data.Status) {
+                        setTimeout(function () { self.RefreshCache(model.regionIds) }, 3000);
+                        self.ShowNotice("success", ("批量更新成功!" + (data.Msg || "")));
+                        self.multEditDialog.show = false;
+                        setTimeout(function () { self.Search(self.pager.pageIndex) }, 2000);
+                    }
+                    else {
+                        self.ShowNotice("error", ("批量更新失败!" + data.Msg));
+                    }
+                });
+            },
+            Delete: function (item) {
+                var self = this;
+                if (!confirm("确认删除 " + item.CityName + " 的机油粘度配置?")) {
+                    return;
+                }
+                if (item.RegionId < 1) {
+                    return;
+                }
+                var regionIds = new Array();
+                regionIds.push(item.RegionId);
+                $.post("MultDeleteOilViscosityRegionConfig", { regionIds: regionIds }, function (data) {
+                    if (data && data.Status) {
+                        setTimeout(function () { self.RefreshCache(model.regionIds) }, 3000);
+                        self.ShowNotice("success", ("删除成功!" + (data.Msg || "")));
+                        setTimeout(function () { self.Search(self.pager.pageIndex) }, 2000);
+                    }
+                    else {
+                        self.ShowNotice("error", ("删除失败!" + (data.Msg || "")));
+                    }
+                });
+            },
+            MultDelete: function () {
+                var self = this;
+                var model = self.multEditModel;
+                if (model.regionIds.length < 1) {
+                    self.ShowNotice("warning", "未选中任何记录");
+                    return;
+                }
+                $.post("MultDeleteOilViscosityRegionConfig", { regionIds: model.regionIds }, function (data) {
+                    if (data && data.Status) {
+                        setTimeout(function () { self.RefreshCache(model.regionIds) }, 3000);
+                        self.ShowNotice("success", ("批量删除成功!" + (data.Msg || "")));
+                        self.multDeleteDialog.show = false;
+                        setTimeout(function () { self.Search(self.pager.pageIndex) }, 2000);
+                    }
+                    else {
+                        self.ShowNotice("error", ("批量删除失败!" + (data.Msg || "")));
+                    }
+                });
+            },
+            WatchHistroy(item) {
+                var self = this;
+                var identityId = item.RegionId;
+                var type = "OilViscosityRegionConfig";
+                $.post("GetOilViscosityRegionOprLog", { identityId: identityId, type: type }, function (data) {
+                    if (data && data.Status) {
+                        self.showLog.logs = data.Data;
+                        self.showLog.show = true;
+                    }
+                    else {
+                        self.ShowNotice("error", ("查看日志失败!" + (data.Msg || "")));
+                    }
+                });
+            },
+            RefreshCache: function (regionIds) {
+                var self = this;
+                if (regionIds && regionIds.length>0) {
+                    $.post("RemoveOilViscosityRegionConfigCache", { regionIds: regionIds}, function (result) {
+                        if (result && result.Status) {
+                            self.ShowNotice("info", "刷新缓存成功");
+                        }
+                        else {
+                            self.ShowNotice("error", "刷新缓存失败");
+                        }
+                    });
+                }
+            },
+            ShowNotice(type, message) {
+                var self = this;
+                switch (type) {
+                    case "info":
+                        self.$Notice.info({
+                            title: '提示',
+                            desc: message + "!<br/>此消息将自动关闭",
+                            duration: 4
+                        });
+                        break;
+                    case "success":
+                        this.$Notice.success({
+                            title: '成功',
+                            desc: message,
+                            duration: 0
+                        });
+                        break;
+                    case "warning":
+                        this.$Notice.warning({
+                            title: '警告',
+                            desc: message
+                        });
+                        break;
+                    case "error":
+                        this.$Notice.error({
+                            title: '失败',
+                            desc: message
+                        });
+                        break;
+                    default:
+                        alert("未知的提示类型");
+                }
+            }
+        }
+    })
+</script>

@@ -1,0 +1,264 @@
+﻿@using Tuhu.Provisioning.Models
+@using Tuhu.Component.Common.Models
+@model ListModel<ProductMappingModel>
+@{ 
+    ViewBag.Title = "竞品关联管理";
+}
+<style>
+    table {
+        width: 100%;
+    }
+        table thead th:last-child {
+            text-align: center;
+        }
+        table tbody td:first-child {
+            width: 90px;
+        }
+        table tbody td:last-child {
+            width: 100px;
+            text-align: center;
+        }
+</style>
+<br />
+<form>
+<select id="ShopCode" name="ShopCode">
+    <option value="">请选择商铺</option>
+    @if (ViewBag.shopCode == "特维轮")
+    {
+        <option selected="selected">特维轮</option>
+    }
+    else
+    {
+         <option> 特维轮 </option>
+    }
+    @if (ViewBag.shopCode == "京东自营")
+    {
+         <option selected="selected">京东自营</option>
+    }
+    else
+    {
+         <option>京东自营</option>
+    }
+    @if (ViewBag.shopCode == "汽配龙")
+    {
+         <option selected="selected">汽配龙</option>
+    }
+    else
+    {
+         <option>汽配龙</option>
+    }
+    @if (ViewBag.shopCode == "汽车超人零售")
+    {
+         <option selected="selected">汽车超人零售</option>
+    }
+    else
+    {
+         <option>汽车超人零售</option>
+    }
+    @if (ViewBag.shopCode == "汽车超人批发")
+    {
+         <option selected="selected">汽车超人批发</option>
+    }
+    else
+    {
+         <option>汽车超人批发</option>
+    }
+    @if (ViewBag.shopCode == "养车无忧")
+    {
+         <option selected="selected">养车无忧</option>
+    }
+    else
+    {
+        <option>养车无忧</option>
+    }
+    @if (ViewBag.shopCode == "康众官网")
+    {
+         <option selected="selected">康众官网</option>
+    }
+    else
+    {
+         <option>康众官网</option>
+    }
+</select>
+<input type="text" name="q" value="@ViewBag.q" /><button type="submit">搜索</button>
+</form>
+<table>
+    <thead>
+        <tr>
+            <th>商铺名称</th>
+            <th>PID及产品名称</th>
+            <th>商铺产品编号及名称</th>
+            <th>价格</th>
+            <th>最后更新价格</th>
+            <th><button type="button" data-bind="click: create">添加监控</button></th>
+        </tr>
+    </thead>
+    <tbody data-bind="foreach: priceMap">
+        <tr data-bind="if: Editing">
+            <td>
+                <select id="ShopCode" name="ShopCode" style="width: 90px;" data-bind="value: ShopCode, valueUpdate: 'input', style: { borderColor: ShopCode() ? '' : 'red' }">
+                    <option value="">请选择商铺</option>
+                    <option>特维轮</option>
+                    <option>京东自营</option>
+                    <option>汽配龙</option>
+                    <option>汽车超人零售</option>
+                    <option>汽车超人批发</option>
+                    <option>养车无忧</option>
+                    <option>康众官网</option>
+                </select>
+            </td>
+            <td><input id="Pid" name="Pid" type="text" maxlength="50" style="width: 200px;" data-bind="value: Pid, valueUpdate: 'input', style: { borderColor: Pid() ? '' : 'red' }"></td>
+            <td><input id="ItemID" name="ItemID" type="text" maxlength="100" style="width: 200px;" data-bind="value: ItemID, valueUpdate: 'input', style: { borderColor: ItemID() ? '' : 'red' }"></td>
+            <td></td>
+            <td></td>
+            <td><button type="button" data-bind="click: $parent.save, enable: ShopCode() && Pid() && ItemID()">保存</button> <button type="button" data-bind="click: $parent.cancel">取消</button></td>
+        </tr>
+        <tr data-bind="ifnot: Editing, style: { backgroundColor: LastUpdateDateTime() < Date.now() - 86400000 ? '#ddd' : '' }">
+            <td data-bind="text: ShopCode"></td>
+            <td>
+                <a target="_blank" href="#" data-bind="text: Pid, attr: { href: ItemUrl }"></a>
+                <br />
+                <span data-bind="text: DisplayName"></span>
+            </td>
+            <td>
+                <a target="_blank" href="#" data-bind="text: ItemID, attr: { href: ShopUrl }"></a>
+                <br />
+                <span data-bind="text: Title"></span>
+            </td>
+            <td data-bind="text: FormatPrice"></td>
+            <td data-bind="text: LastUpdateDateTime().toLocaleDateString(), style: { color: LastUpdateDateTime() < Date.now() - 86400000 ? 'red' : '' }"></td>
+            <td><button type="button" data-bind="click: $parent.delete">删除</button></td>
+        </tr>
+    </tbody>
+</table>
+@Html.Pager(Model.Pager, true, pageNumber => Url.Action("PriceMonitorConfig", new { pn = pageNumber < 2 ? null : (int?)pageNumber, ViewBag.q, ShopCode = ViewBag.shopCode }))
+<script>
+		function viewModel(source)
+		{
+			var self = this;
+
+			var init = function (obj)
+			{
+				var obj = {
+					ShopCode: ko.observable(obj ? obj.ShopCode : ""),
+					Pid: ko.observable(obj ? obj.Pid : ""),
+					DisplayName: ko.observable(obj ? obj.DisplayName : ""),
+                    ItemID: ko.observable(obj ? obj.ItemID || obj.SkuID || obj.ItemCode || obj.Pid: ""),
+                    Price: ko.observable(obj ? obj.Price : ""),
+                    Title: ko.observable(obj ? obj.Title : ""),
+                    ItemCode: ko.observable(obj ? obj.ItemCode : ""),
+					LastUpdateDateTime: ko.observable(obj ? new Date(obj.LastUpdateDateTime) : ""),
+					Editing: ko.observable(!obj),
+					OriginalValue: obj
+				};
+
+				obj.FormatPrice = ko.computed(function ()
+				{
+					if (obj.Price())
+						return "￥" + obj.Price().toFixed(2);
+				});
+				obj.ItemUrl = ko.computed(function ()
+				{
+					var arr = obj.Pid().split('|');
+					if (arr.length == 1 || !arr[1])
+						return "http://item.tuhu.cn/Products/" + arr[0] + ".html";
+					else if (arr[1])
+						return "http://item.tuhu.cn/Products/" + arr[0] + "/" + arr[1] + ".html";
+				});
+				obj.ShopUrl = ko.computed(function ()
+				{
+					switch (obj.ShopCode())
+					{
+						case "京东自营":
+							return "http://item.jd.com/" + obj.ItemID() + ".html";
+                        case "养车无忧":
+                            return "http://item.yangche51.com/p-" + obj.ItemID() + ".html";
+                        case "汽车超人零售":
+                            return "http://www.qccr.com/detail/" + obj.ItemID() + ".html";
+                        case "汽车超人批发":
+                            return "https://pch.qccr.com/html/goods/itemdetail.html?id=" + obj.ItemID();
+                        case "康众官网":
+                            return "http://www.carzone.cn/search/p_" + obj.ItemID() + "-c_0-b_0-t_0-a_0-d_0-p_1-l_2-pg_1.html";
+						default:
+							return 'http://detail.tmall.com/item.htm?id=' + obj.ItemID();
+					}
+				});
+
+				return obj;
+			}
+
+			self.priceMap = ko.observableArray($.map(source, init));
+
+			self.create = function ()
+			{
+				self.priceMap.unshift(init());
+			}
+
+			self.save = function () {
+			    var campaign = this;
+			    var price = 0;
+                var originalValue = ko.toJS(campaign);
+
+                if (originalValue.ShopCode === "养车无忧" || originalValue.ShopCode === "康众官网") {
+                    originalValue.ItemCode = originalValue.ItemID;
+                    originalValue.ItemID = 0;
+                }
+
+                $.post("", originalValue).complete(function (ajax) {
+                    if (ajax.status == 200) {
+                        var result = $.parseJSON(ajax.responseText);
+                        if (result.Price) {
+                            campaign.DisplayName(result.DisplayName);
+                            campaign.Price(result.Price);
+                            campaign.Title(result.Title);
+                            campaign.LastUpdateDateTime(new Date());
+                            campaign.Editing(false);
+                        }
+                        else if (result == -1)
+                            alert("已经存在相同的产品编号");
+                        else if (result == -3)
+                            alert("已存在相同的数据");
+                        else if (result == -4)
+                            alert("商铺商品不存在，请重新确认！\n如果确定存在请重新点击“保存”，如果重试几次仍提示此错误则请联系彭伟！");
+                        else if (result == -5)
+                            alert("我们数据库中没有此PID！");
+                        else {
+                            campaign.DisplayName(result.DisplayName);
+                            campaign.Price(price);
+                            campaign.Title(result.Title);
+                            campaign.LastUpdateDateTime(new Date());
+                            campaign.Editing(false);
+                        }
+                    }
+                    else if (ajax.status > 0)
+                        alert("服务器错误！");
+                });
+			}
+
+			self.cancel = function ()
+			{
+				self.priceMap.remove(this);
+			}
+
+			self.delete = function ()
+			{
+				var campaign = this;
+			    if (confirm("确定删除此监控吗？"))
+			        $.post("@Url.Action("DeletePriceMonitor")",
+			            {
+			                "ShopCode": campaign.ShopCode(),
+                            "Item": campaign.ItemCode() || campaign.ItemID()
+			            })
+			            .complete(function(ajax) {
+			                if (ajax.status == 200)
+			                    self.priceMap.remove(campaign);
+			                else if (ajax.status > 0)
+			                    alert("服务器错误！");
+			            });
+			}
+		}
+
+		var model = new viewModel(@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model)));
+
+		ko.applyBindings(model);
+</script>

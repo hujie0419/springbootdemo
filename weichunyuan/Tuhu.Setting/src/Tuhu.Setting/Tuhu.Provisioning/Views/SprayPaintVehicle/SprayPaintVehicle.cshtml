@@ -1,0 +1,201 @@
+﻿@{
+    ViewBag.Title = "喷漆车型档次分类";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model List<Tuhu.Provisioning.DataAccess.Entity.VehicleLevelModel>
+
+<style>
+    table th {
+        width: auto;
+        height: auto;
+        background: #66ABEF;
+        color: #F3F7FA;
+        border: 1px solid #559BD0;
+        font-weight: 600;
+        font-family: "Microsoft Yahei";
+        text-align: center;
+        min-width: 100px;
+        font-size: larger;
+    }
+
+    table td {
+        font-size: 75%;
+        padding: 8px 3px 8px 3px;
+        font-family: "Microsoft Yahei";
+        text-align: center;
+        border: 1px solid #eee;
+        min-width: 20%;
+        max-width:50%;
+    }
+</style>
+<div>
+    <h2>喷漆车型档次线上分类</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>车型档次</th>
+            <th>车型</th>
+            <th>服务ID</th>
+            <th>编辑</th>
+        </tr>
+        </thead>
+        <tbody>
+        @{
+            string[] levels = {"A类", "B类", "C类", "D类", "E类", "不支持喷漆"};
+            foreach (var level in levels)
+            {
+                <tr>
+                    <td>@level</td>
+                    @{
+                        if (Model.Any(t => t.VehicleLevel.Equals(level)))
+                        {
+                            var vehicleInfos = Model.FirstOrDefault(t => t.VehicleLevel.Equals(level)).VehicleInfo;
+                            var serviceInfos = Model.FirstOrDefault(t => t.VehicleLevel.Equals(level)).PaintService;
+                            var itemCount = 0;
+                            <td>
+                                <div>
+                                    @foreach (var item in vehicleInfos)
+                                    {
+                                        if (!string.IsNullOrWhiteSpace(item.VehicleSeries))
+                                        {
+                                            itemCount++;
+                                            var isDisplay = itemCount > 45 ? "none" : "";
+                                            <span style="white-space: nowrap; float: left; margin-top: 10px; display: @isDisplay">@item.VehicleSeries；&nbsp;&nbsp;</span>
+                                        }
+                                    }
+                                </div><br>
+                                @if (vehicleInfos.Count > 45)
+                                {
+                                    <a style="margin-top: 20px; float: right; cursor: pointer;" onclick="showAllVehicle(this)">显示全部</a>
+                                    <a style="margin-top: 20px; float: right; cursor: pointer; display: none;" onclick="hideVehicle(this)">隐藏部分车型</a>
+                                }                              
+                            </td>
+                            <td>
+                                @foreach (var info in serviceInfos)
+                                {
+                                    if (!string.IsNullOrWhiteSpace(info.ServiceId))
+                                    {
+                                        <span style="white-space: nowrap;">@info.ServiceId；</span>
+                                        <br>
+                                    }
+                                }
+
+                            </td>
+                        }
+                        else
+                        {
+                            <td></td>
+                            <td></td>
+                        }
+
+                            if (!level.Equals("不支持喷漆"))
+                            {
+                                <td><a href="/SprayPaintVehicle/EditSprayPaintVehicle?vehicleLevel=@level&type=@Tuhu.Provisioning.DataAccess.Entity.PaintVehicleLevelTypeEnum.Online.ToString()">编辑</a></td>
+                            }
+                            else
+                            {
+                                <td>-</td>
+                            }
+                        }
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    <br />
+    <h2>喷漆车型档次线下分类</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>车型档次</th>
+                <th>车型</th>
+                <th>服务ID</th>
+                <th>编辑</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var level in levels)
+                {
+                    <tr>
+                        <td>@level</td>
+                        @{
+                            var offline = ViewBag.offline as List<Tuhu.Provisioning.DataAccess.Entity.VehicleLevelModel>;
+                            if (offline.Any(t => t.VehicleLevel.Equals(level)))
+                            {
+                                var vehicleInfos = offline.FirstOrDefault(t => t.VehicleLevel.Equals(level)).VehicleInfo;
+                                var serviceInfos = offline.FirstOrDefault(t => t.VehicleLevel.Equals(level)).PaintService;
+                                var itemCount = 0;
+                                <td>
+                                    <div>
+                                        @foreach (var item in vehicleInfos)
+                                        {
+                                            if (!string.IsNullOrWhiteSpace(item.VehicleSeries))
+                                            {
+                                                itemCount++;
+                                                var isDisplay = itemCount > 45 ? "none" : "";
+                                                <span style="white-space: nowrap; float: left; margin-top: 10px; display: @isDisplay">@item.VehicleSeries；&nbsp;&nbsp;</span>
+                                            }
+                                        }
+                                    </div><br>
+                                    @if (vehicleInfos.Count > 45)
+                                    {
+                                        <a style="margin-top: 20px; float: right; cursor: pointer;" onclick="showAllVehicle(this)">显示全部</a>
+                                        <a style="margin-top: 20px; float: right; cursor: pointer; display: none;" onclick="hideVehicle(this)">隐藏部分车型</a>
+                                    }
+                                </td>
+                                <td>
+                                    @foreach (var info in serviceInfos)
+                                    {
+                                        if (!string.IsNullOrWhiteSpace(info.ServiceId))
+                                        {
+                                            <span style="white-space: nowrap;">@info.ServiceId；</span>
+                                            <br>
+                                        }
+                                    }
+
+                                </td>
+                            }
+                            else
+                            {
+                                <td></td>
+                                <td></td>
+                            }
+
+                            if (!level.Equals("不支持喷漆"))
+                            {
+                                <td><a href="/SprayPaintVehicle/EditSprayPaintVehicle?vehicleLevel=@level&type=@Tuhu.Provisioning.DataAccess.Entity.PaintVehicleLevelTypeEnum.Offline.ToString()">编辑</a></td>
+                            }
+                            else
+                            {
+                                <td>-</td>
+                            }
+                        }
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+    function showAllVehicle(o) {
+        var item = $(o);
+        item.parent().find("span").show();
+        item.hide();
+        item.next().show();
+    }
+
+    function hideVehicle(o) {
+        var item = $(o);
+        var td = item.parent().find("span");
+        var i = 0;
+        td.each(function () {
+            i++;
+            if (i > 45) {               
+                $(this).hide();
+            }
+        });
+        item.hide();
+        item.prev().show();
+    }
+</script>

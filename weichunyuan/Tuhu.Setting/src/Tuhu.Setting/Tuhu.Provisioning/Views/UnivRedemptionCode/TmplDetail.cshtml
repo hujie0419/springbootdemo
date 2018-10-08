@@ -1,0 +1,485 @@
+﻿
+@{
+    ViewBag.Title = "模板详情";
+    Layout = "~/Views/Shared/_LayoutNew.cshtml";
+}
+
+@section css{
+    <link rel="stylesheet" href="~/Content/iview/iview.css" />
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
+        /*修改受影响的样式*/
+        body {
+            background-color: #2f4050;
+        }
+
+        .select {
+            width: 100px;
+        }
+
+        .modal-element-width {
+            width: 90%;
+        }
+
+        .modal-row {
+            margin-bottom: 15px;
+        }
+
+        .modal-label {
+            font-size: small;
+            font-weight: 600;
+            text-align: right;
+        }
+    </style>
+}
+
+@section title{
+    <a href="/UnivRedemptionCode/UnivTmplList">通用兑换码模版列表</a>&nbsp;&nbsp;&gt;&nbsp;&nbsp;@ViewBag.Title
+}
+
+<div id="app" v-cloak>
+    <tabs v-on:on-click="clickTabs">
+        @*<tab-pane label="test" name="test">
+                <limit-modal :value="true"></limit-modal>
+            </tab-pane>*@
+        <tab-pane label="服务码" name="Service">
+            <tab-content-service :services="services" :configid="configId"></tab-content-service>
+        </tab-pane>
+        <tab-pane label="优惠券" name="Coupon">
+            <tab-content-coupon v-if="isAlreadyLoaded" :configid="configId"></tab-content-coupon>
+        </tab-pane>
+    </tabs>
+</div>
+
+
+
+<script type="text/template" id="city-list">
+    <div>
+        <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+            <i-col span="6">
+                <i-select v-model="province_id" filterable transfer placeholder="请选择省/自治区/直辖市">
+                    @*<i-option :value="0" :key="0">请选择省/自治区/直辖市</i-option>*@
+                    <i-option v-for="p in provinces" :value="p.RegionId" :key="p.RegionId">{{p.RegionName}}</i-option>
+                </i-select>
+            </i-col>
+            <i-col span="12">
+                <span v-for="c in cities">
+                    <input type="checkbox" v-model="value" :value="c.RegionId" />{{c.RegionName}}
+                </span>
+            </i-col>
+            <i-col span="3">
+                <i-button type="error" v-on:click="remove">删除</i-button>
+            </i-col>
+        </row>
+    </div>
+</script>
+
+<script type="text/template" id="limit-modal">
+    <div>
+        <Modal title="配置限购" v-model="showModal" width="700"
+               :loading="loading"
+               :mask-closable="false"
+               v-on:on-ok="submit">
+            <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                <i-col span="6">
+                    <div style="font-size:small; font-weight:600;">限购次数</div>
+                </i-col>
+                <i-col span="18">
+                    <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                        <i-col span="4">
+                            <i-select placeholder="选择限购周期" v-model="limit.CycleType">
+                                <i-option value="Year" key="Year">年</i-option>
+                                <i-option value="Month" key="Month">月</i-option>
+                                <i-option value="Week" key="Week">周</i-option>
+                                <i-option value="Day" key="Day">日</i-option>
+                            </i-select>
+                        </i-col>
+                        <i-col span="14">
+                            <i-input placeholder="输入限购次数" v-model="limit.CycleLimit"></i-input>
+                        </i-col>
+                        <i-col span="3">
+                            次
+                        </i-col>
+                    </row>
+                </i-col>
+            </row>
+            <div style="border-bottom: 1px solid #e9e9e9;padding-bottom:6px;margin-bottom:6px;"></div>
+            <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                <i-col span="4">
+                    <div style="font-size:small; font-weight:600;">限购地区</div>
+                </i-col>
+                <i-col span="20">
+                    <region-list :province_ids.sync="limit.ProvinceIds"
+                                 :city_ids.sync="limit.CityIds">
+                    </region-list>
+                </i-col>
+            </row>
+        </Modal>
+    </div>
+</script>
+
+<script type="text/x-template" id="region-list">
+    <div>
+        <div>
+            <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                <i-col span="6">
+                    <div style="font-size:small; font-weight:600;">省/自治区/直辖市</div>
+                </i-col>
+                <i-col span="12">
+                    <div style="font-size:small; font-weight:600;">市/区</div>
+                </i-col>
+                <i-col span="3">
+                    <i-button type="primary" v-on:click="clickAppend">添加</i-button>
+                </i-col>
+            </row>
+        </div>
+        <div>
+            <city-list v-for="(item,index) in province_ids"
+                       :provinces="provinces"
+                       :province_id.sync="province_ids[index]"
+                       v-on:on-remove="clickRemove(index)"
+                       v-model="city_ids"></city-list>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-template" id="tab-content-service">
+    <div>
+        <div>
+            <row type="flex" justify="start" class="modal-row">
+                <i-col span="3" push="21">
+                    <i-button type="primary" v-on:click="append">添加FW码</i-button>
+                </i-col>
+            </row>
+        </div>
+        <div>
+            <i-table :stripe="true"
+                     :data="data"
+                     :columns="columns"
+                     :loading="loading"
+                     :size="'large'"
+                     highlight-row
+                     style="margin-bottom:15px;">
+            </i-table>
+        </div>
+        <div>
+            <Modal title="添加服务码" v-model="showModal" width="600"
+                   :loading="submitLoading"
+                   :mask-closable="false"
+                   v-on:on-ok="submit">
+                <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                    <i-col span="5">
+                        <div class="modal-label">名称:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-input placeholder="输入名称" v-model="serviceConfig.Name"></i-input>
+                    </i-col>
+                </row>
+
+                <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                    <i-col span="5">
+                        <div class="modal-label">选择服务:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-select :filterable="true"   placeholder="选择服务" v-model="serviceConfig.CodeTypeConfigId" :disabled="serviceConfig.PKID>0">
+                            <i-option :value="0" :key="0">请选择</i-option>
+                            <i-option v-for="item in services" :value="item.Id" :key="item.Id">{{item.Text}}</i-option>
+                        </i-select>
+                    </i-col>
+                </row>
+
+                <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                    <i-col span="5">
+                        <div class="modal-label">集团客户结算价(<span style="color: #dc143c">单个服务码价格</span>):</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-input placeholder="输入集团客户结算价" v-model="serviceConfig.SettlementPrice"></i-input>
+                    </i-col>
+                </row>
+
+                <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                    <i-col span="5">
+                        <div class="modal-label">佣金比:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-input placeholder="输入佣金比" v-model="serviceConfig.ShopCommission"></i-input>
+                    </i-col>
+                </row>
+
+                <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                    <i-col span="5">
+                        <div class="modal-label">服务数量:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-input placeholder="输入服务数量" v-model="serviceConfig.Num"></i-input>
+                    </i-col>
+                </row>
+
+                <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                    <i-col span="5">
+                        <div class="modal-label">服务时间范围:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <DatePicker transfer type="daterange" confirm placeholder="输入服务时间范围(与兑换后有效期二者只能填一个)" v-model="serviceConfig.DateRange" style="width:100%;"></DatePicker>
+                    </i-col>
+                </row>
+                <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                    <i-col span="5">
+                        <div class="modal-label">兑换后有效期:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-input placeholder="输入兑换后有效期(与服务时间范围二者只能填一个)" v-model="serviceConfig.EffectiveDay"></i-input>
+                    </i-col>
+                </row>
+
+                <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                    <i-col span="5">
+                        <div class="modal-label">结算类型:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-select transfer placeholder="请选择" v-model="serviceConfig.SettlementMethod" :disabled="serviceConfig.PKID>0">
+                            @*<i-option value="BatchPreSettled" key="BatchPreSettled">大买断</i-option>*@
+                            <i-option value="SinglePreSettled" key="SinglePreSettled">小买断</i-option>
+                            <i-option value="ByPeriod" key="ByPeriod">据实</i-option>
+                        </i-select>
+                    </i-col>
+                </row>
+
+                <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                    <i-col span="5">
+                        <div class="modal-label">描述:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-input type="textarea" :rows="4" placeholder="输入描述" v-model="serviceConfig.Description"></i-input>
+                    </i-col>
+                </row>
+
+                <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                    <i-col span="5">
+                        <div class="modal-label">生效:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <RadioGroup v-model="serviceConfig.IsActive">
+                            <Radio :label="true">
+                                <span>是</span>
+                            </Radio>
+                            <Radio :label="false">
+                                <span>否</span>
+                            </Radio>
+                        </RadioGroup>
+                    </i-col>
+                </row>
+
+                <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                    <i-col span="5">
+                        <div class="modal-label">必选:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <RadioGroup v-model="serviceConfig.IsRequired">
+                            <Radio :label="true">
+                                <span>是</span>
+                            </Radio>
+                            <Radio :label="false">
+                                <span>否</span>
+                            </Radio>
+                        </RadioGroup>
+                    </i-col>
+                </row>
+
+            </Modal>
+        </div>
+
+        <div>
+            <limit-modal v-model="showLimitModal" :id="mrCodeConfigId"></limit-modal>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-template" id="tab-content-coupon">
+    <div>
+        <div>
+            <row type="flex" justify="start" class="modal-row">
+                <i-col span="3" push="21">
+                    <i-button type="primary" v-on:click="append">添加优惠券</i-button>
+                </i-col>
+            </row>
+        </div>
+        <div style="margin-bottom:15px;">
+            <i-table :stripe="true"
+                     :data="list"
+                     :columns="columns"
+                     :loading="loading"
+                     :size="'large'"
+                     highlight-row>
+            </i-table>
+        </div>
+        <div>
+            <Modal title="添加优惠券" v-model="showModal" width="600"
+                   :loading="submitLoading"
+                   :mask-closable="false"
+                   v-on:on-ok="submit">
+                <row type="flex" justify="space-around" v-bind:align="'center'" class="modal-row">
+                    <i-col span="11">
+                        <label>名称:</label>
+                        <div>
+                            <i-input placeholder="输入配置名称" v-model="data.Name"></i-input>
+                        </div>
+                    </i-col>
+                    <i-col span="11">
+                    </i-col>
+                </row>
+                <coupon-select v-if="showModal" :get_rule_guid.sync="data.GetRuleGuid"
+                               :business_type.sync="data.BusinessType"
+                               :package_id.sync="data.PackageId"
+                               :settlement_price.sync="data.SettlementPrice">
+                </coupon-select>
+                <row type="flex" justify="space-around" v-bind:align="'center'" class="modal-row">
+                    <i-col span="11">
+                        <label>结算类型:</label>
+                        <div>
+                            <i-select :disabled="disabledSettlementMethod" v-model="data.SettlementMethod">
+                                <i-option value="None" key="None">请选择</i-option>
+                                @*<i-option value="BatchPreSettled" key="BatchPreSettled">大买断结算</i-option>
+                                <i-option value="SinglePreSettled" key="SinglePreSettled">小买断结算</i-option>*@
+                                <i-option value="ByPeriod" key="ByPeriod">据实结算</i-option>
+                            </i-select>
+                        </div>
+                    </i-col>
+                    <i-col span="11">
+                        <label>数量:</label>
+                        <div>
+                            <i-input placeholder="输入数量" v-model="data.Num"></i-input>
+                        </div>
+                    </i-col>
+                </row>
+                <row type="flex" justify="space-around" v-bind:align="'center'" class="modal-row">
+                    <i-col span="23">
+                        <label>描述:</label>
+                        <div>
+                            <i-input placeholder="描述" type="textarea" :rows="4" v-model="data.Description"></i-input>
+                        </div>
+                    </i-col>
+                </row>
+                <row type="flex" justify="space-around" v-bind:align="'center'" class="modal-row">
+                    <i-col span="11">
+                        <label>生效:</label>
+                        <div>
+                            <RadioGroup v-model="data.IsActive">
+                                <Radio :label="true">
+                                    <span>是</span>
+                                </Radio>
+                                <Radio :label="false">
+                                    <span>否</span>
+                                </Radio>
+                            </RadioGroup>
+                        </div>
+                    </i-col>
+                    <i-col span="11">
+                        <label>必选:</label>
+                        <div>
+                            <RadioGroup v-model="data.IsRequired">
+                                <Radio :label="true">
+                                    <span>是</span>
+                                </Radio>
+                                <Radio :label="false">
+                                    <span>否</span>
+                                </Radio>
+                            </RadioGroup>
+                        </div>
+                    </i-col>
+                </row>
+
+            </Modal>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="coupon-select">
+    <div>
+        <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+            <i-col span="11">
+                <label>业务类型:</label>
+                <div>
+                    <i-select transfer filterable v-model="businessType">
+                        <i-option value="None" key="None">请选择</i-option>
+                        @*<i-option value="GeneralBaoYang" key="GeneralBaoYang">通用保养流程</i-option>*@
+                        <i-option value="BaoYangPackage" key="BaoYangPackage">保养套餐流程</i-option>
+                        @*<i-option value="GeneralPaint" key="GeneralPaint">喷漆通用流程</i-option>*@
+                        <i-option value="PaintPackage" key="PaintPackage">喷漆套餐流程</i-option>
+                        @*<i-option value="GeneralAnnualInspection" key="GeneralAnnualInspection">年检通用流程</i-option>
+                        <i-option value="AnnualInspectionPackage" key="AnnualInspectionPackage">年检套餐流程</i-option>*@
+                    </i-select>
+                </div>
+            </i-col>
+            <i-col span="11">
+                <label>领取规则:</label>
+                <div>
+                    <i-select transfer v-model="getRuleGuid">
+                        <i-option value="00000000-0000-0000-0000-000000000000" key="00000000-0000-0000-0000-000000000000">请选择</i-option>
+                        <i-option v-for="item in coupons" :value="item.GetRuleGUID" :key="item.GetRuleGUID">{{item.Description}}</i-option>
+                    </i-select>
+                </div>
+            </i-col>
+        </row>
+        <row type="flex" justify="space-around" v-bind:align="'bottom'" class="modal-row">
+            <i-col span="11">
+                <label>大客户结算价<span v-show="!isGeneral">(套餐结算价以套餐价格为准)</span>:</label>
+                <div>
+                    <i-input :disabled="!isGeneral" v-model="settlementPrice"></i-input>
+                </div>
+            </i-col>
+            <i-col span="11">
+                <div v-show="!isGeneral">
+                    <label>选择{{labelText}}套餐:</label>
+                    <div>
+                        <i-select transfer v-model="packageId">
+                            <i-option :value="0" :key="0">请选择</i-option>
+                            <i-option v-for="item in packages" :value="item.PackageId" :key="item.PackageId">{{item.PackageName}}</i-option>
+                        </i-select>
+                    </div>
+                </div>
+            </i-col>
+        </row>
+    </div>
+</script>
+
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/iview/iview.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/UnivRedemptionCode/TmplDetail.js"></script>
+    <script type="text/javascript">
+        var GlobalConstantConfig = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewData["Data"]));
+        var ServerType=@ViewData["ServerType"];
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                isAlreadyLoaded: false,
+                services: [],
+                configId: "",
+                serverType:0,
+            },
+            created: function () {
+                this.serverType = ServerType;
+                this.getBeautyServiceCodeTypeConfigs();
+                this.configId = GlobalConstantConfig.ConfigId;
+            },
+            methods: {
+                clickTabs: function (value) {
+                    if (!this.isAlreadyLoaded && value === 'Coupon') {
+                        this.isAlreadyLoaded = true;
+                    }
+                },
+                getBeautyServiceCodeTypeConfigs: function () {
+                    var vm = this;
+                    $.get("/BeautyServicePackage/GetAllBeautyServiceCodeTypeConfig?ServerType=" + vm.serverType, function (data) {
+                        vm.services = (data || []).map(function (service) {
+                            return { Id: service.PKID, Text: service.Name };
+                        });
+                    });
+                },
+            },
+        });
+    </script>
+}

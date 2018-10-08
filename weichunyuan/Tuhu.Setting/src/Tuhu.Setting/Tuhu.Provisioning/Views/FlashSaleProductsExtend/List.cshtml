@@ -1,0 +1,101 @@
+﻿
+@using Tuhu.Provisioning.Models
+@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.FlashSaleProductsExtend>
+@{
+    Layout = null;
+}
+
+<div>
+    <table style="width:100%;margin-top:20px;">
+        <thead>
+            <tr>
+                <th>PKID</th>
+                <th>PID</th>
+                <th>产品名称</th>
+                <th>活动ID</th>
+                <th>活动名称</th>              
+                <th style="position:relative;width:50px;">
+                    <em onmouseover="MonthSales(this)">月销量</em>
+                    <ul>
+                        <li>
+                            <input type="button" onclick="searchform('MonthSalesdesc')" class="btn1" value="由高到低" />
+                        </li>
+                        <li>
+                            <input type="button" onclick="searchform('MonthSalesasc')" class="btn1" value="由低到高" />
+                        </li>
+                    </ul>
+                </th>
+                <th>成本</th>
+                <th>活动价格</th>
+                <th style="position:relative;width:100px;">
+                    <em onmouseover="GrossProfitMargin(this)">毛利率</em>
+                    <ul style="display:none">
+                        <li>
+                            <input type="button" onclick="searchform('GrossProfitMargindesc')" class="btn1" value="由高到低" />
+                        </li>
+                        <li>
+                            <input type="button" onclick="searchform('GrossProfitMarginasc')" class="btn1" value="由低到高" />
+                        </li>
+                    </ul>
+                </th>
+                <th>是否使用优惠券</th>
+                <th>活动开始时间</th>
+                <th>活动结束时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.PKID</td>
+                    <td>@item.PID</td>
+                    <td width="20%">@item.ProductName</td>
+                    <td width="20%">@item.ActivityID</td>
+                    <td>@item.ActivityName</td>
+                    <td style="text-align:right">@item.MonthSales</td>
+                    <td style="text-align:right">@item.Costing</td>                 
+                    <td style="text-align:right">@item.Price</td>
+                    <td style="text-align:right">
+                        @if (item.GrossProfitMargin < 0)
+                        {
+                            <label style="color:green"> @item.GrossProfitMargin % </label>
+                        }
+                        else if (item.GrossProfitMargin > 0)
+                        {
+                            <label style="color:red">+ @item.GrossProfitMargin % </label>
+                        }
+                        else
+                        {
+                            <label>@item.GrossProfitMargin % </label>
+                        }
+
+                    </td>
+                    <td>
+                        @if (item.IsUsePCode)
+                        {
+                            <input type="radio" checked="checked" name="a@(item.PKID)" value="true" /><em>是</em>
+                            <input type="radio" name="a@(item.PKID)" value="false" /><em>否</em>
+                        }
+                        else
+                        {
+                            <input type="radio" name="a@(item.PKID)" value="true" /><em>是</em>
+                            <input type="radio" checked="checked" value="false" name="a@(item.PKID)" /> <em>否</em>
+                        }
+                    </td>
+                    <td>@item.StartDateTime</td>
+                    <td>@item.EndDateTime</td>
+                    <td>
+                        <a href="javascript:;" onclick="FlashSaleProductsExtend.Update(this,@item.PKID)">保存</a>&nbsp;&nbsp;
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+
+<div>
+    @Html.Pager(Model.Pager, pageNumber => Url.Action("List", new { pageNumber }))
+</div>

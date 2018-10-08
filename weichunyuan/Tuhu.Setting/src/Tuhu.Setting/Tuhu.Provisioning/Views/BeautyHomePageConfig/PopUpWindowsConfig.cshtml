@@ -1,0 +1,313 @@
+﻿<html>
+<head>
+    <meta charset="utf-8">
+    <title>iview example</title>
+    <link href="~/Content/iview/iview.css" rel="stylesheet" />
+    <script src="~/Scripts/vue.min.js"></script>
+    <script src="~/Scripts/iview/iview.min.js"></script>
+    <style>
+        .ivu-table .demo-table-info-row td {
+            background-color: #2db7f5;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-error-row td {
+            background-color: #ff6600;
+            color: #fff;
+        }
+
+        .ivu-table td.demo-table-info-column {
+            background-color: #2db7f5;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-info-cell-name {
+            background-color: #2db7f5;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-info-cell-age {
+            background-color: #ff6600;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-info-cell-address {
+            background-color: #187;
+            color: #fff;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <br /><br />
+    <div id="APP" v-cloak>
+        <div>
+            弹窗名称:<i-input v-model="keyWord" placeholder="请输入名称" style="width: 200px"></i-input>
+            弹窗状态:<i-select v-model="modelStatus" style="width:200px">
+                <i-option v-for="item in status" :value="item.value" :key="item.value">{{ item.label }}</i-option>
+            </i-select>
+            <i-button type="primary" icon="ios-search" v-on:click="searchPage">查询</i-button>
+            <i-button type="info" v-on:click="add()">新建</i-button>
+        </div><br />
+        <i-table border :columns="columns" :data="tableDatas"></i-table>
+        <div style="margin: 10px;overflow: hidden">
+            <div style="float: right;">
+                <Page :total="totalCount" :current="currentPage" :page-size="pageSize" show-total v-on:on-change="changePage"></Page>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script>
+        var vu = new Vue({
+            el: '#APP',
+            data() {
+                return {
+                    columns: [
+                        {
+                            title: 'Id',
+                            key: 'PKID',
+                            //width: '100px'
+                        },
+                        {
+                            title: '弹窗名称',
+                            key: 'Name'
+                        },
+                        {
+                            title: '背景图',
+                            key: 'BackGroundImage',
+                            render: (h, params) => {
+                                return h('div', [
+                                    h('img', {
+                                        attrs: {
+                                            src: params.row.BackGroundImage
+                                        },
+                                        style: {
+                                            height: '40px',
+                                            width: 'auto'
+                                        }
+                                    })
+                                ]);
+                            }
+                        },
+                        {
+                            title: '弹窗位置',
+                            key: 'PlaceType'
+                        },
+                        {
+                            title: '弹窗类目',
+                            key: 'CategoryId',
+                            //width: 100,
+
+                        },
+                        {
+                            title: '渠道',
+                            key: 'Channel',
+                            //width: '100px'
+                        },
+                        {
+                            title: '是否启用',
+                            key: 'Status',
+                            //width: '100px'
+                        },
+                        {
+                            title: '创建时间',
+                            key: 'CreateTime',
+                        },
+                        {
+                            title: '更新时间',
+                            key: 'UpdateTime',
+                        },
+                        {
+                            title: '操作',
+                            key: 'action',
+                            width: 150,
+                            align: 'center',
+                            render: (h, params) => {
+                                return h('div', [
+                                    h('Button', {
+                                        props: {
+                                            type: '',
+                                            size: 'small'
+                                        },
+                                        style: {
+                                            marginRight: '5px'
+                                        },
+                                        on: {
+                                            click: () => {
+                                                this.editBeautyPopUpWindowsConfig(params.index);
+                                            }
+                                        }
+                                    }, '编辑'),
+                                    h('Button', {
+                                        props: {
+                                            type: '',
+                                            size: 'small'
+                                        },
+                                        style: {
+                                            marginRight: '5px'
+                                        },
+                                        on: {
+                                            click: () => {
+                                                this.deleteBeautyPopUpWindowsConfig(params.index);
+                                            }
+                                        }
+                                    }, '删除')
+                                ]);
+                            }
+                        }
+                    ],
+                    tableDatas: [],
+                    currentPage: 1,
+                    pageSize: 10,
+                    keyWord: '',
+                    totalCount: 0,
+                    status: [
+                        {
+                            value: -1,
+                            label: '所有'
+                        },
+                        {
+                            value: 1,
+                            label: '启用中'
+                        },
+                        {
+                            value: 0,
+                            label: '禁用中'
+                        }],
+                    modelStatus: -1,
+                }
+            },
+            mounted: function () {
+                this.getBeautyPopupWindowsConfig();
+            },
+            methods: {
+                getBeautyPopupWindowsConfig() {
+                    var _this = this;
+                    _this.totalCount = 0;
+                    var datatable = [];
+
+                    var currentPage = _this.currentPage;
+                    if (!currentPage) {
+                        currentPage = 1;
+                    }
+                    var keyword = _this.keyWord;
+                    if (!keyword) {
+                        keyword = '';
+                    }
+                    var statu = _this.modelStatus;
+                    if (!statu && statu != 0) {
+                        statu = -1;
+                    }
+                    var postData = {
+                        'currentPage': currentPage,
+                        'keyWords': keyword,
+                        'status': statu
+                    };
+                    $.ajax({
+                        url: '/BeautyHomePageConfig/GetPopUpWindowsConfigList',
+                        type: 'Post',
+                        data: postData,
+                        success: function (data) {
+                            _this.tableDatas = [];
+                            if (data.total > 0) {
+                                $(data.result).each(function (i, o) {
+                                    _this.tableDatas.push({
+                                        'PKID': o.PKID,
+                                        'PlaceType': o.PlaceType == 1 ? "美容首页" : (o.PlaceType == 2 ? "美容列表页" :"洗车小程序"),
+                                        'Name': o.Name,
+                                        'ActivityId': o.ActivityId,
+                                        'Channel': o.Channel,
+                                        'Status': o.Status ? '是' : '否',
+                                        'BackGroundImage': o.BackGroundImage,
+                                        'CreateTime': _this.getDates(o.CreateTime),
+                                        'UpdateTime': _this.getDates(o.UpdateTime),
+                                        'CategoryId': o.CategoryId == 0 ? '无' : o.CategoryName,
+                                    });
+                                });
+                                _this.totalCount = data.total;
+                            }
+                            else {
+                                _this.tableDatas = [];
+                            }
+                        },
+                        error: function () {
+                            _this.$Notice.warning({
+                                title: '获取列表数据异常',
+                                desc: '服务端异常'
+                            });
+                        }
+                    });
+                },
+                changePage(page) {
+                    this.currentPage = page;
+                    this.datatables = this.getBeautyPopupWindowsConfig();
+                },
+                searchPage() {
+                    this.getBeautyPopupWindowsConfig();
+                },
+                add(){
+                    window.location.href = '/BeautyHomePageConfig/EditPopUpWindowsConfig';
+                },
+                editBeautyPopUpWindowsConfig(i) {
+                    var pkid = this.tableDatas[i].PKID;
+                    window.location.href = '/BeautyHomePageConfig/EditPopUpWindowsConfig?pkid=' + pkid;
+                },
+                deleteBeautyPopUpWindowsConfig(i) {
+
+                    if (confirm("确定要删除？")) {
+                        var pkid = this.tableDatas[i].PKID;
+                        $.ajax({
+                            url: "/BeautyHomePageConfig/DeletePopUpWindowsConfigById",
+                            type: "post",
+                            async: true,
+                            data: {
+                                pkid: pkid
+                            },
+                            success: function (data) {
+                                if (data.Result) {
+                                    window.location.href = '/BeautyHomePageConfig/PopUpWindowsConfig';
+                                }
+                                else {
+                                    this.$Notice.warning({
+                                        title: '删除失败',
+                                        desc: data.Msg
+                                    });
+                                }
+                            },
+                            error: function () {
+                                alert("服务端异常！");
+                            }
+                        });
+                    }
+                },
+                getDates(e) {
+                    var time = e instanceof Date ? e : eval('new ' + e.toString().replace(/\//g, ""));
+                    if (time < new Date(2018, 1, 1)) {
+                        time = '';
+                    }
+                    var y = time.getFullYear();
+                    var m = time.getMonth()+1;
+                    if (m < 10)
+                        m = '0' + m;
+                    var d = time.getDate();
+                    if (d < 10)
+                        d = '0' + d;
+                    var h = time.getHours();
+                    if (h < 10)
+                        h = '0' + h;
+                    var mi = time.getMinutes();
+                    if (mi < 10)
+                        mi = '0' + mi;
+                    var ss = time.getSeconds();
+                    if (ss < 10)
+                        ss = '0' + ss;
+                    return y + '-' + m + '-' + d + ' ' + h + ':' + mi + ':' + ss;
+                }
+
+            },
+        });
+</script>

@@ -1,0 +1,98 @@
+﻿
+@{
+    ViewBag.Title = "RedEnvelopeStatistic";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+
+<div class="topPanel">
+    <div class="toolbar">
+        <div class="search" style="margin-right:30px;">
+            <table>
+                <tr>
+                    <td>
+                        <div class="input-group">
+                            <input id="txtSDateTime" name="txtSDateTime" type="text" class="form-control input-wdatepicker" placeholder="开始时间" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd'})" />
+                        </div>
+                    </td>
+                    <td>
+                        ----
+                    </td>
+                    <td>
+                        <div class="input-group">
+                            <input id="txtEDateTime" name="txtEDateTime" type="text" class="form-control input-wdatepicker" placeholder="结束时间" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd'})" />
+                            <span class="input-group-btn">
+                                <button id="btn_search" type="button" class="btn  btn-primary"><i class="fa fa-search"></i></button>
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+         </div>
+            <a id="btn_download" class="btn btn-primary dropdown-text" onclick="downloadExcel()">导出excel</a>
+    </div>
+</div>
+<div class="gridPanel">
+    <table id="gridList"></table>
+    <div id="gridPager"></div>
+</div>
+    <script src="~/Content/nfine/js/datepicker/WdatePicker.js"></script>
+    <script type="text/javascript">
+
+        function getBeforeDate(n) {
+            var date = new Date();
+            var year, month, day;
+            date.setDate(date.getDate() - n);
+            year = date.getFullYear();
+            month = date.getMonth() + 1;
+            day = date.getDate();
+            s = year + '-' + (month < 10 ? ('0' + month) : month) + '-' + (day < 10 ? ('0' + day) : day);
+            return s;
+        }
+
+        function gridList() {
+            var $gridList = $('#gridList');
+            $gridList.dataGrid({
+                height: $(window).height() - 118,
+                url: '/WechatHome/GetOARedEnvelopeStatisticsList',
+                colModel: [
+                    { label: "日期", name: "StatisticsDateString", width: 160, align: "left"  },
+                    { label: "每日红包上限（元）", name: "DayMaxMoney", width: 160, align: 'left' },
+                    { label: "已发放红包数", name: "RedEnvelopeCount", width: 160, align: "left" },
+                    { label: "已发放红包金额（元）", name: "RedEnvelopeSumMoney", width: 200, align: "left" },
+                    { label: "红包平均金额", name: "RedEnvelopeAvg", width: 200, align: "left" }
+                ],
+                viewrecords: true,
+                pager: "#gridPager",
+                rowNum: 10,
+                rowList: [10, 20, 30]
+            });
+
+            $("#btn_search").click(function () {
+                if ($('#txtSDateTime').val().trim() != "" && $('#txtEDateTime').val().trim() != "" && new Date($('#txtSDateTime').val().trim()) > new Date($('#txtEDateTime').val().trim())) {
+                    alert("开始时间应该小于等于结束时间！")
+                    return false;
+                }
+                $gridList.jqGrid('setGridParam', {
+                    postData: {
+                        startTime: $('#txtSDateTime').val(),
+                        endTime: $('#txtEDateTime').val()
+                    },
+                }).trigger('reloadGrid');
+            });
+        }
+
+        function downloadExcel() {
+            if ($('#txtSDateTime').val().trim() != "" && $('#txtEDateTime').val().trim() != "" && new Date($('#txtSDateTime').val().trim()) > new Date($('#txtEDateTime').val().trim())) {
+                alert("开始时间应该小于等于结束时间！")
+                return false;
+            }
+            window.location.href = '/WechatHome/ExportExcel?startTime=' + $('#txtSDateTime').val() + '&endTime=' + $('#txtEDateTime').val();
+        }
+
+        $(function () {
+            $('#txtSDateTime').val(getBeforeDate(6));
+            $('#txtEDateTime').val(getBeforeDate(0));
+            gridList();
+        })
+    </script>
+

@@ -1,0 +1,375 @@
+﻿@using System.Data
+@using Tuhu.Provisioning.DataAccess.Entity;
+@using Newtonsoft.Json
+@using Tuhu.Provisioning.Models
+@model Tuple<GetPCodeModel,List<Tuhu.Provisioning.Models.DepartmentAndUse>,System.Data.DataTable>
+@{
+    Layout = null;
+}
+
+<table>
+    <tr>
+        <th width="100%" style="text-align:left;" colspan="2">优惠券领取规则配置</th>
+    </tr>
+    <tr>
+        <td>
+            <table>
+                <tr>
+                    <td>*优惠券名称:</td>
+                    <td><input type="text" name="PromtionName" maxlength="10" placeholder="10个字以内" value="@(Model.Item1 == null ? "" : Model.Item1.PromtionName)" /></td>
+                    </tr>
+                    <tr>
+                    <td>*优惠券说明:</td>
+                    <td><input type="text" name="Description1" maxlength="30" placeholder="30个字以内" value="@(Model.Item1 == null ? "" : Model.Item1.Description)" style="width:500px;" /></td>
+                    </tr>
+
+                    <tr>
+                    <td>*面额:</td>
+                    <td><input type="text" name="Discount" value="@(Model.Item1 == null ? "" : Model.Item1.Discount.GetValueOrDefault().ToString("0.00"))" /></td>
+                    </tr>
+                    <tr>
+                    <td>*使用条件:</td>
+                    <td><label>满<input type="text" name="Minmoney" value="@(Model.Item1 == null ? "" : Model.Item1.Minmoney.GetValueOrDefault().ToString("0.00"))" />使用</label></td>
+                    </tr>
+                    <tr>
+                    <td>*优惠券有效期:</td>
+                    <td class="validatetype">
+                    <label><input type="radio" name="validatetype" @(Model.Item1 == null || Model.Item1 != null && Model.Item1.Term != null ? "checked" : null) value="0" />自领取后<input type="text" name="Term" value="@(Model.Item1 == null || Model.Item1.Term == null ? "" : Model.Item1.Term.GetValueOrDefault().ToString())" />天</label><label>，最终有效期：<input type="text" style="width:150px" id="DeadLineDate" readonly="readonly" value="@(Model.Item1 != null && Model.Item1.DeadLineDate != null ? Model.Item1.DeadLineDate.GetValueOrDefault().ToString("yyyy-MM-dd") : "")" /></label>
+                    <br /><br /><label><input type="radio" name="validatetype" @(Model.Item1 != null && Model.Item1.Term == null ? "checked" : null) value="1" />固定日期<input type="text" style="width:150px" id="ValiStartDate" readonly="readonly" value="@(Model.Item1 != null && Model.Item1.ValiStartDate != null ? Model.Item1.ValiStartDate.GetValueOrDefault().ToString("yyyy-MM-dd") : "")" />-<input type="text" style="width:150px" id="ValiEndDate" readonly="readonly" value="@(Model.Item1 != null && Model.Item1.ValiEndDate != null ? Model.Item1.ValiEndDate.GetValueOrDefault().ToString("yyyy-MM-dd") : "")" /></label><span style="color:red;"> * 开始时间默认为00:00:00，结束时间默认为：23:59:59</span>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>*每人限领数量:</td>
+                    <td><input type="text" name="SingleQuantity" value="@(Model.Item1 != null ? Model.Item1.SingleQuantity : 1)" /></td>
+                    </tr>
+                    <tr>
+                    <td>发行量:</td>
+                    <td><label><input type="text" name="Quantity" value="@(Model.Item1 != null && Model.Item1.Quantity != null ? Model.Item1.Quantity.GetValueOrDefault().ToString() : "")" />修改发行量时只能增加不能减少,请谨慎设置</label></td>
+                    </tr>
+                    <tr>
+                    <td>即将抢光时提醒:</td>
+                    <td>
+                        还剩 <input type="text" name="RemindQuantity" style="width:30px;" value="@(Model.Item1 != null && Model.Item1.RemindQuantity != null ? Model.Item1.RemindQuantity.GetValueOrDefault().ToString() : "")" /> 张时提醒，
+                        企业微信推送:<input type="text" style="width:300px;" name="RemindEmails" value="@(Model.Item1 != null && Model.Item1.RemindEmails != null ? Model.Item1.RemindEmails : "")"  placeholder="请输入邮箱或者企业微信的名字拼音"/>发送多个请用英文逗号分隔</br>例如：zhangsan@tuhu.cn,zhangsan
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>*电销可发放:</td>
+                    <td class="AllowChanel">
+                    <label><input type="radio" name="AllowChanel" value="1" @(Model.Item1 != null && Model.Item1.AllowChanel == 1 ? "checked" : null) />是</label>
+                    <label class="dx_date" style="display:@(Model.Item1 != null && Model.Item1.AllowChanel == 1 ? null : "none")"><input type="text" style="width:150px" id="DXStartDate" readonly="readonly" value="@(Model.Item1 != null && Model.Item1.DXStartDate != null ? Model.Item1.DXStartDate.GetValueOrDefault().ToString("yyyy-MM-dd HH:mm:ss") : "")" />-<input type="text" style="width:150px" id="DXEndDate" readonly="readonly" value="@(Model.Item1 != null && Model.Item1.DXEndDate != null ? Model.Item1.DXEndDate.GetValueOrDefault().ToString("yyyy-MM-dd HH:mm:ss") : "")" /></label>
+                    <label><input type="radio" name="AllowChanel" value="0" @(Model.Item1 == null || Model.Item1 != null && Model.Item1.AllowChanel == 0 ? "checked" : null) />否</label>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>*支持用户范围:</td>
+                    <td class="SupportUserRange">
+                    <label><input type="radio" name="SupportUserRange" value="0" @(Model.Item1 == null || Model.Item1 != null && Model.Item1.SupportUserRange == 0 ? "checked" : null) />全部</label>
+                    <label><input type="radio" name="SupportUserRange" value="1" @(Model.Item1 != null && Model.Item1.SupportUserRange == 1 ? "checked" : null) />新用户</label>
+                    <label><input type="radio" name="SupportUserRange" value="2" @(Model.Item1 != null && Model.Item1.SupportUserRange == 2 ? "checked" : null) />老用户</label>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>详情页展示时间:</td>
+                    <td><input type="text" style="width:150px" id="DetailShowStartDate" readonly="readonly" value="@(Model.Item1 != null && Model.Item1.DetailShowStartDate != null ? Model.Item1.DetailShowStartDate.GetValueOrDefault().ToString("yyyy-MM-dd HH:mm:ss") : "")" />-<input type="text" style="width:150px" id="DetailShowEndDate" readonly="readonly" value="@(Model.Item1 != null && Model.Item1.DetailShowEndDate != null ? Model.Item1.DetailShowEndDate.GetValueOrDefault().ToString("yyyy-MM-dd HH:mm:ss") : "")" /><button class="detail_clear" onclick="$(this).prev().val('').prev().val('')">清空</button></td>
+                    </tr>
+                    <tr>
+                    <td>到期提前提醒</td>
+                    <td>
+                    <label><input id="IsPush" type="checkbox" name="IsPush" checked="@(Model.Item1 != null && Model.Item1.IsPush == 1 ? "checked" : null)" value="1" />是</label>
+                    <label id="PushSetting" style="@(Model.Item1 != null && Model.Item1.IsPush == 1 ? "" : "display:none;")"><input name="PushSetting" value="@(Model.Item1 != null && Model.Item1.IsPush == 1 ? Model.Item1.PushSetting : "")" placeholder="请输入提前提醒的天数" /><span style="color:red;"> 多个天数用逗号隔开如3,15,30</span></label>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>*部门</td>
+                    <td>
+                    <select id="DepartMentId2" name="DepartMentId2" onchange="GetUseList2(@JsonConvert.SerializeObject(Model.Item2))">
+                    <option value="">请选择部门</option>
+                    @if (Model.Item2 != null)
+                    {
+                        foreach (var item in Model.Item2)
+                        {
+                            if (item.Type == "0")
+                            {
+                                <option value="@item.SettingId" @(item.IsSelected ? "selected='selected'" : "")>@item.DisplayName</option>
+                            }
+                        }
+                    }
+                    </select>
+                    </td>
+                    </tr>
+
+                    <tr>
+                    <td>*用途</td>
+                    <td>
+                    <select id="IntentionId2" name="IntentionId2">
+                    <option value="">请选择用途</option>
+                    @if (Model.Item2 != null)
+                    {
+                        foreach (DepartmentAndUse item in Model.Item2)
+                        {
+                            if (item.Type == "1" && (Model.Item1 == null || item.ParentSettingId == Model.Item1.DepartmentId.ToString()))
+                            {
+                                <option value="@item.SettingId" @(item.IsSelected ? "selected='selected'" : "")>@item.DisplayName</option>
+                            }
+                        }
+                    }
+                    </select>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>赠品券归属</td>
+                    <td>
+                    <select id="BusinessLineId" name="BusinessLineId">
+                    <option value="">请选择业务线</option>
+                    @if (Model.Item3 != null)
+                    {
+                        foreach (DataRow dr in Model.Item3.Rows)
+                        {
+                            <option value="@dr["PKID"]" @(Model.Item1 != null && Model.Item1.BusinessLineId == int.Parse(dr["PKID"].ToString()) ? "selected='selected'" : "")>@dr["DisplayName"]</option>
+                        }
+                    }
+                    </select>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>
+                    使用规则说明
+                    </td>
+                    <td>@Model.Item1.RuleDescription</td>
+                    </tr>
+                    </table>
+                    </td>
+                    </tr>
+                    </table>
+                    <div class="button" style="display:none;">保存</div>
+                    <script>
+                    function GetUseList2(data) {
+                    var DepartMentId = $("#DepartMentId2").val();
+                    if (!DepartMentId) {
+                    return;
+                    }
+                    var filterDiv = $("#IntentionId2");
+                    filterDiv.empty();
+                    $.each(data, function (i, row) {
+                    if (row["ParentSettingId"] == DepartMentId) {
+                    filterDiv.append($("<option></option>").val(row["SettingId"]).text(row["DisplayName"]))
+                    }
+                    });
+                    };
+
+                    $(function () {
+                    //时间控件DeadLineDate
+                    $("#DeadLineDate").datetimepicker({
+                    showTimepicker:false,
+                    dateFormat: "yy-mm-dd",
+                    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+                    });
+                    $("#ValiStartDate").datetimepicker({
+                    showTimepicker:false,
+                    dateFormat: "yy-mm-dd",
+                    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+                    });
+                    $("#ValiEndDate").datetimepicker({
+                    showTimepicker:false,
+                    dateFormat: "yy-mm-dd",
+                    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+                    });
+                    $("#DetailShowStartDate").datetimepicker({
+                    timeFormat: "HH:mm:ss",
+                    dateFormat: "yy-mm-dd",
+                    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+                    });
+                    $("#DetailShowEndDate").datetimepicker({
+                    timeFormat: "HH:mm:ss",
+                    dateFormat: "yy-mm-dd",
+                    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+                    });
+                    $("#DXStartDate").datetimepicker({
+                    timeFormat: "HH:mm:ss",
+                    dateFormat: "yy-mm-dd",
+                    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+                    });
+                    $("#DXEndDate").datetimepicker({
+                    timeFormat: "HH:mm:ss",
+                    dateFormat: "yy-mm-dd",
+                    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+                    });
+                    $("[name=AllowChanel]").click(function () {
+                    if ($(this).val() == 1)
+                    $(".dx_date").show();
+                    else
+                    $(".dx_date").hide();
+                    });
+                    $("#IsPush").click(function() {
+                    if ($(this).prop("checked")) {
+                    $("#PushSetting").show();
+                    } else {
+                    $("#PushSetting").hide();
+                    }
+                    });
+
+                    //信息保存
+                    $(".button").click(function () {
+                    $(".tip").remove();
+                    var button = $(this);
+                    button.css("pointer-events", "none");
+
+                    var PromtionName = $("[name=PromtionName]").val(), //优惠券名字
+                    Description = $("[name=Description1]").val(), //优惠券描述
+                    Discount = $("[name=Discount]").val(), //优惠券面额
+                    Minmoney = $("[name=Minmoney]").val(), //优惠券使用条件
+                    Term = $("[name=Term]").val(), //优惠券有效期 天数
+                    DeadLineDate = $("#DeadLineDate").val(), //最终截至日期
+                    ValiStartDate = $("#ValiStartDate").val(), //时效开始时间
+                    ValiEndDate = $("#ValiEndDate").val(), //时效结束时间
+                    SingleQuantity = $("[name=SingleQuantity]").val(), //每人限领数量
+                    Quantity = $("[name=Quantity]").val(), //优惠券发行量
+                    RemindQuantity = $("[name=RemindQuantity]").val(),//即将抢光的时候提醒，提醒的警戒数量
+                    RemindEmails = $("[name=RemindEmails]").val(),//提醒的邮箱
+                    AllowChanel = $("[name=AllowChanel]:checked").val(), //是否允许电销发放 1是 0不是
+                    SupportUserRange = $("[name=SupportUserRange]:checked").val(), //支持用户的范围
+                    validatetype = $("[name=validatetype]:checked").val(), //优惠券有效期type 0领取后多少天 1固定日期
+                    DXStartDate = $("#DXStartDate").val(), //电销使用开始时间
+                    DXEndDate = $("#DXEndDate").val(), //电销使用结束时间
+                    DetailShowEndDate = $("#DetailShowEndDate").val(),
+                    DetailShowStartDate = $("#DetailShowStartDate").val(),
+                    DepartMentId = $('[name=DepartMentId2]').val(),
+                    IntentionId = $('[name=IntentionId2]').val(),
+                    BusinessLineId = $('[name=BusinessLineId]').val(),
+                    IsPush = $('[name=IsPush]:checked').val() || 0,
+                    PushSetting=IsPush==1?$("[name=PushSetting]").val():"";
+                    //校验数据
+                    var tip = "";
+                    var flag = true;//是否可以提交信息
+                    if (!PromtionName)
+                    ShowWrongTit($("[name=PromtionName]"), '必填');
+                    if (!Description)
+                    ShowWrongTit($("[name=Description1]"), '必填');
+
+                    if (!Discount)
+                    ShowWrongTit($("[name=Discount]"), '必填');
+                    if (isNaN(Discount.trim()))
+                    ShowWrongTit($("[name=Discount]"), '格式有误');
+                    if (!Minmoney)
+                    ShowWrongTit($("[name=Minmoney]").parent(), '必填');
+                    if (parseFloat(Discount) > parseFloat(Minmoney))
+                    ShowWrongTit($("[name=Discount]"), '优惠金额需要小于等于使用金额');
+                    if (isNaN(Minmoney.trim()))
+                    ShowWrongTit($("[name=Minmoney]").parent(), '格式有误');
+
+                    if (validatetype == 1) {
+                    //固定日期
+                    if (!ValiStartDate || !ValiEndDate)
+                    ShowWrongTit($("#ValiStartDate").parent(), '固定日期必填');
+                    if (new Date(ValiStartDate) >= new Date(ValiEndDate))
+                    ShowWrongTit($("#ValiStartDate").parent(), '不允许开始时间大于结束时间');
+                    Term = undefined;
+                    DeadLineDate = undefined;
+                    }
+                    else {
+                    if (!Term)
+                    ShowWrongTit($("[name=Term]").parent(), '领取后多少天有效期必填');
+                    if (isNaN(Term.trim()))
+                    ShowWrongTit($("[name=Term]").parent(), '领取后多少天有效期格式有误');
+                    ValiStartDate = undefined;
+                    ValiEndDate = undefined;
+                    }
+
+                    if (!SingleQuantity)
+                    ShowWrongTit($("[name=SingleQuantity]"), '必填');
+                    if (isNaN(SingleQuantity.trim()))
+                    ShowWrongTit($("[name=SingleQuantity]"), '格式有误');
+
+                    if (!DepartMentId) {
+                    ShowWrongTit($("[name=DepartMentId2]"), '必填');
+                    }
+                    if (!IntentionId) {
+                    ShowWrongTit($("[name=IntentionId2]"), '必填');
+                    }
+                    if (Quantity && isNaN(Quantity.trim()))
+                    ShowWrongTit($("[name=Quantity]").parent(), '格式有误');
+
+                    if(RemindQuantity&&isNaN(RemindQuantity.trim()))
+                    ShowWrongTit($("[name=RemindQuantity]").parent(), '格式有误');
+                    if (RemindQuantity && !RemindEmails)
+                    ShowWrongTit($("[name=RemindEmails]").parent(), '请输入要提醒的邮箱');
+                    if (AllowChanel == 1) {
+                    if (!DXStartDate || !DXEndDate)
+                    ShowWrongTit($("#DXStartDate").parent(), '电销可发放时间必填');
+                    if (new Date(DXStartDate) >= new Date(DXEndDate))
+                    ShowWrongTit($("#DXStartDate").parent(), '不允许开始时间大于结束时间');
+                    }
+                    else {
+                    DXStartDate = undefined;
+                    DXEndDate = undefined;
+                    }
+                    if (DetailShowEndDate.length && DetailShowStartDate.length && new Date(DetailShowStartDate) >= new Date(DetailShowEndDate))
+                    ShowWrongTit($(".detail_clear"), '开始时间不允许大于结束时间');
+
+                    function ShowWrongTit(target, titText) {
+                    flag = false;
+                    target.after('<span class="tip">' + titText + '</span>');
+                    button.css("pointer-events", "all");
+                    }
+                    if (IsPush == 1 && PushSetting == "") {
+                    ShowWrongTit($("[name=PushSetting]"), '必填');
+                    }
+
+                    //信息提交之前的验证
+                    if (flag) {
+                    var r = confirm("是否确定保存信息？");
+                    if (r) {
+                    $.ajax({
+                    url: "/Promotion/SaveGetRule",
+                    type: "post",
+                    // dataType: "json",
+                    data: {
+                    RuleID: "@Request.QueryString["id"]",
+                    PromtionName: PromtionName,
+                    Description: Description,
+                    Discount: Discount,
+                    Minmoney: Minmoney,
+                    Term: Term,
+                    ValiStartDate: ValiStartDate,
+                    ValiEndDate: ValiEndDate,
+                    SingleQuantity: SingleQuantity,
+                    Quantity: Quantity,
+                    RemindQuantity: RemindQuantity,
+                    RemindEmails:RemindEmails,
+                    AllowChanel: AllowChanel,
+                    SupportUserRange: SupportUserRange,
+                    DXEndDate: DXEndDate,
+                    DXStartDate: DXStartDate,
+                    DetailShowStartDate: DetailShowStartDate,
+                    DetailShowEndDate: DetailShowEndDate,
+                    GETPKID: "@(Model.Item1 == null || Request.QueryString["iscopy"] == "copy" ? 0 : Model.Item1.GETPKID)",
+                    DepartmentId:DepartMentId,
+                    IntentionId: IntentionId,
+                    BusinessLineId:BusinessLineId,
+                    DeadLineDate: DeadLineDate,
+                    IsPush: IsPush,
+                    PushSetting:PushSetting
+                    },
+                    success: function (result) {
+                    if (result > 0) {
+                    alert("保存成功！");
+                    window.location.reload();
+                    }
+                    }
+                    });
+                    }
+                    else {
+                    button.css("pointer-events", "all");
+                    }
+                    }
+                    })
+                    });
+                    </script>

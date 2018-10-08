@@ -1,0 +1,15 @@
+﻿@{
+	ViewBag.Title = "网站配置管理";
+	Layout = "../Shared/_Layout.cshtml";
+}
+@if (System.Configuration.ConfigurationManager.AppSettings["EnvironmentConfigPrefix"] == null)
+{
+	<div><a href="">系统普通参数配置</a></div>
+}
+else
+{
+	foreach (var item in System.Configuration.ConfigurationManager.AppSettings["EnvironmentConfigPrefix"].Split(','))
+	{
+		<div><a href="">@(item.Trim('/'))系统普通参数配置</a></div>
+	}
+}

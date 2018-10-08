@@ -1,0 +1,31 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity.Tire;
+@using Tuhu.Provisioning.Controllers;
+@model List<TirePatternChangeLog>
+@{
+    Layout = null;
+    ViewBag.Title = "历史修改记录";
+}
+
+<table style="background: #ffffff; font-size: 12px; width: 100%; text-align:center" border="1" class="table">
+    <tr>
+        <th style="text-align: center">花纹</th>
+        <th style="text-align: center">修改前</th>
+        <th style="text-align: center">修改后</th>
+        <th style="text-align: center">修改时间</th>
+        <th style="text-align: center">操作人</th>
+    </tr>
+    @if (Model.Any())
+    {
+        foreach (var item in Model)
+        {
+            <tr>
+                <td name="PId">@item.Tire_Pattern</td>
+                <td name="ChangeBefore">@item.ChangeBefore</td>
+                <td name="ChangeAfter">@item.ChangeAfter</td>
+                <td name="LastUpdateDataTime">@item.LastUpdateDataTime</td>
+                <td name="Operator">@item.Operator</td>
+            </tr>
+        }
+    }
+</table>
+

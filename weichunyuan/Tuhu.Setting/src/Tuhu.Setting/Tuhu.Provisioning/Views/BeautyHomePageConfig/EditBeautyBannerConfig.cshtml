@@ -1,0 +1,681 @@
+﻿@model int
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>iview example</title>
+    <link href="~/Content/iview/iview.css" rel="stylesheet" />
+    <script src="~/Scripts/vue.min.js"></script>
+    <script src="~/Scripts/iview/iview.min.js"></script>
+    <style>
+        .ivu-table .demo-table-info-row td {
+            background-color: #2db7f5;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-error-row td {
+            background-color: #ff6600;
+            color: #fff;
+        }
+
+        .ivu-table td.demo-table-info-column {
+            background-color: #2db7f5;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-info-cell-name {
+            background-color: #2db7f5;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-info-cell-age {
+            background-color: #ff6600;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-info-cell-address {
+            background-color: #187;
+            color: #fff;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+
+</head>
+<body>
+    <fieldset>
+        <legend>美容首页Banner编辑</legend>
+        <div id="Banner" v-cloak>
+            <table style="width:1000px; margin-left:10%;">
+                <tr>
+                    <td>渠道</td>
+                    <td colspan="3">
+                        <i-select style="width:150px" v-model="Channel" placeholder="请选择">
+                            <i-option v-for="item in channelList" :value="item" :key="item">{{ item }}</i-option>
+                        </i-select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>状态</td>
+                    <td colspan="3">
+                        <Radio-Group v-model="Status">
+                            <Radio label="1"><span>启用</span></Radio>
+                            <Radio label="0"><span>禁用</span></Radio>
+                        </Radio-Group>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Banner名称</td>
+                    <td><i-input v-model="Name" placeholder="Enter something..." clearable style="width: 200px"></i-input></td>
+                    <td>显示顺序</td>
+                    <td><input-Number v-model="Sort" :max="100" :min="1"></input-Number></td>
+                </tr>
+                <tr>
+                    <td>开始版本</td>
+                    <td><i-input v-model="StartVersion" placeholder="Enter something..." clearable style="width: 200px"></i-input></td>
+                    <td>结束版本</td>
+                    <td><i-input v-model="EndVersion" placeholder="Enter something..." clearable style="width: 200px"></i-input></td>
+                </tr>
+                <tr>
+                    <td>大标题</td>
+                    <td><i-input v-model="Title" placeholder="Enter something..." clearable style="width: 200px"></i-input></td>
+                    <td>小标题</td>
+                    <td><i-input v-model="SmallTitle" placeholder="Enter something..." clearable style="width: 200px"></i-input></td>
+                </tr>
+                <tr>
+                    <td>万能跳转</td>
+                    <td><i-input v-model="Link" placeholder="Enter something..." clearable style="width: 200px"></i-input></td>
+                    <td>CARLEVEL</td>
+                    <td><input-Number v-model="CarLevel" :max="100" :min="1"></input-Number></td>
+                </tr>
+                <tr>
+                    <td>开始时间</td>
+                    <td><Date-Picker v-model="BeginTime" type="datetime" format="yyyy-MM-dd HH:mm" placeholder="开始时间" style="width: 150px"></Date-Picker></td>
+                    <td>结束时间</td>
+                    <td><Date-Picker v-model="EndTime" type="datetime" format="yyyy-MM-dd HH:mm" placeholder="结束时间" style="width: 150px"></Date-Picker></td>
+                </tr>
+                <tr>
+                    <td>Banner小图(宽高比2:1)</td>
+                    <td colspan="3">
+                        上传图片：<img :src="Icon" style="width:200px;height:100px;" /><i-input v-model="Icon" readonly="true" placeholder="URL" style="width: 600px"></i-input>
+                        <Upload action="/BeautyHomePageConfig/UploadBeautyBannerImage?type=icon"
+                                :format="['jpg','jpeg','png']"
+                                :on-format-error="handleFormatError"
+                                :max-size="10000"
+                                :on-exceeded-size="handleMaxSize"
+                                :on-success="handleSuccess"
+                                :show-upload-list="false">
+                            <i-Button type="ghost" icon="ios-cloud-upload-outline">上传</i-Button>
+                        </Upload>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Banner大图(宽高比2:1)</td>
+                    <td colspan="3">
+                        上传图片：<img :src="Banner" style="width:200px;height:100px;" /><i-input v-model="Banner" readonly="true" placeholder="URL" style="width: 600px"></i-input>
+                        <Upload action="/BeautyHomePageConfig/UploadBeautyBannerImage?type=banner"
+                                :format="['jpg','jpeg','png']"
+                                :on-format-error="handleFormatError"
+                                :max-size="10000"
+                                :on-exceeded-size="handleMaxSize"
+                                :on-success="handleSuccess"
+                                :show-upload-list="false">
+                            <i-Button type="ghost" icon="ios-cloud-upload-outline">上传</i-Button>
+                        </Upload>
+                    </td>
+                </tr>
+                <tr>
+                    <td>选择活动</td>
+                    <td colspan="3">
+                        <i-select style="width:150px" v-model="activityPKID" placeholder="请选择">
+                            <i-option v-for="item in activityList" :value="item.id" :key="item.id">{{ item.name }}</i-option>
+                        </i-select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>是否限定地区</td>
+                    <td colspan="3">
+                        <Radio-Group v-model="IsRegion" :on-change="isRegionChange()">
+                            <Radio label="1"><span>是</span></Radio>
+                            <Radio label="0"><span>否</span></Radio>
+                        </Radio-Group>
+                    </td>
+                </tr>
+                <tr v-if="IsRegion==1">
+                    <td colspan="4">
+                        限购地区：
+                        <br /><br />
+                        <table>
+                            <tr>
+                                <td style="width:200px;">省/自治区/直辖市</td>
+                                <td style="width:800px;">市/区</td>
+                                <td style="width:50px;"><i-button type="primary" v-on:click="addLimitArea()">添加</i-button></td>
+                            </tr>
+                            <tr v-for="item  in areaData">
+                                <td style="width:200px;">
+                                    <i-select v-model="item.provinceName" placeholder="请选择" v-on:on-change="provinceChange(item)">
+                                        <i-option v-for="itemo in item.provinceData" :value="itemo.name" :key="itemo.name">{{itemo.name}}</i-option>
+                                    </i-select>
+                                </td>
+                                <td style="width:800px;">
+                                    <div style="border-bottom: 1px solid #e9e9e9;padding-bottom:6px;margin-bottom:6px;">
+                                        <Checkbox :indeterminate="item.indeterminate"
+                                                  :value="item.checkall"
+                                                  v-on:click.prevent.native="handleCheckAll(item)">全选</Checkbox>
+                                    </div>
+                                    <Checkbox-Group v-model="item.checkallgroup" v-on:on-change="checkAllGroupChange($event,item)">
+                                        <Checkbox v-for="itemc in item.cityData" :label="itemc.name">{{itemc.name}}</Checkbox>
+                                    </Checkbox-Group>
+                                </td>
+                                <td style="width:50px;"><i-button type="error" v-on:click="deleteLAComponent(item)">删除</i-button></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        <div style="text-align:center"><i-button type="warning" v-on:click="cancle()">取消</i-button>&nbsp;&nbsp;&nbsp;<i-button type="primary" v-on:click="save()" :disabled="isSaved">保存</i-button></div>
+                    </td>
+                </tr>
+            </table>
+            <br />
+        </div>
+    </fieldset>
+</body>
+</html>
+<script>
+    var we = new Vue({
+        el: '#Banner',
+        data() {
+            return {
+                channelList: ['ios', 'android', 'wx'],
+                activityList: [],
+                activityPKID: '',
+                Id:'',
+                Channel: 'ios',
+                Name: '',
+                Sort: 0,
+                BeginTime: '',
+                EndTime: '',
+                Icon: '',
+                Banner: '',
+                StartVersion: '',
+                EndVersion: '',
+                Title: '',
+                SmallTitle: '',
+                Link: '',
+                CarLevel: 0,
+                IsRegion: "0",
+                Status: "1",
+                areaData: [],
+                provinceDatas: [],
+                isSaved: false,
+            }
+        },
+        mounted: function () {
+            this.getProvinceDatas();
+            this.getAllDatas();
+        },
+        methods: {
+            getAllDatas() {
+                var _this = this;
+                var BannerId =@Model;
+                 $.ajax({
+                     url: "/BeautyHomePageConfig/GetBeautyBannerConfig",
+                    type: "post",
+                    async: false,
+                    data: {
+                        bannerId:BannerId
+                    },
+                    success: function (data) {
+                        if (data != null && data.result != null) {
+                            _this.Id = data.result.Id;
+                            _this.Channel = data.result.Channel;
+                            _this.Status = data.result.Status?"1":"0";
+                            _this.Name = data.result.Name;
+                            _this.Sort = data.result.Sort;
+                            _this.StartVersion = data.result.StartVersion;
+                            _this.EndVersion = data.result.EndVersion;
+                            _this.Title = data.result.Title;
+                            _this.SmallTitle = data.result.SmallTitle;
+                            _this.Link = data.result.Link;
+                            _this.CarLevel = data.result.CarLevel;
+                            _this.BeginTime = _this.getDates(data.result.StartTime);
+                            _this.EndTime = _this.getDates(data.result.EndTime);
+                            _this.Icon = data.result.Icon;
+                            _this.Banner = data.result.Banner;
+                            _this.activityPKID = data.result.ActivityPKID;
+                            _this.IsRegion = data.result.IsRegion ? "1" : "0";
+                            if (data.activity != null)
+                            {
+                                $(data.activity).each(function (i, n) {
+                                    _this.activityList.push({
+                                        'id':n.Id,
+                                        'name':n.Name,
+                                        'activityId':n.ActivityId
+                                    });
+                                });
+                            }
+                            if (data.regionList != null && data.regionList.length > 0)
+                            {
+                                data.regionList.forEach(function (x) {
+                                    var e = {
+                                        'provinceName': x.ProvinceName,
+                                        'provinceData': _this.provinceDatas,
+                                        'cityData': [],
+                                        'indeterminate': false,
+                                        'checkallgroup': x.checkallgroup,
+                                        'type':2,
+                                    };
+                                    _this.provinceChange(e);
+                                    _this.areaData.push(e);
+                                });
+                            }
+                        }
+                    },
+                    error: function () {
+                        alert("服务端异常！");
+                    }
+                });
+            },
+            handleFormatError(file) {
+                this.$Notice.warning({
+                    title: '文件格式不正确',
+                    desc: "请选择 .jpg  or .png  or .jpeg图片"
+                });
+            },
+            handleMaxSize(file) {
+                this.$Notice.warning({
+                    title: '文件大小不符合要求',
+                    desc: "请选择不超过100KB的图片"
+                });
+            },
+            handleSuccess(res, file) {
+                if (res != null) {
+                    if (res.Item1) {
+                        if (res.Item3 == 'icon')
+                        {
+                            this.Icon = res.Item2;
+                        }
+                        else {
+                            this.Banner = res.Item2;
+                        }
+                    }
+                    else {
+                        this.$Notice.warning({
+                            title: '上传图片失败',
+                            desc: res.Item2
+                        });
+                    }
+                }
+                else {
+                    this.$Notice.warning({
+                        title: '上传图片异常',
+                        desc: "服务端异常"
+                    });
+                }
+            },
+            addLimitArea() {
+                var _this = this;
+                _this.areaData.push({
+                    'provinceName': '',
+                    'provinceData': _this.provinceDatas,
+                    'cityData': [],
+                    'indeterminate': false,
+                    'checkall': false,
+                    'checkallgroup': [],
+                });
+            },
+            deleteLAComponent(i) {
+                var n = this.areaData.indexOf(i);
+                we.areaData.splice(n, 1);
+            },
+            getProvinceDatas() {
+                var _this = this;
+                $.ajax({
+                    url: "/BeautyYearCardConfig/GetAllProvinces",
+                    type: "post",
+                    async: false,
+                    data: {},
+                    success: function (data) {
+                        if (data != null && data.length > 0) {
+                            $(data).each(function (i, e) {
+                                _this.provinceDatas.push({
+                                    'name': e.name,
+                                    'id': e.id,
+                                });
+                            })
+                        }
+                        else {
+                            _this.$Notice.warning({
+                                title: '获取省市信息异常！',
+                                desc: '获取省市信息异常！',
+                            });
+                        }
+                    },
+                    error: function () {
+                        alert("服务端异常！");
+                    }
+                });
+            },
+            provinceChange(e) {
+                var _this = this;
+                var exist = this.areaData.filter(function (x) { return x.provinceName == e.provinceName; });
+                if (exist.length <= 1) {
+                    $.ajax({
+                        url: "/BeautyHomePageConfig/GetAllCitys",
+                        type: "post",
+                        async: false,
+                        data: {
+                            provinceName: e.provinceName
+                        },
+                        success: function (data) {
+                            if (data != null && data.length > 0) {
+                                e.cityData = [];
+                                var checkall = true;
+                                $(data).each(function (i, n) {
+                                    e.cityData.push({
+                                        'name': n.name,
+                                        'id': n.id
+                                    });
+                                    if (e.checkallgroup.length > 0)
+                                    {
+                                        var index = e.checkallgroup.indexOf(n.name);
+                                        if (index<0)
+                                        {
+                                            checkall = false;
+                                        }
+                                    }
+                                });
+                                e.checkall = checkall;
+                                console.log(e.type);
+                                if (e.type != 2)
+                                {
+
+                                    e.checkall = false;
+                                    e.checkallgroup = [];
+                                }
+                                e.type = 1;
+
+                            }
+                            else {
+                                _this.$Notice.warning({
+                                    title: '获取省市信息异常！',
+                                    desc: '获取省市信息异常！',
+                                });
+                            }
+                        },
+                        error: function () {
+                            alert("服务端异常！");
+                        }
+                    });
+                }
+                else {
+                    this.$Notice.warning({
+                        title: '重复省份',
+                        desc: '选择的省份/直辖市已经存在，清重新选择！',
+                    });
+                    e.cityData = [];
+                    return;
+                }
+            },
+            handleCheckAll(e) {
+                if (e.indeterminate) {
+                    e.checkall = false;
+                } else {
+                    e.checkall = !e.checkall;
+                }
+                e.indeterminate = false;
+
+                if (e.checkall) {
+                    var checkallgroupTemp = [];
+                    e.cityData.forEach(function (x) {
+                        checkallgroupTemp.push(x.name);
+                    });
+                    e.checkallgroup = checkallgroupTemp;
+                } else {
+                    e.checkallgroup = [];
+                }
+            },
+            checkAllGroupChange(data, e) {
+                if (data.length === e.cityData.length) {
+                    e.indeterminate = false;
+                    e.checkall = true;
+                } else if (data.length > 0) {
+                    e.indeterminate = true;
+                    e.checkall = false;
+                } else {
+                    e.indeterminate = false;
+                    e.checkall = false;
+                }
+            },
+            isRegionChange(e) {
+            },
+            cancle() {
+                window.location.href = "/BeautyHomePageConfig/BannerConfig";
+            },
+            save() {
+                var _this = this;
+                var channel = _this.Channel;
+                if (!channel)
+                {
+                    _this.$Notice.warning({
+                        title: '请选择渠道',
+                        desc: '请选择渠道'
+                    });
+                }
+                var status = _this.Status;
+                var name = _this.Name;
+                if (!name) {
+                    _this.$Notice.warning({
+                        title: '请填写名称',
+                        desc: '请填写名称'
+                    });
+                }
+                var sort= _this.Sort;
+                var startVersion = _this.StartVersion;
+                if (!startVersion) {
+                    _this.$Notice.warning({
+                        title: '请填写开始版本',
+                        desc: '请填写开始版本'
+                    });
+                    return;
+                }
+                var endVersion = _this.EndVersion;
+                if (!endVersion) {
+                    _this.$Notice.warning({
+                        title: '请填写结束版本',
+                        desc: '请填写结束版本'
+                    });
+                    return;
+                }
+                var title = _this.Title;
+                if (!title) {
+                    _this.$Notice.warning({
+                        title: '请填写大标题',
+                        desc: '请填写大标题'
+                    });
+                    return;
+                }
+                var smallTitle = _this.SmallTitle;
+                if (!smallTitle) {
+                    _this.$Notice.warning({
+                        title: '请填写小标题',
+                        desc: '请填写小标题'
+                    });
+                    return;
+                }
+                var link = _this.Link;
+                //if (!link) {
+                //    _this.$Notice.warning({
+                //        title: '请填写万能跳转地址',
+                //        desc: '请填写万能跳转地址'
+                //    });
+                //    return;
+                //}
+                var carLevel=_this.CarLevel;
+                if(!_this.BeginTime) {
+                    _this.$Notice.warning({
+                        title: '请选择开始时间',
+                        desc: '请选择开始时间'
+                    });
+                    return;
+                }
+                var beginTime = _this.getTimeSpan(_this.BeginTime);
+                if (!_this.EndTime) {
+                    _this.$Notice.warning({
+                        title: '请选择结束时间',
+                        desc: '请选择结束时间'
+                    });
+                    return;
+                }
+                var endTime = _this.getTimeSpan(_this.EndTime);
+                var icon = _this.Icon;
+                if (!icon) {
+                    _this.$Notice.warning({
+                        title: '请上传Banner小图',
+                        desc: '请上传Banner小图'
+                    });
+                    return;
+                }
+                var banner = _this.Banner;
+                if (!banner) {
+                    _this.$Notice.warning({
+                        title: '请上传Banner大图',
+                        desc: '请上传Banner大图'
+                    });
+                    return;
+                }
+                var activityPKID = _this.activityPKID;
+                //if (!activityPKID) {
+                //    _this.$Notice.warning({
+                //        title: '请选择活动',
+                //        desc: '请选择活动'
+                //    });
+                //    return;
+                //}
+                var activity = _this.activityList.filter(x => x.id == _this.activityPKID)[0];
+                var activityId ='';
+                console.log(activity);
+                if (activity != null)
+                {
+                    activityId = activity.activityId;
+                }
+                var isRegion = _this.IsRegion;
+                var areasInsert = true;
+                var regions = [];
+                if (isRegion==1)
+                {
+                    if (_this.areaData.length <= 0) {
+                        _this.$Notice.warning({
+                            title: '限购地区省/自治区/直辖市必选',
+                            desc: "限购地区省/自治区/直辖市必选"
+                        });
+                        return;
+                    }
+                    _this.areaData.forEach(function (x)
+                    {
+                        if (!x.provinceName) {
+                            _this.$Notice.warning({
+                                title: '限购地区省/自治区/直辖市必选',
+                                desc: "限购地区省/自治区/直辖市必选"
+                            });
+                            areasInsert = false;
+                            return;
+                        }
+                        if (!x.checkallgroup || x.checkallgroup.length <= 0) {
+                            _this.$Notice.warning({
+                                title: '限购地区市/区必选',
+                                desc: "限购地区市/区必选"
+                            });
+                            areasInsert = false;
+                            return;
+                        }
+                        if (areasInsert)
+                        {
+                            x.checkallgroup.forEach(function (k) {
+                                console.log(k);
+                                regions.push({
+                                    'ProvinceId': x.provinceData.filter(y => y.name == x.provinceName)[0].id,
+                                    'ProvinceName': x.provinceName,
+                                    'CityId': x.cityData.filter(y => y.name == k)[0].id,
+                                    'CityName': k,
+                                });
+                            });
+
+                        }
+                    });
+                }
+                if (!areasInsert)
+                    return;
+
+                _this.isSaved = true;
+                var postData = {
+                    "Id": _this.Id,
+                    "Type": 3,
+                    "Channel": channel,
+                    "StartVersion": startVersion,
+                    "EndVersion": endVersion,
+                    "Status": status == 1? true: false,
+                    "Name": name,
+                    "Sort": sort,
+                    "Title": title,
+                    "SmallTitle": smallTitle,
+                    "Link": link,
+                    "Icon": icon,
+                    "Banner": banner,
+                    "IsRegion": isRegion==1? true:false,
+                    "CarLevel": carLevel,
+                    "ActivityPKID": activityPKID,
+                    "ActivityId": activityId,
+                    "StartTime": beginTime,
+                    "EndTime": endTime,
+                    "Region": JSON.stringify(regions),
+                };
+                $.ajax({
+                    url: "/BeautyHomePageConfig/SaveBeautyBannerConfig",
+                    type: "post",
+                    async: false,
+                    data: postData,
+                    success: function (data) {
+                        if (data.Result) {
+                            _this.$Message.success('保存成功！');
+                            setTimeout(function () {
+                                window.location.href = "/BeautyHomePageConfig/BannerConfig";
+                            }, 1000);
+                        }
+                        else {
+                            _this.$Notice.warning({
+                                title: '保存失败！',
+                                desc: '服务端执行异常',
+                            });
+                            _this.isSaved = false;
+                        }
+                    },
+                    error: function () {
+                        alert("服务端异常！");
+                    }
+                });
+            },
+            getDates(e) {
+                var time = e instanceof Date ? e : eval('new ' + e.toString().replace(/\//g, ""));
+                if (time < new Date(2018,1,1))
+                {
+                    time = '';
+                }
+                return time;
+            },
+            getTimeSpan(time) {
+                var year = time.getFullYear();
+                var day = time.getDate();
+                var month = time.getMonth() + 1;
+                var hours = time.getHours();
+                var minutes = time.getMinutes();
+                var seconds = time.getSeconds();
+                return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
+            },
+        }
+    });
+
+</script>

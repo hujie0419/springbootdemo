@@ -1,0 +1,259 @@
+﻿@{
+    ViewBag.Title = "第三方活动";
+    Layout = "~/Views/Shared/_Layout_ActivityBoard.cshtml";
+}
+@model List<Tuhu.Provisioning.DataAccess.Entity.ActivityBoard.ThirdPartActivity>
+    <style>
+        .table { text-align: center; }
+        .table tr > th { text-align: center; }
+    </style>
+    <div class="wrapper wrapper-content animated fadeInRight ecommerce">
+        <input class="moduleType" value="@ViewBag.ModuleTyp" type="hidden"/>
+        <input class="IsViewEffect" value="@ViewBag.IsViewEffect" type="hidden"/>
+        <div class="ibox-content m-b-sm border-bottom third-search" style="padding-bottom:0">
+            <div class="row">
+                <form action="@Url.Action("ThirdPartActivity", "ActivityBoard")" method="get">
+                    <div class="col-lg-12">
+                        <div class="col-sm-2">
+                            <input type="text" class="form-control" name="StartTime" id="activity-startTime" value="@ViewBag.StartTime" onclick="WdatePicker({ dateFmt :'yyyy/MM/dd HH:mm:ss'})" placeholder="活动开始日期" />
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="text" class="form-control" name="EndTime" id="activity-endTime" value="@ViewBag.EndTime" onclick="WdatePicker({ dateFmt :'yyyy/MM/dd HH:mm:ss'})" placeholder="活动结束日期" />
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="btn-group pull-left">
+                                <input type="hidden" name="ActivityType" id="activityType" value="@ViewBag.ActivityType"/>
+                                <button type="button" name="ActivityType" class="btn btn-default activity-type">请选择</button>
+                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                    <span class="caret"></span>
+                                </button>
+                                @Html.Partial("ActivityType")
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="hidden" name="Channel" id="select-Channel" value="@ViewBag.Channel"/>
+                            <select style="padding:6px 12px;background-color: #FFFFFF;background-image: none;border: 1px solid #e5e6e7;border-radius: 1px;color: inherit;" id="channel">
+                                @Html.Partial("ThirdPartyChannel")
+                            </select>
+                        </div>
+                        <div class="form-group col-sm-3">
+                            <button type="submit" class="btn  btn-primary" data-toggle="modal"  data-target="#myModal5">搜索</button>
+                            <button type="button" class="btn  btn-primary" data-toggle="modal" style="margin-left:20px" id="add-thirdParty" data-target="#myModal5">添加</button>
+                            <button type="button" class="btn  btn-primary qiehuan" style="margin-left:20px" data-toggle="modal" data-target="#myModal5">切换</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12" style="text-align:center">
+                <div class="ibox">
+                    <div class="ibox-content">
+                        <table class="table table-bordered">
+                            <thead style="font-size:smaller">
+                                <tr>
+                                    <th>PKID</th>
+                                    <th>活动名称</th>
+                                    <th>类型</th>
+                                    @*<th>手机链接</th>
+                                    <th>网站链接</th>*@
+                                    <th>开始日期</th>
+                                    <th>结束日期</th>
+                                    <th>创建日期</th>
+                                    <th>更新日期</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>@item.PKID</td>
+                                            <td>@item.ActivityName</td>
+                                            <td>@item.ActivityType</td>
+                                            @*<td>@item.H5Url</td>
+                                            <td>@item.WebUrl</td>*@
+                                            <td>@item.StartTime</td>
+                                            <td>@item.EndTime</td>
+                                            <td>@item.CreatedTime</td>
+                                            <td>@item.UpdatedTime</td>
+                                            <td><a onclick="EditActivity(this,@item.PKID)">编辑</a>/<a onclick="DeleteActivity(@item.PKID)">删除</a>/<a onclick="SearchLog(@item.PKID)">日志</a></td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr><td colspan="8">无数据</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                        <div class="text-center">
+                            <div class="btn-group" id="tcdPageCode">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="modal-content" style="display:none">
+            <div class="modal-body">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">类型</label>
+                        <div class="col-sm-10">
+                            <div class="btn-group pull-left">
+                                <button type="button" class="btn btn-default activity-type">请选择</button>
+                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                    <span class="caret"></span>
+                                </button>
+                                @Html.Partial("ActivityType")
+                            </div>
+                            <label class="col-sm-3 control-label">负责人</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="activity-principal" placeholder="tuhu@tuhu.cn" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">渠道</label>
+                        <div class="col-sm-10">
+                            <select style="padding:6px 12px;background-color: #FFFFFF;background-image: none;border: 1px solid #e5e6e7;border-radius: 1px;color: inherit;" id="activity-channel">
+                                @Html.Partial("ThirdPartyChannel")
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">活动名称</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="activity-name" placeholder="活动名称" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">开始日期</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="activity-startTime" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" placeholder="开始日期" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">结束日期</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="activity-endTime" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" placeholder="结束日期" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><a href="#" class="gotoUrl">手机链接</a></label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="activity-h5Url" placeholder="手机链接" /><input type="button" value="跳转到此页面" class="gotoUrl" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><a href="#" class="gotoUrl">网站链接</a></label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="activity-webUrl" placeholder="网站链接" /><input type="button" value="跳转到此页面" class="gotoUrl" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">活动规则</label>
+                        <div class="col-sm-10">
+                            <textarea class="form-control" id="activity-rules" style="width:100%;resize:vertical;" rows="15" placeholder="活动规则"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @section scripts{
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $("#channel").val("@ViewBag.Channel");
+                $("#select-Channel").val("@ViewBag.Channel");
+                $("#tcdPageCode").createPage({
+                    pageCount: @ViewBag.TotalPage,
+                    current: @ViewBag.CurrentPage,
+                    backFn: function (p) {
+                        //单击回调方法，p是当前页码
+                        var currentLink=window.location.href;
+                        if(currentLink.indexOf("ActivityType")!=-1){
+                            //搜索分页
+                            if(currentLink.indexOf("ThirdPartActivity")!=-1){
+                                var reg = /pageIndex=[\d]/g;
+                                if(reg.test(currentLink)){
+                                    location.href=currentLink.replace(reg,"pageIndex="+p);
+                                }else{
+                                    location.href=currentLink+"&pageIndex="+p;
+                                }
+                            }else{
+                                location.href = "/ActivityBoard/ThirdPartActivity?pageIndex=" + p;
+                            }
+                        }else{
+                            location.href = "/ActivityBoard/ThirdPartActivity?pageIndex=" + p;
+                        }
+                    }
+                });
+                var activityType=$("#activityType").val();
+                $(".activity-type").removeClass("btn-default btn-success btn-danger btn-info btn-warning");
+                $(".activity-type").text(ConvertActivityType(parseInt(activityType)));
+            });
+
+            $("#add-thirdParty").on("click",function(){
+                AddThirdActivity($(".moduleType").val(),"add-thirdParty");
+            });
+
+            $("#channel").on("click", function () {
+                $("#select-Channel").val($(this).val());
+            });
+
+            function EditActivity(o,pkid){
+                EditActivityBoard($(".moduleType").val(),pkid, "edit-thirdParty");
+            }
+
+            function DeleteActivity(pkid){
+                if(confirm("是否确认删除该活动?")){
+                    $.post("DeleteActivityByPKID",{pkid:pkid,moduleType:$(".moduleType").val()},function(data){
+                        if(data.status==true){
+                            alert("删除成功");
+                            location.reload()
+                        }else{
+                            alert(data.msg);
+                        }
+                    });
+                }
+            }
+
+            function SearchLog(pkid) {
+                var html = "<table class='table table-bordered' style='width:100%;'><tr><td>消息</td><td>备注</td><td>操作人</td><td>时间</td></tr>";
+                var d = dialog({
+                    title: "操作日志",
+                    width: 900,
+                    height: 500,
+                    fixed: true,
+                    button: [
+                        {
+                            value: "取消"
+                        }
+                    ]
+                });
+
+                $.post("SelectOperationLog", { objectId: pkid,type:$(".moduleType").val() }, function (result) {
+                    if (result.length > 0) {
+                        $.each(result, function (index) {
+                            html += "<tr><td>" + result[index].Message + "</td><td>" + result[index].Remarks + "</td><td>" + result[index].Operator + "</td><td>" + formatTime(result[index].CreatedTime) + "</td></tr>";
+                        });
+                    }
+                    html += "</table>";
+                    d.content(html);
+                    d.showModal();
+                });
+            }
+
+            $(".qiehuan").click(function () {
+                location.href = "/ActivityBoard/Index?activityBoardType=ThirdPartyActivity";
+            });
+        </script>
+
+    }

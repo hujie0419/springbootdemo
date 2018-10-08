@@ -1,0 +1,309 @@
+﻿
+@{
+    ViewBag.Title = "ContentEdit";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+@model  Tuhu.Provisioning.DataAccess.Entity.WechatHomeProductContent
+
+
+<form id="form1">
+    <table class="form">
+        <tr>
+            <th class="formTitle">PID：</th>
+            <td class="formValue">
+                <input type="text" class="form-control required" id="PID" value="@Model.PID" name="PID" />
+            </td>
+
+        </tr>
+        <tr>
+            <th class="formTitle">GroupId：</th>
+            <td class="formValue">
+                <select id="GroupId" name="GroupId" class="form-control required"></select>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">商品名称：</th>
+            <td class="formValue">
+                <input type="text" class="form-control required" id="ProductName" value="@Model.ProductName" name="ProductName" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">图 片:</th>
+            <td class="formValue">
+                <div class="input-group">
+                    <img id="imgUrl" @(string.IsNullOrWhiteSpace(Model.ImageUrl) == false ? "src=" + Model.ImageUrl : "") width="50" height="50" />
+                    <input type="file" id="fileImageUrl" name="fileImageUrl" onchange="UploadBgImg(this, 'imgUrl', 'ImageUrl')" />
+                    <input type="hidden" id="ImageUrl" name="ImageUrl" value="@Model.ImageUrl" />
+                </div>
+            </td>
+        </tr>
+
+        <tr>
+            <th class="formTitle">拼团价格:</th>
+            <td class="formValue">
+                <input type="text" id="Price" name="Price" class="form-control required" disabled="disabled" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">排序:</th>
+            <td class="formValue">
+                <input type="number" id="OrderBy" name="OrderBy" class="form-control required" value="@Model.OrderBy" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">是否启用</th>
+            <td class="formValue">
+                <select id="IsEnabled" name="IsEnabled" class="form-control">
+                    <option value="1" @(Model.IsEnabled == 1 ? "selected=\"selected\"" : "")>启 用</option>
+                    <option value="0" @(Model.IsEnabled == 0 ? "selected=\"selected\"" : "")>禁 用</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">埋点参数:</th>
+            <td class="formValue">
+                <input type="text" id="BuriedPointParam" name="BuriedPointParam" class="form-control" value="@Model.BuriedPointParam" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">是否设置有效时间<div>(如果不设置</div><div>则表示长期有效):</div></th>
+            <td class="formValue">
+                <select id="IsTimeSet" name="IsTimeSet" class="form-control">
+                    <option value="1" @(Model.IsTimeSet == 1 ? "selected=\"selected\"" : "")>是</option>
+                    <option value="0" @(Model.IsTimeSet == 0 ? "selected=\"selected\"" : "")>否</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">有效时间：</th>
+            <td class="formValue">           
+                <input type="text" id="StartTime" name="StartTime" value="@(Model.StartTime!=null?Model.StartTime.Value.ToString("yyyy-MM-dd HH:mm:ss"):DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))" placeholder="开始时间" style="width:180px" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})"/>
+                -
+                <input type="text" id="EndTime" name="EndTime" value="@(Model.EndTime!=null?Model.EndTime.Value.ToString("yyyy-MM-dd HH:mm:ss"):DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))" placeholder="结束时间" style="width:180px" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" />
+            </td>
+        </tr>
+    </table>
+    <input type="hidden" id="hiddenGroupId" name="hiddenGroupId" @(string.IsNullOrWhiteSpace(Model.GroupId)?"value=\"\"": "value="+@Model.GroupId) />
+    <input type="hidden" id="hiddenProductName" name="hiddenProductName" value="@Model.ProductName"/>
+    <input type="hidden" id="FKID" name="FKID" value="@Model.FKID" />
+    <input type="hidden" id="ID" name="ID" value="@Model.ID" />
+</form>
+<script src="/Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+    $(function () {
+        initControl();
+    });
+
+    function getPinTuanInfo(pid) {
+        return $.get("/WechatHome/GetProductGroupInfoByPIdAsync", { pid: pid }).then(function (data) {
+            return data;
+        });
+    }
+
+    function setProductGroupPrice() {
+       
+        var pid = $("#PID").val().trim();
+        var groupid = $("#GroupId").val();
+        if (groupid) {
+            getPinTuanInfo(pid).then(function (data) {
+                console.log(data);
+                if (data.code == 1 && data.data && data.data.length) {
+                    var grouplist = data.data.ProductGroupList;
+                    //var price = data.data.
+                    data.data.forEach(function (item) {
+                        console.log(item);
+
+                        if (groupid && groupid == item.ProductGroupId) {
+                            var price = item.Price;
+                            $("#Price").val(price);
+                        }
+                    });
+                }
+                else {
+                    $.modalMsg("当前PID未获取到拼团信息", "warning");
+                }
+            });
+        }
+    }
+
+    function setGroupInfo(pid, ptvalue) {
+
+        if (pid.length > 0) {
+            getPinTuanInfo(pid).then(function (data) {
+                console.log(data);
+                var html = "";
+                if (data.code == 1 && data.data && data.data.length) {
+                    var grouplist = data.data.ProductGroupList;
+                    $("#GroupId").empty();
+                    data.data.forEach(function (item) {
+                        //  console.log(item);
+                        if (item.ProductGroupId == ptvalue) {
+                            html += "<option value='" + item.ProductGroupId + "'" + " selected>" + item.ProductGroupId + "</option>";
+                        }
+                        else {
+                            html += "<option value='" + item.ProductGroupId + "'>" + item.ProductGroupId + "</option>";
+                        }
+
+                    });
+                    $("#GroupId").append(html);
+                }
+                else {
+                    $.modalMsg("当前PID未获取到拼团信息", "warning");
+                    $("#GroupId").empty();
+
+                }
+            });
+        }      
+            setTimeout(function () {
+                setProductGroupPrice();
+            }, 4000);
+        
+    }
+
+    function setProduct() {
+     
+
+        var pid = $("#PID").val().trim();
+        if (pid) {
+            $.ajax({
+                url: '/ActivityV2/GetProductImage?pid=' + pid,
+                dataType: "json",
+                type: 'post',
+                success: function (result) {
+                    result = JSON.parse(result);
+                    if (result.BImage) {
+                        if ($("#imgUrl").val().length <= 0) {
+
+                            $("#imgUrl").attr("src", result.BImage);
+                            $("#ImageUrl").val(result.BImage);
+                        }
+                        //if ($("#hiddenProductName").val().length <= 0)
+                        //{
+                        //    $("#ProductName").val(result.DisplayName);
+                        //}
+                        $("#ProductName").val(result.DisplayName);
+
+                        //var selectedGroupid = $("#hiddenGroupId").val().trim()
+                        setGroupInfo(pid, '');
+                    } else {
+                        $.modalMsg("输入的PID不存在", "warning");
+                        $("#imgUrl", form).removeAttr("src");
+                        $("#PID", form).val("");
+                        $("#ImageUrl", form).val("");
+                        $("#ProductName", form).val("");
+                        
+                    }
+                },
+                error: function (result) {
+                    $.modalMsg("获取输入的PID信息失败", "warning");
+                    $("#imgUrl", form).removeAttr("src");
+                    // $("#PID", form).val("");
+                    $("#ImageUrl", form).val("");
+                    $("#ProductName", form).val("");
+                   
+                    $("#Price", form).val("");
+                
+                }
+            })
+        } else {
+            $("#imgUrl", form).removeAttr("src");
+            $("#imgUrl", form).val("");
+            $("#ProductName", form).val("");           
+            $("#Price", form).val("");
+            
+        }
+    }
+
+    function setTimeSet() {
+        var isset = $("#IsTimeSet").val();
+        if (isset == 1) {
+            $("#StartTime").prop('disabled', false);
+            $("#EndTime").prop('disabled', false);
+        } else {
+            $("#StartTime").prop('disabled', true);
+            $("#EndTime").prop('disabled', true);
+        }
+    }
+
+    function initControl() {
+
+        var isset = $("#IsTimeSet").val();
+        if (isset == 1) {
+            $("#StartTime").prop('disabled', false);
+            $("#EndTime").prop('disabled', false);
+        } else {
+            $("#StartTime").prop('disabled', true);
+            $("#EndTime").prop('disabled', true);
+        }
+        setGroupInfo($("#PID").val().trim(), $("#hiddenGroupId").val().trim())
+        $("#PID").on("change", setProduct);   
+        $("#IsTimeSet").on("change", setTimeSet);   
+        
+        $("#GroupId").on('change', setProductGroupPrice);
+    }
+    ///showImg：上传时Image显示的标签ID
+    //showUrl:真正显示的
+    function UploadBgImg(obj, showImg, showUrl) {
+
+        var pobj = $(obj);
+        var fileSize = pobj[0].files[0].size / 1024 * 1.0;
+        if (fileSize > 1024) {
+            alert("不能上传大于1024KB的图片");
+            return false;
+        }
+        var rd = Math.ceil(Math.random() * 9999) + 1;
+        var fileElId = $(obj).attr("id");
+        console.log(fileElId);
+        $.ajaxFileUpload({
+            url: '/Article/ImageUploadToAli?rd=' + rd,
+            secureuri: false,
+            fileElementId: fileElId,
+            dataType: 'json',
+            async: false,
+            success: function (result) {
+                if (result.BImage != "" && result.SImage != "") {
+                    $("#" + showImg).attr("src", result.SImage).show();
+                    $("#" + showUrl).val(result.BImage);
+                } else {
+                    alert("上传失败！");
+                }
+            },
+            error: function (data, status, e)//服务器响应失败处理函数
+            {
+                alert(e);
+            }
+        });
+    }
+
+    function submitForm() {
+        var isset = $("#IsTimeSet").val();
+        if (isset == 1) {
+            var starttime = $("#StartTime").val().trim();
+            var endtime = $("#EndTime").val().trim();
+            if (endtime < starttime) {
+                $.modalMsg("结束时间小于开始时间", "warning");
+                return false;
+            }
+        }
+
+        if (!$('#form1').formValid()) {
+            return false;
+        }
+    
+        $.submitForm({
+            url: "/WechatHome/SaveProductContent",
+            param: $("#form1").formSerialize(),
+            success: function () {
+                //  self.parent.$("#gridList").resetSelection();
+                self.parent.$("#gridList").trigger("reloadGrid");
+                self.parent.$('#loadingPage').hide();
+                self.parent.window.frames[0].location.reload();
+                
+            }
+        })
+    }
+</script>
+
+
+

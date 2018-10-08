@@ -1,0 +1,240 @@
+﻿@using System.Diagnostics;
+@using Tuhu.Provisioning.Business;
+@{
+    ViewBag.Title = "新首页配置";
+}
+
+<link type="text/css" href="http://hive.gitcafe.io/mr/css/toastr.css" rel="stylesheet" />
+<link rel="stylesheet" href="@{if (Debugger.IsAttached){<text>/css/yewu.css</text>}else{<text>//res.tuhu.cn/css/yewu.css</text>}}" />
+<link rel="stylesheet" href="@{if (Debugger.IsAttached){<text>/Scripts/controls/controls.css</text>}else{<text>//res.tuhu.cn/controls/controls.css</text>}}" />
+<link rel="stylesheet" href="@{if (Debugger.IsAttached){<text>/css/sector.css</text>}else{<text>//res.tuhu.cn/css/sector.css</text>}}" />
+<script type="text/javascript" src="http://hive.gitcafe.io/mr/js/toastr.js"></script>
+<script src="http://hive.gitcafe.io/joy/js/Common.js"></script>
+<script src="http://hive.gitcafe.io/joy/js/joy.js"></script>
+<script src="http://hive.gitcafe.io/joy/js/joy.dom.js"></script>
+<script src="http://cdn.mindexpress.cn/joy/js/angular/ag.js"></script>
+<script src="https://yewu.tuhu.cn/scripts/ajaxfileupload.js"></script>
+<script src="@{if (Debugger.IsAttached){<text>/Scripts/controls/common.js</text>}else{<text>//res.tuhu.cn/controls/common.js</text>}}"></script>
+<script src="@{if (Debugger.IsAttached){<text>/Scripts/controls/formeditor.js</text>}else{<text>//res.tuhu.cn/controls/formeditor.js</text>}}"></script>
+<script src="@{if (Debugger.IsAttached){<text>/Scripts/controls/grid.js</text>}else{<text>//res.tuhu.cn/controls/grid.js</text>}}"></script>
+<script src="@{if (Debugger.IsAttached){<text>/Scripts/controls/tower.js</text>}else{<text>//res.tuhu.cn/controls/tower.js</text>}}"></script>
+
+<style>
+    .floor{
+        clear:both;
+    }
+    .senabled{
+        color:green;
+    }
+    .sdisabled{
+        color:red;
+    }
+    .nfloor{
+        font:24px arial;
+        font-weight:bold;
+        line-height:32px;
+        display:block;
+        bbackground:#5c87b2;
+        ccolor:white;
+        margin-top:12px;
+        margin-bottom:12px;
+        padding:4px;
+        border-bottom:solid 1px #5c87b2;
+    }
+</style>
+
+<script>
+    function buildurl(url, o) {
+        var r = url + '?';
+        for (var i in o) {
+            r += i + '=' + o[i] + '&';
+        }
+        return r;
+    }
+    function picker(c) {
+        var cache = [];
+        var data = null;
+        var prev = null;
+        var curt = null;
+        var started = false;
+        var r = {};
+        if (!c) {
+            c = {};
+        }
+        r.data = function () {
+            if (cache && cache.length > 0) {
+                if (prev) {
+
+                }
+                return cache;
+            }
+            return data;
+        }
+        r.diff = function (val) {
+            var rlt = false;
+            if (prev && cache.length < 1) {
+                cache[0] = prev;
+            }
+            var pv = prev;
+            var v = val;
+            if (c.field) {
+                pv = prev ? prev[c.field] : null;
+                v = val[c.field];
+            }
+
+
+            if (!started) {
+                started = true;
+                prev = val;
+                rlt = false;
+            } else if (pv != v) {
+                prev = val;
+                rlt = true;
+            } else {
+                prev = val;
+                rlt = false;
+            }
+            if (!rlt) {
+                cache[cache.length] = val;
+            } else {
+                data = cache;
+                cache = [];
+            }
+            return rlt;
+        }
+        return r;
+    }
+    function roweditcfg(cfg) {
+        if (!cfg) {
+            cfg = {};
+        }
+        var c = {
+            title: function (row) {
+                return row.modelname + '模块编辑';
+            }
+            , editor: {
+                sort: { validators: [intvalidator, requiredvalidator] }
+                , mstatus: { validators: [intvalidator, requiredvalidator] }
+                , dispbanner: { validators: [intvalidator, requiredvalidator] }
+                , banner: {
+                    creator: imgupcreator, c: { url: '/Article/AddArticleImg' }, validators: [function (data) {
+                        if (data.indexOf('.') < 0 || data.indexOf('edit') >= 0) {
+                            debugger;
+                            return false;
+                        }
+                        return true;
+                    }]
+                }
+                , mname: { validators: [requiredvalidator] }
+            }
+            , fields: {
+                rownum: { style: { display: 'none' } }
+                , id: { style: { display: 'none' } }
+                , parentid: { style: { display: 'none' } }
+                , grp: { style: { display: 'none' } }
+                , device: { style: { display: 'none' } }
+                , updatetime: { style: { display: 'none' } }
+                , createtime: { style: { display: 'none' } }
+                , mname: { childNodes: [{ innerHTML: '模块名称' }], className: 'short', short: true }
+                , mstatus: { onkeypress: intvalidator, childNodes: [{ innerHTML: '启用状态' }], className: 'short', hint:'1:启用，0:禁用' }
+                , banner: { childNodes: [{ innerHTML: 'dispbanner' }] }
+                , dispbanner: { onkeypress: intvalidator, childNodes: [{ innerHTML: 'H5 URL' }], className: 'short', hint: '1:显示，0:隐藏' }
+                , sort: { onkeypress: intvalidator, childNodes: [{ innerHTML: '显示顺序' }], className: 'short' }
+                , stime: { childNodes: [{ innerHTML: '开始时间' }], className: 'short' }
+                , etime: { childNodes: [{ innerHTML: '结束时间' }], className: 'short' }
+            }
+            , submit: '/idx/save?a=' + cfg.action
+            , cancel: function () {
+                overlay({ hide: true });
+            }
+        };
+        return c;
+    }
+
+    function readtitle(d) {
+        var type = d[0].apptype;
+        if (type >= titles.length) {
+            return '附加区域';
+        }
+        return titles[type];
+    }
+
+    function isoverride() {
+        return location.href.indexOf('#override') > 0;
+    }
+
+    function dooradded(door) {
+        var d = door.$d$;
+        if (!isoverride() && (d.apptype < 3 && d.modelfloor < 3)) {
+            $(door.$bdel).hide();
+        }
+    }
+
+    function flooradded(floor) {
+
+        if ((floor.aid < 3 && floor.fid > 2) || (floor.aid > 2) || isoverride()) {
+            var pel = floor.el;
+            var el = ndoor(floor);
+            pel.$area.appendChild(el);
+        }
+    }
+
+    $(function () {
+        var msg = '@ViewBag.msg';
+        if (msg.length > 0) {
+            toastr.info(msg);
+        }
+        $.ajax({ url: '/module/modules' }).done(function (data) {
+            var r = JSON.parse(data);
+            if (r.error) {
+                toastr.info(r.Msg);
+            }
+            var el = park(r, {
+                filter: 'apptype',
+                title: function (d) {
+                    return readtitle(d);
+                }, floors: {
+                    filter: 'modelfloor',
+                    title: function (d) {
+                        return d[0].modelfloor + 'F - ' + readtitle(d);
+                    }, doors: {
+                        upurl: '/idx/update'
+                        , rmurl: '/idx/remove'
+                        , added: dooradded
+                        , update: function () {
+                            var d = this.$d$;
+                            var frm = formeditor(d, roweditcfg());
+                            frm.show();
+                        }
+                        , editor: roweditcfg({})
+                        , built: function (el, data) {
+                            var u = '/idx/prod?apptype=' + data.apptype + '&mid=' + data.id;
+                            var link = el.$link;
+                            var href = $(link).attr('href');
+                            
+                            $(link).attr('href', u);
+                        }
+                        , onsetval: function (data) {
+                            var root = this;
+                            if (data.modelname == '限时抢购专区' || (data.apptype < 3 && data.modelfloor == 3)) {
+                            } else {
+                                $(root.$link).hide();
+                            }
+                        }
+                    },
+                    onadd: function(el){
+                        var c = el.$c$;
+                        var row = { apptype: c.aid, modelfloor: c.fid, modelname: '新模块', showorder: 1, icoimgurl: '', jumph5url: 'http://baidu.com', showstatic: 1, starttime: datestr(), overtime: '2016/12/01', cpshowtype: 1, cpshowbanner: ' ', appoperateval: ' ', operatetypeval: ' ', pronumberval: ' ', keyvaluelenth: ' ', umengtongji: ' ' };
+                        var frm = formeditor(row, roweditcfg({action:'1'}));
+                        frm.show();
+                    },
+                    added: flooradded
+                }
+            });
+            $('#region')[0].appendChild(el);
+        });
+    });
+</script>
+<div id="region">
+
+</div>

@@ -1,0 +1,242 @@
+﻿
+@{
+    ViewBag.Title = "BrandPriceEditBaoYangRecommendProducts";
+    Layout = null;
+
+}
+<style>
+    .tabs div {
+        display: inline-block;
+        padding: 5px 8px;
+        cursor: pointer;
+    }
+
+        .tabs div.active {
+            background-color: #4297d7;
+            color: white;
+        }
+
+    .content {
+        width: 100%;
+        height: 160px;
+        border: 1px solid #4297d7;
+    }
+
+        .content div {
+            display: none;
+        }
+
+            .content div:first-child {
+                display: block;
+            }
+</style>
+<div>
+    <div class="tabs">
+        <div class="active" data-id="@ViewBag.FirstSeriesKey">@ViewBag.FirstSeriesName </div>
+        <div data-id="@ViewBag.SecondSeriesKey">@ViewBag.SecondSeriesName </div>
+        <div data-id="@ViewBag.ThirdSeriesKey">@ViewBag.ThirdSeriesName </div>
+    </div>
+
+    <div class="content">
+        <div id="FirstDiv">
+            @Html.Partial("PartialCPBrand")
+        </div>
+        <div id="SecondDiv">
+            @Html.Partial("PartialCPBrand")
+        </div>
+        <div id="ThirdDiv">
+            @Html.Partial("PartialCPBrand")
+        </div>  
+    </div>
+</div>
+<input type="hidden" value="" id="result" />
+<script>
+    var projectObect;
+    $(function () {
+        $(".tabs div").click(function () {
+            var that = $(this);
+            that.addClass("active").siblings().removeClass("active");
+            var index = that.index();
+            var dataId = that.attr("data-id");
+            $(".content div").eq(index).show().siblings().hide();
+        })
+        $.ajax({
+            type: "get",
+            url: "/Baoyang/BaoYangRecommendByProjectName?parameters=" + "@ViewBag.PrimaryParentCategory",
+            success: function(data) {
+                projectObect = data; //把加载出来的数据给全局变量
+                console.log(data);
+                if (data != null || data != "") {
+                    var count = $("#FirstDiv").find("#FirstCP_Brand option").length; //获取下拉框数据的长度，因为都是相同，所以用一个就可以了，
+                    for (var i in data) { //加载动态选项卡下面的下拉框的数据，没有就不加载
+                        if (data[i].PropertyType == "@ViewBag.FirstSeriesKey") //
+                        {
+                            for (var j = 0; j < $("#FirstCP_Brand").find("option").length; j++) {
+                                var firstCpBrand = $("#FirstDiv").find("#FirstCP_Brand").find("option").eq(j);
+                                if (firstCpBrand.text() === data[i].FirstPriority) {
+                                    firstCpBrand.attr("selected", true);
+                                }
+                            }
+                            for (var j = 0; j < $("#SecondCP_Brand").find("option").length; j++) {
+                                var secondCpBrand = $("#FirstDiv").find("#SecondCP_Brand").find("option").eq(j);
+                                if (secondCpBrand.text() === data[i].SecondPriority) {
+                                    secondCpBrand.attr("selected", true);
+                                }
+                            }
+                            for (var j = 0; j < $("#ThirdCP_Brand").find("option").length; j++) {
+                                var thirdCpBrand = $("#FirstDiv").find("#ThirdCP_Brand").find("option").eq(j);
+                                if (thirdCpBrand.text() === data[i].ThirdPriority) {
+                                    thirdCpBrand.attr("selected", true);
+                                }
+                            }
+                        }
+                        if (data[i].PropertyType == "@ViewBag.SecondSeriesKey") //
+                        {
+                            for (var j = 0; j < $("#FirstCP_Brand").find("option").length; j++) {
+                                var firstCpBrand = $("#SecondDiv").find("#FirstCP_Brand").find("option").eq(j);
+                                if (firstCpBrand.text() === data[i].FirstPriority) {
+                                    firstCpBrand.attr("selected", true);
+                                }
+                            }
+                            for (var j = 0; j < $("#SecondCP_Brand").find("option").length; j++) {
+                                var secondCpBrand = $("#SecondDiv").find("#SecondCP_Brand").find("option").eq(j);
+                                if (secondCpBrand.text() === data[i].SecondPriority) {
+                                    secondCpBrand.attr("selected", true);
+                                }
+                            }
+                            for (var j = 0; j < $("#ThirdCP_Brand").find("option").length; j++) {
+                                var thirdCpBrand = $("#SecondDiv").find("#ThirdCP_Brand").find("option").eq(j);
+                                if (thirdCpBrand.text() === data[i].ThirdPriority) {
+                                    thirdCpBrand.attr("selected", true);
+                                }
+                            }
+                        }
+                        if (data[i].PropertyType == "@ViewBag.ThirdSeriesKey")//HX6
+                        {
+                            for (var j = 0; j < $("#FirstCP_Brand").find("option").length; j++) {
+                                var firstCpBrand = $("#ThirdDiv").find("#FirstCP_Brand").find("option").eq(j);
+                                if (firstCpBrand.text() === data[i].FirstPriority) {
+                                    firstCpBrand.attr("selected", true);
+                                }
+                            }
+                            for (var j = 0; j < $("#SecondCP_Brand").find("option").length; j++) {
+                                var secondCpBrand = $("#ThirdDiv").find("#SecondCP_Brand").find("option").eq(j);
+                                if (secondCpBrand.text() === data[i].SecondPriority) {
+                                    secondCpBrand.attr("selected", true);
+                                }
+                            }
+                            for (var j = 0; j < $("#ThirdCP_Brand").find("option").length; j++) {
+                                var thirdCpBrand = $("#ThirdDiv").find("#ThirdCP_Brand").find("option").eq(j);
+                                if (thirdCpBrand.text() === data[i].ThirdPriority) {
+                                    thirdCpBrand.attr("selected", true);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    })
+
+    $("#FirstCP_Brand,#SecondCP_Brand,#ThirdCP_Brand").change(function () {//下拉框改变事件
+        debugger;
+        var ChangeText = $(this).children('option:selected').text();//获取改变后的项
+        var id = $(this).attr("id")//获取当前的，选项卡的id，此id就是PropertyType
+        var firstSelect, SecondSelect, ThirdSelect;
+        var isexistShuxing = false;//此选项卡是否存在
+        var tableDiv;
+        var isALLnull = false;
+        if (id == "FirstCP_Brand") {
+            firstSelect = ChangeText;
+        }
+        if (id == "SecondCP_Brand") {
+            SecondSelect = ChangeText;
+        }
+        if (id == "ThirdCP_Brand") {
+            ThirdSelect = ChangeText;
+        }
+        var shuxing = $(".tabs .active").attr("data-id");
+        if (projectObect != null && projectObect.length > 0) {
+            for (var j in projectObect) {
+                if (projectObect[j].PropertyType == shuxing)
+                    isexistShuxing = true;
+            }
+            if (isexistShuxing == true) {
+                for (var i in projectObect) {
+                    if (projectObect[i].PropertyType == shuxing) {
+                        if (ChangeText != "无") {
+                            if (firstSelect)
+                                projectObect[i].FirstPriority = ChangeText;
+                            //else
+                            //    projectObect[i].FirstPriority = null;
+                            if (SecondSelect)
+                                projectObect[i].SecondPriority = ChangeText;
+                            //else
+                            //    projectObect[i].SecondPriority = null;
+                            if (ThirdSelect)
+                                projectObect[i].ThirdPriority = ChangeText;
+                            //else
+                            //    projectObect[i].ThirdPriority = null;
+                        }
+                        else {
+                            if (firstSelect == "无") {
+                                projectObect[i].FirstPriority = null;
+                            }
+                            if (SecondSelect == "无") {
+                                projectObect[i].SecondPriority = null;
+                            }
+                            if (ThirdSelect == "无") {
+                                projectObect[i].ThirdPriority = null;
+                            }
+                        }
+
+                    }
+                }
+            }
+            else {
+                if (ChangeText != "无") {
+                    var projectItem = {};
+                    projectItem.PartName = "@ViewBag.PartName";
+                    projectItem.PriorityField = "BrandPrice";
+                    projectItem.PropertyType = shuxing;
+                    if (firstSelect)
+                        projectItem.FirstPriority = firstSelect;
+                    else
+                        projectItem.FirstPriority = null;
+                    if (SecondSelect)
+                        projectItem.SecondPriority = SecondSelect;
+                    else
+                        projectItem.SecondPriority = null;
+                    if (ThirdSelect)
+                        projectItem.ThirdPriority = ThirdSelect;
+                    else
+                        projectItem.ThirdPriority = null;
+                    projectObect.push(projectItem);
+                }
+            }
+        }
+        else//配置表中一条数据都没有，则需要插入当前数据
+        {
+            var projectItem = {};
+            projectItem.PartName = "@ViewBag.PartName";
+            projectItem.PriorityField = "BrandPrice";
+            projectItem.PropertyType = shuxing;
+            if (firstSelect)
+                projectItem.FirstPriority = firstSelect;
+            else
+                projectItem.FirstPriority = null;
+            if (SecondSelect)
+                projectItem.SecondPriority = SecondSelect;
+            else
+                projectItem.SecondPriority = null;
+            if (ThirdSelect)
+                projectItem.ThirdPriority = ThirdSelect;
+            else
+                projectItem.ThirdPriority = null;
+            projectObect.push(projectItem);
+        }
+        //console.log(projectObect);
+        $("#result").val(JSON.stringify(projectObect));
+    })
+
+</script>

@@ -1,0 +1,237 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@{
+
+    ShareOrderConfig AfterValue = ViewBag.AfterValue as ShareOrderConfig;
+    ShareOrderConfig BeforeValue = ViewBag.BeforeValue as ShareOrderConfig;
+}
+<h2>操作后的数据前后对比</h2>
+<style>
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+
+    a {
+        color: cornflowerblue;
+    }
+
+    input[type='text'] {
+        width: 250px;
+    }
+</style>
+<script src="../../Scripts/ajaxfileupload.js" type="text/javascript"></script>
+
+<form action="/ShareOrderConfig/Edit" method="post">
+    <input type="hidden" value="@BeforeValue.Id" name="Id" />
+    <div>
+        <table>
+            <thead>
+                <tr>
+                    <th>数据</th>
+                    <th>修改前</th>
+                    <th>修改后</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width:30%">全部订单提示文案</td>
+                    <td style="width:70%">
+                        <input type="text" value="@BeforeValue.Prompt" maxlength="4" placeholder="最多4个字符" />
+                    </td>
+                    <td style="width:70%">
+                        @if (BeforeValue.Prompt != AfterValue.Prompt)
+                        {
+                            <input type="text" style="color:red" value="@AfterValue.Prompt" maxlength="4" placeholder="最多4个字符" />
+                        }
+                        else
+                        {
+                            <input type="text" value="@AfterValue.Prompt" maxlength="4" placeholder="最多4个字符" />
+                        }
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>订单详情页按钮文案</td>
+                    <td>
+                        <input type="text" value="@BeforeValue.ButtonValue" maxlength="5" placeholder="最多5个字符" />
+                    </td>
+                    <td>
+
+                        @if (BeforeValue.ButtonValue != AfterValue.ButtonValue)
+                        {
+                            <input type="text" style="color:red" value="@AfterValue.ButtonValue" maxlength="5" placeholder="最多5个字符" />
+                        }
+                        else
+                        {
+                            <input type="text" value="@AfterValue.ButtonValue" maxlength="5" placeholder="最多5个字符" />
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td>预览活动简介</td>
+                    <td><input type="text" value="@BeforeValue.PreviewIntroduce" maxlength="15" placeholder="最多15个字符" /></td>
+                    <td>
+
+                        @if (AfterValue.PreviewIntroduce != BeforeValue.PreviewIntroduce)
+                        {
+                            <input type="text" style="color:red" value="@AfterValue.PreviewIntroduce" maxlength="15" placeholder="最多15个字符" />
+                        }
+                        else
+                        {
+                            <input type="text" value="@AfterValue.PreviewIntroduce" maxlength="15" placeholder="最多15个字符" />
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td>晒单图片活动介绍</td>
+                    <td>
+                        <img height="70" class="vwPicture" src="@BeforeValue.Image" />
+                    </td>
+                    <td>
+                        <img height="70" class="vwPicture" src="@AfterValue.Image" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>二维码活动介绍</td>
+                    <td><input type="text" value="@BeforeValue.QRCodeIntroduce" maxlength="10" placeholder="最多10个字符" /></td>
+                    <td>
+
+                        @if (AfterValue.QRCodeIntroduce != BeforeValue.QRCodeIntroduce)
+                        {
+                            <input type="text" style="color:red" value="@AfterValue.QRCodeIntroduce" maxlength="10" placeholder="最多10个字符" />
+                        }
+                        else
+                        {
+                            <input type="text" value="@AfterValue.QRCodeIntroduce" maxlength="10" placeholder="最多10个字符" />
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td>二维码活动链接</td>
+                    <td><input type="text" value="@BeforeValue.QRCodeLink" /></td>
+                    <td>
+                        @if (BeforeValue.QRCodeLink != AfterValue.QRCodeLink)
+                        {
+                            <input type="text" style="color:red" value="@AfterValue.QRCodeLink" />
+                        }
+                        else
+                        {
+                            <input type="text" value="@AfterValue.QRCodeLink" />
+                        }
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>状态</td>
+                    <td>@BeforeValue.Status</td>
+
+                    <td>
+                        @if (AfterValue.Status != BeforeValue.Status)
+                        {
+                            <label style="color:red">@AfterValue.Status</label>
+                        }
+                        else
+                        {
+                            <label>@AfterValue.Status</label>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td>IOS开始版本</td>
+                    <td>
+                        <input type="text" value="@BeforeValue.IOSStartVersions" />
+                    </td>
+                    <td>
+                        @if (AfterValue.IOSStartVersions != BeforeValue.IOSStartVersions)
+                        {
+                            <input type="text" style="color:red" value="@AfterValue.IOSStartVersions" />
+                        }
+                        else
+                        {
+                            <input type="text" value="@AfterValue.IOSStartVersions" />
+                        }
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>IOS结束版本</td>
+                    <td>
+                        <input type="text" value="@BeforeValue.IOSEndVersions" />
+                    </td>
+                    <td>
+                        @if (BeforeValue.IOSEndVersions != AfterValue.IOSEndVersions)
+                        {
+                            <input type="text" style="color:red" value="@AfterValue.IOSEndVersions" />
+                        }
+                        else
+                        {
+                            <input type="text" value="@AfterValue.IOSEndVersions" />
+                        }
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>Android开始版本</td>
+                    <td>
+                        <input type="text" value="@BeforeValue.AndroidStartVersions" />
+                    </td>
+                    <td>
+                        @if (BeforeValue.AndroidStartVersions != AfterValue.AndroidStartVersions)
+                        {
+                            <input type="text" style="color:red" value="@AfterValue.AndroidStartVersions" />
+                        }
+                        else
+                        {
+                            <input type="text" value="@AfterValue.AndroidStartVersions" />
+                        }
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>Android结束版本</td>
+                    <td>
+                        <input type="text" value="@BeforeValue.AndroidEndVersions" />
+                    </td>
+                    <td>
+                        @if (BeforeValue.AndroidEndVersions != @AfterValue.AndroidEndVersions)
+                        {
+                            <input type="text" style="color:red" value="@AfterValue.AndroidEndVersions" />
+                        }
+                        else
+                        {
+                            <input type="text" value="@AfterValue.AndroidEndVersions" />
+                        }
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>万能跳转</td>
+                    <td>
+                        <textarea class="AppLink" style="width:350px;"> @BeforeValue.AppLink</textarea>
+                    </td>
+                    <td>
+                        @if (BeforeValue.AppLink != AfterValue.AppLink)
+                        {
+                            <textarea class="AppLink" style="width:350px;color:red"> @AfterValue.AppLink</textarea>
+                        }
+                        else
+                        {
+                            <textarea class="AppLink" style="width:350px;"> @AfterValue.AppLink</textarea>
+                        }
+
+
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</form>
+<script>
+    $(function () {
+        $("input[type='text']").attr("readonly", "readonly");
+        $(".AppLink").attr("readonly", "readonly");
+    })
+</script>

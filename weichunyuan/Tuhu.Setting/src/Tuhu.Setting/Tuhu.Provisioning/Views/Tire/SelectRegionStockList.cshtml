@@ -1,0 +1,57 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity.Tire;
+@using Tuhu.Provisioning;
+
+@model  Tuhu.Component.Common.Models.ListModel<RegionStockModel>
+    @{ 
+        Layout = null;
+    }
+    @if (Model.Source.Any())
+    {
+        <table class="table" data-count="@Model.Pager.TotalItem" width="100%">
+            <tr>
+                <th>省</th>
+                <th>市</th>
+                <th>PID</th>
+                <th>产品名称</th>
+                <th>默认仓库</th>
+                <th>默认仓库存</th>
+                <th>默认仓安全库存</th>
+                <th>中心仓库存</th>
+                <th>中心仓安全库存</th>
+                <th>全国库存</th>
+                <th>全国仓安全库存</th>
+                <th>区域总库存</th>
+                <th>基础分</th>
+            </tr>
+            @foreach (var item in Model.Source)
+            {
+                <tr>
+                    <td>@(ViewBag.Address == null ? "上海市" : ViewBag.Address.Split(';')[0])</td>
+                    <td>@(ViewBag.Address == null ? "上海市" : ViewBag.Address.Split(';')[1])</td>
+                    <td><a target="_blank" href="https://item.tuhu.cn/Products/@(item.PID.Replace("|", "/")).html">@item.PID</a></td>
+                    <td>@item.DisplayName</td>
+                    <td>@item.DefaultStockName</td>
+                    <td>@(item.StockNum==null?"-":item.StockNum.Value.ToString("0"))</td>
+                    <td>@(item.SafeStockNum==null?"-": item.SafeStockNum.Value.ToString("0.00"))</td>
+                    <td>@(item.CentralStockNum==null?"-": item.CentralStockNum.Value.ToString("0"))</td>
+                    <td>@(item.CentralSafeStockNum==null?"-":item.CentralSafeStockNum.Value.ToString("0.00"))</td>
+                    <td>@(item.AllStockNum.ToString("0"))</td>
+                    <td>@(item.AllSafeStockNum.ToString("0"))</td>
+                    <td>@(item.RegionavailNums == null?"-":item.RegionavailNums.Value.ToString("0"))</td>
+                    <td>@(item.NoReduceStockGrade == null ? "-" : item.NoReduceStockGrade.Value.ToString("0.00"))</td>
+                </tr>
+            }
+        </table>
+    @Html.Pager(Model.Pager, true, id => Url.Action("SelectRegionStockList", new
+{
+    PID = ViewBag.Request.PID,
+    CityId = ViewBag.Request.CityId,
+    ProductName = ViewBag.Request.ProductName,
+    VehicleId = ViewBag.Request.VehicleId,
+    TireSize = ViewBag.Request.TireSize,
+    Address = ViewBag.Address,
+    PageSize = Model.Pager.PageSize,
+
+    PageIndex = id
+}))
+    }

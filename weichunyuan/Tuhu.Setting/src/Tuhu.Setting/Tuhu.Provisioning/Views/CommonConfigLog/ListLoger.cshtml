@@ -1,0 +1,77 @@
+﻿
+@{
+    ViewBag.Title = "ListLoger";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+
+<div class="topPanel">
+    <div class="search">
+        <table>
+            <tr>
+                <td>
+                    <div class="input-group">
+                        <input id="txtSDateTime" name="txtSDateTime" type="text" class="form-control input-wdatepicker" placeholder="开始时间" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})" />
+                    </div>
+                </td>
+                <td>
+                    ----
+                </td>
+                <td>
+                    <div class="input-group">
+                        <input id="txtEDateTime" name="txtEDateTime" type="text" class="form-control input-wdatepicker" placeholder="结束时间" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})" />
+                        <span class="input-group-btn">
+                            <button id="btn_search" type="button" class="btn  btn-primary"><i class="fa fa-search"></i></button>
+                        </span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="gridPanel">
+    <table id="gridList"></table>
+    <div id="gridPager"></div>
+</div>
+<script src="~/Content/nfine/js/datepicker/WdatePicker.js"></script>
+<script type="text/javascript">
+
+    function gridList() {
+        var $gridList = $('#gridList');
+        $gridList.dataGrid({
+            height: $(window).height() - 118,
+            url: '/CommonConfigLog/GetCommonConfigLogList?objectType=' + $.request("objectType") + '&objectId=' + $.request("objectId"),
+            colModel: [
+                { label: "PKID", name: "PKID", width: 160, align: "center", hidden: true },
+                { label: "操作人", name: "Creator", width: 160, align: 'left' },
+                { label: "时间", name: "CreateDateTime", width: 160, align: "left", formatter: "date", formatoptions: { srcformat: 'Y-m-d H:i:s', newformat: 'Y-m-d H:i:s' } },
+                { label: "操 作", name: "Remark", width: 200, align: "left" }
+            ],
+            viewrecords: true,
+            pager: "#gridPager",
+            rowNum: 20,
+            rowList: [10, 20, 30],
+            ondblClickRow: function (rowid, iRow, iCol, e) {
+                var pkid = $("#gridList").jqGridRowValue().PKID;
+                var title = $("#gridList").jqGridRowValue().Remark;
+                if (pkid) {
+                    window.open(location.origin + "/CommonConfigLog/Logger?id=" + pkid, "_bank");
+                }
+            }
+        });
+
+        $("#btn_search").click(function () {
+            $gridList.jqGrid('setGridParam', {
+                postData: {
+                    objectType: $.request("objectType"),
+                    startTime: $('#txtSDateTime').val(),
+                    endTime: $('#txtEDateTime').val()
+                },
+            }).trigger('reloadGrid');
+        });
+    }
+
+    $(function () {
+        gridList();
+    })
+</script>
+

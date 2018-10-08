@@ -1,0 +1,52 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.SE_MDBeautyCategoryConfigModel
+
+@{
+    Layout = null;
+}
+
+@using (Html.BeginForm("Save", "SE_MDBeautyCategoryConfig", FormMethod.Post, new { @id = Model.Id }))
+{
+     @Html.HiddenFor(model => model.Id)
+     @Html.HiddenFor(model => model.ParentId)
+     @Html.HiddenFor(model => model.CreateTime) 
+     <table>
+         <tr>
+             <td>类目名</td>
+             <td>@Html.TextBoxFor(model => model.CategoryName, new { maxlength = 200, placeholder = "类目名" })</td>
+         </tr>
+         <tr>
+             <td>显示名</td>
+             <td>@Html.TextBoxFor(model => model.ShowName, new { maxlength = 200, placeholder = "显示名" })</td>
+         </tr>
+         <tr>
+             <td>描述</td>
+             <td>@Html.TextAreaFor(model => model.Describe,new { maxlength = 500, placeholder = "描述" })</td>
+         </tr>
+         <tr>
+             <td>排序</td>
+             <td>@Html.TextBoxFor(model => model.Sort, new { @type = "number", @style = "width:100px;", maxlength = 8, placeholder = "排序" })</td>
+         </tr>
+         <tr>
+             @if (Model.Id > 0)
+             {
+                 <td>是否禁用</td>
+                 <td>@Html.EditorFor(model => model.IsDisable)</td>
+             }
+             else
+             {
+                 @Html.HiddenFor(model => model.IsDisable, new { @value = false })
+             }
+         </tr>
+         <tr>
+             <td colspan="2" style="text-align:center;">
+                 <input type="button" onclick="DisabledFunc(this)"  value="保存" />
+             </td>
+         </tr>
+     </table>
+}
+<script type="text/javascript">
+    function DisabledFunc(el) {
+        $(el).attr("disabled", "disabled").val("保存中...");
+        $("form").submit();
+    }
+</script>

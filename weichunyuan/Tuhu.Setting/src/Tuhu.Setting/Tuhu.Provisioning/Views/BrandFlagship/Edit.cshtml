@@ -1,0 +1,395 @@
+﻿@{
+    ViewBag.Title = "Edit";
+    Layout = null;
+}
+@model Tuhu.Provisioning.DataAccess.Entity.SE_BrandFlagship
+
+<form id="BrandFlagshipForm">
+    <table width="100%">
+        <tr>
+            <td>
+                名称:
+            </td>
+            <td>
+                <input type="text" id="Name" name="Name" value="@Model.Name" style="width:300px;"/>
+            </td>
+        </tr>
+        <tr>
+            <td>图片:</td>
+            <td>
+                @if (string.IsNullOrWhiteSpace(Model.ImageUrl))
+                {
+                    <img id="Img" width="30" height="30" />
+                }
+                else
+                {
+                    <img id="Img" width="30" height="30" src="@Model.ImageUrl" />
+                }
+               
+                <input type="file" id="uploadFile" name="uploadFile" width="60" onchange="Upload(this, 'Img','ImageUrl')"/>
+                <input type="hidden" id="ImageUrl" name="ImageUrl" value="@Model.ImageUrl"/>
+            </td>
+        </tr>
+        <tr>
+            <td>logo：</td>
+            <td>
+                @if (string.IsNullOrWhiteSpace(Model.LogoUrl))
+                {
+                    <img  id="ImgLogo" width="30" height="30"/>
+                }
+                else
+                {
+                    <img id="ImgLogo" width="30" height="30" src="@Model.LogoUrl" />
+                }
+                <input type="file" id="uploadFileImg" name="uploadFileImg" width="60" onchange="Upload(this, 'ImgLogo', 'LogoUrl')"/>
+                <input type="hidden" id="LogoUrl" name="LogoUrl" value="@Model.LogoUrl"/>
+            </td>
+        </tr>
+        <tr>
+            <td>品牌:</td>
+            <td>
+                <select id="Brand" name="Brand"></select>
+            </td>
+        </tr>
+        <tr>
+            <td>主页活动:</td>
+            <td>
+                <input type="text" id="ActivityHome" name="ActivityHome" value="@Model.ActivityHome" style="width:300px;" onblur="SimpleActivityValidate(this)"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                简介:
+            </td>
+            <td><textarea id="Description" name="Description" style="width:350px;height:114px; font-size:12px; overflow:hidden;">@Model.Description</textarea></td>
+        </tr>
+        <tr>
+            <td>
+                分享参数:
+            </td>
+            <td><textarea id="ShareParameter" name="ShareParameter" style="width:350px;height:114px; font-size:12px; overflow:hidden;">@Model.ShareParameter</textarea></td>
+        </tr>
+        <tr>
+            <td>文章ID：</td>
+            <td>
+                <input type="number" id="ArticleID" name="ArticleID" onblur="ArticleValidate(this,'BrandFlagshipForm')" value="@(Model.ArticleID == 0?"0":Model.ArticleID.ToString())" style="width:300px;"/>
+            </td>
+        </tr>
+        <tr>
+            <td>文章标题:</td>
+            <td>
+                <input type="text" id="ArticleTitle" name="ArticleTitle" value="@Model.ArticleTitle" style="width:300px;" readonly="readonly" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <fieldset>
+                    <legend>资讯</legend>
+                    <input type="button" id="btnAddInformation" name="btnAddInformation" value="添加资讯" style="margin-bottom:5px;margin-top:5px;"/>
+                   
+                    <table id="Information" width="100%">
+                        <thead>
+                            <tr>
+                                <th>
+                                   序号
+                                </th>
+                                <th>
+                                    文章ID
+                                </th>
+                                <th>
+                                    文章标题
+                                </th>
+                                <th>
+                                    管理
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Information != null)
+                            {
+                                foreach (var item in Model.Information)
+                                {
+                                    <tr data-source="@(Newtonsoft.Json.JsonConvert.SerializeObject(item))">
+                                        <td>@item.ID</td>
+                                        <td>@item.ArticleID</td>
+                                        <td>@item.ArticleTitle</td>
+                                        <td>
+                                            <input type="button"  value="编辑" onclick="ArticleEdit(this, 'Information')"/>
+                                            <input type="button" value="删除" onclick="ArticleDelete(this)"/>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </fieldset>
+            </td>
+        </tr>
+        <tr>
+            <td>花纹页:</td>
+            <td><input type="text"  id="DecorativePattern" name="DecorativePattern" value="@Model.DecorativePattern"  style="width:300px;" onblur="SimpleActivityValidate(this)"/>
+               
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <fieldset>
+                    <legend>评测</legend>
+                    <input type="button" id="btnAddTesting" name="btnAddTesting" value="添加评测" style="margin-bottom:5px;margin-top:5px;"/>
+                    
+                    <table id="Testing" width="100%">
+                        <thead>
+                            <tr>
+                                <th>
+                                    序号
+                                </th>
+                                <th>
+                                    文章ID
+                                </th>
+                                <th>
+                                    文章标题
+                                </th>
+                                <th>
+                                    管理
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Information != null)
+                            {
+                                foreach (var item in Model.Testing)
+                                {
+                                    <tr data-source="@(Newtonsoft.Json.JsonConvert.SerializeObject(item))">
+                                        <td>@item.ID</td>
+                                        <td>@item.ArticleID</td>
+                                        <td>@item.ArticleTitle</td>
+                                        <td>
+                                            <input type="button" value="编辑" onclick="ArticleEdit(this, 'Testing')" />
+                                            <input type="button" value="删除" onclick="ArticleDelete(this)" />
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </fieldset>
+            </td>
+        </tr>
+    </table>
+</form>
+<div id="editArticle"></div>
+<script type="text/javascript">
+    var validate = {
+        rules: {
+            Name: {
+                required:true
+            },
+            Brand: {
+                required:true
+            }
+        },
+        messages: {
+            Name: {
+                required: '请输入名称'
+            },
+            Brand: {
+                required:'请输入品牌'
+            }
+        }
+    };
+    $('#BrandFlagshipForm').validate(validate);
+    var BrandFlagshipForm = $('#BrandFlagshipForm');
+    var inforNumber = 1;
+    var testNumber = 1;
+    //资讯
+    $('#btnAddInformation').on('click', function () {
+      
+        $('#editArticle').empty();
+        $('#editArticle').load("/BrandFlagship/ArticleEdit?type=" + 0);
+        $('#editArticle').dialog({
+            title: "资讯编辑",
+            width: 450,
+            height: 400,
+            modal: true,
+            resizable: false,
+            buttons: {
+                "保 存": function () {
+                    Save("ArticleEditForm", "Information");
+                    $(this).dialog('close');
+                },
+                "取 消": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    });
+
+    //评测
+    $('#btnAddTesting').on('click', function () {
+      
+        $('#editArticle').empty();
+        $('#editArticle').load("/BrandFlagship/ArticleEdit?type=" + 1);
+        $('#editArticle').dialog({
+            title: "评测编辑",
+            width: 450,
+            height: 400,
+            modal: true,
+            resizable: false,
+            buttons: {
+                "保 存": function () {
+                    Save("ArticleEditForm", "Testing");
+                    $(this).dialog('close');
+                },
+                "取 消": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    });
+
+
+    function Save(formName,tableName) {
+        var id = $("#ArticleID", '#' + formName).val();
+        if (id == null || id == '') { return;}
+        var title = $("#ArticleTitle", '#'+formName).val();
+        var ArticleType = $('#ArticleType', '#' + formName).val(); 
+        var orderby = $('#OrderBy', '#' + formName).val();
+        var description = $('#Description1', '#' + formName).val();
+        var data = {};
+        data.ArticleID = id;
+        data.ArticleTitle = title;
+        data.ArticleType = ArticleType;
+        data.Description = description;
+        data.OrderBy = orderby;
+        data.ID = (tableName == "Testing" ? testNumber++ : inforNumber++);
+        var html = "<tr data-source='" + JSON.stringify(data) + "'> <td>" + data.ID + "</td><td>" + id + "</td><td>" + title + "</td><td>  <input type=\"button\" value=\"编辑\" onclick=\"ArticleEdit(this,'"+tableName+"')\"/> <input type=\"button\" value=\"删除\" onclick=\"ArticleDelete(this)\"/>  </td> </tr>";
+        $('#'+tableName+' tbody').append(html);
+    }
+
+
+
+    function ArticleEdit(obj, tableName) {
+        var tr = $(obj).parent().parent();
+        var data = tr.data("source");
+        console.log(data);
+        $('#editArticle').empty();
+        $('#editArticle').load("/BrandFlagship/ArticleEdit?type=" + data.ArticleType + "&id=" + data.ArticleID + "&title=" + data.ArticleTitle + "&orderby=" + data.OrderBy + "&description=" + data.Description);
+        $('#editArticle').dialog({
+            title: "编辑",
+            width: 450,
+            height: 400,
+            modal: true,
+            resizable: false,
+            buttons: {
+                "保 存": function () {
+                    var formName = "ArticleEditForm";
+                    var id = $("#ArticleID", '#' + formName).val();
+                    if (id == null || id == '') { return; }
+                    var title = $("#ArticleTitle", '#' + formName).val();
+                    var ArticleType = $('#ArticleType', '#' + formName).val();
+                    var orderby = $('#OrderBy', '#' + formName).val();
+                    var description = $('#Description1', '#' + formName).val();
+                    data.ArticleID = id;
+                    data.ArticleTitle = title;
+                    data.Description = description;
+                    data.OrderBy = orderby;
+                   
+                    var html = "<tr data-source='" + JSON.stringify(data) + "'> <td>" + data.ID + "</td><td>" + id + "</td><td>" + title + "</td><td>  <input type=\"button\" value=\"编辑\" onclick=\"ArticleEdit(this,'" + tableName + "')\"/> <input type=\"button\" value=\"删除\" onclick=\"ArticleDelete(this)\"/>  </td> </tr>";
+                    var tr = $(obj).parent().parent().replaceWith(html);
+                    $(this).dialog('close');
+                },
+                "取 消": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    }
+
+
+    function ArticleDelete(obj) {
+        var r = confirm("您确定删除吗?");
+        if (r) {
+            $(obj).parent().parent().remove();
+        }
+    }
+
+    /*
+    $('#ArticleID', BrandFlagshipForm).on('keyup', function () {
+        var value = $(this).val();
+        value = parseInt(value);
+        if (value.toString() != "NaN") {
+            
+            $.ajax({
+                type: 'post',
+                url: '/BrandFlagship/SelectActricle?id=' + value,
+                dataType: 'json'
+            }).done(function (result) {
+                $('#ArticleID',BrandFlagshipForm).autocomplete(result, {
+                    dataType: 'json',
+                    minChars: 0,
+                    max: 10,
+                    width: 400,
+                    scrollHeight: 300,
+                    matchContains: true,
+                    autoFill: false,
+                    formatItem: function (data, i, max) {
+                       // console.log(data);
+                        return data.PKID + "   " + data.BigTitle;
+                    },
+                    formatMatch: function (data, i, max) {
+                        return data.PKID + data.BigTitle;
+                    },
+                    formatResult: function (data) {
+                        return data.PKID;
+                    }
+                }).result(function (event, data, formatted) {
+                   // console.log(data);
+                    $('#AticleTitle', BrandFlagshipForm).val(data.BigTitle);;
+                });
+            }).fail(function () {
+                alert("查询失败");
+            });
+            
+           
+        }
+    });
+    */
+
+    function GetData() {
+        var result = $('#BrandFlagshipForm').valid();
+        if (!result) {
+            return null;
+        }
+
+        var form = $('#BrandFlagshipForm');
+        var data = {};
+        data.Name = $('#Name', form).val();
+        data.ImageUrl = $('#ImageUrl', form).val();
+        data.LogoUrl = $('#LogoUrl', form).val();
+        data.ActivityHome = $('#ActivityHome', form).val();
+        data.Description = $('#Description', form).val();
+        data.ArticleID = $('#ArticleID', form).val();
+        data.ArticleTitle = $('#ArticleTitle', form).val();
+        data.DecorativePattern = $('#DecorativePattern', form).val();
+        data.Brand = $('#Brand').val();
+        data.ShareParameter = $('#ShareParameter').val();
+        data.Information = [];
+        data.Testing = [];
+        $('#Information tbody tr').each(function (e) {
+           
+            var row = $(this).data("source");
+             
+            data.Information.push(row);
+        });
+
+        $('#Testing tbody tr').each(function (e) {
+            var row =  $(this).data("source");
+            data.Testing.push(row);
+        });
+        return data;
+    }
+    
+    $(function () {
+        BindBrand('@Model.Brand');
+    });
+</script>

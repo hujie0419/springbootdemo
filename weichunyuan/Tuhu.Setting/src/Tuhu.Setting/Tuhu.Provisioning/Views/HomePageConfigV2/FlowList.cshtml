@@ -1,0 +1,160 @@
+﻿@{
+    ViewBag.Title = "瀑布流配置";
+}
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.SE_HomePageFlowConfig>
+
+<div class="ibox ibox-content">
+
+    <div class="row" style="text-align:right;margin-bottom:5px;">
+        <a href="javascript:void(0)" class="btn btn-danger btn-small " id="btnAdd" style="width: 150px;" data-toggle="modal" data-target="#edit">新 增</a>
+    </div>
+    <table class="table table-bordered" style="text-align:center;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>名称</th>
+                <th>开始版本</th>
+                <th>结束版本</th>
+                <th>渠道</th>
+               
+                <th>状态</th>
+                <th>是否倒计时</th>
+                <th>开始时间</th>
+                <th>结束时间</th>
+                <th>是否更多子产品</th>
+                <th>优先级</th>
+               
+               
+                <th>管 理</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.ID</td>
+                        <td>@item.Title</td>
+                        <td>@item.StartVersion</td>
+                        <td>@item.EndVersion</td>
+                        <td>@(item.Channel ==0?"全部":item.Channel==1?"Android":item.Channel==2?"ios":"移动站")</td>
+                       
+                        <td>@(item.IsEnabled == true?"启用":"禁用")</td>
+                        <td>@(item.IsCountDown==true?"倒计时":"No")</td>
+                        <td>@(string.Format("{0:yyyy-MM-dd HH:mm:ss}",item.StartDateTime))</td>
+                        <td>@(string.Format("{0:yyyy-MM-dd HH:mm:ss}", item.EndDateTime))</td>
+                        <td>@(item.IsChildProduct==true?"是":"否")</td>
+                        <td>@(item.PriorityLevel)</td>
+                     
+                     
+                        <td>
+                            <a class="btn btn-default btn-sm" href="javascript:void(0)" data-id="@item.ID" name="btnEdit" data-toggle="modal" data-target="#edit">编 辑</a>
+                            @if (item.IsChildProduct)
+                            {
+                                <a class="btn btn-info btn-sm" href="javascript:void(0)" name="btnSelectProduct" data-id="@item.ID" data-toggle="modal" data-target="#edit">查看产品</a>
+                            }
+                           
+                            <a class="btn btn-danger btn-sm" href="javascript:void(0)" name="btnDel" data-id="@item.ID">删 除</a>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+<div id="edit" class="modal fade" aria-hidden="true" role="dialog" tabindex="-1">
+
+</div>
+@section scripts{
+    <script type="text/javascript">
+        $(function () {
+            $('#btnAdd').on('click', function () {
+                var url = "/HomePageConfigV2/FlowEdit?id=0";
+                // dialogOpen("新增首页", url, "edit");
+                var dialog = $('#edit');
+                dialog.empty();
+                dialog.html(dialog.load(url));
+            });
+
+            $('a[name="btnEdit"]').on('click', function () {
+                var id = $(this).data("id");
+                if (id) {
+                    var url = "/HomePageConfigV2/FlowEdit?id="+id;
+                    // dialogOpen("新增首页", url, "edit");
+                    var dialog = $('#edit');
+                    dialog.empty();
+                    dialog.html(dialog.load(url));
+                }
+            });
+
+            $('a[name="btnDel"]').on('click', function () {
+                var id = $(this).data("id");
+                if (confirm("您确定删除吗？") && id) {
+                    $.ajax({
+                        url: '/HomePageConfigV2/DeleteFlow',
+                        type: 'post',
+                        data: { id: id },
+                        dataType: 'json'
+                    }).done(function (result) {
+                        if (result == 1) {
+                            alert("删除成功");
+                            location.reload();
+                        } else {
+                            alert("删除失败");
+                        }
+                    });
+                }
+            });
+
+
+            $('a[name="btnSelectProduct"]').on('click', function () {
+                var id = $(this).data("id");
+                if (id) {
+                    var url = "/HomePageConfigV2/FlowProduct?flowID=" + id;
+                    // dialogOpen("新增首页", url, "edit");
+                    var dialog = $('#edit');
+                    dialog.empty();
+                    dialog.html(dialog.load(url));
+                }
+            });
+
+
+        });
+
+        ///showImg：上传时Image显示的标签ID
+        //showUrl:真正显示的
+        function UploadBgImg(obj, showImg, showUrl) {
+
+            var pobj = $(obj);
+            var fileSize = pobj[0].files[0].size / 1024 * 1.0;
+            if (fileSize > 1024) {
+                alert("不能上传大于1024KB的图片");
+                return false;
+            }
+            var rd = Math.ceil(Math.random() * 9999) + 1;
+            var fileElId = $(obj).attr("id");
+            console.log(fileElId);
+            $.ajaxFileUpload({
+                url: '/Article/ImageUploadToAli?rd=' + rd,
+                secureuri: false,
+                fileElementId: fileElId,
+                dataType: 'json',
+                async: false,
+                success: function (result) {
+                    if (result.BImage != "" && result.SImage != "") {
+                        $("#" + showImg).attr("src", result.SImage).show();
+                        $("#" + showUrl).val(result.BImage);
+                    } else {
+                        alert("上传失败！");
+                    }
+                },
+                error: function (data, status, e)//服务器响应失败处理函数
+                {
+                    alert(e);
+                }
+            });
+        }
+    </script>
+
+}

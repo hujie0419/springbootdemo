@@ -1,0 +1,154 @@
+﻿@{
+    ViewBag.Title = "列表";
+    Layout = "~/Views/Shared/_Layout_Seckill.cshtml";
+}
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.SE_EveryDaySeckill>
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-9">
+        <h2>天天秒杀</h2>
+    </div>
+   
+</div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <div class="search-form">
+                        <form method="post" action="">
+                            <div class="input-group">
+                                <span>ID：</span>
+                                <input id="txtID" type="text" placeholder="请输入要查询的ID" style="width: 200px; margin-left:10px;" />
+                                <span>开始时间：</span>
+                                <input id="txtStartDate" type="text" placeholder="开始时间" style="width:200px" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" />
+                                <span>结束时间：</span>
+                                <input id="txtEndDate" type="text" placeholder="结束时间" style="width:200px;" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" />
+                                <div class="input-group-btn">
+                                    <input class="btn btn-small btn-primary btn-search" id="btnSearch" type="button" value="搜索" />
+                                </div>
+                                <div class="input-group-btn">
+                                    <input class="btn btn-small btn-danger btn-search" style="margin-left:10px;"  id="btnLog" type="button" value="查看日志" />
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <table class="table table-bordered" style="text-align:center">
+                        <thead>
+                            <tr>
+                                <th>
+                                    活动ID
+                                </th>
+                                <th>
+                                    活动名称
+                                </th>
+                                <th>
+                                    开始时间
+                                </th>
+                                <th>
+                                    结束时间
+                                </th>
+                                <th>
+                                    管理
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null)
+                            {
+                                foreach (var item in Model.OrderByDescending(o=>o.StartDate))
+                                {
+                                    <tr>
+                                        <td>
+                                            @item.ActivityGuid
+                                        </td>
+                                        <td>
+                                            @item.ActivityName
+                                        </td>
+                                        <td>
+                                            @item.StartDate.ToString("yyyy-MM-dd HH:mm:ss")
+                                        </td>
+                                        <td>
+                                            @item.EndDate.ToString("yyyy-MM-dd HH:mm:ss")
+                                        </td>
+                                        <td style="text-align:center;">
+                                            <a class="btn btn-primary btn-sm" href="/EveryDaySeckill/Edit?activity=@item.ActivityGuid">编 辑</a>
+                                            <a class="btn btn-danger btn-sm delete" href="#" data-id="@item.ActivityGuid" >删 除</a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+
+          
+
+        </div>
+
+    </div>
+   
+</div>
+
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    天天秒杀记录日志
+                </h4>
+            </div>
+            <div class="modal-body">
+                
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+<input type="hidden" value="EDSKill" id="hidObjectType"  />
+@section scripts{
+    <script type="text/javascript" src="~/Content/My97DatePicker/WdatePicker.js"></script>
+    <script type="text/javascript">
+        $('.delete').on('click', function () {
+            var activityGuid = $(this).data("id");
+            if (activityGuid != null && activityGuid != undefined && activityGuid != '') {
+                if (confirm("您确定删除吗？")) {
+
+                    $.ajax({
+                        type: 'post',
+                        url: '/EveryDaySeckill/Delete',
+                        data: { activity: activityGuid }
+                    }).done(function (result) {
+                        if (result == 1) {
+                            location.reload();
+                        } else {
+                            alert("删除失败");
+                        }
+                           
+                    });
+                }
+            }
+        });
+
+        $('#btnSearch').on('click', function () {
+            var id = $('#txtID').val();
+            var start = $('#txtStartDate').val();
+            var end = $('#txtEndDate').val();
+            location.href = "/EveryDaySeckill/Index?activityGuid=" + id + "&startDate=" + start + "&endDate=" + end;
+        });
+
+        $('#btnLog').on('click', function () {
+            $(".modal-body").html("").load('/Logger/ListBoostrap?objectType=EDSKill');
+                $('#myModal').modal('show');
+        });
+    </script>
+}

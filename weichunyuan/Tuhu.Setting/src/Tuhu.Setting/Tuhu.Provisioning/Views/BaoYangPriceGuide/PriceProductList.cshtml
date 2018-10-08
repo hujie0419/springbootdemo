@@ -1,0 +1,481 @@
+﻿@using System.Globalization
+@using Tuhu.Provisioning.DataAccess.Entity;
+@using Tuhu.Provisioning;
+@model Tuhu.Component.Common.Models.ListModel<BaoYangPriceGuideList>
+@{
+    Layout = null;
+    var selectModel = ViewBag.SelectModel as BaoYangPriceSelectModel;
+}
+@helper ShowPrice(decimal? price, string pid, string type)
+{
+
+if (price == null)
+{
+    <span>-</span>
+}
+else
+{
+    if (pid == null)
+    {
+        <span>@price.Value.ToString("0")</span>
+    }
+    else
+    {
+        var href = string.Empty;
+        var tempPid = pid.Split(',');
+        if (tempPid.Length == 2 && !string.IsNullOrWhiteSpace(tempPid[1]) && Convert.ToUInt64(tempPid[1]) > 0)
+        {
+            switch (type)
+            {
+                case "TB":
+                    href = "https://item.taobao.com/item.htm?id=" + tempPid[0] + "&skuid=" + tempPid[1]; break;
+                case "TM":
+                    href = "https://detail.tmall.com/item.htm?id=" + tempPid[0] + "&skuid=" + tempPid[1]; break;
+                case "JD":
+                    href = "http://item.jd.com/" + tempPid[0] + ".html"; break;
+                case "MLT":
+                    href = "http://www.mailuntai.cn/product/" + tempPid[0] + ".html"; break;
+                case "QCCRL":
+                    href = "http://www.qccr.com/detail/" + tempPid[0] + ".html"; break;
+                case "QCCRP":
+                    href = "https://pch.qccr.com/html/goods/itemdetail.html?id=" + tempPid[0]; break;
+            }
+        }
+        else
+        {
+            switch (type)
+            {
+                case "TB":
+                    href = "https://item.taobao.com/item.htm?id=" + tempPid[0]; break;
+                case "TM":
+                    href = "https://detail.tmall.com/item.htm?id=" + tempPid[0]; break;
+                case "JD":
+                    href = "http://item.jd.com/" + tempPid[0] + ".html"; break;
+                case "MLT":
+                    href = "http://www.mailuntai.cn/product/" + tempPid[0] + ".html"; break;
+                case "QCCRL":
+                    href = "http://www.qccr.com/detail/" + tempPid[0] + ".html"; break;
+                case "QCCRP":
+                    href = "https://pch.qccr.com/html/goods/itemdetail.html?id=" + tempPid[0]; break;
+                case "YCWY":
+                    href = "http://item.yangche51.com/p-" + tempPid[0] + ".html"; break;
+                case "KZ":
+                    href = "http://www.carzone.cn/search/p_" + tempPid[0] + "-c_0-b_0-t_0-a_0-d_0-p_1-l_2-pg_1.html"; break;
+            }
+        }
+
+        <a target="_blank" href="@href">@price.Value.ToString("0")</a>
+   }
+}
+
+}
+
+<table data-count="@Model.Pager.TotalItem" class="tableContainer" id="ProductTable" style="margin-top: 20px;">
+        <thead>
+            <tr>
+                <th>品牌</th>
+                <th>PID</th>
+                <th>二级类目</th>
+                <th>三级类目</th>
+                <th>商品名称</th>
+                <th>库存</th>
+                <th>总库存</th>
+                <th>仓库库存</th>
+                <th>工场店库存</th>
+                <th>上下架状态</th>
+                <th>近7天销量</th>
+                <th>近30天销量</th>
+                <th>周转天数</th>
+                @if (ViewBag.PageType != "see")
+                {
+                    <th>进货价</th>
+                    <th>最近一次采购价</th>
+                }
+                @if (string.IsNullOrWhiteSpace(ViewBag.PageType))
+                {
+                    <th>理论指导价</th>
+                    <th>实际指导价</th>
+                }
+                <th>官网价格</th>
+                @if (string.IsNullOrWhiteSpace(ViewBag.PageType))
+                {
+                    <th>操作</th>
+                    <th>活动价</th>
+                }
+                @if (ViewBag.PageType != "see")
+                {
+                    <th>途虎毛利率((官网价-进货价)/官网价)</th>
+                    <th>途虎毛利额</th>
+                }
+                <th>汽配龙</th>
+                @if (ViewBag.PageType != "see")
+                {
+                    <th>汽配龙毛利率</th>
+                    <th>汽配龙毛利额</th>
+                    <th>工场店毛利率</th>
+                    <th>工场店毛利额</th>
+                }
+                <th>京东自营</th>
+                <th>特维轮天猫</th>
+                <th>汽车超人零售</th>
+                <th>养车无忧官网</th>
+                <th>康众官网</th>
+                <th>汽车超人批发</th>
+                <th>途虎淘宝</th>
+                <th>途虎淘宝2</th>
+                <th>途虎天猫1</th>
+                <th>途虎天猫2</th>
+                <th>途虎天猫3</th>
+                <th>途虎天猫4</th>
+                <th>途虎京东</th>
+                <th>途虎京东旗舰</th>
+                @if (string.IsNullOrWhiteSpace(ViewBag.PageType))
+                {
+                    <th>操作历史</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Source.Any())
+            {
+                foreach (var item in Model.Source)
+                {
+                    //理论指导价
+                    var guidePriceStr = item.cost == null ? "-" : (item.cost.Value * (100 + item.JiaQuan) / 100).ToString("0.00");
+                    //实际指导价（理论指导价和京东自营价取较低值）
+                    var guidePriceStr_1 = "-";
+                    if (guidePriceStr == "-")
+                    {
+                        if (item.JDSelfPrice != null)
+                        {
+                            guidePriceStr_1 = item.JDSelfPrice.Value.ToString("0.00");
+                        }
+                    }
+                    else
+                    {
+                        if (item.JDSelfPrice == null)
+                        {
+                            guidePriceStr_1 = guidePriceStr;
+                        }
+                        else
+                        {
+                            if (Convert.ToDecimal(guidePriceStr) >= Convert.ToDecimal(item.JDSelfPrice))
+                            {
+                                guidePriceStr_1 = item.JDSelfPrice.Value.ToString("0.00");
+                            }
+                            else
+                            {
+                                guidePriceStr_1 = guidePriceStr;
+                            }
+                        }
+                    }
+                    <tr>
+                        <td>@item.Brand</td>
+                        <td>@item.PID</td>
+                        <td>@item.SecondType</td>
+                        <td>@item.ThirdType</td>
+                        <td>@item.ProductName</td>
+                        <td>
+                            @if (item.StockStatus == 1)
+                            {
+                                <span>无货</span>
+                            }
+                            else
+                            {
+                                <span>有货</span>
+                            }
+                        </td>
+                        <td><span>@(item.totalstock == null ? "-" : item.totalstock.Value.ToString())</span></td>
+                        <td>
+                            <a onclick="Func.LookSaleNum(this)" style="cursor: pointer"> @(item.totalstock == null ? "-" : (item.totalstock.Value - item.ShopStock).ToString())</a>
+</td>
+                        <td><a style="cursor: pointer" onclick="Func.LookShopNum(this)">@item.ShopStock</a></td>
+                        <td>
+                            @if (item.OnSaleStatus == 1)
+                            {
+                                <span>上架</span>
+                            }
+                            else
+                            {
+                                <span>下架</span>
+                            }
+                        </td>
+                        <td>@(item.num_week == null ? "-" : item.num_week.Value.ToString())</td>
+                        <td>@(item.num_month == null ? "-" : item.num_month.Value.ToString())</td>
+                        <td>@(item.totalstock > 0 && item.num_month > 0 ? Math.Ceiling((decimal)item.totalstock / item.num_month.Value * 30).ToString(CultureInfo.InvariantCulture) : "-")</td>
+                        @if (ViewBag.PageType != "see")
+                        {
+                            <td>
+                                @if (item.cost == null)
+                                {
+                                    @:-
+                                }
+                                else
+                                {
+                                    <a href="javascript:void(0)" onclick="Func.ShowZXTCost('@item.PID')">@item.cost.Value.ToString("0.00")</a>
+                                }
+                            </td>
+                            <td>@(item.PurchasePrice == null ? "-" : item.PurchasePrice.Value.ToString("0.00"))</td>
+                        }
+                        @if (string.IsNullOrWhiteSpace(ViewBag.PageType))
+                        {
+                            <td class="guide_price"><span>@guidePriceStr</span></td>
+                            <td>@guidePriceStr_1</td>
+                        }
+                        <td class="tuhu"><a href="javascript:void(0)" onclick="Func.ShowZXTPrice('@item.PID')">@item.Price.ToString("0.00")</a></td>
+                        @if (string.IsNullOrWhiteSpace(ViewBag.PageType))
+                        {
+
+                            <td class="opr_price"><a href="javascript:void(0)" onclick="Func.UpdatePrice('@item.PID', '@guidePriceStr_1', '@(item.Price.ToString("0.00"))', '@item.UpperLimit', '@item.LowerLimit','@item.MarketingPrice')">修改</a></td>
+                            <td><a href="javascript:void(0)" onclick="Func.LookFlashSalePrice('@item.PID')">@(item.FlashSalePrice!=null ? item.FlashSalePrice.Value.ToString("0.00") : "-")</a></td>
+                        }
+                        @if (ViewBag.PageType != "see")
+                        {
+                            <td>@(item.cost.GetValueOrDefault(0) > 0 && item.Price > 0 ? ((item.Price - item.cost.Value)/item.Price).ToString("0.00%") : "-")</td>
+                            <td>@(item.cost.GetValueOrDefault(0) > 0 && item.Price > 0 ? (item.Price - item.cost.Value).ToString("0.00") : "-")</td>
+                        }
+                        <td class="QPLPrice"><a>@(item.QPLPrice == null ? "-" : item.QPLPrice.Value.ToString("0"))</a></td>
+                        @if (ViewBag.PageType != "see")
+                        {
+                            <td>@(item.QPLPrice > 0 && item.cost > 0 ? (((decimal) item.QPLPrice - item.cost.Value)/(decimal) item.QPLPrice).ToString("0.00%") : "-")</td>
+                            <td>@(item.QPLPrice > 0 && item.cost > 0 ? ((decimal) item.QPLPrice - item.cost.Value).ToString("0.00") : "-")</td>
+                            <td>@(item.QPLPrice > 0 ? ((item.Price - (decimal) item.QPLPrice)/item.Price).ToString("0.00%") : "-")</td>
+                            <td>@(item.QPLPrice > 0 ? (item.Price - (decimal) item.QPLPrice).ToString("0.00") : "-")</td>
+                        }
+                        <td class="JDSelfPrice">@ShowPrice(item.JDSelfPrice, item.JDSelfPID, "JD")</td>
+                        <td class="TWLTMPrice">@ShowPrice(item.TWLTMPrice, item.TWLTMPID, "TM")</td>
+                        <td class="QccrlPrice">@ShowPrice(item.QccrlPrice, item.QccrlId, "QCCRL")</td>
+                        <td class="YcwyPrice">@ShowPrice(item.YcwyPrice, item.YcwyId, "YCWY")</td>
+                        <td class="KzPrice">@ShowPrice(item.KzPrice, item.KzId, "KZ")</td>
+                        <td class="QccrpPrice">@ShowPrice(item.QccrpPrice, item.QccrpId, "QCCRP")</td>
+                        <td class="TBPrice">@ShowPrice(item.TBPrice, item.TBPID, "TB")</td>
+                        <td class="TB2Price">@ShowPrice(item.TB2Price, item.TB2PID, "TB")</td>
+                        <td class="TM1Price">@ShowPrice(item.TM1Price, item.TM1PID, "TM")</td>
+                        <td class="TM2Price">@ShowPrice(item.TM2Price, item.TM2PID, "TM")</td>
+                        <td class="TM3Price">@ShowPrice(item.TM3Price, item.TM3PID, "TM")</td>
+                        <td class="TM4Price">@ShowPrice(item.TM4Price, item.TM4PID, "TM")</td>
+                        <td class="JDPrice">@ShowPrice(item.JDPrice, item.JDPID, "JD")</td>
+                        <td class="JDFlagShipPrice">@ShowPrice(item.JDFlagShipPrice, item.JDFlagShipPID, "JD")</td>                       
+                        @if (string.IsNullOrWhiteSpace(ViewBag.PageType))
+                        {
+                            <td><a href="/BaoYangPriceGuide/PriceChangeLog?pid=@item.PID" target="_blank">查看</a></td>
+                        }
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr><td colspan="100">暂无数据</td></tr>
+            }
+        </tbody>
+    </table>
+    @Html.Pager(Model.Pager, true, id => Url.Action("PriceProductList", new {
+    FirstType = selectModel.FirstType,
+    SecondType = selectModel.SecondType,
+    ThirdType = selectModel.ThirdType,
+    ProductName = selectModel.ProductName,
+    PID = selectModel.PID,
+    Brand = selectModel.Brand,
+    StockStatus = selectModel.StockStatus,
+    Contrast = selectModel.Contrast,
+    Proportion = selectModel.Proportion,
+    MaoLiE = selectModel.MaoLiE,
+    MatchMaoLiE = selectModel.MatchMaoLiE,
+    PCPricePer = selectModel.PCPricePer,
+    MatchPCPricePer = selectModel.MatchPCPricePer,
+    OnSaleStatus = selectModel.OnSaleStatus,
+    MaoLiLv = selectModel.MaoLiLv,
+    MatchMaoLiLv = selectModel.MatchMaoLiLv,
+    QplMaoLiE = selectModel.QplMaoLiE,
+    MatchQplMaoLiE = selectModel.MatchQplMaoLiE,
+    QplMaoLiLv = selectModel.QplMaoLiLv,
+    MatchQplMaoLiLv = selectModel.MatchQplMaoLiLv,
+    ShopMaoLiE = selectModel.ShopMaoLiE,
+    MatchShopMaoLiE = selectModel.MatchShopMaoLiE,
+    ShopMaoLiLv = selectModel.ShopMaoLiLv,
+    MatchShopMaoLiLv = selectModel.MatchShopMaoLiLv,
+    TotalStock = selectModel.TotalStock,
+    MatchTotalStock = selectModel.MatchTotalStock,
+    TurnoverDays = selectModel.TurnoverDays,
+    MatchTurnoverDays = selectModel.MatchTurnoverDays,
+    SitePrice = selectModel.SitePrice,
+    SitePrices = selectModel.SitePrices,
+    pageSize = Model.Pager.PageSize,
+    pageIndex = id,
+    pageType = ViewBag.PageType }))
+    <script>
+        var contrast = "@selectModel.Contrast",
+            proportion = parseFloat("@selectModel.Proportion"),
+            SitePrices = "@selectModel.SitePrices";
+        if (SitePrices != null && SitePrices !== "") {
+            $(".list>table td").each(function () {
+                var $target = $(this);
+                if ($target.find("a").length == 1) {
+                    var price = parseFloat($target.find("a").text());
+                    var tuhu_price = parseFloat($target.parent().find(".tuhu>a").text());
+                    var per = price / tuhu_price;
+
+                    //if (type == 2 && $target.hasClass("tuhu_self") || (type == 3 && $target.hasClass("tuhu_other"))) {
+                    //    if ((contrast == -1 && per <= proportion) || (per >= proportion && contrast == 1)) {
+                    //        $target.addClass("color");
+                    //    }
+                    //}
+                    var sites = SitePrices.split(',');
+                    $.each(sites, function(i) {
+                        if ($target.attr("class") == sites[i]) {
+                            if ((contrast == -1 && per <= proportion) || (per >= proportion && contrast == 1)) {
+                                $target.css("background-color","#8ADE94");
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        var exportExcel = function () {
+            var PID = $("#pid").val(),
+                FirstType = $(".firstType").val(),
+                SecondType = $(".secondType").val(),
+                ThirdType = $(".thirdType").val(),
+                ProductName = $("#dispalyName").val(),
+                Brand = $("#Brand").val(),
+                StockStatus = $("#StockOut").val(),
+                OnSaleStatus = $("#Status").val(),
+                $radio = $("[name=radio_1]:checked"),
+                SitePrice = $radio.val(),
+                Contrast = $(".Contrast").val(),
+                MaoLiE,
+                MatchMaoLiE = $(".TuhuMaoLiE>select>option:selected").val(),
+                MaoLiLv,
+                MatchMaoLiLv = $(".TuhuMaoLiLv>select>option:selected").val(),
+                PCPricePer,
+                MatchPCPricePer = $(".pcprice_per>select>option:selected").val(),
+                QplMaoLiE,
+                MatchQplMaoLiE = $(".QplMaoLiE>select>option:selected").val(),
+                QplMaoLiLv,
+                MatchQplMaoLiLv = $(".QplMaoLiLv>select>option:selected").val(),
+                ShopMaoLiE,
+                MatchShopMaoLiE = $(".ShopMaoLiE>select>option:selected").val(),
+                ShopMaoLiLv,
+                MatchShopMaoLiLv = $(".ShopMaoLiLv>select>option:selected").val(),
+                Proportion = $(".Proportion").val(),
+                SitePrices = "",
+                TotalStock,
+                MatchTotalStock = $(".TotalStock>select>option:selected").val(),
+                TurnoverDays,
+                MatchTurnoverDays = $(".TurnoverDays>select>option:selected").val();
+            if ($(".TuhuMaoLiE>input[type=checkbox]").prop("checked")) {
+                MaoLiE = $(".TuhuMaoLiE>input[type=text]").val();
+                if (isNaN(MaoLiE)) {
+                    alert("毛利额不合法");
+                    return false;
+                }
+                MaoLiE = parseFloat(MaoLiE);
+            }
+            if ($(".TuhuMaoLiLv>input[type=checkbox]").prop("checked")) {
+                MaoLiLv = $(".TuhuMaoLiLv>input[type=text]").val();
+                if (isNaN(MaoLiLv)) {
+                    alert("毛利率不合法");
+                    return false;
+                }
+                MaoLiLv = parseFloat(MaoLiLv);
+            }
+            if ($(".QplMaoLiE>input[type=checkbox]").prop("checked")) {
+                QplMaoLiE = $(".QplMaoLiE>input[type=text]").val();
+                if (isNaN(QplMaoLiE)) {
+                    alert("汽配龙毛利额不合法");
+                    return false;
+                }
+                QplMaoLiE = parseFloat(QplMaoLiE);
+            }
+            if ($(".QplMaoLiLv>input[type=checkbox]").prop("checked")) {
+                QplMaoLiLv = $(".QplMaoLiLv>input[type=text]").val();
+                if (isNaN(QplMaoLiLv)) {
+                    alert("汽配龙毛利率不合法");
+                    return false;
+                }
+                QplMaoLiLv = parseFloat(QplMaoLiLv);
+            }
+            if ($(".ShopMaoLiE>input[type=checkbox]").prop("checked")) {
+                ShopMaoLiE = $(".ShopMaoLiE>input[type=text]").val();
+                if (isNaN(ShopMaoLiE)) {
+                    alert("工场店毛利额不合法");
+                    return false;
+                }
+                ShopMaoLiE = parseFloat(ShopMaoLiE);
+            }
+            if ($(".ShopMaoLiLv>input[type=checkbox]").prop("checked")) {
+                ShopMaoLiLv = $(".ShopMaoLiLv>input[type=text]").val();
+                if (isNaN(ShopMaoLiLv)) {
+                    alert("工场店毛利率不合法");
+                    return false;
+                }
+                ShopMaoLiLv = parseFloat(ShopMaoLiLv);
+            }
+            if ($(".TotalStock>input[type=checkbox]").prop("checked")) {
+                TotalStock = $(".TotalStock>input[type=text]").val();
+                if (isNaN(TotalStock)) {
+                    alert("库存不合法");
+                    return false;
+                }
+                TotalStock = parseInt(TotalStock);
+            }
+            if ($(".TurnoverDays>input[type=checkbox]").prop("checked")) {
+                TurnoverDays = $(".TurnoverDays>input[type=text]").val();
+                if (isNaN(TurnoverDays)) {
+                    alert("周转天数不合法");
+                    return false;
+                }
+                TurnoverDays = parseInt(TurnoverDays);
+            }
+            if ($(".pcprice_per>input[type=checkbox]").prop("checked")) {
+                PCPricePer = $(".pcprice_per>input[type=text]").val();
+                if (isNaN(PCPricePer)) {
+                    alert("官网价格不合法");
+                    return false;
+                }
+                PCPricePer = parseFloat(PCPricePer);
+            }
+
+            var sites = $(".SitePrices").find("input[Type='checkbox']");
+            var allsites = [];
+            $.each(sites, function () {
+                if ($(this).attr('checked')) {
+                    allsites.push($(this).val());
+                }
+            });
+            SitePrices = allsites.join(",");
+            var href = "/BaoYangPriceGuide/ExportExcel?ProductName=" + encodeURIComponent(ProductName)
+                + "&FirstType=" + FirstType
+                + "&SecondType=" + SecondType
+                + "&ThirdType=" + ThirdType
+                + "&PID=" + PID
+                + "&Brand=" + Brand
+                + "&StockStatus=" + StockStatus
+                + "&OnSaleStatus=" + OnSaleStatus
+                + "&Contrast=" + Contrast
+                + "&Proportion=" + Proportion
+                + "&MaoLiE=" + MaoLiE
+                + "&MatchMaoLiE=" + MatchMaoLiE
+                + "&PCPricePer=" + PCPricePer
+                + "&MatchPCPricePer=" + MatchPCPricePer
+                + "&MaoLiLv=" + MaoLiLv
+                + "&MatchMaoLiLv=" + MatchMaoLiLv
+                + "&QplMaoLiE=" + QplMaoLiE
+                + "&MatchQplMaoLiE=" + MatchQplMaoLiE
+                + "&QplMaoLiLv=" + QplMaoLiLv
+                + "&MatchQplMaoLiLv=" + MatchQplMaoLiLv
+                + "&ShopMaoLiE=" + ShopMaoLiE
+                + "&MatchShopMaoLiE=" + MatchShopMaoLiE
+                + "&ShopMaoLiLv=" + ShopMaoLiLv
+                + "&MatchShopMaoLiLv=" + MatchShopMaoLiLv
+                + "&TotalStock=" + TotalStock
+                + "&MatchTotalStock=" + MatchTotalStock
+                + "&TurnoverDays=" + TurnoverDays
+                + "&MatchTurnoverDays=" + MatchTurnoverDays
+                + "&SitePrices=" + SitePrices
+                + "&SitePrice=" + SitePrice
+                + "&pageType=" + "@ViewBag.PageType";
+            window.location.href = href;
+        }
+</script>
+   

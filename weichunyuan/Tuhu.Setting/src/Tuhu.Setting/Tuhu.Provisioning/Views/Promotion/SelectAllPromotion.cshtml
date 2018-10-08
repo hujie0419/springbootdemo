@@ -1,0 +1,194 @@
+﻿@using Tuhu.Provisioning.Business;
+@using Tuhu.Provisioning.DataAccess.Entity;
+@using Tuhu.Component.Framework;
+@using System.Web.Mvc;
+@using Tuhu.Provisioning.Models
+@model Tuhu.Component.Common.Models.ListModel<ExchangeCodeDetail>
+
+    <html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <title></title>
+        <style>
+            .check {
+                border: 1px solid #ff6a00;
+                width: 70px;
+                height: 30px;
+                background-color: #ff6a00;
+                color: #fff;
+                font-size: 13px;
+                cursor: pointer;
+                text-align: center;
+            }
+
+            #tb tr th {
+                text-align: center;
+            }
+
+            #tb tr td {
+                text-align: center;
+            }
+
+            .head {
+                margin-top: 20px;
+                float: left;
+                font-size: 22px;
+                font-weight: 900;
+            }
+        </style>
+        <script src="~/Scripts/jquery-1.7.1.min.js"></script>
+        <script type="text/javascript">
+
+            function AddGift() {
+                event.preventDefault();
+                $("#div_Window2").load("/Promotion/GetAddOEM");
+                $("#div_Window2").dialog({
+                    title: "添加",
+                    width: 900,
+                    modal: true,
+                    show: "slide",
+                    buttons: {
+                        "确认": function () {
+                            $("#EditSubmit").click();
+
+                        },
+                        "取消": function () {
+                            $("#div_Window2").dialog("close");
+                        }
+                    }
+                });
+                //window.location.href = "/Promotion/GetAddOEM";
+            }
+
+            function Check(pkid) {
+                window.location.href = "/Promotion/CreatePromotionCode?pkid=" + pkid;
+            }
+
+            function Del(pkid) {
+                if (confirm("亲，是否确定删除？")) {
+                    $.post("@Url.Action("DeleteGift")", { pkid: pkid }, function (data) {
+                        if (data == "ok") {
+                            history.go(0);
+                            alert("删除成功！");
+                        }if(data=="no") {
+                            alert("删除失败！");
+                        } if (data == "noc") {
+                            alert("该礼包已生成券，不能删除！");
+                        }
+
+                    }, "text")
+                }
+            }
+
+            function Edit(pkid) {
+                event.preventDefault();
+                $("#div_Window2").load("/Promotion/UpdateOEM?pkid=" + pkid);
+                $("#div_Window2").dialog({
+                    title: "编辑",
+                    width: 900,
+                    modal: true,
+                    show: "slide",
+                    buttons: {
+                        "确认": function () {
+                            $("#EditSubmit").click();
+
+                        },
+                        "取消": function () {
+                            $("#div_Window2").dialog("close");
+                        }
+                    }
+                });
+            }
+
+
+            function Download(pkid) {
+
+                $.post("@Url.Action("Download")", { pkid: pkid }, function (data) {
+                    window.location.href = data;
+                if (data == "no") {
+                    alert("下载失败,请先生成！");
+                } else if (data == "nos") {
+                    alert("操作失败，请先激活！");
+                } else {
+                    window.location.href = data;
+                }
+
+            }, "text")
+            }
+
+
+            function Generate(pkid) {
+                var str = prompt("请输入生成券数量：", "");
+                if (str != "") {
+                    if (str % 1 === 0) {
+                        $.ajax({
+                            url: "/Promotion/DoGenerate?pkid=" + pkid + "&num=" + str,
+                            type: "post",
+                            success: function (data) {
+                                    if (data == "ok") {
+                                        $.post("@Url.Action("Download")", { pkid: pkid }, function (data) {
+                                            window.location.href = data;
+                                        }, "text")
+                                        alert("生成完毕！");
+                                    } else if (data == "no") {
+                                        alert("生成失败,该礼包无优惠券！请先添加");
+                                    } else if (data == "nos") {
+                                        alert("操作失败，请先激活！");
+                                    }
+
+                            }
+                        });
+                    } else {
+                        alert("输入必须为整数！");
+                    }
+                } else {
+                    alert("生成券数量必填！");
+                }
+
+            }
+        </script>
+    </head>
+    <body>
+        <div>
+            <div style="height:80px">
+                <span class="head">途虎大礼包列表信息|<a href="#" onclick="AddGift()">新增</a></span>
+            </div>
+            <div id="div_Window2"></div>
+            <table id="tb" style="width:100%;">
+                <tr>
+                    <th>礼包名称</th>
+                    <th>发放渠道</th>
+                    <th>优惠券开始生效时间</th>
+                    <th>优惠券结束生效时间</th>
+                    <th>是否有效</th>
+                    <th>操作</th>
+                </tr>
+                @foreach (var item in Model)
+                {
+
+                    var IA = "无";
+                    if (@item.IsActive == true)
+                    {
+                        IA = "是";
+                    }
+                    else
+                    {
+                        IA = "否";
+                    }
+                    <tr>
+                        <td>@item.Name</td>
+                        <td>@item.CodeChannel</td>
+                        <td>@item.ExChangeStartTime</td>
+                        <td>@item.ExChangeEndTime</td>
+                        <td>@IA</td>
+                        @*<td><input value="查看" onclick="" id="check" type="button" class="check" /></td>*@
+                        @*<a href="/Promotion/GetChecking(@item.PKID)">查看</a>*@
+                        <td><a href="#" onclick="Check(@item.PKID)">查看</a>&nbsp;|&nbsp;<a href="#" onclick="Edit(@item.PKID)">编辑</a>&nbsp;|&nbsp;<a href="#" onclick="Del(@item.PKID)">删除</a>&nbsp;|&nbsp;<a href="#" onclick="Generate(@item.PKID)">生成券</a>&nbsp;|&nbsp;<a href="#" onclick="Download(@item.PKID)">下载</a></td>
+                    </tr>
+
+                }
+            </table>
+            <div id="page">@Html.Pager(Model.Pager, pageIndex => Url.RouteUrl(new { pageIndex }))</div>
+        </div>
+    </body>
+</html>

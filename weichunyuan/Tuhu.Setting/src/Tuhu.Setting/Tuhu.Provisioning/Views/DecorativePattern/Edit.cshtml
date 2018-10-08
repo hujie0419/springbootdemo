@@ -1,0 +1,308 @@
+﻿@{
+    ViewBag.Title = "Edit";
+    Layout = null;
+}
+@model Tuhu.Provisioning.DataAccess.Entity.SE_DecorativePattern
+<form id="DecorativePatternForm">
+    <table width="100%">
+        <tr>
+            <td>名称:</td>
+            <td>
+                <input type="text" id="Name" name="Name" style="width:270px;" value="@Model.Name" />
+            </td>
+        </tr>
+        <tr>
+            <td>轮胎品牌:</td>
+            <td>
+                <select id="Brand" name="Brand" onchange="BindTriePatten($(this).val())"></select>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                花纹品牌:
+            </td>
+            <td>
+                <select id="Flower" name="Flower">
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>图片1：</td>
+            <td>
+                @if (string.IsNullOrWhiteSpace(Model.ImageUrl1))
+                {
+                    <img id="img1" width="100" height="48" />
+                }
+                else
+                {
+                    <img id="img1" src="@Model.ImageUrl1" width="100" height="48" />
+                }
+
+                <input type="file" id="uploadFile1" name="uploadFile1" onchange="Upload(this, 'img1', 'ImageUrl1')" />
+                <input type="hidden" id="ImageUrl1" name="ImageUrl1" value="@Model.ImageUrl1" />
+            </td>
+        </tr>
+        <tr>
+            <td>图片2：</td>
+            <td>
+                @if (string.IsNullOrWhiteSpace(Model.ImageUrl2))
+            {
+                    <img id="img2" width="100" height="48" />
+                }
+                else
+                {
+                    <img id="img2" src="@Model.ImageUrl2" width="100" height="48" />
+                }
+                <input type="file" id="uploadFile2" name="uploadFile2" onchange="Upload(this, 'img2', 'ImageUrl2')" />
+                <input type="hidden" id="ImageUrl2" name="ImageUrl2" value="@Model.ImageUrl2" />
+            </td>
+        </tr>
+        <tr>
+            <td>图片3：</td>
+            <td>
+                @if (string.IsNullOrWhiteSpace(Model.ImageUrl3))
+            {
+                    <img id="img3" width="100" height="48" />
+                }
+                else
+                {
+                    <img id="img3" src="@Model.ImageUrl3" width="100" height="48" />
+                }
+                <input type="file" id="uploadFile3" name="uploadFile3" onchange="Upload(this, 'img3', 'ImageUrl3')" />
+                <input type="hidden" id="ImageUrl3" name="ImageUrl3" value="@Model.ImageUrl3" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                简介：
+            </td>
+            <td><textarea id="Description" name="Description" style="width:350px;height:114px; font-size:12px; overflow:hidden;">@Model.Description</textarea></td>
+        </tr>
+        <tr>
+            <td>分享参数:</td>
+            <td>
+                <textarea id="ShareParameter" name="ShareParameter" style="width:350px;height:114px; font-size:12px; overflow:hidden;">@Model.ShareParameter</textarea>
+            </td>
+        </tr>
+        <tr>
+            <td>文章ID：</td>
+            <td>
+                <input type="number" id="ArticleID" name="ArticleID" onblur="ArticleValidate(this, 'DecorativePatternForm')" value="@(Model.ArticleID == 0?"":Model.ArticleID.ToString())" style="width:300px;" />
+            </td>
+        </tr>
+        <tr>
+            <td>文章标题:</td>
+            <td>
+                <input type="text" id="ArticleTitle" name="ArticleTitle" value="@Model.ArticleTitle" style="width:300px;" readonly="readonly" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <fieldset>
+                    <legend>评测</legend>
+                    <input type="button" id="btnAddTesting" name="btnAddTesting" value="添加评测" style="margin-bottom:5px;margin-top:5px;" />
+
+                    <table id="Testing" width="100%">
+                        <thead>
+                            <tr>
+                                <th>
+                                    序号
+                                </th>
+                                <th>
+                                    文章ID
+                                </th>
+                                <th>
+                                    文章标题
+                                </th>
+                                <th>
+                                    管理
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Items != null)
+                            {
+                                foreach (var item in Model.Items)
+                                {
+                                    <tr data-source="@(Newtonsoft.Json.JsonConvert.SerializeObject(item))">
+                                        <td>@item.ID</td>
+                                        <td>@item.ArticleID</td>
+                                        <td>@item.ArticleTitle</td>
+                                        <td>
+                                            <input type="button" value="编辑" onclick="ArticleEdit(this, 'Testing')" />
+                                            <input type="button" value="删除" onclick="ArticleDelete(this)" />
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </fieldset>
+
+            </td>
+        </tr>
+    </table>
+</form>
+
+<div id="editArticle"></div>
+<script type="text/javascript">
+    var validate = {
+        rules: {
+            Name: {
+                required:true
+            },
+            Brand: {
+                required:true
+            },
+            Flower: {
+                required:true
+            },
+            ArticleID: {
+                required:true
+            }
+        },
+        messages: {
+            Name: {
+                required:'请输入名称'
+            },
+            Brand: {
+                required:'请选择品牌'
+            },
+            Flower: {
+                required:'请选择花纹'
+            },
+            ArticleID: {
+                required:'请输入文章ID'
+            }
+        }
+    };
+    $('#DecorativePatternForm').validate(validate);
+    //评测
+    $('#btnAddTesting').on('click', function () {
+
+        $('#editArticle').empty();
+        $('#editArticle').load("/DecorativePattern/ArticleEdit?id=");
+        $('#editArticle').dialog({
+            title: "评测编辑",
+            width: 450,
+            height: 500,
+            modal: true,
+            resizable: false,
+            buttons: {
+                "保 存": function () {
+                    Save("ArticleEditForm", "Testing");
+                },
+                "取 消": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    });
+
+    var testNumber = 1;
+    function Save(formName, tableName) {
+        var id = $("#ArticleID", '#' + formName).val();
+        if (id == null || id == '') { return; }
+        var title = $("#ArticleTitle", '#' + formName).val();
+        var img = $('#Image', '#' + formName).val();
+        var orderby = $('#OrderBy', '#' + formName).val();
+        var description = $('#Description1', '#' + formName).val();
+        if (img== undefined || img == null || img == '') {
+            alert("请上传图片");
+            return false;
+        }
+        var data = {};
+        data.ArticleID = id;
+        data.ArticleTitle = title;
+        data.Image = img;
+        data.OrderBy = parseInt(orderby);
+        data.Description = description;
+        data.ID = (tableName == "Testing" ? testNumber++ : inforNumber++);
+        var html = "<tr data-source='" + JSON.stringify(data) + "'> <td>" + data.ID + "</td><td>" + id + "</td><td>" + title + "</td><td>  <input type=\"button\" value=\"编辑\" onclick=\"ArticleEdit(this,'" + tableName + "')\"/> <input type=\"button\" value=\"删除\" onclick=\"ArticleDelete(this)\"/>  </td> </tr>";
+        $('#' + tableName + ' tbody').append(html);
+        $('#editArticle').dialog('close');
+    }
+
+    function ArticleEdit(obj, tableName) {
+        var tr = $(obj).parent().parent();
+        var data = tr.data("source");
+        console.log(data);
+        $('#editArticle').empty();
+        $('#editArticle').load("/DecorativePattern/ArticleEdit?" + "id=" + data.ArticleID + "&title=" + data.ArticleTitle + "&image=" + data.Image + "&orderby=" + data.OrderBy + "&description=" + data.Description);
+        $('#editArticle').dialog({
+            title: "编辑",
+            width: 450,
+            height: 500,
+            modal: true,
+            resizable: false,
+            buttons: {
+                "保 存": function () {
+                    var formName = "ArticleEditForm";
+                    var id = $("#ArticleID", '#' + formName).val();
+                    if (id == null || id == '') { return; }
+                    var title = $("#ArticleTitle", '#' + formName).val();
+                    var img = $('#Image', '#' + formName).val();
+                    var orderby = $('#OrderBy', '#' + formName).val();
+                    var description = $('#Description1', '#' + formName).val();
+                    if (img == '' || img == null) {
+                        alert("请上传图片");
+                        return false;
+                    }
+                    data.ArticleID = id;
+                    data.ArticleTitle = title;
+                    data.Image = img;
+                    data.Description = description;
+                    data.OrderBy = parseInt(orderby);
+                    var html = "<tr data-source='" + JSON.stringify(data) + "'> <td>" + data.ID + "</td><td>" + id + "</td><td>" + title + "</td><td>  <input type=\"button\" value=\"编辑\" onclick=\"ArticleEdit(this,'" + tableName + "')\"/> <input type=\"button\" value=\"删除\" onclick=\"ArticleDelete(this)\"/>  </td> </tr>";
+                    var tr = $(obj).parent().parent().replaceWith(html);
+                    $(this).dialog('close');
+                },
+                "取 消": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    }
+
+
+    function ArticleDelete(obj) {
+        var r = confirm("您确定删除吗?");
+        if (r) {
+            $(obj).parent().parent().remove();
+        }
+    }
+
+
+    function GetData()
+    {
+       var result= $('#DecorativePatternForm').valid();
+       if (!result) {
+           return null;
+       }
+        var data = {};
+        data.Name = $('#Name').val();
+        data.Brand = $('#Brand').val();
+        data.Flower = $('#Flower').val();
+        data.ImageUrl1 = $('#ImageUrl1').val();
+        data.ImageUrl2 = $('#ImageUrl2').val();
+        data.ImageUrl3 = $('#ImageUrl3').val();
+        data.Description = $('#Description').val();
+        data.ArticleID = $('#ArticleID').val();
+        data.ArticleTitle = $('#ArticleTitle').val();
+        data.ShareParameter = $('#ShareParameter').val();
+        data.Items = [];
+        $('#Testing tbody tr').each(function (e) {
+            var row = $(this).data("source");
+            data.Items.push(row);
+        });
+        return data;
+    }
+
+    $(function () {
+        BindBrand('@Model.Brand');
+     
+        BindTriePatten('@Model.Brand','@Model.Flower');
+       
+       
+    });
+</script>

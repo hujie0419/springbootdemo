@@ -1,0 +1,52 @@
+﻿
+@using Tuhu.Provisioning.Models
+@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.AnnouncementConfig>
+@{
+    Layout = null;
+}
+
+<div>
+    <table style="width:100%;margin-top:20px;">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>类型</th>
+                <th>编辑时间</th>           
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.PKID</td>
+
+                    @if (item.NoticeType == 1)
+                    {
+                        <td>H5链接</td>
+                    }
+                    else if (item.NoticeType == 2)
+                    {
+                        <td>图片</td>
+                    }
+                    else if (item.NoticeType == 3)
+                    {
+                        <td>原生跳转</td>
+                    }
+                    <td>@item.CreateTime</td>                
+                    <td>@(item.Status ? "启用" : "禁用")</td>
+                    <td>
+                        <a href="javascript:;" onclick="AnnouncementConfig.Update(@item.PKID)">编辑</a>&nbsp;&nbsp;
+                        <a href="javascript:;" onclick="AnnouncementConfig.Delete(@item.PKID)">删除</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div>
+    @Html.Pager(Model.Pager, pageIndex => Url.RouteUrl(new { pageIndex }))
+</div>
+<div id="AddItem"></div>

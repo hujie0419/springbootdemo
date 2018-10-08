@@ -1,0 +1,327 @@
+﻿@{
+    ViewBag.Title = "给用户塞券";
+}
+@section head{
+    <link href="~/css/beautyPackage.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/iview/iview.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+    </style>
+}
+
+<div id="div" v-cloak>
+    <h2>
+        <a href="/VipPaintPackage/PackageConfig">喷漆套餐配置</a>
+        <label style="margin-left:30px;">给用户塞券</label>
+        <a href="/VipPaintPackage/PromotionRecord" style="margin-left:30px">塞券记录</a>
+        <a href="/VipPaintPackage/PackageSmsConfig" style="margin-left:30px">短信配置</a>
+    </h2>
+    <div style="height: auto;margin: 5px 0px 15px 0px;padding: 15px 20px;">
+        <i-select v-model="searchData.vipUserId" filterable v-on:on-change="GetVipPaintPackages" style="float:left;margin-left:15px;width:10%;" placeholder="请选择申请塞券的大客户">
+            <i-option value="00000000-0000-0000-0000-000000000000">-请选择申请塞券的大客户-</i-option>
+            <i-option v-for="vipUser in vipUsers" :value="vipUser.VipUserId" :key="vipUser.VipUserId">{{vipUser.VipUserName}}</i-option>
+        </i-select>
+        <i-select v-model.number="searchData.packageId" style="float:left;margin-left:15px;width:10%;" placeholder="请选择套餐名称">
+            <i-option value="">-请选择套餐名称-</i-option>
+            <i-option v-for="package in packages" :value="package.PackageId" :key="package.PackageId">{{package.PackageName}}</i-option>
+        </i-select>
+        <i-select v-model="searchData.ruleId" style="float:left;margin-left:15px;width:20%;" placeholder="领取规则（ID+优惠券名称+描述）">
+            <i-option value="">领取规则（ID+优惠券名称+描述）</i-option>
+            <i-option v-for="rule in rules" :value="rule.PKID" :key="rule.PKID">{{rule.PKID}}-{{rule.PromotionName}}-{{rule.Description}}</i-option>
+        </i-select>
+        <i-button style="float:left;margin-left:15px;">
+            @Html.ActionLink("查看上传模版", "ExportExcelTemplate")
+        </i-button>
+        <div style="margin-left:15px;float:left;">
+            <Upload :before-upload="HandleExcelUpload"
+                    action="UploadExcelForView" accept='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'>
+                <i-button type="primary" icon="upload">选择文件</i-button>
+            </Upload>
+            <div v-if="excelFile">
+                上传文件: {{ excelFile.name }}
+                <i-button type="primary" v-on:click="UploadExcelForView" :loading="uploadExcelStatus">
+                    {{ uploadExcelStatus ? '上传中' : '批量导入' }}
+                </i-button>
+            </div>
+        </div>
+    </div>
+    <div style="margin-top:70px;text-align:center">
+        <span style="color:red;">上传成功并确认给用户塞券后，30s后会自动对上传的数据进行处理，请到塞券记录查看结果</span>
+        <br />
+        <br />
+        <span style="color:red;">塞券时填写的起始时间默认为所填写日期的00:00，截止时间默认为所填写时间的23:59::59，起始时间和截止时间必须同时填写<br />如果两者都不填写，则塞券有效期就使用券规则配置的有效期数据</span>
+    </div>
+    <table class="tableContainer" style="margin-top:30px">
+        <thead>
+            <tr>
+                <th>手机号</th>
+                <th>车牌号</th>
+                <th>塞券数量</th>
+                <th>大客户名称</th>
+                <th>套餐PID</th>
+                <th>套餐名称</th>
+                <th>优惠券</th>
+            </tr>
+        </thead>
+        <tr v-if="list && list.length <= 0 && !loading">
+            <td colspan="7">无数据</td>
+        </tr>
+        <tr v-else-if="loading">
+            <td colspan="7"><img src="/Images/loading.gif" /></td>
+        </tr>
+        <tr v-else-if="list && list.length > 0" v-for="(item,index) in list">
+            <td>{{item.MobileNumber}}</td>
+            <td>{{item.CarNo}}</td>
+            <td>{{item.PromotionCount}}</td>
+            <td>{{searchData.vipUserName}}</td>
+            <td>{{packagePid}}</td>
+            <td>{{packageName}}</td>
+            <td>{{searchData.ruleId}}-{{searchData.promotionName}}-{{searchData.promotionDescription}}</td>
+        </tr>
+    </table>
+    <Page style="margin:10px;" :total="pager.totalCount" :current.sync="pager.pageIndex" :page-size="pager.pageSize" v-on:on-page-size-change="ChangePageSize" show-total show-sizer></Page>
+    <i-button style="width:20%;margin-left:40%;" v-if="list && list.length > 0 && !loading" v-on:click="UploadExcel">确认给以上用户塞券</i-button>
+</div>
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/iview/iview.min.js"></script>
+    <script type="text/javascript">
+        function DatePrase(value) {
+            if (value) {
+                return eval('new ' + eval(value).source).Format('yyyy-MM-dd hh:mm:ss');
+            }
+        };
+        var vue = new Vue({
+            el: "#div",
+            data: {
+                searchData: {
+                    vipUserId: "",
+                    vipUserName: "",
+                    packageId: "",
+                    ruleId: "",
+                    ruleGuid: "",
+                    promotionName: "",
+                    promotionDescription: ""
+                },
+                vipUsers: [],
+                packages: [],
+                rules: [],
+                pager: {
+                    pageIndex: 1,
+                    pageSize: 20,
+                    totalCount: 0
+                },
+                excelInfo: [],
+                excelFile: "",
+                uploadExcelStatus: false,
+                loading: false,
+            },
+            watch: {
+                "searchData.vipUserId": function () {
+                    var self = this;
+                    if (self.vipUsers && self.vipUsers.length > 0) {
+                        var vipUser = self.vipUsers.find(function (x) {
+                            return x.VipUserId == self.searchData.vipUserId
+                        }) || [];
+                        self.searchData.vipUserName = vipUser.VipUserName || "";
+                    }
+                },
+                "searchData.ruleId": function () {
+                    var self = this;
+                    if (self.rules && self.rules.length > 0) {
+                        var rule = self.rules.find(function (x) {
+                            return (x.PKID == self.searchData.ruleId);
+                        }) || [];
+                        self.searchData.promotionName = rule.PromotionName || "";
+                        self.searchData.promotionDescription = rule.Description || "";
+                        self.searchData.ruleGuid = rule.RuleGUID;
+                    }
+                },
+            },
+            created: function () {
+                this.GetPaintVipUsers();
+                this.GetAllRulesIds();
+                this.$Message.config({
+                    top: 150,
+                    duration: 5
+                });
+            },
+            computed: {
+                list: function () {
+                    var self = this;
+                    var pager = self.pager;
+                    return (self.excelInfo || []).filter(function (item, index) {
+                        return (index + 1) > (pager.pageSize * (pager.pageIndex - 1)) && (index + 1) <= pager.pageSize * pager.pageIndex;
+                    });
+                },
+                packagePid: function () {
+                    var self = this;
+                    return ((self.packages || []).find(function (x) {
+                        return (x.PackageId == self.searchData.packageId);
+                    }) || []).PackagePid || "";
+                },
+                packageName: function () {
+                    var self = this;
+                    return (self.packages.find(function (x) {
+                        return (x.PackageId == self.searchData.packageId);
+                    }) || []).PackageName || "";
+                },
+            },
+            methods: {
+                //获取大客户
+                GetPaintVipUsers: function () {
+                    var self = this;
+                    $.post("GetPaintVipUsers", function (result) {
+                        if (result.Status) {
+                            self.vipUsers = result.Data;
+                        }
+                    });
+                },
+                GetVipPaintPackages: function () {
+                    var self = this;
+                    $.post("GetVipPaintPackages", { vipUserId: self.searchData.vipUserId }, function (result) {
+                        if (result && result.Status) {
+                            self.packages = result.Data;
+                        }
+                        else {
+                            self.packages = [];
+                        }
+                    })
+                },
+                GetAllRulesIds: function () {
+                    var self = this;
+                    $.post("GetCouponRules", function (result) {
+                        self.rules = result || [];
+                    });
+                },
+                //手动上传模式
+                HandleExcelUpload(excelFile) {
+                    var self = this;
+                    self.excelFile = excelFile;
+                    return false;
+                },
+                //上传Excel文件
+                UploadExcelForView() {
+                    var self = this;
+                    if (!self.searchData.vipUserId || self.searchData.vipUserId == "00000000-0000-0000-0000-000000000000") {
+                        self.$Message.warning("请选择大客户!");
+                    }
+                    else if (self.searchData.packageId <= 0) {
+                        self.$Message.warning("请选择套餐名称!");
+                    }
+                    else if (!self.searchData.ruleId || self.searchData.ruleId <= 0) {
+                        self.$Message.warning("请选择领取规则!");
+                    }
+                    else {
+                        self.uploadExcelStatus = true;
+                        self.loading = true;
+                        var formData = new FormData();
+                        formData.append("excelFile", self.excelFile);
+                        $.ajax({
+                            url: 'UploadExcelForView',
+                            type: "post",
+                            data: formData,
+                            dataType: "json",
+                            contentType: false,
+                            processData: false,
+                            success: function (result) {
+                                self.uploadExcelStatus = false;
+                                if (result.Status) {
+                                    self.excelInfo = result.Data;
+                                    self.pager.totalCount = result.TotalCount;
+                                }
+                                else {
+                                    self.$Message.error({
+                                        content: "上传失败!" + (result.Msg || ""),
+                                        duration: 0,
+                                        closable: true
+                                    });
+                                    self.excelInfo = [];
+                                    self.pager.totalCount = 0;
+                                    self.excelFile = "";
+                                }
+                                self.pager.pageIndex = 1;
+                                self.loading = false;
+                            },
+                            error: function (result) {
+                                self.uploadExcelStatus = false;
+                                self.excelInfo = [];
+                                self.excelFile = "";
+                                self.pager.totalCount = 0;
+                                self.pager.pageIndex = 1;
+                                self.loading = false;
+                                self.$Message.error({
+                                    content: "上传失败!" + (result.Msg || ""),
+                                    duration: 0,
+                                    closable: true
+                                });
+                            }
+                        });
+                    }
+                },
+                UploadExcel: function () {
+                    var self = this;
+                    if (!self.searchData.vipUserId || self.searchData.vipUserId == "00000000-0000-0000-0000-000000000000") {
+                        self.$Message.warning("请选择大客户!");
+                    }
+                    else if (!self.searchData.packageId) {
+                        self.$Message.warning("请选择套餐名称!");
+                    }
+                    else if (!self.searchData.ruleId || self.searchData.ruleId <= 0) {
+                        self.$Message.warning("请选择领取规则!");
+                    }
+                    else if (!self.excelFile) {
+                        self.$Message.warning("请选择文件!");
+                    }
+                    else if (!confirm("确认给以上所有用户塞券?")) {
+                        return;
+                    }
+                    else {
+                        var formData = new FormData();
+                        formData.append("excelFile", self.excelFile);
+                        formData.append("packageId", self.searchData.packageId);
+                        formData.append("ruleGuid", self.searchData.ruleGuid);
+                        $.ajax({
+                            url: 'UploadExcel',
+                            type: "post",
+                            data: formData,
+                            dataType: "json",
+                            contentType: false,
+                            processData: false,
+                            success: function (result) {
+                                self.excelInfo = [];
+                                self.pager.pageIndex = 1;
+                                self.pager.totalCount = 0;
+                                self.excelFile = "";
+                                if (result.Status) {
+                                    self.$Message.success("上传成功!请至塞券记录中查看");
+                                }
+                                else {
+                                    self.$Message.error({
+                                        content: "上传失败!" + (result.Msg || ""),
+                                        duration: 0,
+                                        closable: true
+                                    });
+                                }
+                            },
+                            error: function (result) {
+                                self.$Message.error({
+                                    content: "上传失败!" + (result.Msg || ""),
+                                    duration: 0,
+                                    closable: true
+                                });
+                                self.excelInfo = [];
+                                self.pager.pageIndex = 1;
+                                self.pager.totalCount = 0;
+                                self.excelFile = "";
+                            }
+                        });
+                    }
+                },
+                ChangePageSize: function (pageSize) {
+                    var self = this;
+                    self.pager.pageSize = pageSize;
+                }
+            }
+        });
+    </script>
+}

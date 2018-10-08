@@ -1,0 +1,17 @@
+﻿@{
+    Layout = "";
+}
+
+<div>
+    <table>
+        <tbody>
+            <tr>
+                <td>apptype：</td>
+                <td>@Html.DropDownList("Id", new System.Web.Mvc.SelectList(ViewData["CategoryIdName"] as System.Collections.IEnumerable, "Id", "Name"), "全部", new { @Style = "width:200px;height:20px;", @name = "Id", @id = "Id", @onchange = "selectChange()" })</td>
+            </tr>      
+        </tbody>
+    </table>
+</div>
+<script>
+
+</script>

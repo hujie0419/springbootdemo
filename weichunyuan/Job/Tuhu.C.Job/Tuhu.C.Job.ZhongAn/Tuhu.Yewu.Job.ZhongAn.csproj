@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4DBB8AAB-34A3-4285-BB2D-FFAA8F7BBBC9}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Tuhu.C.Job.ZhongAn</RootNamespace>
+    <AssemblyName>Tuhu.C.Job.ZhongAn</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autofac, Version=4.1.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.4.1.0\lib\net45\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.3.3.1\lib\net40\Common.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging.Core, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.Core.3.3.1\lib\net40\Common.Logging.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Quartz, Version=2.4.1.0, Culture=neutral, PublicKeyToken=f6b8c98a402cc8a4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Quartz.2.4.1\lib\net40\Quartz.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Interactive, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Interactive.3.1.1\lib\net45\System.Interactive.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Tuhu, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.2.2.9\lib\net45\Tuhu.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.2.1.2\lib\net45\Tuhu.Service.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.EmailProcess, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.EmailProcess.1.0.6\lib\net45\Tuhu.Service.EmailProcess.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.OprLog, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.OprLog.1.1.0.0\lib\net45\Tuhu.Service.OprLog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Tuhu.Service.Utility, Version=1.2.2.4, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Utility.1.2.2.4\lib\net45\Tuhu.Service.Utility.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Business.cs" />
+    <Compile Include="DAL\Common\DataHelper.cs" />
+    <Compile Include="DAL\Common\DataOp.cs" />
+    <Compile Include="DAL\Common\ListToT.cs" />
+    <Compile Include="DAL\DAL\DALInsuranceNO.cs" />
+    <Compile Include="DAL\DAL\DALInsuranceTyre.cs" />
+    <Compile Include="DAL\DAL\DalMonitor.cs" />
+    <Compile Include="DAL\DAL\DALOprLog.cs" />
+    <Compile Include="DAL\DAL\DALOrder.cs" />
+    <Compile Include="DAL\DAL\DALOrderToInsuranceTyre.cs" />
+    <Compile Include="DataInteraction\Exception\ZaSdkException.cs" />
+    <Compile Include="DataInteraction\JsonModel\RequestModel.cs" />
+    <Compile Include="DataInteraction\Templet\BizParamTemp.cs" />
+    <Compile Include="DataInteraction\Util\ApiUtils.cs" />
+    <Compile Include="DataInteraction\Util\RSACryptoServiceProviderExtension.cs" />
+    <Compile Include="DataInteraction\Util\SignatureUtils.cs" />
+    <Compile Include="DataInteraction\Util\WebUtils.cs" />
+    <Compile Include="DataInteraction\ZAOP.cs" />
+    <Compile Include="Domain\DInsuranceNO.cs" />
+    <Compile Include="Domain\DInsuranceTyre.cs" />
+    <Compile Include="Domain\DOprLog.cs" />
+    <Compile Include="Domain\DOrder.cs" />
+    <Compile Include="Domain\DOrderToInsuranceTyre.cs" />
+    <Compile Include="Domain\MonitorOperation.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ZhongAnJob.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="DataInteraction\Keys\public-key-zhongan.pem" />
+    <None Include="DataInteraction\Keys\rsa_private_key.pem" />
+    <None Include="DataInteraction\Keys\rsa_private_key_first.pem" />
+    <None Include="DataInteraction\Keys\rsa_public_key_tuhu.pem" />
+    <None Include="DataInteraction\packages.config" />
+    <None Include="job_scheduling_data_2_0.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

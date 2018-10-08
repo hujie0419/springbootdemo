@@ -1,0 +1,117 @@
+﻿@using Tuhu.Provisioning
+@using Tuhu.Provisioning.DataAccess.Entity
+@using Tuhu.Service.Vehicle.Request
+@model Tuhu.Component.Common.Models.ListModel<VehicleAuditInfoModel>
+@{
+    Layout = null;
+    var query = ViewBag.Query as VehicleAuthAuditRequest;
+    var logsDic = ViewBag.LogsDic as Dictionary<Guid, VehicleTypeCertificationAuditLogModel>;
+}
+<table>
+    <thead>
+    <tr>
+        <th>手机号</th>
+        <th width="100">CarId</th>
+        <th width="200">车型5级</th>
+        <th width="70">车牌号</th>
+        <th>VIN码</th>
+        <th>行驶证照片</th>
+        <th>认证状态</th>
+        <th>认证时间</th>
+        <th>身份证照片</th>
+        <th>申诉原因</th>
+        <th>是否默认</th>
+        <th>修改日期</th>
+        <th>创建日期</th>
+        <th>认证渠道</th>
+        <th>审核时间</th>
+        <th>审核人</th>
+        <th width="100">操作</th>
+        <th>日志</th>
+    </tr>
+    </thead>
+    <tbody>
+    @if (Model != null && Model.Any())
+    {
+        foreach (var response in Model)
+        {
+            <tr>
+                <td title="@response.Mobile">@(response.Mobile)</td>
+                <td>@(response.CarId)</td>
+                <td title="@(response.Brand)|@(response.Vehicle)|@(response.PaiLiang)|@(response.Nian)|
+                    @(response.SalesName)">@(response.Brand)|@(response.Vehicle)|@(response.PaiLiang)|@(response.Nian)|
+                    @(response.SalesName)</td>
+                <td title="@response.CarNumber">@(response.CarNumber)</td>
+                <td>@response.VinCode</td>
+                <td><a href="@response.ImageUrl" target="_blank">点击查看</a></td>
+                <td>
+                    @switch (response.Status)
+                    {
+                        case 0:
+                            <span style="color:red;">审核中</span>
+                            break;
+                        case 1:
+                            <span style="color: green;">已认证</span>
+                            break;
+                        case 2:
+                            <span style="color: darkgray;">已拒绝</span>
+                            break;
+                    }
+                </td>
+                <td>@(query.Status==1? response.certified_time.ToString("yyyy-MM-dd HH:mm:ss"):"")</td>
+                <td><a href="@response.IdCardUrl" target="_blank">点击查看</a></td>
+                <td>@response.Reason</td>
+                <td>
+                    @if(response.IsDefaultCar){
+                        <span style="color: black;">是</span>
+                    }
+                    else
+                    {
+                        <span>否</span>
+                    }
+                </td>
+                <td>@response.LastChangedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@response.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@response.Channel</td>
+                <td>@(logsDic != null && logsDic.ContainsKey(response.CarId)?logsDic[response.CarId].CreateTime.ToString("yyyy-MM-dd HH:mm:ss"):"")</td>
+                <td>@(logsDic != null && logsDic.ContainsKey(response.CarId) ? logsDic[response.CarId].Author : "")</td>
+                <td>
+                    @if (response.Status == 0)
+                    {
+                        if (query.CarId == Guid.Empty)
+                        {
+                            <a href="###" data-carno="@response.CarNumber" data-mobile="@response.Mobile" data-oldstatus="@response.Status" data-status="1" data-carid="@response.CarId" name="SetStatus">设置为认证成功</a>
+                            <br/>
+                        }
+                        <a href="###" data-carno="@response.CarNumber" data-mobile="@response.Mobile" data-oldstatus="@response.Status" data-status="2" data-carid="@response.CarId" name="SetStatus">设置为认证失败</a>
+                        if (query.CarId == Guid.Empty)
+                        {
+                            <br/>
+                            <a href="###" data-carno="@response.CarNumber" data-carid="@response.CarId" data-vincode="@response.VinCode" name="RepeatList">展示查重数据</a>
+                        }
+                    }
+                    else
+                    {
+                        <a href="###" data-carno="@response.CarNumber" data-mobile="@response.Mobile" data-oldstatus="@response.Status" data-status="-1" data-carid="@response.CarId" name="SetStatus">设置为未认证</a>
+                    }
+
+
+                </td>
+                <td><a href="###" data-carid="@response.CarId" name="LogList">查看</a></td>
+            </tr>
+        }
+    }
+    </tbody>
+</table>
+@Html.Pager(new Tuhu.Component.Common.Models.PagerModel()
+{
+    PageSize = Model.Pager.PageSize,
+    CurrentPage = Model.Pager.CurrentPage,
+    TotalItem = Model.Pager.TotalItem
+}, true, id => Url.Action("ListNew", new
+{
+    query.Mobile,
+    query.Status,
+    PageIndex = id,
+    query.PageSize
+}))

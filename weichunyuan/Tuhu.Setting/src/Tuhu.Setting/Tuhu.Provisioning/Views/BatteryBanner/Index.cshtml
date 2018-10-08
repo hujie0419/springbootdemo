@@ -1,0 +1,200 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@using Tuhu.Provisioning.Models
+@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.BatteryBanner>
+@{
+    ViewBag.Title = "电瓶活动图片配置";
+}
+
+<h2>电瓶活动图片配置</h2>
+<style>
+    .ui-dialog {
+        border-radius: 3px;
+        padding: 0px;
+        width: auto;
+    }
+
+    .ui-dialog-grid {
+        width: 100%;
+    }
+
+    .ui-dialog-title {
+        width: 75%;
+        padding: 8px 15px 8px 15px;
+    }
+
+    .ui-dialog-close {
+        top: 8px;
+    }
+
+    .ui-dialog-body {
+        padding: 10px;
+    }
+
+    .ui-dialog-content {
+        padding: 0px;
+    }
+
+    .ui-dialog-footer {
+        padding: 5px 10px 5px 5px;
+        background: #ffffff;
+        border-top: 1px solid #eee;
+    }
+
+        .ui-dialog-footer button {
+            padding: 3px 15px;
+            border-radius: 2px;
+            box-shadow: 0 1px 1px rgba(0,0,0,.15);
+            font-size: 12px;
+        }
+
+            .ui-dialog-footer button.ui-dialog-autofocus {
+                font-weight: 700;
+                text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+            }
+
+    .button1 {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        font-family: "Microsoft Yahei";
+        outline: none;
+        cursor: pointer;
+        background: #0088cc;
+        border-color: #0088cc;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: #0088cc;
+        border: solid 1px #0088cc;
+    }
+</style>
+
+<script src="../../Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<link rel="stylesheet" href="/Scripts/artDialog6.0.4/css/ui-dialog.css" />
+<script src="~/Scripts/artDialog6.0.4/dist/dialog-min.js"></script>
+<script src="~/Scripts/artDialog6.0.4/dist/dialog-plus-min.js"></script>
+
+<input type="button" class="button1" id="Insert" value="添加" />
+<div style="margin-top:20px;">
+    <table style="width:100%;">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>图片</th>
+                <th>开始时间</th>
+                @*<th>省</th>
+                <th>市</th>*@
+                <th>显示</th>
+                @*<th>启用</th>*@
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td><img style="width:50px;height:50px;" src="@item.SmallImage" /> </td>
+                    <td>@item.ShowTime</td>
+                    @*<td>@item.Province</td>
+                    <td>@item.City</td>*@
+                    @if (item.Display)
+                    {
+                        <td>是</td>
+                    }
+                    else
+                    {
+                        <td>否</td>
+                    }
+
+                    @*@if (item.Available)
+                    {
+                        <td>是</td>
+                    }
+                    else
+                    {
+                        <td>否</td>
+                    }*@
+
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+<div>
+    @Html.Pager(Model.Pager, pageIndex => Url.RouteUrl(new { pageIndex }))
+</div>
+<script>
+   
+    $("#Insert").on("click", function () {
+
+        var dialgpResult = dialog({
+            height: 250,
+            width: 450,
+            fixed: true,
+            title: "添加",
+            button: [
+            {
+                value: "保存",
+                callback: function () {                  
+                  
+                    var objvalue = document.getElementById("Display").checked;
+                 
+                    if (!$(".image").val()) {
+                        alert("请上传图片!")
+                        return false;
+                    }
+                    if (!$("input[type='datetime-local']").val()) {
+                        alert("请选择日期!");
+                        return false;
+                    }
+                 
+                    $.ajax({
+                        type: "POST",
+                        url: "/BatteryBanner/AddBatteryBanner",
+                        data: {
+                            "Image": $(".image").val(),
+                            "SmallImage": $(".smallImage").val(),
+                            "Display": objvalue,
+                            "ShowTime": $("input[type='datetime-local']").val(),
+                            //"Province": $(".Province").find('option:selected').text(),
+                            //"City": $(".City").find('option:selected').text(),                          
+                            //"Available": $("input[name=Available]").val()
+                        },
+                        success: function (result) {
+                            if (result) {
+                                window.location.reload(true);
+                            }
+                            else {
+                                alert("保存失败！");
+                            }
+                        },
+                        error: function (result) {
+                            alert("失败!")
+                        }
+                    });
+                }
+            },
+            {
+                value: "关闭"
+            }]
+        });
+
+        $.ajax({
+            url: "/BatteryBanner/Add",
+            data: {},
+            type: "GET",
+            success: function (result) {
+
+                dialgpResult.content(result);
+                dialgpResult.showModal();
+
+            }
+        });
+    })
+</script>

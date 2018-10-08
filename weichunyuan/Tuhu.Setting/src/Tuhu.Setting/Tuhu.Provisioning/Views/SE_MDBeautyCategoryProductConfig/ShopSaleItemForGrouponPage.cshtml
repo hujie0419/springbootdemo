@@ -1,0 +1,252 @@
+﻿@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.ShopSaleItemForGrouponModel>
+
+@{
+    ViewBag.Title = "门店商品列表";
+}
+
+<table style="background-color:#FFFFFF;">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.PKID)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ShopID)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ShopName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PID)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CategoryId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CategoryName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ProductID)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ProductName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.BrandID)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.BrandName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ShowName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Description)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.DayLimit)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.RetailPrice)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.IsSale)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SalePrice)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SaleLimit)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.GrouponStutas)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CheckStatus)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CheckMemo)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.RecommendationId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Recommendation)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SaleStartDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SaleEndDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.IsActive)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.IsDeleted)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CreatedBy)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CreatedTime)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AuditBy)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AuditTime)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.UpdatedBy)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.UpdatedTime)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AdaptiveCar)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ApplyTime)
+        </th>
+    </tr>
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.PKID)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ShopID)
+        </td>
+
+        <td>
+            @Html.DisplayFor(modelItem => item.ShopName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PID)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CategoryId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CategoryName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ProductID)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ProductName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.BrandID)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.BrandName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ShowName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Description)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.DayLimit)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.RetailPrice)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.IsSale)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.SalePrice)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.SaleLimit)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.GrouponStutas)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CheckStatus)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CheckMemo)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.RecommendationId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Recommendation)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.SaleStartDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.SaleEndDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.IsActive)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.IsDeleted)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CreatedBy)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CreatedTime)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AuditBy)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AuditTime)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.UpdatedBy)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.UpdatedTime)
+        </td>
+
+        <td>
+            @Html.DisplayFor(modelItem => item.AdaptiveCar)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ApplyTime)
+        </td>
+    </tr>
+}
+<tr>
+    <td id="kkpager" colspan="34"></td>
+</tr>
+</table>
+
+<script src="~/Scripts/jquery.cookie.js"></script>
+<script src="~/Scripts/kkpager/kkpager.min.js"></script>
+<link href="~/Scripts/kkpager/kkpager_blue.css" rel="stylesheet" />
+
+<script type="text/javascript">
+    var totalPage = @(ViewBag.totalPage),
+        totalRecords = @(ViewBag.totalRecords),
+        _pageIndex = @(ViewBag.pageIndex),
+        pageNo = _pageIndex || 1;
+
+    //生成分页
+    kkpager.generPageHtml({
+        pno: pageNo,
+        //总页码
+        total: totalPage,
+        //总数据条数
+        totalRecords: totalRecords,
+        mode:'click',
+        click:function(pageIndex){
+            window.location.href =  '/SE_MDBeautyCategoryProductConfig/ShopSaleItemForGrouponPage?pageIndex='+ (pageIndex||1);
+        },
+        isGoPage: false,
+        getLink: function (n) {
+            return 'javascript:void(0);';
+        }
+    });
+    kkpager.selectPage(_pageIndex);
+</script>

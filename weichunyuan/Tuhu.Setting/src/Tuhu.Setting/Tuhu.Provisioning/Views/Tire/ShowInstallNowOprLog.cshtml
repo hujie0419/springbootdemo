@@ -1,0 +1,40 @@
+﻿@model Tuple<IEnumerable<Tuhu.Provisioning.DataAccess.Entity.ConfigHistory>, Dictionary<string, string>>
+@{
+    ViewBag.Title = "操作日志";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Model.Item1.Any())
+{
+    <table style="width:100%;margin-top:20px">
+        <tr>
+            <th>省</th>
+            <th>市</th>
+            <th>规格</th>
+            <th>PID</th>
+            <th>启用状态</th>
+            <th>操作</th>
+            <th>操作人</th>
+            <th>操作时间</th>
+        </tr>
+        @foreach (var opr in Model.Item1)
+        {
+            var oprValue = Newtonsoft.Json.JsonConvert.DeserializeObject<Tuhu.Provisioning.DataAccess.Entity.Tire.InstallNowModel>(opr.BeforeValue);
+                <tr>
+                    <td>@Model.Item2["province"]</td>
+                    <td>@Model.Item2["city"]</td>
+                    <td>@Model.Item2["tireSize"]</td>
+                    <td>@oprValue.PID</td>
+                    <td>@(oprValue.Status ? "启用" : "禁用")</td>
+                    <td>@opr.Operation</td>
+                    <td>@opr.Author</td>
+                    <td>@opr.ChangeDatetime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                </tr>
+        }
+    </table>
+}
+else
+{
+    <h1>无操作</h1>
+}
+

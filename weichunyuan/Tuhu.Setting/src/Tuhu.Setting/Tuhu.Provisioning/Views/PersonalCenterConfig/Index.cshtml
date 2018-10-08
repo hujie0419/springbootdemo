@@ -1,0 +1,170 @@
+﻿@using Tuhu.Provisioning.Models
+@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.PersonalCenterConfig>
+@{
+    ViewBag.Title = "各功能banner配置";
+    Layout = "~/Views/Shared/_PersonalCenterLeft.cshtml";
+}
+
+<h2>各功能banner配置</h2>
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    textarea {
+        width: 100px;
+        height: 100px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+
+    td {
+        width: 250px;
+    }
+</style>
+
+<div>
+    <a href="javascript:void(0)" class="btn" onclick="PersonalCenterConfig.Add()">添加</a>
+</div>
+<div>
+    <table style="width:100%;margin-top:20px;">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>位置</th>
+                <th>顺序</th>
+                <th>等级</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    @if (item.Location == 1)
+                    {
+                        <td>签到</td>
+                    }
+                    else if (item.Location == 2)
+                    {
+                        <td>个人中心</td>
+                    }
+                    else if (item.Location == 3)
+                    {
+                        <td>会员中心</td>
+                    }
+                    else if (item.Location == 4)
+                    {
+                        <td>订单成功页</td>
+                    }
+                    else if (item.Location == 5)
+                    {
+                        <td>违章查询无结果页</td>
+                    }
+                    else if (item.Location == 6)
+                    {
+                        <td>会员商城</td>
+                    }
+                    else if (item.Location == 7)
+                    {
+                        <td>个人中心浮层</td>
+                    }
+                    else if (item.Location == 8)
+                    {
+                        <td>会员商城浮层</td>
+                    }
+                    else if (item.Location == 9)
+                    {
+                        <td>第三方参数</td>
+                    }
+                    else if (item.Location == 10)
+                    {
+                        <td>个人中心中间Banner</td>
+                    }
+                    else if (item.Location == 11)
+                    {
+                        <td>下单成功页分享</td>
+                    }  
+
+                    <td>@item.Sort</td>
+                    <td>@item.Grade</td>
+                    <td>@(item.Status ? "启用" : "禁用")</td>
+                    <td>
+                        <a href="javascript:;" onclick="PersonalCenterConfig.Update(@item.Id)">编辑</a>&nbsp;&nbsp;
+                        <a href="javascript:;" onclick="PersonalCenterConfig.Delete(@item.Id)">删除</a>
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div>
+    @Html.Pager(Model.Pager, pageIndex => Url.RouteUrl(new { pageIndex }))
+</div>
+<div id="AddItem"></div>
+
+<script>
+    var PersonalCenterConfig = {
+
+        "Add": function () {
+            $("#AddItem").load('/PersonalCenterConfig/Edit?id=0');
+            $("#AddItem").dialog({
+                title: "添加",
+                width: 600,
+                height: 500,
+                modal: true
+            });
+        },
+        "Update": function (id) {
+            $("#AddItem").load('/PersonalCenterConfig/Edit?id=' + id);
+            $("#AddItem").dialog({
+                title: "修改",
+                width: 600,
+                height: 500,
+                modal: true
+            });
+        },
+        "Delete": function (id) {
+            if (window.confirm("您确定要删除吗？")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/PersonalCenterConfig/Delete",
+                    data: { "id": id },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/PersonalCenterConfig/Index";
+                        }
+                        else {
+                            alert("删除失败！");
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        }
+    }
+</script>  

@@ -1,0 +1,410 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+    <style>
+        .hint {
+            color: red;
+        }
+    </style>
+
+    <script src="~/Scripts/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $(document).ready(function () {
+                $("#CodeStartTime").datepicker({
+                    controlType: 'select',
+                    dateFormat: "yy.mm.dd"
+                });
+                $("#CodeEndTime").datepicker({
+                    controlType: 'select',
+                    dateFormat: "yy.mm.dd"
+                });
+            });
+        });
+
+        $(function () {
+            $("#CodeType").change(function () {
+
+                if ($("#CodeType").val() == "99") {
+                    $("#MinMoney").val("0");
+                    $("#Money").val("0");
+                    $("#MinMoney").attr("readonly", "readonly");
+                    $("#Money").attr("readonly", "readonly");
+                } else {
+                    $("#MinMoney").val("");
+                    $("#Money").val("");
+                    $("#MinMoney").removeAttr("readonly", "readonly");
+                    $("#Money").removeAttr("readonly", "readonly");
+                }
+            });
+        });
+
+        function BeforeSubmit() {
+            //if ($("#CodeChannel").val() == "") {
+            //    alert("请填写发放渠道！");
+            //    return false;
+            //}
+            if ($("#Validity").val() == "" && $("#CodeStartTime").val() != "" && $("#CodeEndTime").val() != "") {
+                if ($("#CodeStartTime").val() == "") {
+                    alert("请填写开始生效时间！");
+                    return false;
+                }
+                if ($("#CodeEndTime").val() == "") {
+                    alert("请填写结束生效时间！");
+                    return false;
+                }
+                //if ($("#Validity").val() == "") {
+                //    alert("请填写优惠券有效天数！");
+                //    return false;
+                //}
+                if ($("#CodeType").val() == "-1") {
+                    alert("请选择优惠券类型！");
+                    return false;
+                }
+                if ($("#Money").val() == "") {
+                    alert("请填写金额！");
+                    return false;
+                }
+                if ($("#MinMoney").val() == "") {
+                    alert("请填写限制最低金额！");
+                    return false;
+                }
+                if (isNaN($("#Money").val())) {
+                    alert("金额必须为数字！");
+                    return false;
+                }
+                //if (isNaN($("#Validity").val())) {
+                //    alert("兑换天数必须为数字！");
+                //    return false;
+                //}
+                if (isNaN($("#MinMoney").val())) {
+                    alert("限制最低金额必须为数字！");
+                    return false;
+                }
+                if ($("#Number").val() == "") {
+                    alert("请填写数量！");
+                    return false;
+                }
+                if ($("#IsActive").val() == "Null") {
+                    alert("请选择是否生效！");
+                    return false;
+                }
+
+                //描述
+                var Name = "";
+                if ($("#CodeType").val() == "1") {
+                    Name = "满" + $("#MinMoney").val() + "元可用，仅限轮胎产品使用";
+                }
+                if ($("#CodeType").val() == "2") {
+                    Name = "满" + $("#MinMoney").val() + "元可用，仅限保养产品使用";
+                }
+
+                if ($("#CodeType").val() == "5") {
+                    Name = "满" + $("#MinMoney").val() + "元可用，仅限洗车、打蜡、内饰清洗产品使用";
+
+                }
+                if ($("#CodeType").val() == "6") {
+                    Name = "每单立减" + $("#Money").val() + "元，每单仅限一张优惠券";
+                }
+                if ($("#CodeType").val() == "7") {
+                    Name = "满" + $("#MinMoney").val() + "元可用，仅限内饰清洗产品使用";
+                }
+                if ($("#CodeType").val() == "8") {
+                    Name = "满" + $("#MinMoney").val() + "元可用，仅限车品产品使用";
+                }
+                if ($("#CodeType").val() == "99") {
+                    Name = "洗车券可在支付时直接使用，仅限标准洗车";
+                }
+
+                var dateAStr = $("#CodeStartTime").val();
+
+                var arrA = dateAStr.split(".");
+
+                var dateA = new Date(arrA[0], arrA[1], arrA[2]);
+
+                var dateAT = dateA.getTime();
+
+                var dateBStr = $("#CodeEndTime").val();
+
+                var arrB = dateBStr.split(".");
+
+                var dateB = new Date(arrB[0], arrB[1], arrB[2]);
+
+                var dateBT = dateB.getTime();
+
+                if (dateAT >= dateBT) {
+                    alert("开始生效时间不能大于等于结束生效时间！");
+                    return false;
+                }
+                var Money = $("#Money").val();
+                var MinMoney = $("#MinMoney").val();
+                if (parseFloat(Money) > parseFloat(MinMoney)) {
+                    alert("金额不能高于限制最低金额！");
+                    return false;
+                }
+                if ($("#Number").val() <= 0 || $("#Number").val() % 1 !== 0) {
+                    alert("数量必须大于0并是整数！");
+                    return false;
+                }
+                //if ($("#Validity").val() <= 0 || $("#Validity").val() % 1 !== 0) {
+                //    alert("兑换天数必须大于0并是整数！");
+                //    return false;
+                //}
+                //if (!$("#Validity").val().match(new RegExp("^[0-9]+$"))) {
+                //    alert("兑换天数必须为整数！");
+                //    return false;
+                //}
+
+                if (isNaN($("#Number").val())) {
+                    alert("数量必须为数字！");
+                    return false;
+                } if ($("#Number").val() > 500) {
+                    alert("数量最多500");
+                    return false;
+                }
+                if (!$("#Number").val().match(new RegExp("^[0-9]+$"))) {
+                    alert("数量必须为整数！");
+                    return false;
+                }
+
+                var rest = {
+                    Name: Name,
+                    CodeChannel: $("#CodeChannel").val(),
+                    CodeStartTime: $("#CodeStartTime").val(),
+                    CodeEndTime: $("#CodeEndTime").val(),
+                    Validity: $("#Validity").val(),
+                    CodeType: $("#CodeType").val(),
+                    Money: $("#Money").val(),
+                    MinMoney: $("#MinMoney").val(),
+                    Number: $("#Number").val(),
+                    IsActive: $("#IsActive").val(),
+                    ParentID: $("#ParentID").val()
+                };
+                $.ajax({
+                    url: "/Promotion/DoGetAdd",
+                    type: "post",
+                    data: rest,
+                    success: function (data) {
+                        if (data == "ok") {
+                            $("#div_Window2").dialog("close");
+                            history.go(0);
+                        }
+                    }
+                });
+            } else if ($("#Validity").val() != "" && $("#CodeStartTime").val() == "" && $("#CodeEndTime").val() == "") {
+                //if ($("#CodeStartTime").val() == "") {
+                //    alert("请填写开始生效时间！");
+                //    return false;
+                //}
+                //if ($("#CodeEndTime").val() == "") {
+                //    alert("请填写结束生效时间！");
+                //    return false;
+                //}
+                if ($("#Validity").val() == "") {
+                    alert("请填写优惠券有效天数！");
+                    return false;
+                }
+                if ($("#CodeType").val() == "-1") {
+                    alert("请选择优惠券类型！");
+                    return false;
+                }
+                if ($("#Money").val() == "") {
+                    alert("请填写金额！");
+                    return false;
+                }
+                if ($("#MinMoney").val() == "") {
+                    alert("请填写限制最低金额！");
+                    return false;
+                }
+                if (isNaN($("#Money").val())) {
+                    alert("金额必须为数字！");
+                    return false;
+                }
+                if (isNaN($("#Validity").val())) {
+                    alert("兑换天数必须为数字！");
+                    return false;
+                }
+                if (isNaN($("#MinMoney").val())) {
+                    alert("限制最低金额必须为数字！");
+                    return false;
+                }
+                if ($("#Number").val() == "") {
+                    alert("请填写数量！");
+                    return false;
+                }
+                if ($("#IsActive").val() == "Null") {
+                    alert("请选择是否生效！");
+                    return false;
+                }
+
+                //描述
+                var Name = "";
+                if ($("#CodeType").val() == "1") {
+                    Name = "满" + $("#MinMoney").val() + "元可用，仅限轮胎产品使用";
+                }
+                if ($("#CodeType").val() == "2") {
+                    Name = "满" + $("#MinMoney").val() + "元可用，仅限保养产品使用";
+                }
+
+                if ($("#CodeType").val() == "5") {
+                    Name = "满" + $("#MinMoney").val() + "元可用，仅限洗车、打蜡、内饰清洗产品使用";
+
+                }
+                if ($("#CodeType").val() == "6") {
+                    Name = "每单立减" + $("#Money").val() + "元，每单仅限一张优惠券";
+                }
+                if ($("#CodeType").val() == "7") {
+                    Name = "满" + $("#MinMoney").val() + "元可用，仅限内饰清洗产品使用";
+                }
+                if ($("#CodeType").val() == "8") {
+                    Name = "满" + $("#MinMoney").val() + "元可用，仅限车品产品使用";
+                }
+                if ($("#CodeType").val() == "99") {
+                    Name = "洗车券可在支付时直接使用，仅限标准洗车";
+                }
+
+                //var dateAStr = $("#CodeStartTime").val();
+
+                //var arrA = dateAStr.split(".");
+
+                //var dateA = new Date(arrA[0], arrA[1], arrA[2]);
+
+                //var dateAT = dateA.getTime();
+
+                //var dateBStr = $("#CodeEndTime").val();
+
+                //var arrB = dateBStr.split(".");
+
+                //var dateB = new Date(arrB[0], arrB[1], arrB[2]);
+
+                //var dateBT = dateB.getTime();
+
+                //if (dateAT >= dateBT) {
+                //    alert("开始生效时间不能大于等于结束生效时间！");
+                //    return false;
+                //}
+                var Money = $("#Money").val();
+                var MinMoney = $("#MinMoney").val();
+                if (parseFloat(Money) > parseFloat(MinMoney)) {
+                    alert("金额不能高于等于限制最低金额！");
+                    return false;
+                }
+                if ($("#Number").val() <= 0 || $("#Number").val() % 1 !== 0) {
+                    alert("数量必须大于0并是整数！");
+                    return false;
+                }
+                if ($("#Validity").val() <= 0 || $("#Validity").val() % 1 !== 0) {
+                    alert("兑换天数必须大于0并是整数！");
+                    return false;
+                }
+                if (!$("#Validity").val().match(new RegExp("^[0-9]+$"))) {
+                    alert("兑换天数必须为整数！");
+                    return false;
+                }
+
+                if (isNaN($("#Number").val())) {
+                    alert("数量必须为数字！");
+                    return false;
+                } if ($("#Number").val() > 10000) {
+                    alert("数量最多10000");
+                    return false;
+                }
+                if (!$("#Number").val().match(new RegExp("^[0-9]+$"))) {
+                    alert("数量必须为整数！");
+                    return false;
+                }
+
+                var rest = {
+                    Name: Name,
+                    CodeChannel: $("#CodeChannel").val(),
+                    CodeStartTime: $("#CodeStartTime").val(),
+                    CodeEndTime: $("#CodeEndTime").val(),
+                    Validity: $("#Validity").val(),
+                    CodeType: $("#CodeType").val(),
+                    Money: $("#Money").val(),
+                    MinMoney: $("#MinMoney").val(),
+                    Number: $("#Number").val(),
+                    IsActive: $("#IsActive").val(),
+                    ParentID: $("#ParentID").val()
+                };
+                $.ajax({
+                    url: "/Promotion/DoGetAdd",
+                    type: "post",
+                    data: rest,
+                    success: function (data) {
+                        if (data == "ok") {
+                            $("#div_Window2").dialog("close");
+                            history.go(0);
+                        }
+                    }
+                });
+            } else if ($("#Validity").val() == "" && $("#CodeStartTime").val() == "" && $("#CodeEndTime").val() == "") {
+                alert("兑换有效天数与开始生效时间不能都为空或者有效天数为“0”");
+                return false;
+            }else {
+                alert("兑换有效天数与开始结束生效时间只能选填一项");
+                $("#Validity").val("");
+                $("#CodeStartTime").val("");
+                $("#CodeEndTime").val("");
+            }
+        }
+     </script>
+    </head>
+    <body>
+        <table id="tb">
+                <tr>
+                    <input type="text" id="PKID" style="display:none" />
+                    <input type="text" id="ParentID" style="display:none" value="@ViewBag.Parentid" />
+                    <input type="text" id="CodeChannel" style="display:none" value="@ViewBag.CodeChannel" />
+                    @*<td><span class="spRemind">*</span>发放渠道：<input type="text" id="CodeChannel" /></td>*@
+                    <td>数量：<input type="text" id="Number" /></td>
+                    <td>优惠券类型：<input type="text" style="display:none" id="typeid" />
+                        <select id="CodeType">
+                            <option value="-1">请选择</option>
+                            @*<option value="0">优惠券</option>*@
+                            <option value="1">轮胎券</option>
+                            <option value="2">保养券</option>
+                            @*<option value="3">5分洗车券</option>
+                            <option value="4">洗车券</option>*@
+                            <option value="5">美容抵用券</option>
+                            <option value="6">轮胎、保养券</option>
+                            <option value="7">内饰清洗券</option>
+                            <option value="8">车品券</option>
+                            @*<option value="11">保养免单券(买多少,返多少)</option>*@
+                            @*<option value="12">途虎现金券</option>*@
+                            <option value="99">免费洗车券</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="hint">*</span>优惠券开始生效时间：<input type="text" id="CodeStartTime" readonly="readonly" /></td>
+                    <td><span class="hint">*</span>优惠券结束生效时间：<input type="text" id="CodeEndTime" readonly="readonly" /></td>
+                    <td rowspan="2"><span class="hint">*提示：生效时间与有效天数只能选填一项</span></td>                   
+                </tr>
+                <tr>
+                    <td>金额：<input type="text" id="Money" /></td>
+                    <td><span class="hint">*</span>优惠券兑换后有效天数：<input type="text" id="Validity" /></td>
+                    
+
+                </tr>
+                <tr>
+                    <td>限制最低金额：<input type="text" id="MinMoney" /></td>
+                    <td>是否生效：<input type="text" style="display:none" id="ISAid"  />
+                        <select id="IsActive">
+                            <option value="Null">请选择</option>
+                            <option value="True">是</option>
+                            <option value="False">否</option>
+                        </select>
+                    </td>
+                </tr>
+        </table>
+        <div><input type="button" id="EditSubmit" style="display:none;" onclick="return BeforeSubmit();" /></div>
+    </body>
+    </html>

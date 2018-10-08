@@ -1,0 +1,872 @@
+﻿
+@{
+    ViewBag.Title = "第三方商城管理后台";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section head{
+    <link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/ProductVehicleType/css/bootstrap-datetimepicker.css" rel="stylesheet" />
+}
+<script src="https://file-tuhu-cn.alikunlun.com/yewu/oms/scripts/md503.js" type="text/javascript"></script>
+<script src="https://file-tuhu-cn.alikunlun.com/yewu/oms/scripts/verifyBtn.js" type="text/javascript"></script>
+<div class="title">
+    <h2>第三方商城管理后台</h2>
+</div>
+<div class="content">
+    @*搜索条件*@
+    <form class="form-inline" id="SerchElement">
+        <div class="form-group">
+            <label>筛选条件</label>
+        </div>
+        <div class="form-group form-group-sm">
+                <label >是否显示</label>
+                <select class="form-control" name="visiable">
+                    <option>全部</option>
+                    <option>显示</option>
+                    <option>不显示</option>
+                </select>
+            </div>
+        <div class="form-group form-group-sm">
+            <label>状态</label>
+            <select class="form-control" name="isEnable">
+                <option>全部</option>
+                <option>启用</option>
+                <option>禁用</option>              
+            </select>
+        </div>
+
+        <div class="form-group form-group-sm">
+            <label>批次ID</label>
+            <input type="text" class="form-control" name="branchId" placeholder="请天写批次ID">
+        </div>
+        <div class="form-group form-group-sm">
+            <label>批次名称</label>
+            <input type="text" class="form-control" name="branchName" placeholder="请天写批次名称">
+        </div>     
+        <button type="button" class="btn btn-primary" id="SerchBtn" value="">搜索</button>
+        <button type="button" class="btn btn-info" id="Refresh" value="">刷新三方数据缓存</button>
+    </form>
+    <p>
+        <br />
+    </p>
+    @*排序*@
+    <form class="form-inline" role="form">
+        <div class="form-group">
+            <label for="name">筛选条件</label>
+        </div>
+        <div class="form-group">
+            <div class="btn-group  btn-group-sm">
+                <button type="button" class="btn btn-primary" value="50" onclick="BtnSort(this)" >展示顺序</button>
+                <button type="button" class="btn btn-primary" value="10" onclick="BtnSort(this)" >批次数量</button>
+                <button type="button" class="btn btn-primary" value="20" onclick="BtnSort(this)" >库存数量</button>
+                <button type="button" class="btn btn-primary" value="30" onclick="BtnSort(this)" >上架日期</button>
+                <button type="button" class="btn btn-primary" value="40" onclick="BtnSort(this)" >下架日期</button>
+            </div>
+        </div>
+    </form>
+    <p>
+        <br />
+    </p>
+    <div>
+        <button type="button" class="btn btn-info" data-toggle="button" id="Create"> +新建</button>
+    </div>
+    @*数据展示，查询后的批次*@
+    <div class="table-responsive">
+        <table class="table table-striped table-hover table-condensed">
+            @*<caption>条纹表格布局</caption>*@
+            <thead>
+                <tr>
+                    <th>是否显示</th>
+                    <th>状态</th>
+                    <th>顺序</th>
+                    <th>批次ID</th>
+                    <th>批次名称 </th>
+                    <th>限领数量</th>
+                    <th>批次数量</th>
+                    <th>库存数量</th>
+                    <th>上架日期</th>
+                    <th>下架日期</th>
+                    <th>操作</th>
+                    <th>历史</th>                   
+                </tr>
+            </thead>
+            <tbody id="SerchMall"></tbody>
+        </table>
+    </div>
+    @*分页*@
+
+    <form class="form-inline" id="page" style="display:none">
+        <div class="form-group form-group-sm">
+            <label class="sr-only" for="exampleInputAmount">Amount (in dollars)</label>
+            <div class="button-group">
+                <button type="button" class="btn btn-primary btn-small" onclick="PrivatePage(this)">上一页</button>
+                <input type="text" class="form-control" id="currentPage">
+                <button type="button" class="btn btn-primary btn-small" onclick="NextPage(this)">下一页</button>
+            </div>
+        </div>
+        <button type="button" class="btn btn-primary btn-small" onclick="tragePage(this)">跳转</button>
+    </form>
+</div>
+@*编辑、新建*@
+<div class="modal fade" id="Branchmodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="overflow-y: scroll;" >
+    <div class="modal-dialog" style="width:1100px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="CreateBranchtitle"></h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" id="Operate" role="form">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <h5><label for="firstname" class="col-sm-3 control-label">状态</label></h5>
+                                    <div class="col-sm-9">
+                                        <select class="form-control" name="select">
+                                            <option>启用</option>
+                                            <option>禁用</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <h5>
+                                        <label for="lastname" class="col-sm-3 control-label">顺序</label>
+                                    </h5>
+                                    <div class="col-sm-9">
+                                        <input type="number" class="form-control" name="Sort" placeholder="请输入排序位置" onchange="SortChange(this)">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <h5>
+                                        <label for="lastname" class="col-sm-3 control-label">批次ID</label>
+                                    </h5>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="bratchID" maxLength="40" placeholder="请输入批次ID" onchange="tip(this)">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <h5>
+                                        <label for="lastname" class="col-sm-3 control-label">批次名称</label>
+                                    </h5>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="BatchName"   readonly="readonly" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <h5>
+                                        <label for="lastname" class="col-sm-3 control-label">限领数量</label>
+                                    </h5>
+                                    <div class="col-sm-9">
+                                        <input type="number" class="form-control" name="LimitQty" id="inputSor"  readonly="readonly">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <h5>
+                                        <label for="lastname" class="col-sm-3 control-label">批次数量</label>
+                                    </h5>
+                                    <div class="col-sm-9">
+                                        <input type="number" class="form-control" name="BatchQty" id="inputSor"  readonly="readonly">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <h5>
+                                        <label for="lastname" class="col-sm-3 control-label">库存数量</label>
+                                    </h5>
+                                    <div class="col-sm-9">
+                                        <input type="number" class="form-control" name="StockQty" id="inputSor"  readonly="readonly">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <h5><label for="lastname" class="col-sm-3 control-label">上架日期</label></h5>
+                                    <div class="col-sm-9">
+                                        <input type="text"  id="datetimepickerOne" name="StartDateTime" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd '})" readonly="readonly" >
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group">
+                                    <h5>
+                                        <label for="lastname" class="col-sm-3 control-label">下架日期</label>
+                                    </h5>
+                                    <div class="col-sm-9">
+                                        <input type="text"  id="datetimepickerTwo" name="EndDateTime" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd '})" readonly="readonly">
+
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <h5>
+                                        <label for="lastname" class="col-sm-3 control-label">图片</label>
+                                    </h5>
+                                    <div class="col-sm-9">
+                                        <input type="file" id="imagePrevInEditor" name="imagePrev" onchange="UploadImg(this)" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <img id="imagePreviewer" style="width: 270px;" />
+                                </div>
+                                <div class="form-group">
+                                    <h5>
+                                        <label class="col-sm-3 control-label" for="idCard">图片路径</label>
+                                    </h5>
+                                    <div class="col-sm-4">
+                                        <textarea rows="2" id="ImageUrl" style="width: 200px;"  name="ImageUrl" readonly></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div>
+                                    <button type="button" class="btn btn-info" data-toggle="button" id="CreateDesc"> +新建</button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover table-condensed">
+                                        @*<caption>条纹表格布局</caption>*@
+                                        <thead>
+                                            <tr>
+                                                <th>标题</th>
+                                                <th>描述</th>
+                                                <th>排序</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="Description">
+
+                                        </tbody>
+
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="Conmmit">保存</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+@*询问是否需要刷新缓存*@
+<div id="RefreshThird" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" >
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h5 class="modal-title">刷新缓存询问框</h5>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <label class="col-md-12">是否需要刷新缓存？</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="RefreshYes">刷新</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消 </button>
+            </div>
+        </div>
+    </div>
+</div>
+@*描述*@
+<div class="modal fade" id="dec" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="CreateBranchtitle">详细描述</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" id="descr" role="form">
+                    <div class="form-group">
+                        <h5>
+                            <label for="lastname" class="col-sm-3 control-label">标题</label>
+                        </h5>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" name="intitle" id="intitle" placeholder="请输入标题">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <h5>
+                            <label for="lastname" class="col-sm-3 control-label">描述</label>
+                        </h5>
+                        <div class="col-sm-9">
+                            <textarea type="text" class="form-control" name="inDesc" id="inDesc" placeholder="请输入描述" style="height: 100px;"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <h5><label for="lastname" class="col-sm-3 control-label">排序</label></h5>
+                        <div class="col-sm-9">
+                            <input type="number" class="form-control" name="inSort" id="inSort" placeholder="排序不能重复" >
+                        </div>
+                    </div>
+                    <br />
+                  </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="saveCommit">保存</button>
+            </div>
+            </div>
+        </div>   
+</div>
+
+@*历史*@
+<div class="modal fade" id="history" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" >操作历史</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" id="descr" role="form">
+                    <div class="form-group">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover table-condensed">
+                                @*<caption>条纹表格布局</caption>*@
+                                <thead>
+                                    <tr>
+                                        <th>用户名</th>
+                                        <th>操作</th>
+                                        <th>时间</th>                                       
+                                    </tr>
+                                </thead>
+                                <tbody id="historymall"></tbody>
+
+                            </table>
+                        </div>
+                    </div>
+               
+                    <br />
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+             
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script src="~/Content/listmenu/js/jquery.min.js"></script>
+    <script src="~/Content/ProductVehicleType/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/My97DatePicker/WdatePicker.js"></script>
+    <script src="~/Content/ProductVehicleType/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="~/Content/ProductVehicleType/js/bootstrap-datetimepicker.zh-CN.js"></script>
+<script src="~/Scripts/ajaxfileupload.js"></script>
+    <script>
+        var oType = "", branchId = null, select = 00, pageSize = 50, batchName = "", isEnable = "", visiable = "", pageNumber = 1, Count = 0, pkid = 0, oldsort = 0;
+        $(function () {
+            //日期选择器
+            //$('#datetimepickerOne').datetimepicker({
+            //    format: 'yyyy-mm-dd',
+            //    autoclose: true, //自动关闭
+            //    minView: 2, //最精准的时间选择为日期0-分 1-时 2-日 3-月
+            //    weekStart: 1,
+            //    language: 'zh-CN',
+            //    pickerPosition: 'top-left'
+            //});
+            if ($('#datetimepickerOne').val() === "") {
+                $('#datetimepickerOne').val(GetDateStr(-1));
+            }
+            if ($('#datetimepickerTwo').val() === "") {
+                $('#datetimepickerTwo').val(GetDateStr(1));
+            }
+            //$('#datetimepickerTwo').datetimepicker({
+            //    format: 'yyyy-mm-dd',
+            //    autoclose: true, //自动关闭
+            //    minView: 2, //最精准的时间选择为日期0-分 1-时 2-日 3-月
+            //    weekStart: 1,
+            //    language: 'zh-CN',
+            //    pickerPosition: 'top-right'
+            //});
+            serch();
+        });
+        //创建三方商城记录
+        $('#Create').click(function () {
+            array = [];
+            oType = "insert";
+            $('#CreateBranchtitle').html("新增三方商城记录");
+            $('select[name=select]').val();
+            $('input[name=Sort]').val("");
+            $('input[name=bratchID]').val("");
+            $('input[name=BatchName]').val("");
+            $('input[name=LimitQty]').val("");
+            $('input[name=BatchQty]').val("");
+            $('input[name=StockQty]').val("");
+            $('input[name=StartDateTime]').val("");
+            $('input[name=EndDateTime]').val("");
+
+            $('#Description').empty();
+            $('#imagePrevInEditor').empty();
+            $('#imagePreviewer').attr("src", "");
+            $("#ImageUrl").val("");
+                $('#Branchmodal').modal('show');
+        });
+        $('#Conmmit').click(function () {         
+            var $data = $('#Operate').serializeArray();
+            var isEnabled = null, branchIdC = "", branchNameC = "", limitQty = "", batchQty = "", stockQty = "", startDateTime = "", endDateTime = "", img = "", sort = 0;
+            $data.map(function (v) {
+                if (v.name === "select") {
+                    if (v.value == "全部") {
+                        isEnabled = null;
+                    }
+                    if (v.value == "启用") {
+                        isEnabled = true;
+                    }
+                    if (v.value == "禁用") {
+                        isEnabled = false;
+                    }
+                }
+                if (v.name === "Sort") {
+                    sort = v.value === "" ? null : v.value;
+                }
+                if (v.name === "bratchID") {
+                    branchIdC = v.value === "" ? null : v.value;
+                }
+                if (v.name === "BatchName") {
+                    branchNameC = v.value === "" ? null : v.value;
+                }
+                if (v.name === "LimitQty") {
+                    limitQty = v.value === "" ? null : v.value;
+                }
+                if (v.name === "BatchQty") {
+                    batchQty = v.value === "" ? null : v.value;
+                }
+                if (v.name === "StockQty") {
+                    stockQty = v.value === "" ? null : v.value;
+                }
+                if (v.name === "StartDateTime") {
+                    startDateTime = v.value === "" ? null : v.value;
+                }
+                if (v.name === "EndDateTime") {
+                    endDateTime = v.value === "" ? null : v.value;
+                }
+                if (v.name === "Img") {
+                    img = v.value === "" ? null : v.value;
+                }
+            });
+            if (sort == null || sort == "")
+            {
+                alert("请填写顺序！"); return false;
+            }
+            if (sort > 999999999) {
+                alert("顺序填写过大！"); return false;
+            }
+            var postdata = { sort: sort };
+            if (parseInt(sort) != oldsort && oldsort != 0) {
+                $.post("@Url.Action("SortChange")", postdata, function (data) {
+
+                    if (data.msg > 0) {
+                        alert("该顺序已存在，请重新填写顺序！"); return false;
+                    }
+                    else
+                    {
+                        if (branchIdC == null || branchIdC == "") {
+                            alert("请填写批次ID！"); return false;
+                        }
+                        if (startDateTime == null || startDateTime == "") {
+                            alert("请填写上架日期！"); return false;
+                        }
+                        if (endDateTime == null || endDateTime == "") {
+                            alert("请填写下架日期！"); return false;
+                        }
+                        if (startDateTime > endDateTime) {
+                            alert("上架时间不能晚于下架时间！");
+                            return false;
+                        }
+                        var descri = JSON.stringify(array);
+                        img = $("#ImageUrl").val();
+                        var postdata = { pkid: pkid, type: oType, branchId: branchIdC, branchName: branchNameC, isEnabled: isEnabled, sort: sort, limitQty: limitQty, batchQty: batchQty, startDateTime: startDateTime, endDateTime: endDateTime, description: descri, ImageUrl: img };
+                        $.post("@Url.Action("Operate")", postdata, function (data) {
+                            if (data.msg > 0) {
+                                $('#Branchmodal').modal('hide');
+                                serch();
+                            } else {
+                                alert("操作失败，保存错误！");
+                            }
+                        });
+                    }
+                }).error(function () { alert("顺序填写错误，请重新填写顺序！"); });
+
+            } else {
+                 if (branchIdC == null || branchIdC == "") {
+                            alert("请填写批次ID！"); return false;
+                        }
+                        if (startDateTime == null || startDateTime == "") {
+                            alert("请填写上架日期！"); return false;
+                        }
+                        if (endDateTime == null || endDateTime == "") {
+                            alert("请填写下架日期！"); return false;
+                        }
+                        if (startDateTime > endDateTime) {
+                            alert("上架时间不能晚于下架时间！");
+                            return false;
+                        }
+                        var descri = JSON.stringify(array);
+                        img = $("#ImageUrl").val();
+                        var postdata = { pkid: pkid, type: oType, branchId: branchIdC, branchName: branchNameC, isEnabled: isEnabled, sort: sort, limitQty: limitQty, batchQty: batchQty, startDateTime: startDateTime, endDateTime: endDateTime, description: descri, ImageUrl: img };
+                        $.post("@Url.Action("Operate")", postdata, function (data) {
+                            if (data.msg > 0) {
+                                $('#Branchmodal').modal('hide');
+                                serch();
+                            } else {
+                                alert("操作失败，保存错误！");
+                            }
+                        });
+            }
+
+        });
+        //编辑
+        function Edit(e) {
+            oType = "update";
+            pkid = $(e).data().id;
+            var postdata = { pkid: pkid };
+            $.post("@Url.Action("Detail")", postdata, function (item) {
+                if (item != null && item != [])
+                {
+                    $('#CreateBranchtitle').html("编辑三方商城记录");
+                    var value = item.IsEnabled == true ? "启用" : "禁用"
+                    if (value == "启用") {
+                        $('select[name=select]').find('option[text = 启用]').attr("selected", true);
+                    } else {
+                        $('select[name=select]').find('option[text = 禁用]').attr("selected", true);
+                    }
+                    $('input[name=Sort]').val(item.Sort);
+                    $('input[name=bratchID]').val(item.BatchGuid);
+                    $('input[name=BatchName]').val(item.BatchName);
+                    $('input[name=LimitQty]').val(item.LimitQty);
+                    $('input[name=BatchQty]').val(item.BatchQty);
+                    $('input[name=StockQty]').val(item.StockQty);
+                    $('input[name=StartDateTime]').val(formatDate1(item.StartDateTime));
+                    $('input[name=EndDateTime]').val(formatDate1(item.EndDateTime));
+                    $('#imagePrevInEditor').val("");
+                    $("#imagePreviewer").attr("src", item.ImgUrl);
+                    $("#ImageUrl").val(item.ImageUrl);
+                    var trs = "";
+                    oldsort = item.Sort;
+                    array = [];
+                    $('#Description').empty();
+                    if (item.Description != null && item.Description != "") {
+                        var des = JSON.parse(item.Description);
+
+                        array = des;
+                        $.each(des, function (i, de) {
+                            trs += '<tr><td>' + de.title + '</td><td>' + de.Description + '</td><td>' + de.Sort + '</td><td><button  onclick="RemoveSelf(' + identity + ',this)">删除</button></td></tr>';
+                        });
+                        $('#Description').empty().append(trs);
+                    }
+                    $('#Branchmodal').modal('show');
+                } else {
+                    alert("未找到改记录！");
+                }
+            });
+        }
+        //历史
+        function history(e) {
+            pkid = $(e).data().id;
+            var postdata = { pkid: pkid };
+            $.post("@Url.Action("SelectLog")", postdata, function (item) {
+                if (item != null && item != [])
+                {
+                    $('#historymall').empty().append(item);
+                    $('#history').modal('show');
+                } else {
+                    alert("未找到改记录！");
+                }
+            });
+
+        }
+        //提示
+        function tip(e) {
+            branchIdD = $(e).val();
+            $.post("@Url.Action("SelectBatch")", { batchId: branchIdD }, function (data) {
+                if (data != null && data !=[]) {
+                    $('input[name=BatchName]').val(data.BatchName);
+                    $('input[name=LimitQty]').val(data.LimitQty);
+                    $('input[name=BatchQty]').val(data.BatchQty);
+                    $('input[name=StockQty]').val(data.StockQty);
+
+                }
+            }).error(function () {
+                alert("请填写正确的批次ID格式，确认该批次ID!"); $('input[name=bratchID]').val("");
+                $('input[name=BatchName]').val("");
+                $('input[name=LimitQty]').val("");
+                $('input[name=BatchQty]').val("");
+                $('input[name=StockQty]').val("") });
+        }
+        //排序
+        function BtnSort(e) {
+            var num = $(e).val();
+            select = num;
+            if (num % 2 == 0)
+            { $(e).val(Number(num) + 1); }
+            else { $(e).val(Number(num) - 1); }
+            serch();
+        }
+        //搜索
+        function serch() {
+            var postdata = { pageSize: pageSize, pageNumber: pageNumber, isEnabled: isEnable, visible: visiable, branchName: batchName, batchGuid: branchId, sort: select };
+            $.post("@Url.Action("SelectCout")", postdata, function (data) {
+                Count = Math.ceil(data.msg / pageSize);
+
+
+                if (Count > 1)
+                { $('#page').show(); } else {
+                    $('#page').hide();
+                }
+                if (Count > 0) {
+                    $.post("@Url.Action("Select")", postdata, function (data) {
+                        if (data != null && data.length) {
+                            var tr = "";
+                            $.each(data, function (i, item) {
+                                var strat = formatDate(item.StartDateTime);
+                                var end = formatDate(item.EndDateTime);
+                                tr += '<tr><td>' + (item.Visible == 0 ? "显示" : "不显示") + '</td><td>' + (item.IsEnabled == true ? "启用" : "禁用") + '</td><td>' + item.Sort + '</td><td>' + item.BatchGuid + '</td><td>' + item.BatchName + ' </td><td>' + item.LimitQty + '</td><td>' + item.BatchQty + '</td><td>' + item.StockQty + '</td><td>' + strat + '</td><td>' + end + '</td><td><a href="#"  btnkey="EditCode" istuhuverify="2" onclick="Edit(this)" data-id="' + item.PKID + '">编辑</a></td><td><a href="#" onclick="history(this)" data-id="' + item.PKID + '">历史</a></td></tr>';
+                            });
+                            $('#SerchMall').empty().append(tr);
+
+                            $('#currentPage').val(pageNumber);
+                        }
+                        else {
+
+                            $('#currentPage').val(pageNumber-1);
+                            alert("该页没有记录！");
+                        }
+                    })
+                } else {
+
+                    $('#currentPage').val(pageNumber-1);
+                    alert("没有符合条件的结果！");
+                }
+            });
+        }
+        $('#SerchBtn').click(function () {
+            var $data = $('#SerchElement').serializeArray();
+            $data.map(function (v) {
+                if (v.name === "visiable") {
+                    if (v.value === "全部") {
+                        visiable = null;
+                    }
+                    if (v.value === "显示") {
+                        visiable = 0;
+                    }
+                    if (v.value === "不显示") {
+                        visiable = 1;
+                    }
+                }
+                if (v.name === "isEnable") {
+                    if (v.value === "全部") {
+                        isEnable = null;
+                    }
+                    if (v.value === "启用") {
+                        isEnable = true;
+                    }
+                    if (v.value === "禁用") {
+                        isEnable = false;
+                    }
+                }
+                if (v.name === "branchId") {
+                    branchId = v.value === "" ? null : v.value;
+                }
+                if (v.name === "branchName") {
+                    batchName = v.value === "" ? null : v.value;
+                }
+            });
+            pageNumber = 1;
+            serch();
+        })
+        //图片上传
+        function UploadImg(e) {
+            $("#hintsInEditor").hide();
+            var $e = $(e);
+            $.ajaxFileUpload({
+                url: "@Url.Action("UploadImage")",
+                secureuri: false,
+                fileElementId: $e.attr("id"),
+                dataType: 'JSON',
+                type: 'post',
+                success: function (result) {
+                    if (result != "") {
+                        result = jQuery.parseJSON(jQuery(result).text());
+                        $("#imagePreviewer").attr("src", result.msg);
+                        $("#ImageUrl").val(result.res);
+                    } else {
+                        alert("上传失败！");
+                    }
+                },
+                error: function () {
+                    alert("上传失败！");
+
+                }
+            });
+        }
+
+        //分页
+        //前一页
+        function PrivatePage(e) {
+            var pageNum = $(e).next().val();
+            if (pageNum > 1) {
+                pageNumber = pageNum - 1;
+                FenPage()
+            }
+            $('#currentPage').val(pageNumber);
+        }
+        //后一页
+        function NextPage(e) {
+            var pageNum = $(e).prev().val();
+            if (pageNum > 0 && pageNum<=Count) {
+                pageNumber = Number(pageNum) + 1;
+                FenPage();
+            }
+            $('#currentPage').val(pageNumber);
+        }
+        //跳转
+        function tragePage(e) {
+            var pageNum = $('#currentPage').val();
+            if (pageNum > 0 && pageNum <= Count) {
+                pageNumber = Number(pageNum);
+                FenPage();
+            } $('#currentPage').val(pageNumber);
+        }
+        $('#currentPage').bind('keypress', function (event) {
+            if (event.keyCode == "13") {
+                var pageNum = $('#currentPage').val();
+                if (pageNum > 0 && pageNum <= Count) {
+                    pageNumber = Number(pageNum);
+                    FenPage();
+                }
+            } $('#currentPage').val(pageNumber);
+        });
+        function FenPage() {
+            serch();
+        }
+
+        function GetDateStr(addDayCount) {
+            var dd = new Date();
+            var link = "-", link1 = "-";
+            dd.setDate(dd.getDate() + addDayCount); //获取AddDayCount天后的日期
+            var y = dd.getFullYear();
+            var m = dd.getMonth() + 1; //获取当前月份的日期
+            var d = dd.getDate();
+            if (m < 10) {
+                link = "-" + "0";
+            }
+            if (d < 10) {
+                link1 = "-" + "0";
+            }
+            return y + link + m + link1 + d;
+        }
+
+        function formatDate(now) {
+            now = now.replace(/\/Date\(/, "").replace(")/", "");
+            now = new Date(parseInt(now));
+            var year = now.getFullYear();
+            var month = jia0(now.getMonth() + 1);
+            var date = jia0(now.getDate());
+            var hour = jia0(now.getHours());
+            var minute = jia0(now.getMinutes());
+            var second = jia0(now.getSeconds());
+            return year + "年" + month + "月" + date + "日   " + hour + ":" + minute + ":" + second;
+        }
+        function formatDate1(now) {
+            now = now.replace(/\/Date\(/, "").replace(")/", "");
+            now = new Date(parseInt(now));
+            var year = now.getFullYear();
+            var month = jia0(now.getMonth() + 1);
+            var date = jia0(now.getDate());
+            var hour = jia0(now.getHours());
+            var minute = jia0(now.getMinutes());
+            var second = jia0(now.getSeconds());
+            return year + "-" + month + "-" + date;
+        }
+        function jia0(n) {
+            if (n < 10)
+                n = "0" + n;
+            return n;
+        }
+
+
+        $('#CreateDesc').click(function () {
+            $('input[name=intitle]').val("");
+            $('textarea[name=inDesc]').val("");
+            $('input[name=inSort]').val("");
+            $('#dec').modal('show');
+        })
+        //刷新缓存按钮
+        $('#Refresh').click(function () {
+            $('#RefreshThird').modal('show');
+        })
+        $('#RefreshYes').click(
+            function () {
+                $.post("@Url.Action("RefreshCache")", function (data) {
+                    if (data.msg == true) {
+                        alert("缓存刷新成功！");
+                    }
+                    else {
+                        alert("缓存刷新失败，请稍后再试！")
+                    }
+                });
+                $('#RefreshThird').modal('hide');
+            }
+        )
+        var identity = 0;
+        $('#saveCommit').click(function () {
+            var title = $('input[name=intitle]').val();
+            var description = $('textarea[name=inDesc]').val();
+            var sort = $('input[name=inSort]').val();
+
+            for (var i = 0; i < array.length; i++) {
+                if (array[i].Sort == sort)
+                {
+                    alert("该顺序已存在，请重新填写！");
+                    return false;
+                }
+            }
+
+            var data = {
+                title: title,
+                Description:description,
+                Sort: sort
+
+            };
+            array.push(data);
+            var text = '<tr><td>' + title + '</td><td>' + description + '</td><td>' + sort + '</td><td><button  onclick="RemoveSelf(' + identity + ',this)">删除</button></td></tr>';
+            $('#Description').append(text);
+            $('#dec').modal('hide');
+            identity++;
+        })
+
+        function RemoveSelf(identity, obj)
+        {
+            var index = $(obj).parent().parent().index();
+            array.splice(index,1);
+            $(obj).parent().parent().remove();
+        };
+        var array = new Array();
+
+
+        function SortChange(e) {
+
+            var $val = $(e).val();
+            if ($val == null || $val == "") {
+                alert("请填写顺序！");
+            }
+            if ($val != oldsort) {
+                var postdata = { sort: $val };
+                $.post("@Url.Action("SortChange")", postdata, function (data) {
+                    if (data.msg > 0) {
+                        alert("该顺序已存在，请重新填写顺序！");
+                    }
+                });
+            }
+        }
+        </script>
+        }

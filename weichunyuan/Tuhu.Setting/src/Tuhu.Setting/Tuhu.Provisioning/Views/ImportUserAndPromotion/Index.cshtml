@@ -1,0 +1,37 @@
+﻿@{
+    ViewBag.Title = "批量导入武汉光谷一路店会员信息和优惠券";
+}
+<script src="~/Scripts/ajaxfileupload.js"></script>
+<h2>批量导入武汉光谷一路店会员信息和优惠券</h2>
+
+<form method="post" action="" enctype="multipart/form-data">
+    <input type="file" id="btnImport" class="btnImport" name="btnImport">
+</form>
+<script type="text/javascript">
+    $('#btnImport').on('change', function() {
+        var id = $(this).attr('id');
+        $.ajaxFileUpload({
+            url: '/ImportUserAndPromotion/ImportGrade',
+            secureuri: false,
+            fileElementId: id,
+            dataType: 'json',
+            async: false,
+            data: {},
+            type: "post",
+            success: function(result) {
+                console.log(result);
+                result = JSON.parse(result);
+                if (result.Status == 0) {
+                    alert("导入成功！");
+               } else {
+                   alert(html(result.Error));
+                }
+                alert(result);
+            },
+            error: function(data) //服务器响应失败处理函数
+            {
+                alert(JSON.stringify(data));
+            }
+        });
+    });
+</script>

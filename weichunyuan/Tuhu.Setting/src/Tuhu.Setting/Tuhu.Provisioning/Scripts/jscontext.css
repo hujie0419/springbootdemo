@@ -1,0 +1,117 @@
+body, table
+{
+    font-family: Verdana, Helvetica, sans-serif;
+    font-size: 12px;
+}
+.captions
+{
+    font-weight: bold;
+    font-size: 13px;
+}
+.tblWide
+{
+    max-width: 820px;
+}
+.tblWide td
+{
+    padding: 3px;
+    vertical-align: top;
+    border: solid 1px silver;
+}
+.code_container
+{
+    padding: 10px;
+    background: #202020;
+    color: Lime;
+    font-size: 11px;
+    max-width: 830px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+}
+.codeBlock
+{
+    display: block;
+}
+.italicsTexts
+{
+    font-style: italic;
+}
+a
+{
+    color: Blue;
+    text-decoration: none;
+}
+#demoTbl
+{
+    border-left:solid 1px #808080;
+    border-top:solid 1px #808080;
+    border-bottom:solid 1px #808080;
+}
+#demoTbl td
+{
+    padding:5px;
+}
+#demoTbl .tblHeaders
+{
+    background:#404040;
+    color:#fff;
+    font-weight: bold;
+    text-align:left;
+}
+#demoTbl tr
+{
+    cursor:pointer;
+}
+#demoTbl td
+{
+    border-right:solid 1px #808080;
+}
+.oddRw
+{
+    background:#fff;
+}
+.evenRw
+{
+    background:#F0F0F0;
+}
+#demoTbl .oddRw:hover,#demoTbl .evenRw:hover
+{
+    background:#4682B4;
+    color:#fff;
+}
+.selectedRw
+{
+    background:#483D8B !important;
+    color:#fff;
+}
+
+/* JSCONTEXT STYLES */
+.jscontextBtn
+{
+    margin-bottom: 2px;
+    padding: 3px;
+    min-width: 100px;
+    background: #e4e4e4;
+    cursor: pointer;
+    font-size: 11px;
+    text-align: left;
+}
+.jscontextBtn:hover
+{
+    background: gray;
+    color: #fff;
+}
+
+.contextPopUp
+{
+    width: 300px;
+    height: 60px;
+    background: #fff;
+    padding: 10px;
+}
+.contextCaption
+{
+    display: block;
+    margin-bottom: 10px;
+    font-weight:bold;
+}

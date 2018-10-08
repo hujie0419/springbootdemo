@@ -1,0 +1,122 @@
+﻿
+@using Tuhu.Provisioning.Models
+@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.ShareActivityRulesConfig>
+@{
+    ViewBag.Title = "分享赚钱活动规则配置";
+    Layout = "~/Views/Shared/_PersonalCenterLeft.cshtml";
+}
+
+<h2>分享赚钱活动规则配置</h2>
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    textarea {
+        width: 100px;
+        height: 100px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+
+    td {
+        width: 250px;
+    }
+</style>
+
+<div>
+    <a href="javascript:void(0)" class="btn" onclick="ShareActivityRulesConfig.Add()">添加</a>
+</div>
+<div>
+    <table style="width:100%;margin-top:20px;">
+        <thead>
+            <tr>
+                <th style="width:10%;">Id</th>
+                <th style="width:10%;">图片</th>           
+                <th style="width:10%;">状态</th>
+                <th style="width:10%;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td><img style="height:100px;width:100px;" src="@item.Image" alt="" /> </td>              
+                    <td>@(item.Status ? "启用" : "禁用")</td>
+                    <td>
+                        <a href="javascript:;" onclick="ShareActivityRulesConfig.Update(@item.Id)">编辑</a>&nbsp;&nbsp;
+                        <a href="javascript:;" onclick="ShareActivityRulesConfig.Delete(@item.Id)">删除</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div>
+    @Html.Pager(Model.Pager, pageIndex => Url.RouteUrl(new { pageIndex }))
+</div>
+<div id="AddItem"></div>
+
+<script>
+    var ShareActivityRulesConfig = {
+
+        "Add": function () {
+            $("#AddItem").load('/ShareActivityRulesConfig/Edit?id=0');
+            $("#AddItem").dialog({
+                title: "添加",
+                width: 900,
+                height: 800,
+                modal: true
+            });
+        },
+        "Update": function (id) {
+            $("#AddItem").load('/ShareActivityRulesConfig/Edit?id=' + id);
+            $("#AddItem").dialog({
+                title: "修改",
+                width: 900,
+                height: 800,
+                modal: true
+            });
+        },
+        "Delete": function (id) {
+            if (window.confirm("您确定要删除吗？")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/ShareActivityRulesConfig/Delete",
+                    data: { "id": id },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/ShareActivityRulesConfig/Index";
+                        }
+                        else {
+                            alert("删除失败！");
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        }
+    }
+</script>  

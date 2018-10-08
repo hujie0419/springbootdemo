@@ -1,0 +1,94 @@
+﻿@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.VehicleTireRecommendLogModel>
+        @{ 
+    ViewBag.Title = "推荐轮胎配置操作日志";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@helper ShowChange(string oldC, string newC)
+{
+if (string.IsNullOrWhiteSpace(oldC))
+{
+    if (!string.IsNullOrWhiteSpace(newC))
+    {
+       
+                <td>无->@(newC)</td>
+    }
+    else
+    {
+            <td>无</td>
+    }
+}
+else
+{
+    if (!string.IsNullOrWhiteSpace(newC))
+    {
+        if (newC == oldC)
+        {
+                <td>无变化</td>
+            }
+            else
+            {
+               
+                    <td>@(oldC)->@(newC)</td>
+            }
+        }
+        else
+        {
+           
+                <td>@(oldC)->无 </td>
+    
+    }
+}
+}
+
+@if (Model.Any())
+{
+<table width="100%">
+    <tr>
+        <th>车型ID</th>
+        <th>轮胎规格</th>
+        <th>操作人</th>
+        <th>操作</th>
+        <th>操作明细</th>
+        <th>操作时间</th>
+    </tr>
+    @foreach (var OPR in Model)
+    {
+        <tr>
+            <td>@Request.QueryString["vehicleID"]</td>
+            <td>@Request.QueryString["tireSize"]</td> 
+            <td>@OPR.Author</td>
+            <td>@OPR.Operation</td>
+            <td>
+                <table>
+                    <tr>
+                        <th></th>
+                        <th>PID</th>
+                        <th>推荐原因</th>
+                    </tr>
+                    <tr>
+                        <td>第一个</td>
+                        @ShowChange(OPR.LogValue.OldPID1, OPR.LogValue.NewPID1)
+                        @ShowChange(OPR.LogValue.OldReason1, OPR.LogValue.NewReason1)
+                    </tr>
+                    <tr>
+                        <td>第二个</td>
+                        @ShowChange(OPR.LogValue.OldPID2, OPR.LogValue.NewPID2)
+                        @ShowChange(OPR.LogValue.OldReason2, OPR.LogValue.NewReason2)
+                    </tr>
+                    <tr>
+                        <td>第三个</td>
+                        @ShowChange(OPR.LogValue.OldPID3, OPR.LogValue.NewPID3)
+                        @ShowChange(OPR.LogValue.OldReason3, OPR.LogValue.NewReason3)
+                    </tr>
+                </table>
+            </td>
+            <td>@OPR.ChangeDateTime</td>
+        </tr>
+    }
+</table>
+}
+else
+{
+    <h1>无操作日志</h1>
+}
+

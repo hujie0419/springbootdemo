@@ -1,0 +1,96 @@
+﻿using RestSharp;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Web.Configuration;
+using System.Web.Mvc;
+using Tuhu.Component.Framework.FileUpload;
+using Tuhu.Provisioning.Business.Push;
+using Tuhu.Provisioning.Common;
+using Tuhu.Provisioning.DataAccess.Entity.Push;
+using Tuhu.Provisioning.Models.Push;
+
+namespace Tuhu.Provisioning.Controllers
+{
+    public class EsQueryController : Controller
+    {
+        private static string EsUrl = WebConfigurationManager.AppSettings["EsUrl"];
+        private readonly string Get;
+
+        [PowerManage]
+        public ActionResult Index()
+        {
+            return View();
+        }
+
+        public ActionResult SubmitEsQuery(string method,string esIndex, string esJson)
+        {
+            var errorMsg = CheckWithNoPassReson(method, esIndex);
+            if (!string.IsNullOrEmpty(errorMsg))
+            {
+                return Json(new
+                {
+                    isSuccess = false,
+                    result = errorMsg
+                }, "text/html");
+            }
+            var methodhttp = (Method)Enum.Parse(typeof(Method), method);
+            try
+            {
+                var request = new RestRequest(methodhttp);
+                request.RequestFormat = DataFormat.Json;
+                request.AddParameter("application/json", esJson, ParameterType.RequestBody);
+                var requestClient = new RestClient(EsUrl + esIndex);
+                requestClient.Encoding = Encoding.UTF8;
+                var resultResponse = requestClient.ExecuteAsPost(request, method);
+                object jsonObj = null;
+                try
+                {
+                     jsonObj = Newtonsoft.Json.JsonConvert.DeserializeObject(resultResponse.Content);
+                }
+                catch (Exception e)
+                {
+                    jsonObj = resultResponse.Content;
+                }
+                var result = new
+                {
+                    isSuccess = (resultResponse.StatusCode == System.Net.HttpStatusCode.OK),
+                    result = jsonObj
+                };
+                return new CustomJsonResult() {Data = result} ;
+            }
+            catch (Exception)
+            {
+
+                return Json(new
+                {
+                    isSuccess = false,
+                    result = "异常"
+                }, "text/html");
+            }
+        }
+
+        private string CheckWithNoPassReson(string method, string esIndex)
+        {
+            var methodhttp = (Method)Enum.Parse(typeof(Method), method);
+            if (methodhttp == Method.DELETE || methodhttp == Method.PUT)
+            {
+                return "不支持 delete或者put";
+            }
+            if (methodhttp == Method.POST)
+            {
+                var isQuery = esIndex.Contains("/_search") 
+                    || esIndex.Contains("/_count");
+
+                if (!isQuery)
+                {
+                    return "仅支持 _search  _count 的post查询";
+                }
+            }
+            return null;
+        }
+    }
+}

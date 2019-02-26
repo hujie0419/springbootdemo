@@ -1,0 +1,218 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+
+
+<div class="topPanel">
+    <div id="Reward" style="text-align: right;">
+        <div class="toolbar">
+            <a id="btnAddReward" name="btnAddReward" class="btn btn-sm btn-danger" style=""><i class="fa fa-plus"></i>新增抽奖配置</a>
+        </div>
+        <div class="search">
+            <table>
+                <tr>
+                    <td>
+                        <div class="input-group">
+                            <input id="txt_keyword" type="text" class="form-control" placeholder="HashKey/名称" style="width: 200px;">
+                            <span class="input-group-btn">
+                                <button id="btn_search" type="button" class="btn  btn-primary"><i class="fa fa-search"></i></button>
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<table id="gridRewardList"></table>
+<div id="rewardPager"></div>
+
+<script type="text/javascript">
+    var $RewardGrid = $('#gridRewardList');
+
+    var Grid = {
+        init: function () {
+            //初始化抽奖配置列表
+            $RewardGrid.dataGrid({
+                height: $(window).height() - 100,
+                url: "/BigBrand/BigBrandReward/GetGridJson",
+                colModel: [
+                    { label: "PKID", name: "PKID", width: 120, align: "center", key: true, hidden: true },
+                    { label: "HASH值", name:"HashKeyValue",width:80,align:"center"},
+                    { label: "名 称", name: "Title", width: 160, align: 'center' },
+                    { label: "抽奖次数", name: "PreTimes", width: 80, align: 'left' },
+                     { label: "抽奖次数(分享后)", name: "CompletedTimes", width: 100, align: 'left' },
+                     { label: "积分抽奖次数", name: "IntegralTimes", width: 80, align: 'left' },
+                     { label: "单次抽奖消耗积分", name: "NeedIntegral", width: 100, align: 'left' },
+                     {
+                         label: "抽奖类型", name: "BigBrandType", width: 100, align: 'center',
+                         formatter: function (cellValue) {
+                             if (cellValue == 1) {
+                                 return "普通抽奖"
+                             } else if (cellValue == 2) {
+                                 return "积分抽奖";
+                             } else if (cellValue == 3) {
+                                 return "定人群";
+                             } else
+                                 return "";
+
+                         }
+                     },
+                     {
+                         label: "抽奖周期类型", name: "PeriodType", width: 100, align: "center",
+                         formatter: function (cellValue) {
+                             if (cellValue == 1) {
+                                 return "小时"
+                             } else if (cellValue == 2) {
+                                 return "天";
+                             } else if (cellValue == 3) {
+                                 return "月";
+                             } else
+                                 return "";
+                         }
+                     },
+                    {
+                        label: "抽奖周期", name: "Period", width: 80, align: "center"
+                    },
+                    {
+                        label: "创建时间", name: "CreateDateTime", width: 120, align: "center",
+                        formatter: "date", formatoptions: { srcformat: 'Y-m-d H:i:s', newformat: 'Y-m-d H:i:s' }
+                    },
+                    {
+                        label: "更新时间", name: "LastUpdateDateTime", width: 120, align: "center",
+                        formatter: "date", formatoptions: { srcformat: 'Y-m-d H:i:s', newformat: 'Y-m-d H:i:s' }
+                    },
+                    {
+                        label: "操 作", name: "", width: 200, align: 'center',
+                        formatter: function (cellvalue, options, rowObject) {
+                            //<a  data-id=${rowObject.PKID} name="btnEditReward" onclick="btn_Edit(this)"  class="btn btn-sm btn-primary" style=""><i class="fa fa-plus"></i>编辑</a>
+                            return  ` <a  data-id=${rowObject.PKID} name="btnEditPool" onclick="btn_EditPool(this)"  class="btn btn-sm btn-primary" style=""><i class="fa fa-plus"></i>查看详情</a>` +
+                                ` <a  data-id=${rowObject.PKID} name="btnDeleteReward" onclick="btn_Delete(this)"  class ="btn btn-sm btn-danger" style=""><i class ="fa fa-plus"></i>删 除</a>` +
+                                ` <a  data-id=${rowObject.PKID} name="btnDeleteReward" onclick="btn_Reload(this)"  class ="btn btn-sm btn-danger" style=""><i class ="fa fa-plus"></i>刷 新</a>` +
+                                ` <a  data-id=${rowObject.PKID} name="btnDeleteReward" onclick="btn_GetLogList(this)"  class ="btn btn-sm btn-danger" style=""><i class ="fa fa-plus"></i>日 志</a>`;
+                        }
+                    }
+                ],
+                viewrecords: true,
+                pager: "#rewardPager",
+                sortname: "PKID desc,CreateDateTime desc",
+                rowNum: 20,
+                rowList: [10, 20, 30],
+            });
+            $("#btn_search").click(function () {
+                $RewardGrid.jqGrid('setGridParam', {
+                    postData: { keyword: $("#txt_keyword").val() },
+                }).trigger('reloadGrid');
+            })
+        },
+        initBtn: function () {
+            $('#btnAddReward').on('click', function () {
+                $.modalOpen({
+                    id: 'RewardForm',
+                    url: "/BigBrand/BigBrandReward/Form?keyValue=",
+                    title: "新增抽奖配置",
+                    width: "600px",
+                    height: "300px",
+                    callBack: function (iframeId) {
+                        var iframe = $.currentWindow();
+                        top.frames[iframeId].submitForm(iframe);
+                    }
+                });
+            });
+        }
+    };
+
+    function btn_Edit(obj) {
+        var pkid = $(obj).data("id");
+        if (pkid) {
+            $.modalOpen({
+                id: 'RewardForm',
+                url: "/BigBrand/BigBrandReward/Form?pkid=" + pkid,
+                title: "编辑抽奖配置",
+                width: "600px",
+                height: "520px",
+                callBack: function (iframeId) {
+                    var iframe = $.currentWindow();
+                    top.frames[iframeId].submitForm(iframe);
+                }
+            });
+        }
+    }
+
+    function btn_EditPool(obj) {
+        var pkid = $(obj).data("id");
+        if (pkid) {
+            $.modalOpen({
+                id: 'PoolList',
+                url: "/BigBrand/BigBrandPool/Index?keyValue=" + pkid+"&pkid="+pkid,
+                title: "奖池列表",
+                width: "1500px",
+                height: "920px",
+                callBack: function (iframeId) {
+                    var iframe = $.currentWindow();
+                    top.frames[iframeId].submitForm(iframe);
+                }
+            });
+        }
+    }
+
+    //查看操作日志
+    function btn_GetLogList(obj) {
+        var pkid = $(obj).data("id");
+        if (pkid) {
+            $.modalOpen({
+                id: 'GetLogList',
+                url: "/BigBrand/BigBrandReward/GetOperationLogList?activityid=bigBrandReward_" + pkid+"&pageIndex=1&pageSize=10",
+                title: "操作日志",
+                width: "1000px",
+                height: "920px",
+                btn: null
+            });
+        }
+    }
+
+    function btn_Delete(obj) {
+        var pkid = $(obj).data("id");
+        if (pkid) {
+            $.deleteForm({
+                url: "/BigBrand/BigBrandReward/DeleteForm",
+                param: { pkid: pkid },
+                success: function () {
+                    location.reload();
+                }
+            });
+        }
+    }
+
+    function btn_Reload(obj) {
+        var pkid = $(obj).data("id");
+        if (pkid) {
+            $.getJSON("/BigBrand/BigBrandReward/Reload?pkid=" + pkid, function (res) {
+                if (res.Code == 1) {
+                    $.modalMsg(res.Msg, "warning");
+                } else {
+                    $.modalMsg(res.Msg, "error");
+                }
+            });
+        }
+    }
+
+    function betn_searchlog() {
+        $.modalOpen({
+            id: "Form",
+            title: "查看日志",
+            url: "/Logger/ListLoger?objectType=BigBrand",
+            width: "1500px",
+            height: "600px",
+            btn: null
+        });
+    }
+
+    $(function () {
+        Grid.init();
+        Grid.initBtn();
+    });
+</script>
+

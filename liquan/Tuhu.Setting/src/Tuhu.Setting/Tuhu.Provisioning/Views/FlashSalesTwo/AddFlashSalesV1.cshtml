@@ -1,0 +1,221 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@model FlashSalesTwo
+@{
+    Layout = null;
+}
+
+<script src="../../Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {
+        $("form").submit(function () {
+            if ($("#ActivityName").val() == "") {
+                alert("活动名称不能为空");
+                return false;
+            }
+            if ($("#Area").val() == "") {
+                alert("区域不能为空");
+                return false;
+            }
+            var reg = /^[0-9]*$/;
+            if (!reg.test($("#Position").val())) {
+                alert('排序号须为正整数');
+                return false;
+            }
+            if ($('input:radio[name=radiouserid]:checked').attr("value") == "True" && $("#AndroidBannerUrl").val() == '') {
+                alert('请上传相应Banner');
+                return false;
+            }
+        });
+
+        $('input:radio[name=IsBannerAndroid]').click(function () {
+            var _radiovalue = $(this).attr("value");
+            if (_radiovalue == 1) {
+                $("#AndroidBannerID").show();
+            }
+            else {
+                $("#AndroidBannerID").hide();
+            }
+        });
+
+        $('input:radio[name=IsBannerIOS]').click(function () {
+            var _radiovalue = $(this).attr("value");
+            if (_radiovalue == 1) {
+                $("#IOSBannerID").show();
+            }
+            else {
+                $("#IOSBannerID").hide();
+            }
+        });
+
+        $('input:radio[name=IsEndImage]').click(function () {
+            var _radiovalue = $(this).attr("value");
+
+            if (_radiovalue == "True") {
+
+                $("#EndImageID").show();
+            }
+            else {
+
+                $("#EndImageID").hide();
+            }
+        });
+
+    });
+
+    function UplaodImg(inputid, imgid, imgviewid) {       
+        $.ajaxFileUpload({
+            url: '/Article/AddArticleImg2',
+            secureuri: false,
+            fileElementId: inputid,
+            dataType: 'json',
+            data: {},
+            type: "post",
+            success: function (result) {
+                if (result.BImage != "" && result.SImage != "") {
+                    $("#" + imgviewid).attr("src", result.SImage);
+                    $("#" + imgviewid).show();
+                    $("#" + imgid).val(result.BImage);
+                } else {
+                    alert("上传失败！");
+                }
+            }
+        });
+    }
+</script>
+@using (Html.BeginForm(new { @enctype = "multipart/form-data" }))
+{
+    @Html.ValidationSummary(true)
+    @Html.HiddenFor(m => m.ActivityID)
+    @Html.HiddenFor(m => m.BannerUrlAndroid)
+    @Html.HiddenFor(m => m.BannerUrlIOS)
+    @Html.HiddenFor(m => m.EndImage)
+
+    <table style="background:#ffffff;font-size:12px;width:100%;">
+        <tr>
+            <td align="right" style="width:30%;">模块名称：</td>
+            <td style="width:70%;">@Html.TextBoxFor(model => model.ActivityName, new { @style = "width:90%" })</td>
+        </tr>
+        <tr>
+            <td align="right" style="width:30%;">购物车：</td>         
+            <td>
+                @Html.RadioButtonFor(m => m.ShoppingCart, true) 启用
+                @Html.RadioButtonFor(m => m.ShoppingCart, false) 停用
+            </td>
+        </tr>
+        <tr>
+            <td align="right">状态：</td>
+            <td>
+                @Html.RadioButtonFor(m => m.Status, 1) 启用
+                @Html.RadioButtonFor(m => m.Status, 0) 停用
+            </td>
+        </tr>
+        <tr>
+            <td align="right">开始时间：</td>
+            <td>
+                @Html.TextBoxFor(model => model.StartDateTime, new { @style = "width:100px;text-align:center;", @readonly = "readonly" })
+            </td>
+        </tr>
+        <tr>
+            <td align="right">结束时间：</td>
+            <td>
+                @Html.TextBoxFor(model => model.EndDateTime, new { @style = "width:100px;text-align:center;", @readonly = "readonly" })
+            </td>
+        </tr>
+        <tr>
+            <td align="right">展示类型：</td>
+            <td>
+                @Html.RadioButtonFor(m => m.ShowType, 1) 列表
+                @Html.RadioButtonFor(m => m.ShowType, 2) 单品
+            </td>
+        </tr>
+        <tr>
+            <td align="right">送货类型：</td>
+            <td>
+                @Html.RadioButtonFor(m => m.ShippType, 1) 车品
+                @Html.RadioButtonFor(m => m.ShippType, 2) 轮胎
+            </td>
+        </tr>
+        <tbody id="AndroidBannerID" @Html.Raw(Model.IsBannerAndroid == 1 ? "" : " style=\"display:none;\"")>
+            <tr style="background-color:#f9f9f9;">
+                <td align="right">顶部Banner图：</td>
+                <td>
+                    <form method="post" action="" enctype="multipart/form-data">
+                        <input style="width:150px;" type="file" id="upAndroidBannerUrl" name="upAndroidBannerUrl" onchange="UplaodImg('upAndroidBannerUrl', 'BannerUrlAndroid', 'AndroidvwBannerUrl')" />
+                    </form><br />
+                    <img height="78" src="@Model.BannerUrlAndroid" id="AndroidvwBannerUrl" />
+                </td>
+            </tr>
+        </tbody>
+   
+        <tbody id="EndImageID" @Html.Raw(Model.IsEndImage ? "" : " style=\"display:none;\"")>
+            <tr style="background-color:#f9f9f9;">
+                <td align="right">底部Banner图：</td>
+                <td>
+                    <form method="post" action="" enctype="multipart/form-data">
+                        <input style="width:150px;" type="file" id="upEndImageUrl" name="upEndImageUrl" onchange="UplaodImg('upEndImageUrl', 'EndImage', 'endImagevwBannerUrl')" />
+                    </form><br />
+                    <img height="78" src="@Model.EndImage" id="endImagevwBannerUrl" />
+                </td>
+            </tr>
+        </tbody>
+        <tr>
+            <td align="right">排序号：</td>
+            <td>@Html.TextBoxFor(model => model.Position, new { @style = "width:50px;text-align:center;" }) （需为整数，越小越靠前）</td>
+        </tr>
+
+        <tr>
+            <td align="right">APP处理值(Android)：</td>
+            <td>@Html.TextBoxFor(model => model.AppVlueAndroid, new { @style = "width:90%" })</td>
+        </tr>
+        <tr>
+            <td align="right">APP处理值(IOS)：</td>
+            <td>@Html.TextBoxFor(model => model.AppVlueIOS, new { @style = "width:90%" })</td>
+        </tr>
+        <tr>
+            <td align="right">顶部Banner图：</td>
+            <td>
+                @Html.RadioButtonFor(m => m.IsBannerAndroid, 1) 启用
+                @Html.RadioButtonFor(m => m.IsBannerAndroid, 0) 停用
+            </td>
+        </tr>
+    
+        <tr>
+            <td align="right">底部Banner图：</td>
+            <td>
+                @Html.RadioButtonFor(m => m.IsEndImage, true) 启用
+                @Html.RadioButtonFor(m => m.IsEndImage, false) 停用
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right">背景色：</td>
+            <td>@Html.TextBoxFor(model => model.BackgoundColor, new {  @style = "width:50px" })</td>
+        </tr>
+        <tr>
+            <td align="right">下期预告是否启用：</td>
+            <td>
+                @Html.RadioButtonFor(m => m.IsTomorrowTextActive, 1) 启用
+                @Html.RadioButtonFor(m => m.IsTomorrowTextActive, 0) 停用
+            </td>
+        </tr>
+        <tr>
+            <td align="right">APPH5是否显示时间：</td>
+            <td>
+                @Html.RadioButtonFor(m => m.IsNoActiveTime, 1) 启用
+                @Html.RadioButtonFor(m => m.IsNoActiveTime, 0) 停用
+            </td>
+        </tr>
+        <tr>
+            <td align="right">下期预告：</td>
+            <td>@Html.TextBoxFor(model => model.TomorrowText, new { @style = "width:90%" })</td>
+        </tr>
+        <tr>
+            <td align="right"></td>
+            <td>
+                <input type="submit" value="保存" />
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="button" value="取消并返回" onclick="location = '/FlashSalesTwo/FlashSalesV1'" />
+            </td>
+        </tr>
+    </table>
+}

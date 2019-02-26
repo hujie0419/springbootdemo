@@ -1,0 +1,161 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity.Tire;
+@model TirePatternConfig
+@{
+    Layout = null;
+    ViewBag.Title = "编辑";
+}
+
+<form id="FrmTirePatternConfigEdit" action="" method="post">
+    <span style="color:red">花纹编辑</span>
+    <table style="font-size:12px;width:100%;">
+        <tr>
+            <td style="width:25%;">品牌</td>
+            <td>
+                <input type="hidden" id="EditPKID" name="EditPKID" value="@Model.PKID" />
+                <input type="text" name="makeupCoEdit" id="makeupCoEdit" class="makeinpEdit" onfocus="setfocusEdit(this)" oninput="setinputEdit(this);" style="width:100%;" value="@Model.CP_Brand" />
+                <select id="BrandEdit" name="BrandEdit" onchange="changeFEdit(this)" size="10" style="display:none;width:100%;">
+                    @if (ViewBag.BrandList != null && ViewBag.BrandList.Count > 0)
+                    {
+
+                        foreach (var item in ViewBag.BrandList)
+                        {
+                            <option value="item">@item</option>
+                        }
+                    }
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>花纹</td>
+            <td>
+                <input id="EditPattern" name="EditPattern" type="text" style="width:100%;" value="@Model.Tire_Pattern" />
+            </td>
+        </tr>
+        <tr>
+            <td>英文展示名</td>
+            <td>
+                <input id="EditPatternEN" name="EditPatternEN" type="text" style="width:100%;" value="@Model.Pattern_EN" />
+            </td>
+        </tr>
+        <tr>
+            <td>中文展示名</td>
+            <td>
+                <input id="EditPatternCN" name="EditPatternCN" type="text" style="width:100%;" value="@Model.Pattern_CN" />
+            </td>
+        </tr>
+    </table>
+</form>
+
+<script type="text/javascript">
+    var TempArrEdit = [];
+    $(function () {
+        $("#BrandEdit option").each(function (index, el) {
+            TempArrEdit[index] = $(this).text();
+        });
+        $(document).bind('click', function (e) {
+            var e = e || window.event;
+            var elem = e.target || e.srcElement;
+            while (elem) {
+                if (elem.id && (elem.id == 'BrandEdit' || elem.id == "makeupCoEdit")) {
+                    return;
+                }
+                elem = elem.parentNode;
+            }
+            $('#BrandEdit').css('display', 'none');
+        });
+    })
+    function changeFEdit(this_) {
+        $(this_).prev("input").val($(this_).find("option:selected").text());
+        $("#BrandEdit").css({ "display": "none" });
+    }
+    function setfocusEdit(this_) {
+        $("#BrandEdit").css({ "display": "" });
+        var select = $("#BrandEdit");
+        select.empty();
+        setinputEdit(this_);
+        if (!select) {
+            for (i = 0; i < TempArrEdit.length; i++) {
+                var option = $("<option></option>").text(TempArrEdit[i]);
+                select.append(option);
+            }
+        }
+    }
+    function setinputEdit(this_) {
+        var select = $("#BrandEdit");
+        select.html("");
+        for (i = 0; i < TempArrEdit.length; i++) {
+            if (TempArrEdit[i].indexOf(this_.value) != -1) {
+                var option = $("<option></option>").text(TempArrEdit[i]);
+                select.append(option);
+            }
+        }
+    }
+
+    function SaveTirePatternConfig(target, addOrEdit) {
+        var brand = $("#BrandEdit").val();
+        if (brand == null) brand = $("#makeupCoEdit").val();
+        if (brand == null) brand = "";
+
+        var pattern = $("#EditPattern").val();
+        if (pattern == "") {
+            alert("花纹必填，不能为空！");
+            return;
+        }
+
+        var patternEN = $("#EditPatternEN").val();
+        var patternCN = $("#EditPatternCN").val();
+        var pkid = $("#EditPKID").val();
+
+        $.ajax({
+            url: "/Tire/CheckPatternExist",
+            type: "Post",
+            data: {
+                "Pattern": pattern,
+                "PKID": pkid
+            },
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                if (data == true) {
+                    var config = {
+                        "PKID": pkid,
+                        "Tire_Pattern": pattern,
+                        "CP_Brand": brand,
+                        "Pattern_EN": patternEN,
+                        "Pattern_CN": patternCN,
+                    }
+
+                    $.ajax({
+                        url: "/Tire/SaveTirePatternConfig",
+                        type: "POST",
+                        data: {
+                            modelConfig: config,
+                            actionString: addOrEdit
+                        },
+                        dataType: "json",
+                        async: false,
+                        success: function (data) {
+                            if (data == true) {
+                                alert('保存成功！');
+                                $(target).dialog("close");
+                                window.location.reload();
+                            }
+                            else {
+                                alert('保存失败！');
+                            }
+                        },
+                        error: function () {
+                            alert('提交失败！');
+                        },
+                    })
+                }
+                else {
+                    alert('花纹已存在，不予保存！');
+                }
+            },
+            error: function () {
+                alert('提交失败！');
+            },
+        })        
+    }
+</script>

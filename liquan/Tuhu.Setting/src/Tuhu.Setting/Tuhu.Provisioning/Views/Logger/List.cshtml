@@ -1,0 +1,69 @@
+﻿@{
+    Layout = null;
+}
+@model List<Tuhu.Provisioning.DataAccess.Entity.ConfigHistory>
+
+
+<div>
+    开始时间:
+    <input type="text" id="startDT"/>
+    --
+    结束时间:
+    <input type="text" id="endDT" />
+    &nbsp;&nbsp;
+    
+   <input type="button" id="btnSearch" value="搜索" onclick="ReloadData()" />
+</div>
+<div>
+    <table width="100%" id="LoggerTable">
+      
+        <thead>
+            <tr>
+                <td>操作人</td>
+                <td>操作时间</td>
+                <td>操作内容</td>
+            </tr>
+        </thead>
+        <tbody>
+             @if (Model != null && Model.Count > 0)
+             {
+                 foreach (var item in Model)
+                 { <tr>
+                    <td>
+                     @item.Author
+                        <input type="hidden" value="@item.PKID" />
+                    </td>
+                    <td>@item.ChangeDatetime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td>@item.Operation</td>
+                </tr>
+                 }
+             }
+        </tbody>
+    </table>
+</div>
+<script type="text/javascript">
+    $("#startDT").datepicker({ dateFormat: 'yy-mm-dd' })
+    $("#endDT").datepicker({ dateFormat: 'yy-mm-dd' })
+    function ReloadData() {
+        // alert($('#startDT').val());
+        var start = $('#startDT').val();
+        var end = $('#endDT').val();
+        
+       $("#LookOplog").html("").load('/Logger/list?objectType=' + $('#hidObjectType').val() + '&startDT=' + start + '&endDT=' + end);
+    }
+
+    $('#LoggerTable tbody tr').on('click', function (e) {
+        //console.log($(this).find('input[type=hidden]').val());
+      
+        if ($(this).find('input[type=hidden]').val() != '' && $(this).find('input[type=hidden]').val() != undefined && $(this).find('input[type=hidden]').val() != null) {
+            if ($('#hidObjectType').val() == 'ACFV2') {
+                window.open("/ActivityV2/GetLogger?id=" + $(this).find('input[type=hidden]').val(), "_blank")
+            } else if ($('#hidObjectType').val() == 'SPACF') {
+                window.open("/SimpleActivity/GetLogger?id=" + $(this).find('input[type=hidden]').val(), "_blank")
+            }
+        }
+       
+    });
+
+
+</script>

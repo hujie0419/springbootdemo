@@ -1,0 +1,194 @@
+﻿@using System.Text;
+@using Tuhu.Provisioning.Models
+@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.ActivityPageConfig>
+@{
+    ViewBag.Title = "分地区活动页";
+}
+
+<h2>分地区活动页</h2>
+<style>
+    .table td {
+        padding: 0;
+        text-align: center;
+    }
+
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    textarea {
+        width: 100px;
+        height: 100px;
+    }
+
+    p {
+        margin-bottom: 10px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    .table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: center;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+</style>
+
+<div>
+    <a href="javascript:void(0)" class="btn" onclick="RegionActivityPageConfig.Add()">添加</a>
+</div>
+<div>
+    <table class="table" style="width:100%;margin-top:20px;">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>名称</th>
+                <th>Url</th>
+                <th>开始时间</th>
+                <th>结束时间</th>
+                <th>状态</th>
+                <th>创建人</th>
+                <th>更新人</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Name</td>
+                    <td>
+                        @{
+                            string domain = Request.Url.Host.Contains("tuhu.cn") ? "https://res.tuhu.org" : "http://resource.tuhu.test";
+                            byte[] bytes = Encoding.Default.GetBytes(item.Id.ToString());
+                            string base64str = Convert.ToBase64String(bytes);
+                        }
+                        <a href="@domain/StaticPage/pictures/adaptImgs.html?id=@base64str">
+                            @domain/StaticPage/pictures/adaptImgs.html?id=@base64str
+                        </a>
+                    </td>
+                    <td>
+                        @item.StartTime
+                    </td>
+                    <td>
+                        @item.EndTime
+                    </td>
+                    <td>
+                        @{
+                            var date = DateTime.Now;
+                        }
+
+                        @if (date < item.StartTime)
+                        {
+                            <p style="color:blue">即将开始</p>
+                        }
+                        else if (date >= item.StartTime && date <= item.EndTime)
+                        {
+                            <p style="color:green">正在进行</p>
+                        }
+                        else if (date > item.EndTime)
+                        {
+                            <p style="color:red">已经结束</p>
+                        }
+                    </td>
+                    <td>
+                        @item.CreateName
+                    </td>
+                    <td>
+                        @item.UpdateName
+                    </td>
+                    <td>
+                        <a href="javascript:;" onclick="RegionActivityPageConfig.Update(@item.Id)">编辑</a>&nbsp;&nbsp;
+                        <a href="javascript:;" onclick="RegionActivityPageConfig.LogList(@item.Id)">操作日志</a>&nbsp;&nbsp;
+                        <a href="javascript:;" onclick="RegionActivityPageConfig.Delete(@item.Id)">删除</a>
+                    </td>
+                </tr>
+                            }
+
+        </tbody>
+    </table>
+</div>
+
+<div>
+    @Html.Pager(Model.Pager, pageIndex => Url.RouteUrl(new { pageIndex }))
+</div>
+<div id="AddItem"></div>
+<div id="LogList"></div>
+
+<div class="divRegion"></div>
+<script>
+
+    var RegionActivityPageConfig = {
+        "LogList": function (e) {
+            $("#LogList").load('/Logger/LogList?type=RAPC&id=' + e);
+            $("#LogList").dialog({
+                title: "操作日志列表",
+                width: 600,
+                height: 600,
+                modal: true
+            });
+        },
+        "Add": function () {
+            $("#AddItem").load('/RegionActivityPageConfig/Edit?id=0');
+            $("#AddItem").dialog({
+                title: "添加",
+                width: 800,
+                height: 700,
+                modal: true,
+                buttons: {
+                    "保存": function () {
+                        SaveModels();
+                    }
+                }
+            });
+        },
+        "Update": function (id) {
+            $("#AddItem").load('/RegionActivityPageConfig/Edit?id=' + id);
+            $("#AddItem").dialog({
+                title: "修改",
+                width: 900,
+                height: 600,
+                modal: true,
+                buttons: {
+                    "保存": function () {
+                        SaveModels();
+                    }
+                }
+            });
+        },
+        "Delete": function (id) {
+            if (window.confirm("您确定要删除吗？")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/RegionActivityPageConfig/Delete",
+                    data: { "id": id },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/RegionActivityPageConfig/Index";
+                        }
+                        else {
+                            alert("删除失败！");
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        }
+    }
+
+</script>  

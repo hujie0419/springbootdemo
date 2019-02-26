@@ -1,0 +1,654 @@
+﻿@{
+    Layout = null;
+}
+@model Tuhu.Provisioning.DataAccess.Entity.SE_HomePageModuleContentConfig
+<div class="modal-dialog" style="width:900px;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">
+                编辑模块内容
+            </h4>
+        </div>
+        <div class="modal-body">
+            <form id="form1" class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">名称:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title" />
+                    </div>
+                    <label class="col-sm-2 control-label">渠道:</label>
+                    <div class="col-sm-4">
+                        <select id="DeviceType" name="DeviceType" onchange="DeviceTypeChanged(this)">
+                            <option value="0" @(Model.DeviceType == 0 ? "selected=\"selected\"" : "")>全部</option>
+                            <option value="1" @(Model.DeviceType == 1 ? "selected=\"selected\"" : "")>Android</option>
+                            <option value="2" @(Model.DeviceType == 2 ? "selected=\"selected\"" : "")>IOS</option>
+                            <option value="3" @(Model.DeviceType == 3 ? "selected=\"selected\"" : "")>移动站</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="@(Model.DeviceType == 2|| Model.DeviceType == 3 ? "display:none" : "")">
+                    <label class="col-sm-2 control-label">品牌:</label>
+                    <div class="col-sm-4">
+                        @Html.DropDownList("sdeviceBrands", ViewBag.SelectItems as IEnumerable<SelectListItem>, new { @class = "form-control", @onchange = "GetPhoneDeviceOption(this)" })
+                    </div>
+                    <label class="col-sm-2 control-label">机型:</label>
+                    <div class="col-sm-2">
+                        <select id="DeviceTypes" name="DeviceTypes" multiple="multiple" style="width: 100%;"></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">按钮图片:</label>
+                    <div class="col-sm-4">
+                        <img width="30" height="30" style="display:inline;" id="imgButton" @(string.IsNullOrWhiteSpace(Model.ButtonImageUrl) == false ? "src=" + Model.ButtonImageUrl : "") />
+                        <input type="file" id="uploadButtonImg" name="uploadButtonImg" style="display:inline;width:120px;" onchange="UploadBgImg1(this, 'imgButton', 'ButtonImageUrl')" />
+                    </div>
+                    <label class="col-sm-2 control-label">按钮图片Url:</label>
+                    <div class="col-sm-4">
+                        <input type="text" id="ButtonImageUrl" name="ButtonImageUrl" class="form-control" value="@Model.ButtonImageUrl" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Banner图片：</label>
+                    <div class="col-sm-4">
+                        <img width="30" height="30" style="display:inline;" id="imgBanner" @(string.IsNullOrWhiteSpace(Model.BannerImageUrl) == false ? "src=" + Model.BannerImageUrl : "") />
+                        <input type="file" id="upBannerImg" name="upBannerImg" style="display:inline;width:120px;" onchange="UploadBgImg(this, 'imgBanner', 'BannerImageUrl')" />
+                    </div>
+                    <label class="col-sm-2 control-label">Banner图片Url：</label>
+                    <div class="col-sm-4">
+                        <input type="text" id="BannerImageUrl" name="BannerImageUrl" class="form-control" value="@Model.BannerImageUrl" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">链接:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="LinkUrl" name="LinkUrl" value="@Model.LinkUrl" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">没有编码链接:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="NoLinkUrl" name="NoLinkUrl" value="@(Model.LinkUrl)" readonly="readonly" />
+                    </div>
+                </div>
+                <div class="form-group" style="@(@ViewBag.ModuleType == 33 ? "" : "display:none")">
+                    <label class="col-sm-1 control-label">人群:</label>
+                    <div class="col-sm-2">
+                        <select id="PeopleTip" name="PeopleTip" multiple="multiple" style="width: 100%;"></select>
+                    </div>
+                    <label class="col-sm-2 control-label">应用市场来源:</label>
+                    <div class="col-sm-2">
+                        <select id="NoticeChannel" name="NoticeChannel" style="width:160px;">
+                            @foreach (Tuhu.Provisioning.DataAccess.Entity.NoticeChannel item in ViewBag.ChannelDictionary)
+                            {
+                                <option value="@item.Name">@item.DisplayName</option>
+                            }
+                        </select>
+                    </div>
+                    <label class="col-sm-2 control-label">应用市场渠道:</label>
+                    <div class="col-sm-2">
+                        <select id="NewNoticeChannel" name="NewNoticeChannel" style="width:160px;">
+                            @foreach (Tuhu.Provisioning.DataAccess.Entity.NoticeChannel item in ViewBag.ChannelDictionary)
+                            {
+                                <option value="@item.Name">@item.DisplayName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="@((ViewBag.ModuleType == 30 || ViewBag.ModuleType == 40) ? "" : "display:none")">
+                    <label class="col-sm-2 control-label">类目标签:</label>
+                    <div class="col-sm-3">
+                        <select name="ModuleTag" class="form-control" onchange="handlerChildTags(this)"></select>
+                    </div>
+                    <div class="col-sm-3">
+                        <select name="ModuleTag2" class="form-control" onchange="handlerThirdTags(this)"></select>
+                    </div>
+                    <div class="col-sm-3">
+                        <select name="ModuleTag3" class="form-control"></select>
+                    </div>
+                    <a href="javascript:;" id="btnAddTag" class="btn btn-default btn-sm" onclick="btnAddTag(this)">+</a>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">大标题:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="BigTitle" name="BigTitle" value="@Model.BigTitle" />
+                    </div>
+                    <label class="col-sm-2 control-label">大标题颜色:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="BigTilteColor" name="BigTilteColor" value="@Model.BigTilteColor" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">小标题:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="SmallTitle" name="SmallTitle" value="@Model.SmallTitle" />
+                    </div>
+                    <label class="col-sm-2 control-label">小标题颜色:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="SmallTitleColor" name="SmallTitleColor" value="@Model.SmallTitleColor" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">促销语:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="PromoteTitle" name="PromoteTitle" value="@Model.PromoteTitle" />
+                    </div>
+                    <label class="col-sm-2 control-label">促销语颜色:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="PromoteTitleColor" name="PromoteTitleColor" value="@Model.PromoteTitleColor" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">促销语背景色:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="PromoteTitleBgColor" name="PromoteTitleBgColor" value="@Model.PromoteTitleBgColor" />
+                    </div>
+                    <label class="col-sm-2 control-label">动画样式:</label>
+                    <div class="col-sm-4">
+                        <select id="AnimationStyle" name="AnimationStyle" class="form-control">
+                            <option value="0" @(Model.AnimationStyle == 0 ? "selected=\"selected\"" : "")>无</option>
+                            <option value="1" @(Model.AnimationStyle == 1 ? "selected=\"selected\"" : "")>闪</option>
+                            <option value="2" @(Model.AnimationStyle == 2 ? "selected=\"selected\"" : "")>转</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">开始版本：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="StartVersion" name="StartVersion" value="@Model.StartVersion" />
+                    </div>
+                    <label class="col-sm-2 control-label">结束版本：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="EndVersion" name="EndVersion" value="@Model.EndVersion" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">统计：</label>
+                    <div class="col-sm-4">
+                        <input type="text" id="UriCount" name="UriCount" class="form-control" value="@(Model.UriCount)" />
+                    </div>
+                    <label class="col-sm-2 control-label">优先级:</label>
+                    <div class="col-sm-4">
+                        <input type="text" id="PriorityLevel" name="PriorityLevel" class="form-control" @(ViewBag.isReadonly ? "readonly=\"readonly\"" : "" ) value="@Model.PriorityLevel" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">状态：</label>
+                    <div class="col-sm-10">
+                        <input type="radio" name="IsEnabled" value="true" @(Model.IsEnabled == true ? "checked=\"checked\"" : "") /><span>启用</span>
+                        <input type="radio" name="IsEnabled" value="false" @(Model.IsEnabled == false ? "checked=\"checked\"" : "") /><span>禁用</span>
+                    </div>
+                </div>
+                <div class="form-group" style="@((@ViewBag.IsHideDate == true)?"display:none":"")">
+                    <label class="col-sm-2 control-label">开始时间:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" name="StartDateTime" id="StartDateTime" value="@(string.Format("{0:yyyy-MM-dd HH:mm:ss}",Model.StartDateTime))" />
+                    </div>
+                    <label class="col-sm-2 control-label">结束时间:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" name="EndDateTime" id="EndDateTime" value="@(string.Format("{0:yyyy-MM-dd HH:mm:ss}",Model.EndDateTime))" />
+                    </div>
+                </div>
+                <input type="hidden" id="hidPeopleTip" name="hidPeopleTip" value="@Model.PeopleTip" />
+                <input type="hidden" id="ID" name="ID" value="@Model.ID" />
+                <input type="hidden" id="ParentPriortylevel" name="ParentPriortylevel" value="@ViewBag.ParentPriortylevel" />
+                <input type="hidden" id="ModuleType" name="ModuleType" value="@ViewBag.ModuleType" />
+                <input type="hidden" id="Pattern" name="Pattern" value="@ViewBag.Pattern" />
+                <input type="hidden" id="NoticeChannelValue" name="NoticeChannelValue" value="@Model.NoticeChannel" />
+                <input type="hidden" id="NewNoticeChannelValue" name="NewNoticeChannelValue" value="@Model.NewNoticeChannel" />
+                <input type="hidden" id="hidDeviceBrand" name="hidDeviceBrand" value="@Model.DeviceBrand" />
+                <input type="hidden" id="hidDeviceType" name="hidDeviceType" value="@Model.DeviceTypes" />
+                <input type="hidden" id="Tags" value="@Model.ModuleTags" />
+            </form>
+        </div>
+        <div class="modal-footer">
+
+            <a href="javascript:void(0)" class="btn btn-danger btn-sm " id="btnToobal" onclick="Toolbar()" style="width: 80px;" data-toggle="modal" data-target="#toobal">小工具</a>
+
+            <button type="button" id="btnSave" name="btnSave" class="btn btn-primary">
+                保 存
+            </button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                取 消
+            </button>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        $('#NoticeChannel').multipleSelect({
+            selectAll: true
+        });
+        $('#NoticeChannel').multipleSelect('setSelects', []);
+
+        $('#NewNoticeChannel').multipleSelect({
+            selectAll: true
+        });
+        $('#NewNoticeChannel').multipleSelect('setSelects', []);
+
+        var NoticeChannelValue = $('#NoticeChannelValue').val();
+        if (NoticeChannelValue) {
+            $('#NoticeChannel').multipleSelect('setSelects', NoticeChannelValue.split(','));
+        }
+
+        var NewNoticeChannelValue = $('#NewNoticeChannelValue').val();
+        if (NewNoticeChannelValue) {
+            $('#NewNoticeChannel').multipleSelect('setSelects', NewNoticeChannelValue.split(','));
+        }
+
+        var marketId = $('#hidDeviceBrand').val();
+        if (marketId) {
+            $.ajax({
+                url: "/HomePageConfigV2/SelectMobileModels",
+                type: "post",
+                dataType: "json",
+                data: "marketId=" + marketId,
+                async: false,
+                success: function (res) {
+                    if (res) {
+                        for (var key in res) {
+                            $("#DeviceTypes").append("<option value=\"" + res[key].DeviceType + "\">" + res[key].DeviceType + "</option>");
+                        }
+                    }
+                    $("#DeviceTypes").multipleSelect({
+                        selectAll: true
+                    });
+                    var selValue = $("#hidDeviceType").val();
+                    if (selValue) {
+                        $("#DeviceTypes").multipleSelect("setSelects", selValue.split(","));
+                    }
+                }
+            })
+        }
+
+        // 获取人群数据
+        $.ajax({
+            url: "/HomePageConfigV2/GetHomePopUserJosn",
+            type: "post",
+            dataType: "json",
+            async: false,
+            success: function (res) {
+                if (res) {
+                    for (var key in res) {
+                        $("#PeopleTip").append("<option value=\"" + res[key].id + "\">" + res[key].text + "</option>");
+                    }
+                }
+                $("#PeopleTip").multipleSelect({
+                    selectAll: false
+                });
+                var selValue = $("#hidPeopleTip").val();
+                if (selValue) {
+                    $("#PeopleTip").multipleSelect("setSelects", selValue.split(","));
+                }
+            }
+        });
+
+        // 标题更新时统计内容更新
+        $('#Title').on('change', function () {
+            $('#UriCount').val($('#ParentPriortylevel').val() + "_" + $('#PriorityLevel').val() + "_" + $(this).val());
+        });
+
+        // 保存数据
+        $('#btnSave').on('click', function () {
+            var data = {};
+            data.ID = $('#ID').val();
+            data.StartVersion = $('#StartVersion').val();
+            data.EndVersion = $('#EndVersion').val();
+            data.Title = $('#Title').val();
+            data.DeviceType = $('#DeviceType').val();
+
+            data.PriorityLevel = $('#PriorityLevel').val();
+            data.ButtonImageUrl = $('#ButtonImageUrl').val();
+            data.BannerImageUrl = $('#BannerImageUrl').val();
+            data.LinkUrl = $('#LinkUrl').val();
+            data.UriCount = $('#UriCount').val();
+            data.IsEnabled = $('input[name="IsEnabled"]:checked').val();
+            data.StartDateTime = $('#StartDateTime').val();
+            data.EndDateTime = $('#EndDateTime').val();
+            data.FKHomePageModuleID = $('#hiddenModuleID').val();
+            data.FKHomePageModuleHelperID = $('#hiddenModuleHelperID').val();
+
+            data.BigTitle = $('#BigTitle').val();
+            data.BigTilteColor = $('#BigTilteColor').val();
+            data.SmallTitle = $('#SmallTitle').val();
+            data.SmallTitleColor = $('#SmallTitleColor').val();
+
+            data.PromoteTitle = $('#PromoteTitle').val();
+            data.PromoteTitleColor = $('#PromoteTitleColor').val();
+            data.PromoteTitleBgColor = $('#PromoteTitleBgColor').val();
+            data.AnimationStyle = $('#AnimationStyle').val();
+            data.NoticeChannel = $('#NoticeChannel').multipleSelect('getSelects').toString() || '';
+            data.NewNoticeChannel = $('#NewNoticeChannel').multipleSelect('getSelects').toString() || '';
+            data.PeopleTip = $("#PeopleTip").multipleSelect("getSelects").toString();
+            if (data.DeviceType == 2 || data.DeviceType == 3) {
+                data.DeviceTypes = '';
+                data.DeviceBrand = '';
+            } else {
+                data.DeviceTypes = $("#DeviceTypes").multipleSelect("getSelects").toString();
+                data.DeviceBrand = $('[name="sdeviceBrands"]').val();
+            }
+            data.ModuleTags = handleGetTagIds();
+
+            if (data.ModuleTags.split(';').length > 5) {
+                alert('最多只能添加5组类目标签');
+                return false;
+            }
+
+            if (data.ModuleTags.split(';').length > 0) {
+                var nary = data.ModuleTags.split(';').sort();
+                for (var i = 0; i < data.ModuleTags.split(';').length; i++) {
+                    if (nary[i] == nary[i + 1]) {
+                        alert("类目标签不可重复");
+                        return false;
+                    }
+                }
+            }
+
+            $(this).attr("disabled", "disabled");
+            $.ajax({
+                url: '/HomePageConfigV2/HomePageModuleContentSave',
+                data: data,
+                type: 'post',
+                dataType: 'json'
+            }).done(function (result) {
+                if (result > 0) {
+                    $('#edit').modal("hide");
+                    location.reload();
+                } else {
+                    if (result == -1) {
+                        alert("设置的开始结束时间有重叠区域，请重新设置");
+                        $('#btnSave').removeAttr("disabled");
+                    }
+                    else
+                        alert("保存失败");
+                }
+
+            }).fail(function () {
+
+            });
+        });
+
+        // 链接编码
+        if ($('#NoLinkUrl').val()) {
+            $('#NoLinkUrl').val(decodeURIComponent($('#NoLinkUrl').val()));
+        }
+
+        // 初始化标签数据
+        $.ajax({
+            url: "/HomePageConfigV2/SelectModuleTags?parentId=0",
+            type: "post",
+            dataType: "json",
+            async: false,
+            success: function (res) {
+                if (res && res.length > 0) {
+                    $('select[name="ModuleTag"]').append("<option value=''>==请选择==</option>");
+                    $('select[name="ModuleTag2"]').append("<option value=''>==请选择==</option>");
+                    $('select[name="ModuleTag3"]').append("<option value=''>==请选择==</option>");
+                    res.forEach(item => {
+                        $('select[name="ModuleTag"]').append("<option value=\"" + item.Value + "\">" + item.Text + "</option>");
+                    });
+                }
+            }
+        });
+
+        if ($('#ID').val() != 0) {
+            if ($('#Tags').val() && $('#Tags').val() != "[]") {
+                var tagValue = JSON.parse($('#Tags').val());
+
+                var tags = [];
+
+                tagValue.forEach(p => {
+                    tags.push(p.split('|')[0]);
+                });
+                for (var i = 0; i < tags.length; i++) {
+                    $('select[name="ModuleTag"]').each(function (idx) {
+                        // 赋值
+                        $(this).val(tags[idx]);
+                        // 添加事件
+                        $(this).trigger('change');
+
+                        if (tagValue.length > idx && tagValue[idx].split('|')[1].length > 0) {
+                            $(this).parent().next().find('select').val(tagValue[idx].split('|')[1]);
+                            $(this).parent().next().find('select').trigger('change');
+
+                            if (tagValue.length > idx && tagValue[idx].split('|')[2].length > 0)
+                                $(this).parent().next().next().find('select').val(tagValue[idx].split('|')[2]);
+                        }
+                    });
+                    
+                    if (i != tags.length - 1)
+                        $('#btnAddTag').trigger('click');
+
+                }
+            }
+        }
+    });
+
+    /**
+     * 获取安卓机型品牌
+     * @@param self
+     */
+    function GetPhoneDeviceOption(self) {
+        var marketId = $(self).val() == '' ? 0 : $(self).val();
+        var child = $(self).parent().parent().find('select[name="DeviceTypes"]');
+
+        if (marketId) {
+            $.ajax({
+                type: "POST",
+                url: "/HomePageConfigV2/SelectMobileModels",
+                async: false,
+                data: "marketId=" + marketId,
+                success: function (msg) {
+                    var ResultHtml = '';
+                    var TemplateHtml = '<option value="{value}">{text}</option>';
+                    var obj = eval(msg);
+                    $(obj).each(function (i) {
+                        ResultHtml += TemplateHtml.replace("{value}", obj[i].DeviceType)
+                            .replace("{text}", obj[i].DeviceType);
+                    });
+                    child.empty();
+                    child.append(ResultHtml);
+                    child.multipleSelect({
+                        width: '100%',
+                        selectAll: true
+                    });
+                }
+            });
+        } else {
+            child.find("option:selected").text("");
+            child.empty();
+            child.multipleSelect({
+                width: '100%',
+                selectAll: false
+            });
+        }
+    }
+
+    /**
+     * 机型渠道change事件
+     * @@param self 元素
+     */
+    function DeviceTypeChanged(self) {
+        var devicetype = $(self).val();
+        console.log(devicetype);
+        if (devicetype == 2 || devicetype == 3) {
+            // IOS/移动端隐藏品牌和机型的选择
+            $(self).parent().parent().next().css("display", "none");
+        } else {
+            $(self).parent().parent().next().css("display", "block");
+        }
+    }
+
+    /**
+     * 动态添加类目标签
+     * @@param self
+     */
+    function btnAddTag(self) {
+        var html = `
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-3">
+                            <select class="form-control" name="ModuleTag" onchange="handlerChildTags(this)"></select>
+                        </div>
+                        <div class="col-sm-3">
+                            <select name="ModuleTag2" class="form-control" onchange="handlerThirdTags(this)"></select>
+                        </div>
+                        <div class="col-sm-3">
+                            <select name="ModuleTag3" class="form-control"></select>
+                        </div>
+                        <a href="javascript:;" id="btnAddTag" class="btn btn-default btn-sm" onclick="btnAddTag(this)">+</a>
+                        <a href="javascript:;" class="btn btn-default btn-sm" onclick="btnRemoveTag(this)">-</a>
+                    </div>`;
+        $(self).parent().after(html);
+        handleGetModuleTags(self);
+    }
+
+    /**
+     * 移除类目标签
+     * @@param self
+     */
+    function btnRemoveTag(self) {
+        $(self).parent().remove();
+    }
+
+    /**
+     * 获取模块标签
+     * */
+    function handleGetModuleTags(self) {
+        $.ajax({
+            type: "POST",
+            url: "/HomePageConfigV2/SelectModuleTags?parentId=0",
+            async: false,
+            success: function (msg) {
+                var $element = $(self).parent().next();
+
+                var html = '<option value="">==请选择==</option>';
+                var tmpl = '<option value="{value}">{text}</option>';
+
+                $element.find('select[name="ModuleTag2"]').append(html);
+                $element.find('select[name="ModuleTag3"]').append(html);
+
+                var obj = eval(msg);
+                $(obj).each(function (i) {
+                    html += tmpl.replace("{value}", obj[i].Value).replace("{text}", obj[i].Text);
+                });
+                $element.find('select[name="ModuleTag"]').empty();
+                $element.find('select[name="ModuleTag"]').append(html);
+            }
+        });
+    }
+
+    /**
+     * 获取子级标签数据
+     * @@param self
+     */
+    function handlerChildTags(self) {
+        var parentID = $(self).val();
+        if (parentID == null || parentID == '')
+            return;
+
+        $.ajax({
+            type: "POST",
+            url: "/HomePageConfigV2/SelectModuleTags",
+            data: "parentID=" + parentID,
+            async: false,
+            success: function (msg) {
+                var obj = eval(msg);
+
+                var html = '<option value="">全部</option>';
+                var tmpl = '<option value="{value}">{text}</option>';
+
+                var $element = $(self).parent().next();
+
+                $element.find('select').empty();
+                $element.next().find('select').empty();
+                $element.next().find('select').append(html);
+
+                $(obj).each(function (i) {
+                    html += tmpl.replace("{value}", obj[i].Value).replace("{text}", obj[i].Text);
+                });
+                $element.find('select').append(html);
+
+
+                //var flag = false;
+
+                //// 选择一级类目时，需要获取二级类目和所有二级类目下的所有三级类目
+                //// 这里为了不重复加载数据，使用 flag 标识
+                //$element.find('select').change(function (ele) {
+                //    if (flag)
+                //        return;
+
+                //    var ids = '';
+                //    var opts = ele.currentTarget.options;
+
+                //    for (var i = 0; i < opts.length; i++) {
+                //        ids += opts[i].value + ',';
+                //    }
+                //    ids = ids.substring(0, ids.length - 1)
+                //    //handlerThirdTags(self, ids)
+                //    flag = true;
+                //});
+                //$secodTagEle.append(html);
+                //$secodTagEle.multipleSelect({
+                //    placeholder: '请选择',
+                //    selectAll: true
+                //});
+                //$secodTagEle.multipleSelect('setSelects', []);
+            }
+        });
+    }
+
+    /**
+     * 加载第三级标签数据
+     * @@param self
+     * @@param ids
+     */
+    function handlerThirdTags(self, ids) {
+        debugger
+        var parentID = $(self).val();
+        if (parentID == null || parentID == '')
+            return;
+
+        $.ajax({
+            type: "POST",
+            url: "/HomePageConfigV2/SelectModuleTags",
+            data: "parentID=" + parentID,
+            async: false,
+            success: function (msg) {
+                var obj = eval(msg);
+
+                var html = '<option value="">全部</option>';
+                var tmpl = '<option value="{value}">{text}</option>';
+
+                var $element = $(self).parent().next();
+
+                $element.find('select').empty();
+
+                $(obj).each(function (i) {
+                    html += tmpl.replace("{value}", obj[i].Value).replace("{text}", obj[i].Text);
+                });
+                $element.find('select').append(html);
+            }
+        });
+    }
+
+    /**
+     * 获取用户选择的标签Id集合
+     * */
+    function handleGetTagIds() {
+        var tag = $('select[name="ModuleTag"]');
+        var tag2 = $('select[name="ModuleTag2"]');
+        var tag3 = $('select[name="ModuleTag3"]');
+
+        var ids = '';
+        for (var i = 0; i < tag.length; i++) {
+            if (tag[i].value != '') {
+                ids += tag[i].value + '|' + tag2[i].value + '|' + tag3[i].value + ';';
+            }
+        }
+        ids = ids.substring(0, ids.length - 1);
+        return ids;
+    }
+
+</script>

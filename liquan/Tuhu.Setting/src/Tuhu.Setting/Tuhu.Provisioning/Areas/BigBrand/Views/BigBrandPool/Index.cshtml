@@ -1,0 +1,551 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script src="~/Content/nfine/js/jqgrid/jqgrid.min.js"></script>
+<link href="~/Content/nfine/js/jqgrid/jqgrid.css" rel="stylesheet" />
+<script src="~/Content/nfine/js/jqgrid/grid.locale-cn.js"></script>
+<style type="text/css">
+    .trinline {
+        display: inline;
+    }
+</style>
+<div style="padding-bottom:5px;">
+    <form id="form1">
+        <table class="form form-inline">
+            <tr>
+                <th class="formTitle">名称</th>
+                <td class="formValue">
+                    <input type="text" id="Title" name="Title" class="form-control required" />
+                </td>
+                <th class="formTitle">抽奖类型</th>
+                <td class="formValue">
+                    <select id="BigBrandType" name="BigBrandType" class="form-control">
+                        <option value="1">普通抽奖</option>
+                        <option value="2">积分抽奖</option>
+                        <option value="3">定人群抽奖</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">抽奖次数</th>
+                <td class="formValue">
+                    <input type="text" id="PreTimes" name="PreTimes" class="form-control required" />
+                </td>
+                <th class="formTitle">抽奖次数(分享后)</th>
+                <td class="formValue">
+                    <input type="text" id="CompletedTimes" name="CompletedTimes" class="form-control required" />
+                </td>
+
+            </tr>
+            <tr>
+                <th class="formTitle">抽奖周期:</th>
+                <td class="formValue">
+                    <select id="PeriodType" name="PeriodType" style="height: 23px;">
+                        <option value="1">小时</option>
+                        <option value="2">天</option>
+                        <option value="3">月</option>
+                    </select>
+                    <input type="number" id="Period" name="Period" class="required" style="width: 80px;" />
+                    <label>开始时间：</label>  <input type="text" id="StartDateTime" name="StartDateTime" class="required" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})" />
+                </td>
+                <th class="formTitle">单次抽奖消耗积分</th>
+                <td class="formValue">
+                    <input type="number" id="NeedIntegral" name="NeedIntegral" class="form-control" />
+                </td>
+            </tr>
+            <tr id="AfterLoginSwitchContainer">
+                <td>启用登录后置<i title="选择登录后置：大翻盘的登录判断不在页面点击「开始」时而在用户领取奖励时。" class="fa fa-question-circle"></i></td>
+                <td><input type="checkbox" id="AfterLoginSwitch" name="AfterLoginSwitch" /></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr id="AfterLoginContainer" class="hidden">
+                <td class="formTitle">抽奖验证类型</td>
+                <td class="formValue">
+                    <select id="AfterLoginType" name="AfterLoginType" class="form-control">
+                        <option value="1">微信授权</option>
+                    </select>
+                </td>
+                <td>必须关注公众号</td>
+                <td>
+                    <span id="AfterLoginValue" AfterLoginType="1">
+                        @*<label><input type="checkbox" name="AfterLoginValue"value="WX_APP_OfficialAccount">途虎养车</label>
+                        <label><input type="checkbox" name="AfterLoginValue" value="WX_OA_NewCarMagazine">新汽车志</label>*@
+                        @*<select id="AfterLoginValue" name="AfterLoginValue" class="form-control" style="width:200px;"></select>*@
+                    </span>
+                </td>
+            </tr>
+        </table>
+        <input type="hidden" id="PKID" value="0" name="PKID" />
+    </form>
+    <form id="form2">
+        <table class="form" style="table-layout: inherit;">
+            <tr class="trinline">
+                <th class="formTitle">第1轮奖池ID </th>
+                <td class="formValue">
+                    <input type="text" id="wheel1" name="wheel1" class="form-control" onchange="rewardPoolValid(this)" />
+                </td>
+            </tr>
+            <tr class="trinline">
+                <th class="formTitle">第2轮奖池ID </th>
+                <td class="formValue">
+                    <input type="text" id="wheel2" name="wheel2" class="form-control" onchange="rewardPoolValid(this)" />
+                </td>
+            </tr>
+            <tr class="trinline">
+                <th class="formTitle">第3轮奖池ID </th>
+                <td class="formValue">
+                    <input type="text" id="wheel3" name="wheel3" class="form-control" onchange="rewardPoolValid(this)" />
+                </td>
+            </tr>
+            <tr class="trinline">
+                <th class="formTitle">第4轮奖池ID </th>
+                <td class="formValue">
+                    <input type="text" id="wheel4" name="wheel4" class="form-control" onchange="rewardPoolValid(this)" />
+                </td>
+            </tr>
+            <tr id="AddPool">
+                <td colspan="2" style="text-align: center;">
+                    <a class="btn btn-sm btn-danger" id="btnAddWheel" name="btnAddWheel"><i class="fa fa-plus"></i>添加对应奖池</a>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<ul class="nav nav-tabs" id="tapID">
+    <li class="active">
+        <a href="#Reward" data-toggle="tab">抽奖配置</a>
+    </li>
+    @*<li>
+        <a href="#PageConfig" data-toggle="tab">页面配置</a>
+    </li>*@
+</ul>
+<div class="tab-content" id="contentID">
+    <div id="Reward" class="tab-pane fade in active" style="text-align: right;">
+        <div style="text-align: left;">
+            <a id="btnAddPool" name="btnAddPool" class="btn btn-sm btn-danger" onclick="btn_add()" style=""><i class="fa fa-plus"></i>添加奖励池</a>
+            <a id="btnAddPageStyle" name="btnAddPageStyle" class="btn btn-sm btn-danger" onclick="btn_AddPageStyle()" style=""><i class="fa fa-plus"></i>添加页面样式</a>
+            <a id="btnRefresh" name="btnRefresh" class="btn btn-sm btn-danger" onclick="btn_Refresh()" style=""><i class="fa fa-plus"></i>刷新奖池列表</a>
+            <table id="gridPoolList"></table>
+        </div>
+    </div>
+    @*<div id="PageConfig" class="tab-pane fade">
+        <iframe class="NFine_iframe" id="iframe4794C57D-5F82-4CB5-9A9C-4F3F42B02E96" name="iframe4794C57D-5F82-4CB5-9A9C-4F3F42B02E96" width="100%" height="100%" src="/BigBrand/BigBrandPool/PageStyle?keyValue=4" frameborder="0"  seamless=""></iframe>
+    </div>*@
+</div>
+
+<script type="text/javascript">
+        var keyValue = $.request("keyValue");
+
+        function gridList() {
+            var $gridData = $("#gridPoolList");
+            $gridData.dataGrid({
+                url: "/BigBrand/BigBrandPool/GetGridJson?fkpkid=" + keyValue,
+                treeGrid: true,
+                treeGridModel: "adjacency",
+                ExpandColumn: "Name",
+                height: $(window).height() - 128,
+                colModel: [
+                     { label: "奖池ID", name: "PKID", width: 120, align: "center", key: true,  },
+                     { label: "", name: "", width: 30, align: "center" },
+                     { label: "名 称", name: "Name", width: 160, align: 'center' },
+                     {
+                         label: "奖励类型", name: "RewardType", width: 100, align: 'left',
+                         formatter: function (cellvalue) {
+                             if (cellvalue == 1)
+                                 return "优惠券礼包";
+                             else if (cellvalue == 2)
+                                 return "积分礼包";
+                             else if (cellvalue == 3)
+                                 return "无奖励";
+                             else if (cellvalue == 4)
+                                 return "实物奖励";
+                             else if (cellvalue == 5)
+                                 return "微信红包";
+                             else
+                                 return "";
+
+                         }
+                     },
+                     { label: "数量", name: "Number", width: 80, align: 'center' },
+                     {
+                         label: "是否兜底", name: "IsDefault", width: 60, align: 'center',
+                         formatter: function (cellvalue) {
+                             return cellvalue == 1 ? "<i class=\"fa fa-toggle-on\"></i>" : "<i class=\"fa fa-toggle-off\"></i>";
+                         }
+                     },
+                     { label: "创建时间", name: "CreateDateTime", width: 160, align: 'center' },
+                     { label: "更新时间", name: "LastUpdateDateTime", width: 160, align: 'center' },
+                     { label: '更新人', name: 'UpdateUserName', width: 120, align: 'cener' },
+                     {
+                         label: '操 作', name: '', width: 260, align: 'cener',
+                         formatter: function (cellvalue, options, rowObject) {
+                             var addName = "";
+                             if (rowObject.ParentPKID == null)
+                                 addName = "添加礼包";
+                             if (rowObject.ParentPKID == null) {
+                                 return (addName != "" ? ` <a  data-id=${rowObject.PKID} name="btnAddPackage" onclick="btn_AddPackage(this,${rowObject.RewardType})"  class="btn btn-sm btn-danger" style=""><i class="fa fa-plus"></i>${addName}</a>` : "") +
+                                      `  <a  data-id=${rowObject.PKID} name="btnEditPool" onclick="btn_EditPool(this,${rowObject.RewardType})"  class="btn btn-sm btn-primary" style=""><i class="fa fa-plus"></i>编辑</a>` +
+                                     `  <a  data-id=${rowObject.PKID} name="btnDeletePool" onclick="btn_DeletePool(this,${rowObject.RewardType})"  class="btn btn-sm btn-warning" style=""><i class="fa fa-plus"></i>删除</a>` +
+                                     `  <a  data-id=${rowObject.PKID} name="btnLogList" onclick="btn_GetLogList(this)"  class="btn btn-sm btn-warning" style=""><i class="fa fa-plus"></i>日志</a>`;
+                             } else if (rowObject.RewardType == 1 || rowObject.RewardType == 2 || rowObject.RewardType == 3 || rowObject.RewardType == 4|| rowObject.RewardType == 5) {
+                                 return (addName != "" ? ` <a  data-id=${rowObject.PKID} name="btnAddPackage" onclick="btn_AddPackage(this,${rowObject.RewardType})"  class="btn btn-sm btn-danger" style=""><i class="fa fa-plus"></i>${addName}</a>` : "") +
+                                     `  <a  data-id=${rowObject.PKID} name="btnEditPool" onclick="btn_EditPool(this,${rowObject.RewardType})"  class="btn btn-sm btn-primary" style=""><i class="fa fa-plus"></i>编辑</a>` +
+                                     `  <a  data-id=${rowObject.PKID} name="btnDeletePool" onclick="btn_DeletePool(this,${rowObject.RewardType})"  class="btn btn-sm btn-warning" style=""><i class="fa fa-plus"></i>删除</a>` +
+                                     `  <a  data-id=${rowObject.PKID} name="btnLogList" onclick="btn_GetLogList(this)"  class="btn btn-sm btn-warning" style=""><i class="fa fa-plus"></i>日志</a>`;
+                             } else
+                                 return "";
+                         }
+                     }
+                ],
+                caption: "奖池列表",
+                rowNum: 1000
+            })
+        }
+
+        function btn_add() {
+            $.modalOpen({
+                id: 'PoolForm',
+                url: "/BigBrand/BigBrandPool/FormPool?keyValue=" + keyValue,
+                title: "新增奖励池",
+                width: "300px",
+                height: "220px",
+                callBack: function (iframeId) {
+                    var iframe = top.frames["PoolList"];
+                    top.frames[iframeId].submitForm(iframe);
+                }
+            });
+
+        }
+
+        function btn_AddPackage(obj, type) {
+            var parentPKID = $(obj).data("id");
+            if (parentPKID) {
+                $.modalOpen({
+                    id: 'PoolForm',
+                    url: "/BigBrand/BigBrandPool/FormPackage?keyValue=" + keyValue + "&parentPKID=" + parentPKID,
+                    title: "新增奖励包",
+                    width: "500px",
+                    height: "650px",
+                    callBack: function (iframeId) {
+                        var iframe = top.frames["PoolList"];
+                        top.frames[iframeId].submitForm(iframe);
+                    }
+                });
+            }
+        }
+
+        function btn_EditPool(obj, type) {
+            var pkid = $(obj).data("id");
+            if (pkid) {
+                if (type == 0) {
+                    $.modalOpen({
+                        id: 'PoolForm',
+                        url: "/BigBrand/BigBrandPool/FormPool?keyValue=" + keyValue + "&pkid=" + pkid,
+                        title: "编辑奖励池",
+                        width: "300px",
+                        height: "220px",
+                        callBack: function (iframeId) {
+                            var iframe = top.frames["PoolList"];
+                            top.frames[iframeId].submitForm(iframe);
+                        }
+                    });
+                } else {
+                    ///编辑奖励包
+                    $.modalOpen({
+                        id: 'PoolForm',
+                        url: "/BigBrand/BigBrandPool/FormPackage?keyValue=" + keyValue + "&pkid=" + pkid,
+                        title: "编辑奖励包",
+                        width: "500px",
+                        height: "650px",
+                        callBack: function (iframeId) {
+                            var iframe = top.frames["PoolList"];
+                            top.frames[iframeId].submitForm(iframe);
+                        }
+                    });
+                }
+            } else {
+            }
+        }
+
+        function btn_DeletePool(obj, type) {
+            var pkid = $(obj).data("id");
+            if (pkid) {
+                $.deleteForm({
+                    url: "/BigBrand/BigBrandPool/DeleteForm",
+                    param: { pkid: pkid },
+                    success: function () {
+                        location.reload();
+                    }
+                });
+            }
+        }
+
+    //查看操作日志
+    function btn_GetLogList(obj) {
+        var pkid = $(obj).data("id");
+        if (pkid) {
+            $.modalOpen({
+                id: 'GetLogList',
+                url: "/BigBrand/BigBrandReward/GetOperationLogList?activityid=bigBrandPool_" + pkid + "&pageIndex=1&pageSize=10",
+                title: "操作日志",
+                width: "1200px",
+                height: "720px",
+                btn: null
+            });
+        }
+    }
+        
+        var index = 4;
+
+    function submitForm(iframe) {
+        debugger
+            if (!$("#form1").formValid()) {
+                return false;
+            }
+
+            var formData = $("#form1").formSerialize();
+            if (formData.BigBrandType == 1&& $("#AfterLoginSwitch").prop("checked")) {
+                var afterLoginValueArr = [];
+                $("input[name=AfterLoginValue]").each(function() {
+                    if ($(this).prop("checked")) {
+                        afterLoginValueArr.push($(this).val());
+                    }
+                });
+                formData.AfterLoginValue = afterLoginValueArr.join(",");
+            } else {
+                formData.AfterLoginType = 0;
+                formData.AfterLoginValue = "";
+            }
+            var formWheel = $("#form2").formSerialize();
+            var array = [];
+
+            for (var i = 0; i <= index; i++) {
+                var item = {};
+                item.FKPoolPKIDText = $('#wheel' + i).val();
+                if (item.FKPoolPKIDText) {
+                    item.TimeNumber = i;
+                    array.push(item);
+                }
+            }
+
+            console.log("array", array);
+
+            $.submitForm({
+                url: "/BigBrand/BigBrandReward/SubmitForm",
+                param: {
+                    modeljson: JSON.stringify(formData),
+                    wheeljson: array.length > 0 ? JSON.stringify(array) : ""
+                },
+                success: function () {
+                    $.currentWindow().location.reload();
+                }
+            });
+
+        }
+
+        function SwitchAfterLogin(el) {
+            $("#AfterLoginSwitchContainer").addClass("hidden");
+            $("#AfterLoginContainer").addClass("hidden");
+            if (el.val() == "1") {//抽奖类型是普通抽奖
+                $("#AfterLoginSwitchContainer").removeClass("hidden");
+                if ($("#AfterLoginSwitch").prop("checked")) {
+                    $("#AfterLoginContainer").removeClass("hidden");
+                }
+            }
+        }
+        var pkid = $.request("pkid");
+        function init() {
+            if (pkid) {
+                $.ajax({
+                    url: "/BigBrand/BigBrandReward/GetFormJson",
+                    type: "post",
+                    data: { pkid: pkid },
+                    dataType: "json",
+                    async: false,
+                    success: function (res) {
+                        if (res.FormData.StartDateTime)
+                            res.FormData.StartDateTime = new Date(res.FormData.StartDateTime).Format("yyyy-MM-dd hh:mm:ss");
+                        $('#form1').formSerialize(res.FormData);
+                        if (res.FormData.BigBrandType == 1) {
+                            if (res.FormData.AfterLoginType) {
+                                $("#AfterLoginSwitch").prop("checked", true);
+                                debugger
+                                $("input[name=AfterLoginValue]").each(function() {
+                                    if (res.FormData.AfterLoginValue.indexOf($(this).val())!=-1) {
+                                        $(this).prop("checked", true);
+                                    }
+                                });
+                            }
+                            
+                        }
+                        if (res.WheelData) {
+                            for (var key in res.WheelData) {
+                                if ($('#wheel' + res.WheelData[key].TimeNumber).val() == undefined) {
+                                    console.log(res.WheelData[key].TimeNumber);
+                                    addWheel();
+                                }
+                                if ($("#wheel" + res.WheelData[key].TimeNumber).val() == '')
+                                    $("#wheel" + res.WheelData[key].TimeNumber).val(res.WheelData[key].FKPoolPKID);
+                                else {
+                                    var value = $("#wheel" + res.WheelData[key].TimeNumber).val();
+                                    console.log("value", value)
+                                    $("#wheel" + res.WheelData[key].TimeNumber).val(value + ',' + res.WheelData[key].FKPoolPKID);
+                                }
+                            }
+                        }
+                        SwitchAfterLogin($("#BigBrandType"));
+                    }
+                });
+                $.ajax({
+                    url: "/BigBrand/BigBrandPool/GetGridPageStyleGroup",
+                    type: "post",
+                    data: { keyValue: keyValue },
+                    dataType: "json",
+                    async: false,
+                    success: function (ress) {
+                        if (ress) {
+                            for (var i in ress) {
+                                btn_AddPageStyle(ress[i].Key, ress[i].Type);
+                            }
+                        }
+                    }
+                })
+            }
+
+            $('#btnAddWheel').on('click', function () {
+                addWheel();
+            });
+            $("#BigBrandType").on("change",
+                function() {
+                    SwitchAfterLogin($(this));
+                });
+            $("#AfterLoginSwitch").on("change",
+                function() {
+                    $("#AfterLoginContainer").addClass("hidden");
+                    if ($(this).prop("checked")) {
+                        $("#AfterLoginContainer").removeClass("hidden");
+                    }
+                });
+        }
+
+        function addWheel() {
+            var form2 = $("#form2");
+            index++;
+            $('#AddPool', form2).before(`<tr class="trinline">  <th class="formTitle">第${index}轮奖池ID </th><td class="formValue"> <input type="text" id="wheel${index}" name="wheel${index}" class="form-control" onchange="rewardPoolValid(this)" /> </td></tr>`);
+        }
+
+        var pageIndex = 1;
+        function btn_AddPageStyle(group,type=1) {
+            var tapHtml = `<li class="active"> <a href="#PageConfig${pageIndex}" data-toggle="tab">页面配置</a></li>`;
+            var contentHtml = `<div id="PageConfig${pageIndex}" class="tab-pane fade active in">` +
+                ` <iframe class="NFine_iframe" id="iframe4794C57D-5F82-4CB5-9A9C-4F3F42B02E96${pageIndex}" name="iframe4794C57D-5F82-4CB5-9A9C-4F3F42B02E96${pageIndex}" width="100%" height="360px" src="/BigBrand/BigBrandPool/PageStyle?keyValue=${keyValue}&group=${group}&type=${type}" frameborder="0"  seamless=""></iframe>` +
+                              `</div>`;
+
+            $('#tapID').find('.active').removeClass("active");
+            $('#contentID').find(".active").removeClass("active in");
+            $('#tapID').append(tapHtml);
+            $("#contentID").append(contentHtml);
+            pageIndex++;
+        }
+
+
+        function btn_Refresh() {
+
+            window.location.reload();
+        }
+
+        function rewardPoolValid(obj) {
+            if ($(obj).val()) {
+                var array = $(obj).val().split(',');
+                var rowsPkid = $("#gridPoolList").getDataIDs();
+                var parentIds = [];
+                for (var index in rowsPkid) {
+                    var row = $("#gridPoolList").getRowData(rowsPkid[index]);
+                    if (row.RewardType == "") {
+                        parentIds.push(row.PKID);
+                    }
+                }
+                var temp = [];
+                for (var a in array) {
+                    if (parentIds.indexOf(array[a]) < 0) {
+                        $.modalMsg(array[a] + "不是奖池ID");
+                    } else {
+                        temp.push(array[a]);
+                    }
+                }
+
+                $(obj).val(temp.toString())
+            }
+        }
+
+        //获取所有公众号
+        function getWeChatOfficialAccounts() {
+            var weChatOfficialAccounts = '';
+            $.ajax({
+                async: false,
+                url: "/WechatHome/GetWeChatOfficialAccounts",
+                dataType: 'json',
+                success: function (res) {
+                    //debugger
+                    $.map(res, function (key) {
+                        //weChatOfficialAccounts += '<option value=' + key.channel + '>' + key.name + '</option>';
+                        weChatOfficialAccounts += ' <label style="width: 140px;"><input type="checkbox" name="AfterLoginValue" value="' + key.channel + '">' + key.name + '</label>';
+                    })
+                    $("#AfterLoginValue").empty().append(weChatOfficialAccounts);
+                }
+            });
+        }
+
+
+        $(function () {
+            getWeChatOfficialAccounts();
+            init();
+            gridList();
+
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                if ($(this).html() == "页面配置") {
+                    var pageconfigId = $(this).attr("href");
+                    var iframeId = $(pageconfigId).children().attr('id');
+                    window.frames[iframeId].document.location.reload();
+                }
+                if ($(this).html() == "抽奖配置") {
+                    var width = $(window).width();
+                    $('.ui-jqgrid-bdiv').css({ width: width });
+                    $('.ui-jqgrid-hdiv').css({ width: width });
+                    $('.ui-jqgrid').css({ width: width });
+                }
+            });
+        });
+         
+        function newGuid() {
+            var guid = "";
+            for (var i = 1; i <= 32; i++) {
+                var n = Math.floor(Math.random() * 16.0).toString(16);
+                guid += n;
+                if ((i == 8) || (i == 12) || (i == 16) || (i == 20))
+                    guid += "-";
+            }
+            return guid;
+        }
+
+        Date.prototype.Format = function (fmt) { //author: meizz 
+            var o = {
+                "M+": this.getMonth() + 1, //月份 
+                "d+": this.getDate(), //日 
+                "h+": this.getHours(), //小时 
+                "m+": this.getMinutes(), //分 
+                "s+": this.getSeconds(), //秒 
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度 
+                "S": this.getMilliseconds() //毫秒 
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        }
+</script>
+

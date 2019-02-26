@@ -1,0 +1,59 @@
+﻿@using Tuhu.Provisioning.Models
+@using Tuhu.Provisioning.DataAccess.Entity
+@using Newtonsoft.Json
+@model Tuhu.Component.Common.Models.ListModel<VehicleMountedCouponConfig>
+@{
+    Layout = null;
+}
+<div>
+    <table style="width:100%;margin-top:20px;">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>渠道</th>
+                <th>类型</th>
+                <th>状态</th>
+                <th>操作人</th>
+                <th>操作时间</th>
+                <th>管理</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Channel</td>
+                    <td>
+                        @if (item.Type==1)
+                        {
+                           <label>洗车</label>
+                        }
+                        else if (item.Type == 2)
+                        {
+                            <label>保养</label>
+                        }
+                        else if (item.Type == 3)
+                        {
+                            <label>新手礼包</label>
+                        }
+                    </td>
+                    <td>@(item.Status ? "启用" : "禁用")</td>
+                    <td>@item.UpdateName</td>
+                    <td>@item.UpdateTime</td>
+                    <td>
+                        <a href="javascript:;" onclick="Update(@item.Id)">编辑</a>
+
+                        <a href="javascript:;" onclick="Delete(@item.Id)">删除</a><br />
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div>
+    @Html.Pager(Model.Pager, pageIndex => Url.RouteUrl(new { pageIndex }))
+</div>
+<div id="AddItem"></div>

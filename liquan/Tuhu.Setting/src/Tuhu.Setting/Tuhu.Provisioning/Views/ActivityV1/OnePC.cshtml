@@ -1,0 +1,207 @@
+﻿@{
+    ViewBag.Title = "OnePC";
+    Layout = null;
+}
+<form id="oneFormByOnePC" class="easyui-form editForm">
+    <table id="oneTableByOnePC">
+        <tr>
+            <td>PID:</td>
+            <td colspan="2">
+                <input type="text" id="PID" name="PID"  onchange="GetProductImage(this, 'oneTableByOnePC')" />
+            </td>
+        </tr>
+        <tr>
+            <td>产品名称:</td>
+            <td colspan="2">
+                <input type="text" id="ProductName" name="ProductName" style="width:300px;" />
+            </td>
+        </tr>
+        <tr>
+            <td>活动ID：</td>
+            <td colspan="2">
+                <input type="text" id="VID" name="VID"   />
+            </td>
+        </tr>
+        <tr>
+            <td>优惠券ID：</td>
+            <td colspan="2">
+                <input type="text"  name="CID"  onchange="BindCoupon('oneFormByOnePC')" />
+                @*<select name="CID" id="CID"></select>*@
+            </td>
+
+        </tr>
+        <tr>
+            <td>图片:</td>
+            <td>
+                <img id="cimg" width="20" height="20"  />
+                <input type="hidden" id="hidCimg" name="hidCimg"  />
+            </td>
+            <td>
+                <input id="cFilePC" type="file" name="cFilePC" onchange="UploadImg(this, 'cimg', 'hidCimg', 'IsUploading', 'oneTableByOnePC')" />
+                <input type="hidden" id="IsUploading" name="IsUploading"  />
+            </td>
+        </tr>
+        <tr id="TwoPic" style="display:none;">
+            <td>图片(二):</td>
+            <td>
+                <img id="cimgTwoPic" width="20" height="20" />
+                <input type="hidden" id="hidCimgTwoPic" name="hidCimgTwoPic" />
+            </td>
+            <td>
+                <input id="cFileTwoPicPC" type="file" name="cFilePC1" onchange="UploadImg(this, 'cimgTwoPic', 'hidCimgTwoPic', 'IsUploading', 'oneTableByOnePC')" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                活动类型:
+            </td>
+            <td colspan="2">
+                <select id="Type" name="Type" onchange="DropDownChange('oneFormByOnePC')">
+                    <option value="-1">请选择</option>
+                    <option value="0">轮胎</option>
+                    <option value="1">车品</option>
+                    <option value="2">链接</option>
+                    <option value="3">图片</option>
+                    <option value="4">优惠卷</option>
+                    <option value="5">保养</option>
+                    <option value="6">限购轮胎</option>
+                    <option value="7">限购车品</option>
+
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>是否图片:</td>
+            <td colspan="2">
+                <select id="IsImage" name="IsImage">
+                    <option value="0" selected="selected">模板</option>
+                    <option value="1">图片</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                显示方式:
+            </td>
+            <td colspan="2">
+                <select id="DisplayWay" name="DisplayWay">
+                    <option value="-1">不选择</option>
+                    <option value="0">竖向</option>
+                    <option value="1">横向</option>
+
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>描述:</td>
+            <td colspan="2">
+
+                <textarea name="Description" id="Description" style="width:280px;height:16px; font-size:12px;  overflow:hidden;"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td>官网URL:</td>
+            <td colspan="2">
+                <input type="text" name="Url"  />
+            </td>
+        </tr>
+
+        <tr>
+            <td>排序:</td>
+            <td colspan="2">
+                <input type="text" name="OrderBy"  />
+            </td>
+        </tr>
+        <tr style="display:none;">
+            <td>轮胎品牌:</td>
+            <td colspan="2">
+                <select id="TireBrand" name="TireBrand">
+                    <option value="-1">不选择</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">APP处理值(IOS):</td>
+            <td>
+                <input type="text" name="HandlerIOS" value="" />
+                <span style="color:red;">必填</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">APP处理值(Android):</td>
+            <td>
+                <input type="text" name="HandlerAndroid" value="" />
+                <span style="color:red;">必填</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">特殊通讯值(IOS):</td>
+            <td>
+                <input type="text" name="SOAPIOS" value="" />
+                <span style="color:red;">必填</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">特殊通讯值(Android)：</td>
+            <td>
+                <input type="text" name="SOAPAndroid" value="" />
+                <span style="color:red;">必填</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <span style="color:red;">【特殊通讯值】填写时，不用单引号【'】以及不用中括号【[]】例如(不符合格式):{'name':'value','key':1} 、[{"name":"value","key":1} ]</span>
+            </td>
+        </tr>
+    </table>
+
+</form>
+
+<script type="text/javascript">
+
+    function GetDataByOnePC() {
+        var date = (new Date()).Format("yyyyMMddhhmmss");
+
+        var data = {
+            'Group':date,
+            'PID': $('#oneTableByOnePC [name=PID]').val(),
+            'VID': $('#oneTableByOnePC [name=VID]').val(),
+            'CID': $('#oneTableByOnePC [name=CID]').val(),
+            'SmallImage': $('#oneTableByOnePC [id=cimg]').attr('src') || '', //小图路径
+            'Image': $('#oneTableByOnePC [name=hidCimg]').val(), //大图
+            'BigImg': 3,//电脑端 一行一列
+            'Type': $('#oneTableByOnePC [name=Type]').val(), //类型
+            'OrderBy': $('#oneTableByOnePC [name=OrderBy]').val(),
+            'LinkUrl': $('#oneTableByOnePC [name=Url]').val(),
+            'HandlerIOS': $('#oneTableByOnePC [name=HandlerIOS]').val(),
+            'HandlerAndroid': $('#oneTableByOnePC [name=HandlerAndroid]').val(),
+            'SOAPIOS': $('#oneTableByOnePC [name=SOAPIOS]').val(),
+            'SOAPAndroid': $('#oneTableByOnePC [name=SOAPAndroid]').val(),
+            'IsUploading': $('#oneTableByOnePC [name=IsImage]').val(),    //$('#oneTableByOnePC [name=IsUploading]').val() || 0
+            'DisplayWay': $('#oneTableByOnePC [name=DisplayWay]').val(),//显示方式
+            'Description': $('#oneTableByOnePC [name=Description]').val() //描述
+        };
+        if (data.Type == 4) {
+            //优惠卷
+            data.TwoSImage = $('#oneTableByOnePC [id=cimgTwoPic]').attr('src') || '';
+            data.TwoBImage = $('#oneTableByOnePC [name=hidCimgTwoPic]').val();
+        }
+
+        //if ($('#oneTableByOne [name=TireBrand]').val() != -1) {
+        //    //选择车牌
+        //    data.TireBrand = $('#oneTableByOne [name=TireBrand]').val();
+        //}
+
+        if ((data.Type == 0 || data.Type == 1 || data.Type == 6 || data.Type == 7) && data.IsUploading == 0) {
+            data.ProductName = $('#oneTableByOnePC [name=ProductName]').val();
+        }
+        data.PCUrl = $('#oneTableByOnePC [name=Url]').val();
+
+        return data;
+
+    }
+
+
+
+</script>
+

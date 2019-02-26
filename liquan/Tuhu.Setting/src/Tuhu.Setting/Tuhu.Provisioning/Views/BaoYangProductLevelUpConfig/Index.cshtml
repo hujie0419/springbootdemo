@@ -1,0 +1,104 @@
+@model IEnumerable<Tuhu.Service.BaoYang.Config.BaoYangProductLevelUpConfig>
+
+    @{
+        ViewBag.Title = "保养产品升级配置";
+    }
+
+    <link href="/Content/Public/Public.css" rel="stylesheet" />
+    <h2>保养产品升级配置</h2>
+
+    <table>
+        <tr>
+            <th>项目</th>
+            <th>商品品类</th>
+            <th>状态</th>
+            <th>是否按同品牌</th>
+            <th>操作</th>
+            <th>更新时间</th>
+            <th>操作记录</th>
+        </tr>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var config in Model)
+            {
+                <tr>
+                    <td class="packageType" data-value="@config.PackageType">@config.PackageName</td>
+                    <td class="baoyangType" data-value="@config.BaoYangType">@config.BaoYangTypeName</td>
+                    <td class ="isenabled" data-value="@(config.IsEnabled ? "1" : "0")">@(config.IsEnabled ? "启用" : "禁用") </td>
+                    <td class="insamebrand" data-value="@(config.UpInSameBrand ? "1" : "0")">@(config.UpInSameBrand ? "是" : "否")</td>
+                    <td class="edit" style="cursor: pointer; color: blue; text-decoration: blue">操作</td>
+                    <td>@config.UpdateTime.ToString("yyyy-MM-dd hh:mm:ss")</td>
+                </tr>
+            }
+        }
+    </table>
+
+    <div id="editDialog" style="display: none">
+        <div>
+            <label>项目：</label><span id="editDialog_PackageName">$PackageName$</span>
+        </div>
+        <br />
+        <div>
+            <label>商品品类：</label><span id="editDialog_BaoYangTypeName">$BaoYangTypeName$</span>
+        </div>
+        <br />
+        <div>
+            <label>状态：</label><select id="editDialog_status">
+                <option value="1">启用</option>
+                <option value="0">禁用</option>
+            </select>
+        </div>
+        <br />
+        <div>
+            <label>是否按同品牌：</label><select id="editDialog_samebrand">
+                <option value="1">是</option>
+                <option value="0">否</option>
+            </select>
+        </div>
+        <br />
+        <input type="button" class="save" data-type="$PackageType$" data-typeName="$PackageName$"
+               data-category="$BaoYangType$" data-categoryName="$BaoYangTypeName$" value="保存" />
+    </div>
+
+    <script>
+        $(".edit").click(function () {
+            var $packageType = $(this).siblings().filter(".packageType");
+            var $baoyangType = $(this).siblings().filter(".baoyangType");
+            var $isenabled = $(this).siblings().filter(".isenabled");
+            var $issamebrand = $(this).siblings().filter(".insamebrand");
+
+            var packageType = $packageType.attr("data-value");
+            var packageName = $packageType.text();
+            var baoyangType = $baoyangType.attr("data-value");
+            var baoyangName = $baoyangType.text();
+
+            $("#editDialog_PackageName").text(packageName);
+            $("#editDialog_BaoYangTypeName").text(baoyangName);
+            $(".save").attr("data-type", packageType);
+            $(".save").attr("data-typeName", packageName);
+            $(".save").attr("data-category", baoyangType);
+            $(".save").attr("data-categoryName", baoyangName);
+
+            $("#editDialog_status").val($isenabled.attr("data-value"));
+            $("#editDialog_samebrand").val($issamebrand.attr("data-value"));
+
+            $("#editDialog").dialog();
+        });
+
+        $(".save").click(function () {
+            $.post("/BaoYangProductLevelUpConfig/UpdateConfig",
+                {
+                    packageType: $(".save").attr("data-type"),
+                    baoyangType: $(".save").attr("data-category"),
+                    inSameBrand: $("#editDialog_samebrand").val() == "1"?true: false,
+                    isActive: $("#editDialog_status").val() == "1" ? true : false
+                },
+                function(result) {
+                    if (!result.Status) {
+                        alert("更新失败");
+                    } else {
+                        setTimeout("window.location.reload()", 2000);
+                    }
+                });
+        });
+    </script>

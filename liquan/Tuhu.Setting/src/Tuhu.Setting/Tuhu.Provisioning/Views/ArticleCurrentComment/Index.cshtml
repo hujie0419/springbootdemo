@@ -1,0 +1,79 @@
+﻿@{
+    ViewBag.Title = "文章每日阅读量";
+    Layout = "../Shared/_Layout.cshtml";
+}
+<script type="text/javascript" src="/Scripts/KindEditor/kindeditor.js"></script>
+
+<script>
+    $(function () {
+        LoadList(1);
+        document.onkeydown = function (e) {
+            var ev = document.all ? window.event : e;
+            if (ev.keyCode == 13) {
+                LoadList(1);
+            }
+        };
+    });
+    function LoadList(pageindex) {
+        $.ajax({
+            type: "POST",
+            timeout: 10000,
+            url: "/ArticleCurrentComment/Index",
+            data: {
+                "PageIndex": pageindex
+            },
+            success: function (result) {
+                console.log(result);
+                $(".LoadingObj").remove();
+                if (result.ArticleList != "" && result.ArticleList.length > 0) {
+                    var kstr = "";
+                    $.each(result.ArticleList, function (idx, item) {
+                        kstr += '<tr>' +
+							'<td align="center">' + item.CurrentOperateTime + '</td>' +
+							'<td align="center">' + item.CurrentClickCount + '</td>' +
+							'</tr>';
+                    });
+                    if (pageindex == 1) {
+                        $("#DataList").html(kstr);
+                    }
+                    else {
+                        $("#DataList").append(kstr);
+                    }
+                    if (result.ArticleList.length < 30) {
+                        $("#DataList").append('<tr class="LoadingObj"><td colspan="6" align="center" style="color:#cccccc;">没有更多数据了...</td></tr>');
+                    }
+                    else {
+                        $("#DataList").append('<tr class="LoadingObj"><td colspan="6" align="center"><a href="javascript:void(0);" onclick="LoadList(' + (pageindex + 1) + ')">加载更多数据...</a></td></tr>');
+                    }
+                }
+                else {
+                    if (pageindex == 1) {
+                        $("#DataList").html('<tr class="LoadingObj"><td colspan="6" align="center" style="color:#cccccc;">没有更多数据了...</td></tr>');
+                    }
+                    else {
+                        $("#DataList").append('<tr class="LoadingObj"><td colspan="6" align="center" style="color:#cccccc;">没有更多数据了...</td></tr>');
+                    }
+                }
+            },
+            beforeSend: function () {
+                if (pageindex == 1) {
+                    $("#DataList").html('<tr class="LoadingObj"><td colspan="9" align="center"><img src="/Content/images/loading.gif"/> 正在努力为您加载，请稍后...</td></tr>');
+                }
+                else {
+                    $("#DataList").append('<tr class="LoadingObj"><td colspan="9" align="center"><img src="/Content/images/loading.gif"/> 正在努力为您加载，请稍后...</td></tr>');
+                }
+            }
+        });
+    }
+</script>
+<div style="clear:both;"></div>
+<div style="float:left;"><h2>文章每日阅读数据</h2></div>
+<table class="faqlist">
+    <tbody>
+        <tr style="background-color: #5c87b2; color: #ffffff;">
+            <td width="30%" align="center">阅读时间</td>
+            <td width="30%" align="center">阅读次数</td>
+        </tr>
+    </tbody>
+    <tbody id="DataList"></tbody>
+</table>

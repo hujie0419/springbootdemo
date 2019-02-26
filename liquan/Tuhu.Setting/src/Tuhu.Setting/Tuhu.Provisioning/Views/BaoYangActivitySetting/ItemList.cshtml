@@ -1,0 +1,404 @@
+﻿
+@{
+    ViewBag.Title = "保养活动关联配置";
+}
+
+<h2 class="title">保养活动关联配置</h2>
+<link href="~/Content/iview/iview.css" rel="stylesheet" />
+<link href="~/Content/BaoYangActivitySetting/Vue.css" rel="stylesheet" type="text/css" />
+<style>
+    [v-cloak] {
+        display: none;
+    }
+</style>
+
+<template>
+    <div id="div" style="margin-top:20px;" v-cloak>
+        <i-button style="width:10%" type="ghost" v-on:click="AddServiceType()">添加</i-button>
+        <i-table style="margin-top:20px"
+                 :columns="tableColumns"
+                 :data="searchResult"
+                 :loading="loading"
+                 stripe
+                 border>
+        </i-table>
+        <Modal v-model="editDialog.show"
+               :mask-closable="false"
+               v-on:on-cancel="CloseAddOrEditDialog">
+            <p slot="header" style="color:#f60;text-align:center">
+                编辑
+            </p>
+            <div style="text-align:center">
+                <row>
+                    <i-col span="4"> 品牌：</i-col>
+                    <i-col span="12">
+                        <i-select v-model="model.Brands">
+                            <i-option value="">-请选择-</i-option>
+                            <i-option v-for="brand in brandList" :value="brand" :key="brand">{{brand}}</i-option>
+                        </i-select>
+                    </i-col>
+                </row>
+                <br />
+                <row>
+                    <i-col span="4">系列：</i-col>
+                    <i-col span="12">
+                        <i-select v-model="model.Series" placeholder="全部系列">
+                            <i-option value="">全部系列</i-option>
+                            <i-option v-for="serie in seriesList" :value="serie" :key="serie">{{serie}}</i-option>
+                        </i-select>
+                    </i-col>
+                </row>
+                <br />
+                <row v-if="model.ServiceCatalog == 'Oil'">
+                    <i-col span="4">机油等级：</i-col>
+                    <i-col span="12">
+                        <i-select v-model="model.Grades" placeholder="全部等级">
+                            <i-option value="">全部等级</i-option>
+                            <i-option value="矿物油">矿物油</i-option>
+                            <i-option value="半合成">半合成</i-option>
+                            <i-option value="全合成">全合成</i-option>
+                        </i-select>
+                    </i-col>
+                </row>
+                <br />
+                <row>
+                    <i-col span="4">产品：</i-col>
+                    <i-col span="12">
+                        <i-input v-model="model.Products"></i-input>
+                    </i-col>
+                </row>
+                <br />
+                <row>
+                    <i-col span="4">缺货信息：</i-col>
+                    <i-col span="12">
+                        <i-input v-model="model.InAdapteTipPrefix"></i-input>
+                    </i-col>
+                </row>
+            </div>
+            <div slot="footer">
+                <i-button type="primary" v-on:click="Update()">保存</i-button>
+                <i-button type="ghost" v-on:click="CloseAddOrEditDialog()">取消</i-button>
+            </div>
+        </Modal>
+
+    </div>
+</template>
+<div id="AddServiceType"></div>
+<script src="~/Scripts/vue.min.js"></script>
+<script src="~/Scripts/iview/iview.js"></script>
+<script type="text/javascript">
+    var vue = new Vue({
+        el: "div",
+        data: function () {
+            return {
+                baoYangActivityId: 0,
+                baoYangActivityNum: "",
+                brands: [],
+                series: [],
+                model: {
+                },
+                loading: false,
+                searchResult: [],
+                editDialog: {
+                    show: false,
+                },
+                tableColumns: [
+                    {
+                        title: "Id",
+                        key: "Id",
+                    },
+                    {
+                        title: "保养活动Id",
+                        key: "BaoYangActivityId",
+                    },
+                    {
+                        title: "ServicePackagesName",
+                        key: "ServicePackagesName",
+                    },
+                    {
+                        title: "ServiceCatalogName",
+                        key: "ServiceCatalogName",
+                    },
+                    {
+                        title: "关联品牌",
+                        key: "Brands",
+                    },
+                    {
+                        title: "关联系列",
+                        key: "Series",
+                    },
+                    {
+                        title: "机油等级",
+                        key: "Grades",
+                        render: (h, params) => {
+                            return h('span', (params.row.Grades || ""));
+                        }
+                    },
+                    {
+                        title: "关联产品",
+                        key: "Products",
+                    },
+                    {
+                        title: "缺货信息",
+                        key: "InAdapteTipPrefix",
+                    },
+                    {
+                        title: "创建时间",
+                        key: "CreateTime",
+                        render: (h, params) => {
+                            return h('span', this.formateDataTime(params.row.CreateTime));
+                        }
+                    },
+                    {
+                        title: "更新时间",
+                        key: "UpdateTime",
+                        render: (h, params) => {
+                            return h('span', this.formateDataTime(params.row.UpdateTime));
+                        }
+                    },
+                    {
+                        title: "操作",
+                        key: "operate",
+                        width: 170,
+                        render: (h, params) => {
+                            return h("div", [
+                                h(
+                                    "Button", {
+                                        props: {
+                                            type: "primary"
+                                        },
+                                        style: {
+                                            marginRight: "5px"
+                                        },
+                                        on: {
+                                            click: () => {
+                                                this.OpenEditDialog(params.row);
+                                            }
+                                        }
+                                    },
+                                    "编辑"
+                                ),
+                                h(
+                                    "Button", {
+                                        props: {
+                                            type: "error"
+                                        },
+                                        on: {
+                                            click: () => {
+                                                this.Delete(params.row.Id, params.row.BaoYangActivityId);
+                                            }
+                                        }
+                                    },
+                                    "删除"
+                                )
+                            ]);
+                        }
+                    }
+                ]
+            }
+        },
+        created: function () {
+            var vm = this;
+            vm.GetIdByUrl();
+            vm.$Message.config({
+                top: 180,
+                duration: 5
+            });
+        },
+        watch: {
+            "hasOil": function () {
+                var vm = this;
+                if (vm.hasOil) {
+                    vm.GetOilBrandAndSeries();
+                } else {
+                    vm.brand_series = [];
+                }
+            }
+        },
+        computed: {
+            seriesList: function () {
+                var vm = this;
+                if (vm.model.ServiceCatalog == 'Oil') {
+                    var brand = vm.model.Brands;
+                    return vm.brand_series[brand] || [];
+                } else {
+                    return vm.series;
+                }
+            },
+            brandList: function () {
+                var vm = this;
+                if (vm.model.ServiceCatalog == 'Oil') {
+                    return Object.keys(vm.brand_series);
+                } else {
+                    return vm.brands;
+                }
+            },
+            hasOil: function () {
+                return ((this.searchResult || []).findIndex(s => s.ServiceCatalog === 'Oil') > -1) || false;
+            }
+        },
+        methods: {
+            // 初始化获取Url参数
+            GetIdByUrl: function () {
+                var vm = this;
+                vm.baoYangActivityId = vm.GetPara("id");
+                vm.baoYangActivityNum = vm.GetPara("ActivityNum");
+                if (vm.baoYangActivityId && vm.baoYangActivityNum) {
+                    vm.Search();
+                }
+            },
+            GetPara: function (name) {
+                var vm = this;
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null) {
+                    return unescape(r[2]);
+                } else {
+                    return null;
+                }
+            },
+            // 根据活动Id获取保养活动关联配置
+            Search: function () {
+                var vm = this;
+                vm.loading = true;
+                var id = vm.baoYangActivityId;
+                $.post("GetSettingItemByActivityId",
+                    { id: id },
+                    function (result) {
+                        if (result && result.Status) {
+                            vm.searchResult = result.Data;
+                        }
+                        vm.loading = false;
+                    });
+            },
+            // 点击编辑
+            OpenEditDialog: function (row) {
+                var vm = this;
+                vm.model = {};
+                $.post("GetBaoYangActivitySettingItemById", {
+                    id: row.Id
+                }, function (result) {
+                    if (result && result.Status) {
+                        vm.model = result.Data;
+                        vm.brands = result.BrandList;
+                        vm.series = result.SeriesList;
+                        vm.editDialog.show = true;
+                    }
+                });
+            },
+            // 获取机油品牌粘度
+            GetOilBrandAndSeries: function () {
+                var vm = this;
+                $.post("/BaoYangActivitySetting/GetOilBrandAndSeries", {}, function (result) {
+                    if (result && result.Status) {
+                        vm.brand_series = result.Data;
+                    }
+                })
+            },
+            // 更新保养活动关联配置
+            Update: function () {
+                var vm = this;
+                var id = vm.model.Id || 0;
+                var brand = vm.model.Brands || "";
+                var serie = vm.model.Series || "";
+                var product = vm.model.Products || "";
+                var actId = vm.model.BaoYangActivityId || "";
+                var inAdapte = vm.model.InAdapteTipPrefix || "";
+                if (vm.model.ServiceCatalog === 'Oil') {
+                    if (product) {
+                        vm.$Message.warning("机油不能关联产品");
+                        return;
+                    }
+                } else if ((brand && serie && product) || (product && serie) || (product && brand) || (serie && brand)) {
+                    vm.$Message.warning("品牌，系列，产品只能选一个！");
+                    return
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "/BaoYangActivitySetting/UpdateBaoYangActivitySettingItem",
+                    data: {
+                        model: vm.model
+                    },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            vm.$Message.success("更新成功!");
+                            vm.CloseAddOrEditDialog();
+                            setTimeout(function () { vm.Search(); }, 2000);
+                        } else {
+                            vm.$Message.error("更新失败!");
+                        }
+                    },
+                    error: function (result) {
+
+                    }
+                });
+            },
+            Delete: function (e, a) {
+                var vm = this;
+                if (window.confirm("确定要删除Id为" + e + "的保养活动关联配置吗？")) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/BaoYangActivitySetting/DeleteBaoYangActivitySettingItem",
+                        data: {
+                            "id": e,
+                            "baoYangActivityId": a
+                        },
+                        dataType: "json",
+                        success: function (result) {
+                            if (result) {
+                                vm.$Message.success("删除成功!");
+                                setTimeout(function () { vm.Search(); }, 2000);
+                            } else {
+                                vm.$Message.error("删除失败!");
+                            }
+                        },
+                        error: function (result) {
+                        }
+                    });
+                }
+            },
+            AddServiceType: function () {
+                var vm = this;
+                $("#AddServiceType").load('/BaoYangActivitySetting/ServiceType?id=' + vm.baoYangActivityId
+                    + '&ActivityNum=' + vm.baoYangActivityNum);
+                $("#AddServiceType").dialog({
+                    title: "添加服务类型",
+                    width: 450,
+                    height: 600,
+                    modal: true
+                });
+            },
+            CloseAddOrEditDialog: function () {
+                this.editDialog.show = false;
+            },
+            // 时间戳处理
+            formateDataTime: function (longtime) {
+                if (longtime) {
+                    var time = new Date(
+                        parseInt(longtime.replace("/Date(", "").replace(")/", ""))
+                    );
+                    var year = time.getFullYear();
+                    var day = time.getDate();
+                    var month = time.getMonth() + 1;
+                    var hours = time.getHours();
+                    var minutes = time.getMinutes();
+                    var seconds = time.getSeconds();
+                    return (
+                        year +
+                        "-" +
+                        month +
+                        "-" +
+                        day +
+                        " " +
+                        hours +
+                        ":" +
+                        minutes +
+                        ":" +
+                        seconds
+                    );
+                }
+            }
+        }
+    })
+</script>

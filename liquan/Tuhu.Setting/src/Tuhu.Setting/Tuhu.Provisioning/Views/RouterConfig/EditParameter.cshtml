@@ -1,0 +1,122 @@
+﻿@{
+    ViewBag.Title = "编辑分类配置";
+    Layout = null;
+}
+@model Tuhu.Provisioning.DataAccess.Entity.Router.RouterParameter
+<link href="http://setting.tuhu.work/Scripts/My97DatePicker/skin/WdatePicker.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="/Scripts/My97DatePicker/WdatePicker.js"></script>
+<div class="modal-dialog">
+    <div class="modal-content" style="width:800px;">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                &times;
+            </button>
+            <h4 class="modal-title">
+                编辑参数配置
+            </h4>
+        </div>
+        <div class="modal-body">
+            <form id="form1" class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-2 form-label">参数名称：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="Discription" name="Discription" value="@Model.Discription" />
+                    </div>
+                    <div class="col-sm-12">
+                    </div>
+                    <label class="col-sm-2 form-label">参数内容:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="Content" name="Content" value="@Model.Content" />
+                    </div>
+                    <div class="col-sm-12">
+                    </div>
+                    <label class="col-sm-2 form-label">分类:</label>
+                    <div class="col-sm-4">
+                        <select class="form-control" id="LinkKind" name="LinkKind" style="display: inline;">
+                            <option value="">请选择</option>
+                            <option value="1" @(Model.LinkKind == 1 ? "selected=\"selected\"" : "")>APP</option>
+                            <option value="2" @(Model.LinkKind == 2 ? "selected=\"selected\"" : "")>小程序</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-12">
+                    </div>
+                    <label class="col-sm-2 form-label">类型:</label>
+                    <div class="col-sm-4">
+                        <select class="form-control" id="Kind" name="Kind" style="display: inline;">
+                            <option value="">请选择</option>
+                            <option value="1" @(Model.Kind == 1 ? "selected=\"selected\"" : "")>选择</option>
+                            <option value="2" @(Model.Kind == 2 ? "selected=\"selected\"" : "")>文本</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-6">
+                    </div>
+                    <input type="hidden" id="ID" name="ID" value="@Model.PKID" />
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+
+            <button type="button" id="btnSave" name="btnSave" class="btn btn-primary">
+                保 存
+            </button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                取 消
+            </button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+
+    $(function () {
+
+        $('#btnSave').on('click', function () {
+
+            if ($("#Discription").val() === "") {
+                alert("请填写参数名称");
+                return;
+            }
+
+            if ($("#Content").val() === "") {
+                alert("请填写参数内容");
+                return;
+            }
+
+            if ($("#Kind").val() === "") {
+                alert("请选择类型");
+                return;
+            }
+            if ($("#LinkKind").val() === "") {
+                alert("请选择分类");
+                return;
+            }
+
+
+            var data = {};
+            data.PKID = $('#ID').val();
+            data.Content = $('#Content').val().replace(/(^\s*)|(\s*$)/g, "");
+            data.Discription = $('#Discription').val().replace(/(^\s*)|(\s*$)/g, "");
+            data.Kind = $('#Kind').val(); 
+            data.LinkKind = $('#LinkKind').val();
+            $(this).attr("disabled", "disabled");
+            $.ajax({
+                url: '/RouterConfig/ParameterSave',
+                type: 'post',
+                data: data,
+                dataType:'json'
+            }).done(function (result) {
+                if (result === 1) {
+                    alert('保存成功');
+                    $('#edit').modal("hide");
+                    location.reload();
+                } else {
+                    alert("保存失败");
+                }
+            });
+        });
+
+        if ($('#NoLinkUrl').val()) {
+            $('#NoLinkUrl').val(decodeURIComponent($('#NoLinkUrl').val()));
+        }
+    });
+</script>

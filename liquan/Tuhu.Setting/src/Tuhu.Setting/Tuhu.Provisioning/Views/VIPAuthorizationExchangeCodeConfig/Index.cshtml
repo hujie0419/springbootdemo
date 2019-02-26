@@ -1,0 +1,144 @@
+﻿@{
+    ViewBag.Title = "VIP权限兑换码生成";
+    Layout = "~/Views/Shared/_PersonalCenterLeft.cshtml";
+
+    List<Tuhu.Provisioning.DataAccess.Entity.VIPAuthorizationExchangeCodeConfig> codeBatch = ViewBag.CodebatchList;
+}
+
+<h2>VIP权限兑换码生成</h2>
+
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    textarea {
+        width: 100px;
+        height: 100px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+</style>
+<div>
+    <table style="width:300px;">
+        <tbody>
+            <tr>
+                <td>
+                    <a href="javascript:void(0)" class="btn" onclick="VIPAuthorizationExchangeCodeConfig.Add()">生成兑换码</a>
+                </td>
+                <td>
+                    <select class="codebatch" id="codebatch" name="codebatch">
+                        <option value="">请选择 </option>
+                        @foreach (var item in codeBatch)
+                        {
+                            <option value="@item.CodeBatch">@item.CodeBatch </option>
+                        }
+                    </select>
+                </td>            
+                <td>
+                    <input type="button" style="margin-top:0" class="btn" onclick="VIPAuthorizationExchangeCodeConfig.SearchList()" value="搜索" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="listdata"></div>
+
+<script>
+
+    $("#codebatch").filtrateSelect({ height: 200 });
+
+    $(function () {
+        $(".listdata").load("/VIPAuthorizationExchangeCodeConfig/list");
+
+        $(".listdata").on("click", ".pager>a", function (event) {
+            event.preventDefault();
+            debugger;
+            $.ajax({
+                type: "POST",
+                url: this.href,
+                data: { "CodeBatch": $("#codebatch").val() },
+                success: function (result) {
+                    $(".listdata").html(result);
+                },
+                error: function (result) {
+                    alert("失败!")
+                }
+            });
+        });
+    })
+
+    var VIPAuthorizationExchangeCodeConfig = {
+
+        "SearchList": function () {          
+            $.ajax({
+                type: "POST",
+                url: "/VIPAuthorizationExchangeCodeConfig/List",
+                data: { "CodeBatch": $("#codebatch").val() },
+                success: function (result) {
+                    $(".listdata").html(result);
+                },
+                error: function (result) {
+                    alert("失败!")
+                }
+            });
+        },
+        "Add": function () {
+            $("#AddItem").load('/VIPAuthorizationExchangeCodeConfig/Edit?id=0');
+            $("#AddItem").dialog({
+                title: "添加",
+                width: 500,
+                height: 300,
+                modal: true
+            });
+        },
+        "Update": function (id) {
+            $("#AddItem").load('/VIPAuthorizationExchangeCodeConfig/Edit?id=' + id);
+            $("#AddItem").dialog({
+                title: "修改",
+                width: 500,
+                height: 300,
+                modal: true
+            });
+        },
+        "Delete": function (id) {
+            if (window.confirm("您确定要删除吗？")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/VIPAuthorizationExchangeCodeConfig/Delete",
+                    data: { "id": id },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/VIPAuthorizationExchangeCodeConfig/Index";
+                        }
+                        else {
+                            alert("删除失败！");
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        }
+    }
+</script>

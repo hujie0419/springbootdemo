@@ -1,0 +1,559 @@
+﻿@{
+    ViewBag.Title = "导入用户服务码配置";
+    Layout = "~/Views/Shared/_LayoutNew.cshtml";
+}
+<link href="~/css/beautyPackage.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="~/Content/iview/iview.css" />
+<div id="div" v-cloak>
+    <h2>
+      <input type="button" value="添加服务码" href="javascript:void(0)" v-on:click="editProductFunc()" />   
+      <label>公司</label>
+      <i-select v-model="filterCondition.cooperateId"  :filterable="true" style="width:200px">
+          <i-option value="0">请选择</i-option>
+          <i-option v-for="item in allMrCooperateUserConfigs" v-bind:value="item.PKID">{{item.CooperateName}}</i-option>
+      </i-select>
+      <label>结算类型</label>
+      <i-select v-model="filterCondition.settlementMethod" style="width:200px">
+          <i-option value="">请选择</i-option>
+          <i-option value="PreSettled">买断</i-option>
+          <i-option value="ByPeriod">据实</i-option>
+      </i-select>
+     <label>选择服务</label>
+        <i-select v-model="filterCondition.serviceId"  :filterable="true" style="width:200px">
+            <i-option value="">请选择</i-option>
+            <i-option v-for="item in beautyServiceCodeTypeConfig" v-bind:value="item.PID">{{item.Name}}</i-option>
+        </i-select>    
+    </h2>
+    <table class="table table-striped table-bordered table-hover dataTables-example" style="margin-top:20px">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>名称</th>
+                <th>公司</th>
+                <th>集团客户结算价</th>
+                <th>门店佣金</th>
+                <th v-if="PackageType==='packageCode'">商品数量</th>
+                <th v-if="PackageType==='serviceCode'">服务码数量</th>
+                <th v-if="PackageType==='packageCode'">有效期／兑换后有效期（天）</th>
+                <th v-if="PackageType==='serviceCode'">结算方式</th>
+                <th>关联PID</th>
+                @*<th>是否是导入用户</th>*@
+                <th>买断订单号</th>
+                @*<th>是否有效</th>*@
+                <th>创建人</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tr v-for="item in list">
+            <td>{{item.PKID}}</td>
+            <td>{{item.Name}}</td>
+            <td>{{item.CooperateName}}</td>
+            <td>{{item.VipSettlementPrice}}</td>
+            <td>{{item.ShopCommission }}</td>
+            <td v-if="PackageType==='packageCode'">
+                    {{item.Num}}
+            </td>
+            <td v-if="PackageType==='serviceCode'">
+                    {{item.ServiceCodeNum}}
+            </td>
+            <td v-if="PackageType==='packageCode'">
+             <template v-if="item.EffectiveDayAfterExchange>0">{{item.EffectiveDayAfterExchange}}</template> 
+             <template v-else>{{item.ServiceCodeStartTime | formatDate}}至{{item.ServiceCodeEndTime | formatDate}}</template>
+            </td>
+            <td  v-if="PackageType==='serviceCode'">
+                <div v-if="item.SettlementMethod==='ByPeriod'">据实</div>
+                <div v-else-if="item.SettlementMethod==='PreSettled'">买断</div>
+            </td>
+            <td>{{item.PID}}</td>
+            @*<td>
+                <template v-if="item.IsImportUser">是</template>
+                <template v-else>否</template>
+            </td>*@
+            <td>
+                <div v-if="item.BuyoutOrderId>0">买断订单号：{{item.BuyoutOrderId}}</div>
+            </td>
+            @*<td><template v-if="item.IsActive">是</template><template v-else>否</template></td>*@
+            <td>{{item.CreateUser}}</td>
+            <td>
+                <a href="javascript:void(0)" v-on:click="editProductFunc(item)">编辑</a>
+                <a href="javascript:void(0)" v-on:click="deleteProductFunc(item)">删除</a>
+                <a :href="'/BeautyServicePackage/LimitConfig?packageDetailId='+item.PKID+''" target="_blank">限购</a>
+                @*<a href="javascript:void(0)" v-if="PackageType==='serviceCode'" v-on:click="exportServiceCodes(item.PKID, item.Name)">下载</a>*@
+            </td>
+        </tr>
+    </table>
+    <div style="margin-top:20px;">
+        <span>
+            每页显示:
+            <select v-model="pager.size">
+                <option v-for="size in sizes" v-bind:value="size">{{size}}</option>
+            </select>
+            条
+        </span>
+        <span>
+            <button type="button" v-on:click="pager.currentPage=1" v-bind:disabled="pager.currentPage==1">首页</button>
+            <button type="button" v-on:click="pager.currentPage-=1" v-bind:disabled="pager.currentPage==1">上一页</button>
+            <button type="button" v-on:click="pager.currentPage+=1" v-bind:disabled="pager.currentPage==pager.pages">下一页</button>
+            <button type="button" v-on:click="pager.currentPage=pager.pages" v-bind:disabled="pager.currentPage==pager.pages">尾页</button>
+        </span>
+        <span style="float:right">
+            <span>当前第{{pager.currentPage}}页/共{{pager.pages}}页&nbsp;&nbsp;转到<input style="width:30px" type="text" v-model="pager.inputPage">页</span>
+            <button type="button" v-on:click="pager.currentPage=pager.inputPage" v-bind:disabled="pager.inputPage<=0 || pager.inputPage>pager.pages">确定</button>
+        </span>
+    </div>
+    <div id="editDialog">
+        <div class="content">
+            <modal v-if="productDialog.show" v-on:close="productDialog.show=false">
+                <h3 slot="header">编辑产品</h3>
+                <div slot="body" class="vertical-group">
+                    <div>
+                        <label>选择服务</label>
+                        <input v-if="productDetail.IsServiceCodeGenerated" v-model="GetbeautyServiceCodeTypeName()" readonly="readonly" />
+                        <i-select v-if="!productDetail.IsServiceCodeGenerated" v-model="productDetail.PID"  :filterable="true" style="width:60%">                            
+                            <i-option value="">请选择</i-option>
+                            <i-option v-for="product in beautyServiceCodeTypeConfig" v-bind:value="product.PID">
+                                {{product.Name}}
+                            </i-option>
+                        </i-select>
+                    </div>
+                    <div>
+                        <label>选择公司</label>
+                        <input v-if="productDetail.IsServiceCodeGenerated" v-model="productDetail.CooperateName" readonly="readonly" />
+                        <i-select v-else v-model="productDetail.CooperateId"  :filterable="true" style="width:60%">
+                            <i-option value="0">请选择</i-option>
+                            <i-option v-for="item in allMrCooperateUserConfigs" v-bind:value="item.PKID">{{item.CooperateName}}</i-option>
+                        </i-select>
+                    </div>
+                    <div>
+                        <label>名称</label>                    
+                        <input type="text" v-model="productDetail.Name"/>
+                    </div>
+                    <div>
+                        <label>佣金</label>
+                        <input v-if="productDetail.IsServiceCodeGenerated" v-model="productDetail.ShopCommission" readonly="readonly" />
+                        <input v-if="!productDetail.IsServiceCodeGenerated" type="text" v-model="productDetail.ShopCommission" />
+                    </div>
+                    <div>
+                        <label>集团客户结算价<span style="color: #dc143c">(单个服务码价格)</span></label>
+                        <input type="text" v-if="productDetail.IsServiceCodeGenerated" v-model="productDetail.VipSettlementPrice" readonly="readonly"/>
+                        <input type="text" v-if="!productDetail.IsServiceCodeGenerated" v-model="productDetail.VipSettlementPrice"/>
+                    </div>
+                    <div>
+                        <label v-if="PackageType==='serviceCode'">结算类型</label>                       
+                        <input type="text" v-if="PackageType==='serviceCode'&&productDetail.IsServiceCodeGenerated" v-model="SettlementMethodDescription()" readonly="readonly" />
+                        <select v-if="PackageType==='serviceCode'&&!productDetail.IsServiceCodeGenerated" v-model="productDetail.SettlementMethod">
+                            <option value="">请选择</option>
+                            <option value="PreSettled">买断</option>
+                            <option value="ByPeriod">据实</option>
+                        </select>
+                    </div>
+                    @*<div>
+                        <label>是否生效</label>
+                        <label><input type="radio"  name="ProductIsActive" :value="false" v-model="productDetail.IsActive" />否</label>
+                        <label><input type="radio"  name="ProductIsActive" :value="true" v-model="productDetail.IsActive" />是</label>                      
+                    </div>*@
+                </div>
+                <div slot="footer">
+                    <button class="modal-default-button" v-on:click="UpsertBeautyServicePackageDetail()" v-bind:disabled="disableUpsertButton">确认</button>
+                    <button class="modal-default-button" v-on:click="cancelEditProductFunc()">取消</button>
+                </div>
+            </modal>
+        </div>
+    </div>
+    <div>
+        <div class="content">
+            <modal v-if="deleteProductDialog.show" v-on:close="deleteProductDialog.show=false">
+                <h3 slot="header">删除服务配置</h3>
+                <div slot="body" class="vertical-group">
+                    <div>
+                        <label>确定删除当服务配置？</label>
+                    </div>
+                </div>
+                <div slot="footer">
+                    <button class="modal-default-button" v-on:click="confirmDeleteProductFunc()">确认</button>
+                    <button class="modal-default-button" v-on:click="cancelDeleteProductFunc()">取消</button>
+                </div>
+            </modal>
+        </div>
+    </div>
+</div>
+<script type="text/x-template" id="modal-template">
+    <transition name="modal">
+        <div class="modal-mask">
+            <div class="modal-wrapper">
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <slot name="header"></slot>
+                    </div>
+                    <div class="modal-body">
+                        <slot name="body"></slot>
+                    </div>
+                    <div class="modal-footer">
+                        <slot name="footer">
+                            <button class="modal-default-button" v-on:click="">OK</button>
+                        </slot>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</script>
+@section scripts{
+
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/dateJs/vue-date.min.js"></script>
+    <script src="~/Scripts/iview/iview.min.js"></script>
+    <script type="text/javascript">
+        function formatDate(value)  {
+            if (value) {
+                var time = value instanceof Date ? value : eval('new ' + value.toString().replace(/\//g, ""));
+                var year = time.getFullYear();
+                var day = time.getDate();
+                var month = time.getMonth() + 1;
+                var hours = time.getHours();
+                var minutes = time.getMinutes();
+                var seconds = time.getSeconds();
+                var func = function (value, number) {
+                    var str = value.toString();
+                    while (str.length < number) {
+                        str = "0" + str;
+                    }
+                    return str;
+                }
+                if (year == 1) {
+                    return "";
+                } else {
+                    return func(year, 4) + '-' + func(month, 2) + '-' + func(day, 2) + ' '
+                }
+            }
+        }
+        Vue.filter('formatDate', formatDate );
+        Vue.component('modal', {
+            template: '#modal-template'
+        });
+        var vue = new Vue({
+            el: "#div",
+            data: {
+                list: [],
+                pager: {
+                    total: 0,
+                    pages: 0,
+                    currentPage: 1,
+                    size: 20,
+                    inputPage: 0,
+                },
+                sizes: [5, 10, 20, 40, 50, 100, 200],
+                productDetail: {
+                PKID: "",
+                PID: "",
+                ServiceCodeTypeId: "",
+                Name: "",
+                VipSettlementPrice: "",
+                ShopCommission: "",
+                SettlementMethod: "",
+                Num: 0,
+                ServiceCodeNum: 0 ,
+                ServiceCodeStartTime:"",
+                ServiceCodeEndTime: "" ,
+                EffectiveDayAfterExchange: "",
+                IsActive: false,
+                IsServiceCodeGenerated: false,
+                IsImportUser: true,
+                CooperateId: 0,
+                CooperateName:""
+             },
+             GetbeautyServiceCodeTypeName: function () {
+                 var self = this;
+                 var name = "";
+                 self.beautyServiceCodeTypeConfig.forEach(function (item) {
+                     if (item.PID === self.productDetail.PID) {
+                         name = item.Name;
+                     }
+                 })
+                 return name;
+              },
+             SettlementMethodDescription: function () {
+                 var self = this;
+                 if (self.productDetail.SettlementMethod === "PreSettled") {
+                     return "买断";
+                 } else {
+                     return "据实";
+                 }
+             },
+            productDialog: {
+                show: false
+            },
+            deleteProductDialog: {
+                show: false
+            },
+            beautyServiceCodeTypeConfigDialog: {
+                show: false
+            },
+            addBeautyServiceCodeTypeConfigDialog: {
+                show: false
+            },
+            addBeautyServiceCodeTypeConfig: {
+                PID: "",
+                Name: "",
+                Description: "",
+                IsActive:false
+            },
+            filterCondition: {
+                isImportUser: true,
+                settlementMethod: "",
+                cooperateId: 0,
+                serviceId:""
+            },
+            productName:"",
+            beautyServiceCodeTypeConfig:[],
+            addPackage: false,
+            editPackage:false,
+            lookPackage: false,
+            PackageType: "serviceCode",
+            lockGenerateServiceCode: false,
+            disableUpsertButton: false,
+            Generateing:false,
+            GenerateingRate: "",
+            allMrCooperateUserConfigs: [],
+            beautyServiceCodeTypeConfig:[]
+            },
+        components: { datepicker },
+        created: function () {
+            this.load();
+        },
+        watch: {
+            "BeautyServiceCodeTypeConfig.PID": function () {
+                var self = this;
+                $.get("GetProductByPid", { pid: self.addBeautyServiceCodeTypeConfig.PID }, function (product) {
+                    if (product) {
+                        self.productName = product.DisplayName;
+                    } else {
+                        alert("产品不存在");
+                    }
+                })
+            },
+            "filterCondition.settlementMethod": function () {
+                var self = this;
+                self.load();
+            },
+            "filterCondition.cooperateId": function () {
+                var self = this;
+                self.load();
+            },
+            "filterCondition.serviceId": function () {
+                var self = this;
+                self.load();
+            },
+            "pager.total": function () {
+                var self = this;
+                var pager = self.pager;
+                pager.pages = Math.ceil(pager.total / pager.size);
+            },
+            "pager.size": function () {
+                var self = this;
+                if (self.pager.size <= 0) {
+                    self.pager.size = 1;
+                    return;
+                }
+                if (self.pager.size > 200) {
+                    self.pager.size = 200;
+                    return;
+                }
+                self.pager.pages = Math.ceil(self.pager.total / self.pager.size);
+                this.load();
+            },
+            "pager.currentPage": function () {
+                var self = this;
+                if (self.pager.currentPage <= 0) {
+                    self.pager.currentPage = 1;
+                    return;
+                }
+                if (self.pager.pages > 0 && self.pager.currentPage > self.pager.pages) {
+                    self.pager.currentPage = self.pager.pages;
+                    return;
+                }
+                self.load();
+            }, 
+        },
+        methods: {
+            load: function (callback) {
+                var self = this;
+                self.loading = true;
+                $.get("GetBeautyServicePackageDetails", {
+                    pageIndex: self.pager.currentPage, pageSize: self.pager.size, isImportUser: true,
+                    settlementMethod: self.filterCondition.settlementMethod,
+                    cooperateId: self.filterCondition.cooperateId,
+                    serviceId: self.filterCondition.serviceId
+                }, function (data) {
+                    self.list = data.Item1 || [];
+                    self.pager.total = data.Item2 || 0;
+                })
+                self.getAllMrCooperateUserConfigs();
+                self.getBeautyServiceCodeTypeConfig();
+                if (Object.prototype.toString.call(callback) === '[object Function]')
+                    return callback();
+            },
+            delayLoad: function (callback) {
+                var self = this;
+                setTimeout(function () { self.load(callback);}, 1500);
+            },
+            UpsertBeautyServicePackageDetail: function () {
+                var self = this;   
+                self.disableUpsertButton = true;
+                self.beautyServiceCodeTypeConfig.forEach(function (item) {
+                    if (item.PID == self.productDetail.PID) {
+                        self.productDetail.ServiceCodeTypeId = item.PKID;
+                    };
+                });
+
+                if (self.productDetail.CooperateId <= 0 || !self.productDetail.SettlementMethod || self.productDetail.SettlementMethod == ""
+                    || self.productDetail.VipSettlementPrice <= 0 || self.productDetail.PID == "") {
+                    alert("参数不全");
+                    self.disableUpsertButton = false;
+                    return;
+                }
+
+                if (self.productDetail.ShopCommission < 1) {
+                    $.post("UpsertBeautyServicePackageDetail", { packageDetail: self.productDetail }, function (dsp) {
+                        if (dsp && dsp.IsSuccess) {
+                            self.delayLoad(function () { self.productDialog.show = false; self.disableUpsertButton = false; });  
+                        } else if (dsp) {
+                            self.disableUpsertButton = false;
+                            alert(dsp.Msg);
+                        } else {
+                            self.disableUpsertButton = false;
+                            alert("更新失败");
+                        }
+                    });
+                } else {
+                    self.disableUpsertButton = false;
+                    alert("佣金比必须小于1");
+                }               
+            },
+            lookbeautyServiceCodeTypeConfigFunc: function () {
+                var self = this;
+                self.GetAllBeautyServiceCodeTypeConfig(function () {
+                    self.beautyServiceCodeTypeConfigDialog.show = true;
+                })
+            },
+            GetAllBeautyServiceCodeTypeConfig: function (callback) {
+                var self = this;
+                $.get("GetAllBeautyServiceCodeTypeConfig", function (rsp) {
+                    if (rsp) {
+                        self.beautyServiceCodeTypeConfig = rsp;
+                        callback();
+                    } else {
+                        alert("获取失败");
+                        callback();
+                    }
+                });
+            },
+            GetProductByPidFunc: function (pid) {
+                var self = this;
+                $.get("GetProductByPid", { pid: self.addBeautyServiceCodeTypeConfig.PID }, function (product) {
+                    if (product) {
+                        self.productName = product.DisplayName;
+                    } else {
+                        alert("产品不存在");
+                    }
+                })
+            },
+            addbeautyServiceCodeTypeConfigFunc: function () {
+                var self = this;
+                self.addBeautyServiceCodeTypeConfigDialog.show = true;
+            },
+            closeBeautyServiceCodeTypeConfigDialog: function () {
+                var self = this;
+                self.beautyServiceCodeTypeConfigDialog.show = false;
+            },
+            editProductFunc: function (item) {
+                var self = this;
+                self.GetAllBeautyServiceCodeTypeConfig(function () {
+                    if (item) {
+                        self.productDetail.PKID = item.PKID;
+                        self.productDetail.PackageId = item.PackageId;
+                        self.productDetail.PID = item.PID;
+                        self.productDetail.ServiceCodeTypeId = item.ServiceCodeTypeId;
+                        self.productDetail.Name = item.Name;
+                        self.productDetail.VipSettlementPrice = item.VipSettlementPrice;
+                        self.productDetail.ShopCommission = item.ShopCommission;
+                        self.productDetail.SettlementMethod = item.SettlementMethod == null ? "" : item.SettlementMethod;
+                        self.productDetail.Num = item.Num;
+                        self.productDetail.ServiceCodeNum = item.ServiceCodeNum;
+                        self.productDetail.ServiceCodeStartTime = formatDate(item.ServiceCodeStartTime);
+                        self.productDetail.ServiceCodeEndTime = formatDate(item.ServiceCodeEndTime);
+                        self.productDetail.EffectiveDayAfterExchange = item.EffectiveDayAfterExchange;
+                        self.productDetail.IsServiceCodeGenerated = item.IsServiceCodeGenerated;
+                        self.productDetail.IsImportUser = item.IsImportUser;
+                        self.productDetail.CooperateId = item.CooperateId;
+                        self.productDetail.CooperateName = item.CooperateName;
+                    } else {
+                        self.productDetail.PKID = "";
+                        self.productDetail.PackageId = 0;
+                        self.productDetail.PID = "";
+                        self.productDetail.ServiceCodeTypeId = "";
+                        self.productDetail.Name = "";
+                        self.productDetail.VipSettlementPrice = "";
+                        self.productDetail.ShopCommission = "";
+                        self.productDetail.SettlementMethod = "";
+                        self.productDetail.Num = "";
+                        self.productDetail.ServiceCodeNum = "";
+                        self.productDetail.ServiceCodeStartTime = "";
+                        self.productDetail.ServiceCodeEndTime = "";
+                        self.productDetail.EffectiveDayAfterExchange = "";
+                        self.productDetail.IsServiceCodeGenerated = false;
+                        self.productDetail.IsImportUser = true;
+                        self.productDetail.CooperateId = 0;
+                        self.productDetail.CooperateName = "";
+                    }
+                    self.productDialog.show = true;
+                });            
+            },
+            cancelEditProductFunc: function () {
+                this.productDialog.show = false;
+            },
+            deleteProductFunc: function (item) {
+                var self = this;
+                self.productDetail.PKID = item.PKID;
+                this.deleteProductDialog.show = true;
+            },
+            confirmDeleteProductFunc: function () {
+                var self = this;            
+                $.post("DeleteBeautyServicePackageDetail", { pkid: self.productDetail.PKID }, function (rsp) {
+                    if (rsp && rsp.IsSuccess) {                       
+                        self.delayLoad(function () { self.deleteProductDialog.show = false;});
+                    } else if (rsp) {
+                        alert(rsp.Msg);
+                    } else {
+                        alert("删除失败");
+                    }
+                });
+            },
+            cancelDeleteProductFunc: function () {
+                var self = this;
+                 self.deleteProductDialog.show = false;                 
+            },
+            closeGenerateingDialog: function () {
+                this.Generateing = false;
+            },
+            exportServiceCodes: function (packageDetailId, name) {
+                window.location.href = "ExportServiceCodes?packageDetailId=" + packageDetailId + "&name="+name+"";
+            },
+            getAllMrCooperateUserConfigs: function () {
+                var self = this;
+                $.get("/BankMRActivity/GetAllMrCooperateUserConfigs", function (data) {
+                    self.allMrCooperateUserConfigs = data;
+                })
+            },
+            getBeautyServiceCodeTypeConfig: function () {
+                var self = this;
+                $.get("GetAllBeautyServiceCodeTypeConfig", function (data) {
+                    self.beautyServiceCodeTypeConfig = data;
+                })
+            }
+        }
+    })
+
+
+    </script>
+}

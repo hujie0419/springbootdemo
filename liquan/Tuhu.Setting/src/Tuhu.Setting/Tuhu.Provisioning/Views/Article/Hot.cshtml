@@ -1,0 +1,226 @@
+﻿@{
+    ViewBag.Title = "热门管理";
+    Layout = "../Shared/_Layout.cshtml";
+}
+<script type="text/javascript" src="/Scripts/KindEditor/kindeditor.js"></script>
+
+<style>
+    .button1 {
+        border-radius: 5px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        font-family: "Microsoft Yahei";
+        outline: none;
+        cursor: pointer;
+        background: #0088cc;
+        border-color: #0088cc;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: #0088cc;
+        border: solid 1px #0088cc;
+    }
+</style>
+
+<script>
+    function saveHotArticles() {
+
+        var dataArray = new Array();
+        $('.faqlist >tbody> tr').each(function (i) {
+            if (i >= 0) {
+                var columns = $(this).children();
+                var jsonData = { "PKID": "", "HotArticles": "" };
+
+                jsonData.PKID = columns.eq(9).find("input[type='checkbox']").attr("pkid");
+                if (columns.eq(9).find("input[type='checkbox']").attr('checked') == 'checked') {
+                    jsonData.HotArticles = true;
+                }
+                else {
+                    jsonData.HotArticles = false;
+                }
+                dataArray[i] = jsonData;
+            }
+        });
+
+        var dataList = JSON.stringify(dataArray);
+
+        $.ajax({
+            url: '/Article/UpdateHotArticles',
+            type: 'POST',
+            data: { dataList: dataList },
+            dataType: 'json',
+            success: function (result) {
+                if (result) {
+                    window.location.reload(true);
+                }
+            }
+        });
+    };
+
+    $(function () {
+        LoadList(1);
+        document.onkeydown = function (e) {
+            var ev = document.all ? window.event : e;
+            if (ev.keyCode == 13) {
+                LoadList(1);
+            }
+        };
+    });
+    //文章类目
+    function transCategory(key) {
+        return { 1: '汽车百科', 2: '驾驶技巧', 3: '保养秘诀', 4: '必备车品' }[key] || '';
+    };
+    function LoadList(pageindex) {
+        $.ajax({
+            type: "POST",
+            timeout: 10000,
+            url: "/Article/ArticleManageList",
+            data: {
+                "PageIndex": pageindex,
+                "KeyStr": $("#KeyStr").val(),
+                "HotArticles": $("#hotArticles option:selected").val(),
+                "Category": $("#categroyName option:selected").val()
+            },
+            success: function (result) {
+                $(".LoadingObj").remove();
+                if (result != "" && result.length > 0) {
+                    var kstr = "";
+                    $.each(result, function (idx, item) {
+
+                        if (item.HotArticles) {
+                            kstr += '<tr>' +
+                          '<td>' + transCategory(item.Category) + '</td>' +
+                          '<td>' + item.SmallTitle + '<br/>' + item.BigTitle + '<br/>H5界面：' + item.ContentUrl + '</td>' +
+                          '<td align="center"><img src="' + item.SmallImage + '" height="80"/></td>' +
+                          '<td align="center">' + item.ClickCount + '</td>' +
+                          '<td>' + item.TitleColor + '</td>' +
+                          '<td>' + item.Source + '</td>' +
+                          '<td>' + item.Vote + '</td>' +
+                          '<td><a target="_blank" href="/ArticleComment/?ID=' + item.PKID + '">' + item.CommentCount + '</a></td>' +
+                          '<td>' + item.PublishDateTime + '</td>' +
+                          '<td><input type="checkbox" class="check" checked="checked" pkid=' + item.PKID + '> </tr>';
+                        } else {
+                            kstr += '<tr>' +
+                            '<td>' + transCategory(item.Category) + '</td>' +
+                            '<td>' + item.SmallTitle + '<br/>' + item.BigTitle + '<br/>H5界面：' + item.ContentUrl + '</td>' +
+                            '<td align="center"><img src="' + item.SmallImage + '" height="80"/></td>' +
+                            '<td align="center">' + item.ClickCount + '</td>' +
+                            '<td>' + item.TitleColor + '</td>' +
+                            '<td>' + item.Source + '</td>' +
+                            '<td>' + item.Vote + '</td>' +
+                            '<td><a target="_blank" href="/ArticleComment/?ID=' + item.PKID + '">' + item.CommentCount + '</a></td>' +
+                            '<td>' + item.PublishDateTime + '</td>' +
+                            '<td><input type="checkbox" class="check" pkid=' + item.PKID + '> </tr>';
+                        }
+
+                    });
+                    if (pageindex == 1) {
+                        $("#DataList").html(kstr);
+                    }
+                    else {
+                        $("#DataList").append(kstr);
+                    }
+                    if (result.length < 10) {
+                        $("#DataList").append('<tr class="LoadingObj"><td colspan="10" align="center" style="color:#cccccc;">没有更多数据了...</td></tr>');
+                    }
+                    else {
+                        $("#DataList").append('<tr class="LoadingObj"><td colspan="10" align="center"><a href="javascript:void(0);" onclick="LoadList(' + (pageindex + 1) + ')">加载更多数据...</a></td></tr>');
+                    }
+                }
+                else {
+                    if (pageindex == 1) {
+                        $("#DataList").html('<tr class="LoadingObj"><td colspan="10" align="center" style="color:#cccccc;">没有更多数据了...</td></tr>');
+                    }
+                    else {
+                        $("#DataList").append('<tr class="LoadingObj"><td colspan="10" align="center" style="color:#cccccc;">没有更多数据了...</td></tr>');
+                    }
+                }
+            },
+            beforeSend: function () {
+                if (pageindex == 1) {
+                    $("#DataList").html('<tr class="LoadingObj"><td colspan="10" align="center"><img src="/images/loading.gif"/> 正在努力为您加载，请稍后...</td></tr>');
+                }
+                else {
+                    $("#DataList").append('<tr class="LoadingObj"><td colspan="10" align="center"><img src="/images/loading.gif"/> 正在努力为您加载，请稍后...</td></tr>');
+                }
+            }
+        });
+    }
+    function checking(e) {
+        if ($("#checkAll").attr('checked') == 'checked') {
+            $("input[type='checkbox']").attr("checked", "checked")
+        }
+        else {
+            $("input[type='checkbox']").removeAttr("checked")
+        }
+       
+    }
+</script>
+<div style="margin-top:20px;margin-bottom:20px;">
+
+    <a class="button1" href="/Article/ArticleManage" target="_blank">文章管理</a>
+    <a class="button1" href="/Article/Theme" target="_blank">特推主题</a>
+    <a class="button1" href="/Article/Hot" target="_blank">热门管理</a>
+    <a class="button1" href="/Article/SeekKeyWord" target="_blank">热门搜索词</a>
+
+</div>
+<div>
+    <p>
+        <table>
+            <tbody>
+                <tr>
+                    <td>文章类目</td>
+                    <td>
+                        <select id="categroyName">
+                            <option value="0">请选择</option>
+                            <option value="1">汽车百科</option>
+                            <option value="2">驾驶技巧</option>
+                            <option value="3">保养秘诀</option>
+                            <option value="4">必备车品</option>
+
+                        </select>
+                    </td>
+                    <td>文章标题</td>
+                    <td>@Html.TextBox("KeyStr")</td>
+                    <td>热门状态</td>
+                    <td>
+                        <select id="hotArticles">
+                            <option value="0">请选择</option>
+                            <option value="1">是</option>
+                            <option value="2">否</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="button" value="搜索" class="button1" onclick="LoadList(1)" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <input style="float:right; margin-bottom:20px;" type="button" value="保存" class="button1" onclick="saveHotArticles()" />
+    </p>
+</div>
+<br />
+<div style="clear:both;"></div>
+<table class="faqlist" style="width:100%">
+    <thead>
+        <tr style="background-color: #5c87b2; color: #ffffff;">
+            <th>文章类目</th>
+            <th>文章标题</th>
+            <th align="center">文章图</th>
+            <th align="center">阅读次数</th>
+            <th>标题颜色</th>
+            <th>文章来源</th>
+            <th>点赞数</th>
+            <th>评论数</th>
+            <th>显示发布时间</th>
+            <th align="center">热门状态<input type="checkbox" id="checkAll" onchange="checking(this);"  checked="" /> </th>
+
+        </tr>
+    </thead>
+    <tbody id="DataList"></tbody>
+</table>

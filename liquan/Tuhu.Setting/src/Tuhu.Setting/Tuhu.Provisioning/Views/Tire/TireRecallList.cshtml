@@ -1,0 +1,97 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity.Tire;
+@using Tuhu.Provisioning;
+@model Tuhu.Component.Common.Models.ListModel<TireRecallModel>
+    @{
+        Layout = null;
+        var selectModel = ViewBag.Select as TireRecallModel;
+    }
+                                                 @functions
+                                               {
+                                                     public string GetStatusText(short status)
+                                                     {
+                                                         string statustext = "<font style='color:red;'>审核中</font>";
+                                                         switch (status)
+                                                         {                                                            
+                                                             case 1:
+                                                                 statustext= "<font style='color:green;'>通过</font>";
+                                                                 break;
+                                                             case 2:
+                                                                 statustext= "<font style='color:#ccc;'>驳回</font>";
+                                                                 break;
+                                                         }
+                                                         return statustext;
+                                                     }
+                                                     }
+
+
+ 
+        <table data-count="@Model.Pager.TotalItem" width="100%">
+            <tr>
+                <th>申诉编号</th>
+                <th>订单号</th>
+                <th>车牌号</th>
+                <th>手机号</th>
+                <th>照片</th>
+                <th>轮胎个数</th>
+                <th>驳回原因</th>
+                <th>申诉状态</th>
+                <th>操作</th>
+                <th>操作记录</th>
+            </tr>
+            @foreach (var item in Model.Source)
+            {                
+                <tr>
+                    <td>@item.PKID</td>
+                    <td>@item.OrderNo</td>
+                    <td>@(string.IsNullOrWhiteSpace(item.CarNo) ? "-" : item.CarNo)</td>
+                    <td>@(string.IsNullOrWhiteSpace(item.Mobile) ? "-" : item.Mobile)</td>
+                    <td>
+                        @if (!String.IsNullOrWhiteSpace(item.VehicleLicenseImg))
+                        {
+                            <text><a target="_blank" href=@item.VehicleLicenseImg>行驶证照片</a></text>
+                        }
+                        @{
+                            if (!String.IsNullOrWhiteSpace(item.TireDetailImg))
+                            {
+
+                                var tiredetailimglist = item.TireDetailImg.Split(new char[] { ',' }).ToList();
+
+                                for (int i = 0; i < tiredetailimglist.Count(); i++)
+                                {
+                                    var content = "轮胎DOT细节图" + (i + 1);
+                                   <text><a target="_blank" href=@tiredetailimglist[i]>@content</a></text>
+
+                                }
+                            }
+
+                        }
+                        @if (!String.IsNullOrWhiteSpace(item.TireAndLicenseImg))
+                        {
+                            <text><a target="_blank" href=@item.TireAndLicenseImg>轮胎和行驶证合照</a> </text>
+                       }
+                    </td>
+                    <td><font style='color:red;'>@item.Num</font></td>
+                    <td>@item.Reason</td>
+                    <td>@Html.Raw(GetStatusText(item.Status))</td>        
+                    <td>
+                        @if (item.Status == 0)
+                        {                           
+                            <a btnkey="PassTire" istuhuverify="1" style="display:none;" href="javascript:void(0)" name="operate" data-pkid="@item.PKID" data-status="1">通过</a>
+                            <span>|</span>
+                            <a btnkey="PassTire" istuhuverify="1" style="display:none;" href="javascript:void(0)" name="operate" data-pkid="@item.PKID" data-status="2">驳回</a>
+                        }
+                       </td>
+                   
+                    <td><button class="btn btn-primary btn-small" onclick="Func.CheckTireRecallLog(@item.PKID)">查看</button></td>
+                       
+                       
+
+                   
+                </tr>
+            }
+           
+        </table>
+        @Html.Pager(Model.Pager, true, id => Url.Action("TireRecallList", new { OrderNo=selectModel.OrderNo, Mobile=selectModel.Mobile, Status=selectModel.Status, pageSize = Model.Pager.PageSize, pageIndex = id }))
+  
+
+<script src="https://file-tuhu-cn.alikunlun.com/yewu/oms/scripts/verifyBtn.js" type="text/javascript"></script>

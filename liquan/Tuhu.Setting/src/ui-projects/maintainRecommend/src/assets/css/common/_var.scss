@@ -1,0 +1,47 @@
+/** -----------------------  布局大小  ------------------------ */
+$headerHeight: 50px; // 头部高度
+$navLeftWidth: 160px; // 左边菜单高度
+$navLeftChildWidth: 140px; // 左边子菜单宽度
+$maxWidth: 1260px; // 收起菜单宽度
+$minWidth: 960px; //移动端宽度
+$phoneWidth: 700px; //移动端宽度
+$defaultHeight: 40px;
+
+/** -----------------------  字号大小  ------------------------ */
+$defaultFontSize: 14px;
+$largeFontSize: 16px;
+$smallFontSize: 12px;
+
+$topMenuWidth_pc: 120px;
+$topMenuChildWidth_pc: 80px;
+$saveBtnWidth: 100px;
+$baseTableHeight_phone: 44px;
+$smallTableHeight_phone: 34px;
+
+/** -----------------------  边框弧度  ------------------------ */
+$btnBrRadius: 2px;
+$btnPadding: 16px; // 按钮边框线
+
+/** -------------------------  颜色  -------------------------- */
+
+$colorf: #ffffff;
+$color0: #000;
+$color3: #333333;
+$color6: #666666;
+$color9: #999999;
+$color5a: #5a5a5a;
+$color97: #979797;
+$colore: #eee;
+$colorfa: #FAFAFA;
+$stressColor: #DF3348; // 着重色
+
+// 背景
+$layoutBg: #34323D; // 布局背景
+$activeColor: #FBEAEC; // 活动色
+$grayBg: #F5F5F5;   // 浅灰背景
+$grayBtnBg: #DCDCDC;  // 按钮不能点击背景
+
+// 边框
+$btnBrColor: #D9D9D9; // 按钮边框线
+$splitBrColor: #EEEEEE; // 分割线颜色
+$tabBrColor: #f1f1f1; // tab分割线颜色

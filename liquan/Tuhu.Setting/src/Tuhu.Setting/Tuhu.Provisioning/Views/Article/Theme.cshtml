@@ -1,0 +1,317 @@
+﻿@{
+    ViewBag.Title = "特推主题";
+}
+
+<style>
+    .ui-dialog {
+        border-radius: 3px;
+        padding: 0px;
+        width: auto;
+    }
+
+    .ui-dialog-grid {
+        width: 100%;
+    }
+
+    .ui-dialog-title {
+        width: 75%;
+        padding: 8px 15px 8px 15px;
+    }
+
+    .ui-dialog-close {
+        top: 8px;
+    }
+
+    .ui-dialog-body {
+        padding: 10px;
+    }
+
+    .ui-dialog-content {
+        padding: 0px;
+    }
+
+    .ui-dialog-footer {
+        padding: 5px 10px 5px 5px;
+        background: #ffffff;
+        border-top: 1px solid #eee;
+    }
+
+        .ui-dialog-footer button {
+            padding: 3px 15px;
+            border-radius: 2px;
+            box-shadow: 0 1px 1px rgba(0,0,0,.15);
+            font-size: 12px;
+        }
+
+            .ui-dialog-footer button.ui-dialog-autofocus {
+                font-weight: 700;
+                text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+            }
+
+    .button1 {
+        border-radius: 5px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        font-family: "Microsoft Yahei";
+        outline: none;
+        cursor: pointer;
+        background: #0088cc;
+        border-color: #0088cc;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: #0088cc;
+        border: solid 1px #0088cc;
+    }
+</style>
+<script src="../../Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<link rel="stylesheet" href="/Scripts/artDialog6.0.4/css/ui-dialog.css" />
+<script src="~/Scripts/artDialog6.0.4/dist/dialog-min.js"></script>
+<script src="~/Scripts/artDialog6.0.4/dist/dialog-plus-min.js"></script>
+<div style="margin-top:20px;margin-bottom:20px;">
+
+    <a class="button1" href="/Article/ArticleManage" target="_blank">文章管理</a>
+    <a class="button1" href="/Article/Theme" target="_blank">特推主题</a>
+    <a class="button1" href="/Article/Hot" target="_blank">热门管理</a>
+    <a class="button1" href="/Article/SeekKeyWord" target="_blank">热门搜索词</a>
+
+</div>
+<script>
+    $(function () {
+        LoadList(1);
+        document.onkeydown = function (e) {
+            var ev = document.all ? window.event : e;
+            if (ev.keyCode == 13) {
+                LoadList(1);
+            }
+        };
+    });
+    //文章类目
+    function transCategory(key) {
+        return { 1: '汽车百科', 2: '驾驶技巧', 3: '保养秘诀', 4: '必备车品' }[key] || '';
+    };
+    function LoadList(pageindex) {
+        $.ajax({
+            type: "POST",
+            url: "/Article/ArticleManageList",
+            data: {
+                "PageIndex": pageindex,
+                "KeyStr": "ArticleBanner"
+            },
+            success: function (result) {
+                $(".LoadingObj").remove();
+                if (result != "" && result.length > 0) {
+                    var kstr = "";
+                    $.each(result, function (idx, item) {
+                        if (item.Bestla) {
+                            kstr += '<tr>' +
+                       '<td>' + transCategory(item.Category) + '</td>' +
+                       '<td>' + item.SmallTitle + '<br/>' + item.BigTitle + '<br/>H5界面：' + item.ContentUrl + '</td>' +
+                       '<td align="center"><img src="' + item.SmallBanner + '" height="80"/></td>' +
+                       '<td align="center">启用</td>' +
+                       '<td><a href="javascript:void(0)" onclick="update(' + item.PKID + ')">编辑</a><br/>' +
+                       '<a href="javascript:void(0)" onclick="deleteModel(' + item.PKID + ')">删除</a></td></tr>   ';
+                        }
+                        else {
+                            kstr += '<tr>' +
+                            '<td>' + transCategory(item.Category) + '</td>' +
+                            '<td>' + item.SmallTitle + '<br/>' + item.BigTitle + '<br/>H5界面：' + item.ContentUrl + '</td>' +
+                            '<td align="center"><img src="' + item.SmallBanner + '" height="80"/></td>' +
+                            '<td align="center" style="color:red;">禁用</td>' +
+                            '<td><a href="javascript:void(0)" onclick="update(' + item.PKID + ')">编辑</a><br/>' +
+                            '<a href="javascript:void(0)" onclick="deleteModel(' + item.PKID + ')">删除</a></td></tr>   ';
+                        }
+
+
+                    });
+                    if (pageindex == 1) {
+                        $("#DataList").html(kstr);
+                    }
+                    else {
+                        $("#DataList").append(kstr);
+                    }
+                    if (result.length < 10) {
+                        $("#DataList").append('<tr class="LoadingObj"><td colspan="6" align="center" style="color:#cccccc;">没有更多数据了...</td></tr>');
+                    }
+                    else {
+                        $("#DataList").append('<tr class="LoadingObj"><td colspan="6" align="center"><a href="javascript:void(0);" onclick="LoadList(' + (pageindex + 1) + ')">加载更多数据...</a></td></tr>');
+                    }
+                }
+                else {
+                    if (pageindex == 1) {
+                        $("#DataList").html('<tr class="LoadingObj"><td colspan="6" align="center" style="color:#cccccc;">没有更多数据了...</td></tr>');
+                    }
+                    else {
+                        $("#DataList").append('<tr class="LoadingObj"><td colspan="6" align="center" style="color:#cccccc;">没有更多数据了...</td></tr>');
+                    }
+                }
+            },
+            beforeSend: function () {
+                if (pageindex == 1) {
+                    $("#DataList").html('<tr class="LoadingObj"><td colspan="9" align="center"><img src="/images/loading.gif"/> 正在努力为您加载，请稍后...</td></tr>');
+                }
+                else {
+                    $("#DataList").append('<tr class="LoadingObj"><td colspan="9" align="center"><img src="/images/loading.gif"/> 正在努力为您加载，请稍后...</td></tr>');
+                }
+            }
+        });
+    }
+
+</script>
+
+<div>
+    <a class="button1" href="javascript:;" style="margin-bottom:20px;float:right;" onclick="insert();">新增主题</a>
+    <a class="button1" href="javascript:;" style="margin-bottom:20px;float:right; margin:0 6px;" onclick="window.open('https://huodong.tuhu.cn/Discovery/UpdateHomeTopBannner');">刷新主题缓存</a>
+</div>
+<div>
+    <table class="faqlist" style="width:100%">
+        <thead>
+            <tr style="background-color: #5c87b2; color: #ffffff;">
+                <th>文章类目</th>
+                <th>文章标题</th>
+                <th>Bannner图</th>
+                <th>主题状态</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="DataList"></tbody>
+    </table>
+</div>
+<script>
+    function insert() {
+        var dialgpResult = dialog({
+            height: 200,
+            width: 500,
+            fixed: true,
+            title: "主题新建",
+            button: [
+            {
+                value: "保存",
+                callback: function () {
+                    e = $("#SmallTitle :selected").val();
+                    var bannerEnable = false;
+                    if ($(".Bestla").attr('checked') == 'checked') {
+                        bannerEnable = true;
+                    }
+                    $.ajax({
+                        type: "POST",
+                        url: "/Article/UpdateTheme",
+                        data: {
+                            "pkid": e,
+                            "ArticleBanner": $("#Image").val(),
+                            "SmallBanner": $("#SmallImage").val(),
+                            "Bestla": bannerEnable
+                        },
+                        success: function (result) {
+                            if (result) {
+                                window.location.reload(true);
+
+                            }
+                            else {
+                                alert("保存失败！");
+
+                            }
+                        }
+                    });
+                }
+            },
+            {
+                value: "关闭"
+            }]
+        });
+
+        $.ajax({
+            url: "/Article/AddTheme",
+            data: {},
+            type: "GET",
+            success: function (result) {
+
+                dialgpResult.content(result);
+                dialgpResult.showModal();
+
+            }
+        });
+    };
+
+    function update(e) {
+        var dialgpResult = dialog({
+            height: 200,
+            width: 500,
+            fixed: true,
+            title: "主题编辑",
+            button: [
+            {
+                value: "保存",
+                callback: function () {
+
+                    var bannerEnable = false;
+                    if ($(".Bestla").attr('checked') == 'checked') {
+                        bannerEnable = true;
+                    }
+                    $.ajax({
+                        type: "POST",
+                        url: "/Article/UpdateTheme",
+                        data: {
+                            "pkid": e,
+                            "ArticleBanner": $("#Image").val(),
+                            "SmallBanner": $("#SmallImage").val(),
+                            "Bestla": bannerEnable
+                        },
+                        success: function (result) {
+                            if (result) {
+                                window.location.reload(true);
+
+                            }
+                            else {
+                                alert("保存失败！");
+
+                            }
+                        }
+                    });
+                }
+            },
+            {
+                value: "关闭"
+            }]
+        });
+
+        $.ajax({
+            url: "/Article/AddTheme",
+            data: { pkid: e },
+            type: "GET",
+            success: function (result) {
+
+                dialgpResult.content(result);
+                dialgpResult.showModal();
+
+            }
+        });
+    };
+
+    function deleteModel(e) {
+        if (confirm("确定要删除吗")) {
+            $.ajax({
+                type: "POST",
+                url: "/Article/DeleteTheme",
+                data: {
+                    "pkid": e
+                },
+                success: function (result) {
+                    if (result) {
+                        window.location.reload(true);
+
+                    }
+                    else {
+                        alert("删除失败！");
+
+                    }
+                }
+            });
+        };
+    }
+</script>

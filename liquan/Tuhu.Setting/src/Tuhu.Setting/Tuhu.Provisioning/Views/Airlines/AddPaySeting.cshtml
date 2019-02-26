@@ -1,0 +1,221 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@{
+    Layout = null;
+    //获取数据集合
+    var PaymentWayModelList = ViewBag.payModelList as IList<PaymentWayModel>;
+    PaymentWayModelList = PaymentWayModelList.Where(x => x.Payment_way_name != "银行卡" && x.Payment_way_name != "壹钱包").ToList();
+    //获取数据总数
+    var count = PaymentWayModelList.Count();
+}
+<style>
+    table tr {
+        text-align: center;
+    }
+
+        table tr input {
+            text-align: center;
+        }
+
+    .Operation {
+        margin-top: 20px;
+        text-align: center;
+    }
+</style>
+<div>
+    <h2>
+        在线支付
+        <input type="button" value="新增" style="float:right;margin-left:20px;" id="AddRow" />
+    </h2>
+</div>
+
+<table style="background:#ffffff;font-size:12px; table-layout:fixed; margin-left:10px;" id="TbPaymentWay">
+    <tbody>
+        <tr>
+            <td width="20px;">支付标识</td>
+            <td>描述</td>
+            <td>色值1</td>
+            <td>活动消息</td>
+            <td>色值2</td>
+            <td>顺序</td>
+            <td>显示名称</td>
+            <td>图标地址</td>
+            <td>iOS开始版本</td>
+            <td>iOS结束版本</td>
+            <td>android开始版本</td>
+            <td>android开始版本</td>
+            <td style='width: 200px'>状态</td>
+        </tr>
+        @if (PaymentWayModelList != null && PaymentWayModelList.Count > 0)
+        {
+            var num = 0;
+            foreach (var item in PaymentWayModelList)
+            {
+                num++;
+                <tr>
+                    <td><input id="Payment_way_name@(num)" type="text" value="@item.Payment_way_name" /></td>
+                    <td><input id="Describe@(num)" type="text" value="@item.Describe" /></td>
+                    <td><input id="ColorValue_1@(num)" type="text" value="@item.ColorValue_1" /></td>
+                    <td><input id="ActivityInformation@(num)" type="text" value="@item.ActivityInformation" /></td>
+                    <td><input id="ColorValue_2@(num)" type="text" value="@item.ColorValue_2" /></td>
+                    <td><input id="Payment_way_order@(num)" type="text" value="@item.Payment_way_order" /></td>
+                    <td><input id="Field_1@(num)" type="text" value="@item.Field_1" /></td>
+                    <td><input id="Field_2@(num)" type="text" value="@item.Field_2" /></td>
+                    <td><input id="IOSStartVersion@(num)" type="text" value="@item.IOSStartVersion" /></td>
+                    <td><input id="IOSEndVersion@(num)" type="text" value="@item.IOSEndVersion" /></td>
+                    <td><input id="AndroidStartVersion@(num)" type="text" value="@item.AndroidStartVersion" /></td>
+                    <td><input id="AndroidEndVersion@(num)" type="text" value="@item.AndroidEndVersion" /></td>
+                    <td style='width: 200px;display: block;'>
+                        @if (item.State == 1)
+                        {
+                            <input type="radio" name="state@(num)" value="@item.State" checked="checked" /><span>显示</span>
+                            <input type="radio" name="state@(num)" value="0" /><span>隐藏</span>
+                            <input type="radio" name="state@(num)" value="2" /><span>更多</span>
+                        }
+                        else if (item.State == 0)
+                        {
+                            <input type="radio" name="state@(num)" value="1" /><span>显示</span>
+                            <input type="radio" name="state@(num)" value="@item.State" checked="checked" /><span>隐藏</span>
+                            <input type="radio" name="state@(num)" value="2" /><span>更多</span>
+                        }
+                        else if (item.State == 2)
+                        {
+                            <input type="radio" name="state@(num)" value="1" /><span>显示</span>
+                            <input type="radio" name="state@(num)" value="0" /><span>隐藏</span>
+                            <input type="radio" name="state@(num)" value="@item.State" checked="checked" /><span>更多</span>
+                        }
+                    </td>
+                    <td style='display:none;'>
+                        @if (item.MoreAndMore == 1)
+                        {
+                            <input id="MoreAndMore" type="checkbox" name="more@(num)" value="@item.MoreAndMore" checked="checked" />
+                        }
+                        else
+                        {
+                            <input id="MoreAndMore" type="checkbox" name="more@(num)" value="@item.MoreAndMore" />
+                        }
+                    </td>
+                    <td style="display:none;"><input type="text" value="@item.Id" /></td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<script type="text/javascript">
+    //定义模型类
+    var PaymentWayModel =function(){
+        this.Id="";
+        this.Payment_way_name = "";//支付名称
+        this.Payment_way_order = "";//顺序
+        this.Describe = "";//描述
+        this.ColorValue_1 = "";//色值1
+        this.ActivityInformation = "";//活动消息
+        this.ColorValue_2 = "";//色值2
+        this.State = 1;//状态
+        this.MoreAndMore = 0;//更多
+        this.Field_1 = "";//支付方式显示名称
+        this.Field_2 = "";//支付方式图标
+        this.AndroidEndVersion="";
+        this.AndroidStartVersion="";
+        this.IOSStartVersion="";
+        this.IOSEndVersion="";
+    }
+    var num = @count;
+    //动态添加行
+    $('#AddRow').click(function () {
+        num++;
+        var TemplateHtml = "<tr>";
+        TemplateHtml += "<td><input id='Payment_way_name" + num + "' type='text' value='' /></td>";
+        TemplateHtml += "<td><input id='Describe" + num + "' type='text' value='' /></td>";
+        TemplateHtml += "<td><input id='ColorValue_1" + num + "' type='text' value='' /></td>";
+        TemplateHtml += "<td><input id='ActivityInformation" + num + "' type='text' value='' /></td>";
+        TemplateHtml += "<td><input id='ColorValue_2" + num + "' type='text' value='' /></td>";
+        TemplateHtml += "<td><input id='Payment_way_order" + num + "' type='text' value='"+ num +"' /></td>";
+        TemplateHtml += "<td><input id='Field_1" + num + "' type='text' value='' /></td>";
+        TemplateHtml += "<td><input id='Field_2" + num + "' type='text' value='' /></td>";
+
+        TemplateHtml += "<td><input id='IOSStartVersion" + num + "' type='text' value='' /></td>";
+        TemplateHtml += "<td><input id='IOSEndVersion" + num + "' type='text' value='' /></td>";
+        TemplateHtml += "<td><input id='AndroidStartVersion" + num + "' type='text' value='' /></td>";
+        TemplateHtml += "<td><input id='AndroidEndVersion" + num + "' type='text' value='' /></td>";
+
+        TemplateHtml += "<td style='width: 200px;display: block;'><input id='State" + num + "' type='radio' name='state" + num + "' value='1'  /><span>显示</span>";
+        TemplateHtml += "<input id='State" + num + "' type='radio' name='state" + num + "' value='0' checked='checked' /><span>隐藏</span>";
+        TemplateHtml += "<input id='State" + num + "' type='radio' name='state" + num + "' value='2' /><span>更多</span></td>";
+        TemplateHtml += "<td style='display:none;'><input id='MoreAndMore" + num + "' type='checkbox' name='more" + num + " 'value='0' /></td>";
+        TemplateHtml += "<td style='display:none;'><input type='text' value='' /></td>";
+        TemplateHtml += "</tr>";
+        $("#TbPaymentWay").append(TemplateHtml);
+    });
+
+    function GetTableData(){
+        var tableArr = new Array();//存所有数据
+        $("table tr:not(:first)").each(function(i){ //遍历除标题行外所有行
+            var model = new PaymentWayModel();
+            $(this).find("td").each(function(j){
+                if(j == 0)
+                    model.Payment_way_name = $(this).find("input[type='text']").val();
+                else if(j == 1)
+                    model.Describe = $(this).find("input[type='text']").val();
+                else if(j == 2)
+                    model.ColorValue_1 = $(this).find("input[type='text']").val();
+                else if(j == 3)
+                    model.ActivityInformation = $(this).find("input[type='text']").val();
+                else if(j == 4)
+                    model.ColorValue_2 = $(this).find("input[type='text']").val();
+                else if(j == 5)
+                {
+                    var value=$(this).find("input[type='text']").val();
+                    if(!isNumber(value))
+                    {
+                        alert("顺序必须为数字！");
+                        return false;
+                    }
+                    if(value=="")
+                    {
+                        alert("顺序不可以为空！");
+                        return false;
+                    }
+                    else
+                        model.Payment_way_order = value;
+                }
+                else if(j == 6)
+                    model.Field_1 = $(this).find("input[type='text']").val();
+                else if(j == 7)
+                    model.Field_2 = $(this).find("input[type='text']").val();
+                else if(j==8)
+                    model.IOSStartVersion=$(this).find("input[type='text']").val();
+                else if(j==9)
+                    model.IOSEndVersion=$(this).find("input[type='text']").val();
+                else if(j==10)
+                    model.AndroidStartVersion=$(this).find("input[type='text']").val();
+                else if(j==11)
+                    model.AndroidEndVersion=$(this).find("input[type='text']").val();
+                else if(j == 12)
+                    model.State= $(this).find("input[type='radio']:checked").val();
+                else if(j == 13)
+                {
+                    if($(this).find("input[type='checkbox']").is(":checked"))
+                        model.MoreAndMore = 1;
+                    else
+                        model.MoreAndMore = 0;
+                }
+                else if(j==14)
+                {
+                    if($(this).find("input[type='text']").val()!="")
+                        model.Id = $(this).find("input[type='text']").val();
+                    else
+                        model.Id=0;
+                }
+            });
+            tableArr[i] = model;
+        });
+        return tableArr;
+    }
+
+    //判断是否为数字
+    function isNumber(value)
+    {
+        return /^[0-9]*$/.test(value);
+    }
+</script>

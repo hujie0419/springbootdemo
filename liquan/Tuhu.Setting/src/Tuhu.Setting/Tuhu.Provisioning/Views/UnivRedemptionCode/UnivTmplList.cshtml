@@ -1,0 +1,740 @@
+﻿
+@{
+    ViewBag.Title = "通用兑换码模版列表";
+    Layout = "~/Views/Shared/_LayoutNew.cshtml";
+    var dev = System.Configuration.ConfigurationManager.AppSettings["env"] == "dev"?1:0;
+}
+
+
+@section css{
+    <link rel="stylesheet" href="~/Content/iview/iview.css" />
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
+        /*修改受影响的样式*/
+        body {
+            background-color: #2f4050;
+        }
+
+        .select {
+            width: 100px;
+        }
+
+        .modal-element-width {
+            width: 90%;
+        }
+
+        .modal-row {
+            margin-bottom: 10px;
+        }
+    </style>
+}
+
+<div id="div" v-cloak>
+    <tabs v-on:on-click="clickTabs">
+        <tab-pane label="运营配置" name="Batch">
+            <tab-pane-detail :services="services" :cooperations="cooperations" :type="'Batch'"></tab-pane-detail>
+        </tab-pane>
+        <tab-pane label="接口生成" name="Interface">
+            <tab-pane-detail :services="services" :cooperations="cooperations" :type="'Interface'" :grouplist="grouplist" v-if="isClick"></tab-pane-detail>
+        </tab-pane>
+        <tab-pane label="套餐分组设置" name="GroupSetting">
+            <tab-pane-detail :type="'GroupSetting'"></tab-pane-detail>
+        </tab-pane>
+    </tabs>
+</div>
+
+<script type="text/template" id="tab-pane-detail">
+    <div>
+        <row style="margin-bottom:15px;">
+            <i-col span="6">
+                <label>选择公司:</label>
+                <i-select :filterable="true"  style="width:70%" v-model="filterCondition.CooperateId">
+                    <i-option :value="0" :key="0">请选择</i-option>
+                    <i-option v-for="cooperation in cooperations" :value="cooperation.Id" :key="cooperation.Id">{{cooperation.Name}}</i-option>
+                </i-select>
+            </i-col>
+            <i-col span="6">
+                <label>选择服务:</label>
+                <i-select :filterable="true"   style="width:70%" v-model="filterCondition.CodeTypeConfigId">
+                    <i-option :value="0" :key="0">请选择</i-option>
+                    <i-option v-for="service in services" :value="service.Id" :key="service.Id">{{service.Name}}</i-option>
+                </i-select>
+            </i-col>
+            <i-col span="6">
+                <label>结算类型:</label>
+                <i-select filterable style="width:70%" v-model="filterCondition.SettlementMethod">
+                    <i-option value="All">全部</i-option>
+                    <i-option value="None">无</i-option>
+                    @*<i-option value="BatchPreSettled">大买断结算</i-option>*@
+                </i-select>
+            </i-col>
+            <i-col span="6">
+                <i-button type="success" icon="ios-search" v-on:click="search">查询</i-button>
+                <i-button type="primary" v-on:click="append">添加</i-button>
+            </i-col>
+        </row>
+        <i-table :stripe="true"
+                 :data="data"
+                 :columns="columns"
+                 :loading="loading"
+                 :size="'large'"
+                 highlight-row
+                 style="margin-bottom:15px;">
+        </i-table>
+        <page placement="top"
+              :total="total" show-sizer show-total
+              :page-size-opts="[10, 20, 50, 100, 200]"
+              :current.sync="filterCondition.PageIndex"
+              v-on:on-page-size-change="filterCondition.PageSize=$event"></page>
+
+        <modal-tmpl :cooperations="cooperations" :show.sync="show" :type="type" :configid="configid" :grouplist="grouplist" v-on:submit="submit"></modal-tmpl>
+        <audit-modal :show.sync="audit_show" :configid="audit_configid" v-on:on-audit="audit"></audit-modal>
+    </div>
+</script>
+
+<script type="text/template" id="modal-tmpl">
+    <div>
+        <Modal title="通用兑换码" v-model="showModal" :loading="loading" :mask-closable="false" v-on:on-ok="submit">
+            <row class="modal-row">
+                <i-col span="12">
+                    <label>兑换码名称:</label>
+                    <div class="modal-element-width">
+                        <i-input placeholder="输入兑换码名称" v-model="config.Name"></i-input>
+                    </div>
+                </i-col>
+                <i-col span="12">
+                    <label>选择公司:</label>
+                    <div class="modal-element-width">
+                        <i-select :filterable="true"   transfer placeholder="选择公司" v-model="config.CooperateId" :disabled="isEdit">
+                            <i-option :value="0" :key="0">请选择</i-option>
+                            <i-option v-for="cooperation in cooperations" :value="cooperation.Id" :key="cooperation.Id">{{cooperation.Name}}</i-option>
+                        </i-select>
+                    </div>
+                </i-col>
+            </row>
+            <row class="modal-row">
+                <i-col span="12">
+                    <span style="color:red;">*</span>
+                    <label>兑换时间（生成后天数）:</label>
+                    <div class="modal-element-width">
+                        <i-input placeholder="输入生成后多少天内有效" v-model="config.EffectiveDay" :disabled="isEdit"></i-input>
+                    </div>
+                </i-col>
+                <i-col span="12">
+                    <span style="color:red;">*</span>
+                    <label>固定选择数:</label>
+                    <div class="modal-element-width">
+                        <i-input placeholder="输入数量" v-model="config.AtLeastNum"></i-input>
+                    </div>
+                </i-col>
+            </row>
+            <row class="modal-row">
+                <i-col span="24">
+                    <label>描述:</label>
+                    <div style="width:95%;">
+                        <i-input type="textarea" :rows="3" placeholder="输入描述" v-model="config.Description"></i-input>
+                    </div>
+                </i-col>
+            </row>
+            <row class="modal-row">
+                <i-col v-if="type =='Interface'" span="12">
+                    <label>选择分组:</label>
+                    <div class="modal-element-width">
+                        <i-select placeholder="选择分组" v-model="config.GroupId"  :disabled="isEdit">
+                            <i-option>请选择</i-option>
+                            <i-option v-for="group in grouplist" :value="group.id" :key="group.id">{{group.name}}</i-option>
+                        </i-select>
+                    </div>
+                </i-col>
+                <i-col span="12">
+                    <label> 结算方式:</label>
+                    <div class="modal-element-width">
+                        <i-select placeholder="结算方式" v-model="config.SettlementMethod" :disabled="isEdit">
+                            <i-option value="None" key="None">无</i-option>
+                            @*<i-option value="BatchPreSettled" key="BatchPreSettled">大买断结算</i-option>*@
+                        </i-select>
+                    </div>
+                </i-col>
+            </row>
+            <row class="modal-row">
+                <i-col span="24">
+                    <label>是否生效:</label>
+                    <div class="modal-element-width">
+                        <RadioGroup v-model="config.IsActive">
+                            <Radio :label="true">
+                                <span>有效</span>
+                            </Radio>
+                            <Radio :label="false">
+                                <span>无效</span>
+                            </Radio>
+                        </RadioGroup>
+                    </div>
+                </i-col>
+            </row>
+        </Modal>
+    </div>
+</script>
+
+<script type="text/x-template" id="audit-modal">
+    <div>
+        <Modal v-model="showModal" title="审核" :mask-closable="false">
+            <div style="text-align:center">
+                <p>请点击下方按钮进行操作, 操作之后将无法更改结果!</p>
+            </div>
+            <div slot="footer">
+                <row type="flex" justify="end" v-bind:align="'middle'">
+                    <i-col span="4">
+                        <i-button size="large" long :loading="rejected_loading" :disabled="accepted_loading" v-on:click="audit(false)" type="error">不通过</i-button>
+                    </i-col>
+                    <i-col span="1"></i-col>
+                    <i-col span="4">
+                        <i-button size="large" long :loading="accepted_loading" :disabled="rejected_loading" v-on:click="audit(true)" type="success">通过</i-button>
+                    </i-col>
+                </row>
+            </div>
+        </Modal>
+    </div>
+</script>
+
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/iview/iview.min.js"></script>
+    <script type="text/javascript">
+        Array.prototype.firstOrDefault = function (callback) {
+            var array = this;
+            for (var i = 0; i < array.length; i++) {
+                var value = array[i];
+                if (callback(value, i)) {
+                    return value;
+                }
+            }
+            return undefined;
+        }
+        Vue.component('audit-modal', {
+            props: {
+                show: {
+                    type: Boolean,
+                    default: false,
+                },
+                configid: {
+                    type: String,
+                    default: '00000000-0000-0000-0000-000000000000',
+                },
+            },
+            template: "#audit-modal",
+            data: function () {
+                return {
+                    accepted_loading: false,
+                    rejected_loading: false,
+                    showModal: false,
+                }
+            },
+            watch: {
+                show: function (value) {
+                    var vm = this;
+                    vm.rejected_loading = false;
+                    vm.accepted_loading = false;
+                    if (value && !vm.showModal) {
+                        vm.showModal = true;
+                    } else if (!value && vm.showModal) {
+                        vm.showModal = false;
+                    }
+                    vm.$emit('update:show', value);
+                },
+                showModal: function (value) {
+                    var vm = this;
+                    if (vm.show && !value) {
+                        vm.show = false;
+                    }
+                    else if (!vm.show && value) {
+                        vm.show = true;
+                    }
+                },
+            },
+            methods: {
+                audit: function (value) {
+                    var vm = this;
+                    vm.rejected_loading = !value;
+                    vm.accepted_loading = value;
+                    $.post("AuditRedemptionCodeConfig", {
+                        auditResult: value,
+                        configId: vm.configid
+                    }, function (result) {
+                        if (result.status) {
+                            vm.$Message.info("操作成功");
+                            vm.showModal = false;
+                            vm.$emit('on-audit', true);
+                        }
+                        else {
+                            vm.$Message.warning("操作失败!" + (result.msg || ""));
+                            vm.$emit('on-audit', false);
+                        }
+                    }).error(function () {
+                        vm.$emit('on-audit', false);
+                    }).complete(function () {
+                        vm.rejected_loading = false;
+                        vm.accepted_loading = false;
+                    });
+                }
+            },
+        });
+        Vue.component('modal-tmpl', {
+            props: {
+                configid: {
+                    type: String,
+                    default: '00000000-0000-0000-0000-000000000000',
+                },
+                show: {
+                    type: Boolean,
+                    default: false,
+                },
+                cooperations: {
+                    type: Array,
+                    default: [],
+                },
+                grouplist: {
+                    type: Array,
+                    default: [],
+                },
+                type: {
+                    type: String,
+                    default: "Batch",
+                }
+            },
+            template: "#modal-tmpl",
+            data: function () {
+                return {
+                    config: {
+                        IsActive: true,
+                        AtLeastNum: 1,
+                        AtMostNum: 1,
+                        EffectiveDay: 1,
+                        CooperateId: 0,
+                        CooperateName: "",
+                        SettlementMethod: "0",
+                        Description: "",
+                        ConfigId: "00000000-0000-0000-0000-000000000000",
+                        GroupId: '',
+                        Name: ""
+                    },
+                    showModal: false,
+                    loading: true,
+                    isEdit: false,
+                };
+            },
+            watch: {
+                show: function (value) {
+                    var vm = this;
+                    if (value) {
+                        vm.isEdit = vm.configid && vm.configid !== '00000000-0000-0000-0000-000000000000';
+                        vm.getRedemptionCodeConfig(vm.configid);
+                    }
+                    else {
+                        vm.showModal = false;
+                    }
+                    vm.$emit('update:show', value);
+                },
+                showModal: function (value) {
+                    var vm = this;
+                    vm.show = value;
+                }
+            },
+            methods: {
+                getRedemptionCodeConfig: function (configid) {
+                    var vm = this;
+                    if (!configid || configid === "00000000-0000-0000-0000-000000000000") {
+                        vm.config.IsActive = true;
+                        vm.config.AtLeastNum = 0;
+                        vm.config.EffectiveDay = 0;
+                        vm.config.CooperateId = 0;
+                        vm.config.CooperateName = 0;
+                        vm.config.SettlementMethod = "None";
+                        vm.config.Description = "";
+                        vm.config.ConfigId = "00000000-0000-0000-0000-000000000000";
+                        vm.config.GroupId = "";
+                        vm.config.Name = "";
+                        vm.showModal = true;
+                        return;
+                    }
+                    $.get("GetRedemptionCodeConfig", { configId: configid }, function (res) {
+                        var config = res.data;
+                        if (!config) {
+                            vm.config.IsActive = true;
+                            vm.config.AtLeastNum = 0;
+                            vm.config.EffectiveDay = 0;
+                            vm.config.CooperateId = 0;
+                            vm.config.CooperateName = 0;
+                            vm.config.SettlementMethod = "None";
+                            vm.config.Description = "";
+                            vm.config.ConfigId = "00000000-0000-0000-0000-000000000000";
+                            vm.config.GroupId = "";
+                            vm.config.Name = "";
+                            vm.showModal = true;
+                            return;
+                        }
+                        vm.config.IsActive = config.IsActive;
+                        vm.config.AtLeastNum = config.AtLeastNum;
+                        vm.config.EffectiveDay = config.EffectiveDay;
+                        vm.config.CooperateId = config.CooperateId;
+                        vm.config.CooperateName = config.CooperateName;
+                        vm.config.SettlementMethod = !!config.SettlementMethod ? config.SettlementMethod : "None";
+                        vm.config.Description = config.Description;
+                        vm.config.ConfigId = config.ConfigId;
+                        vm.config.GroupId = config.GroupId;
+                        vm.config.Name = config.Name;
+                        vm.showModal = true;
+                    });
+                },
+                submit: function () {
+                    var vm = this;
+                    var cooperateId = vm.config.CooperateId;
+                    var cooperation = vm.cooperations.firstOrDefault(function (item) {
+                        return item.Id == cooperateId;
+                    });
+                    if (!cooperation) {
+                        vm.$Message.warning("请选择公司");
+                        vm.loading = false;
+                        vm.$nextTick(function () {
+                            vm.loading = true;
+                        });
+                        return;
+                    }
+                    var groupId ='';
+                    var group = vm.grouplist.firstOrDefault(function (item) {
+                        return item.id ==vm.config.GroupId;
+                    });
+                    if (vm.type == 'Interface') {
+                        groupId = group.id;
+                    }
+                    vm.config.AtMostNum = vm.config.AtLeastNum;//暂时前台控制最大选择数和最小选择数保持一样
+                    var data = {
+                        AtLeastNum: vm.config.AtLeastNum,
+                        AtMostNum: vm.config.AtMostNum,
+                        ConfigId: vm.config.ConfigId,
+                        IsActive: vm.config.IsActive,
+                        EffectiveDay: vm.config.EffectiveDay,
+                        SettlementMethod: vm.config.SettlementMethod,
+                        GenerateType: vm.type,
+                        Description: vm.config.Description,
+                        CooperateName: cooperation.Name,
+                        CooperateId: cooperation.Id,
+                        GroupId: groupId,
+                        Name: vm.config.Name,
+                    };
+                    vm.$Modal.confirm({
+                        title: "确认此操作?",
+                        content: "确认添加此配置模板?",
+                        loading: true,
+                        onOk: function () {
+                            $.post("AddOrUpdateRedemptionCodeConfig", data, function (result) {
+                                if (result.status) {
+                                    vm.showModal = false;
+                                    vm.$Message.info('操作成功！');
+                                    vm.$emit('submit', true);
+                                } else {
+                                    vm.$Message.warning('操作失败！' + (result.msg || ""));
+                                    vm.$emit('submit', false);
+                                }
+                            }).error(function () {
+                                vm.$Message.warning('操作失败！');
+                                vm.$emit('submit', false);
+                            }).complete(function () {
+                                vm.$Modal.remove();
+                                vm.loading = false;
+                                vm.$nextTick(function () {
+                                    vm.loading = true;
+                                });
+                            });
+                        },
+                        onCancel: function () {
+                            vm.loading = false;
+                            vm.$nextTick(function () {
+                                vm.loading = true;
+                            });
+                        }
+                    });
+                },
+            }
+        });
+        Vue.component('tab-pane-detail', {
+            props: {
+                type: {
+                    type: String,
+                    default: "",
+                },
+                cooperations: {
+                    type: Array,
+                    default: [],
+                },
+                services: {
+                    type: Array,
+                    default: [],
+                },
+                grouplist: {
+                    type: Array,
+                    default: [],
+                }
+            },
+            template: '#tab-pane-detail',
+            data: function () {
+                return {
+                    columns: [],
+                    data: [],
+                    total: 0,
+                    loading: false,
+                    filterCondition: {
+                        SettlementMethod: "All",
+                        CooperateId: 0,
+                        CodeTypeConfigId: 0,
+                        PageIndex: 1,
+                        PageSize: 10,
+                    },
+                    show: false,
+                    configid: "00000000-0000-0000-0000-000000000000",
+                    audit_show: false,
+                    audit_configid: '00000000-0000-0000-0000-000000000000',
+                };
+            },
+            created: function () {
+                var vm = this;
+                vm.columns = [
+                    {
+                        title: 'ID',
+                        key: 'PKID',
+                        align: 'center'
+                    },
+                    {
+                        title: '配置GUID',
+                        key: 'ConfigId',
+                        align: 'center'
+                    },
+                    { title: '兑换码名称', key: 'Name', align: 'center' },
+                    { title: '公司名', key: 'CooperateName', align: 'center' },
+                    { title: '生成总量(实时)', key: 'SumQuantity', align: 'center' },
+                    {
+                        title: '生成方式',
+                        key: 'GenerateType',
+                        render: function (h, p) {
+                            var type = (p.row.GenerateType || '').toLowerCase();
+                            var text = '';
+                            switch (type) {
+                                case "batch":
+                                    text = "运营配置";
+                                    break;
+                                case "interface":
+                                    text = "接口生成";
+                                    break
+                            }
+                            return h('span', text);
+                        }
+                    },
+                    { title: '兑换有效期(自领取之后)', key: 'EffectiveDay', align: 'center' },
+                    { title: '创建人', key: 'CreateUser', align: 'center' },
+                    {
+                        title: '审核状态', key: 'AuditStatus', align: 'center',
+                        render: function (h, p) {
+                            var type = p.row.AuditStatus;
+                            var text = '';
+                            switch (type) {
+                                case "Pending":
+                                    text = "待审核";
+                                    break;
+                                case "Accepted":
+                                    text = "审核通过";
+                                    break;
+                                case "Rejected":
+                                    text = "审核不通过";
+                                    break;
+                            }
+                            return h('span', text);
+                        }
+                    },
+                    {
+                        title: '操作',
+                        width: 200,
+                        render: function (h, p) {
+                            var elementArray = [
+                                h('Button', {
+                                    on: {
+                                        click: function () {
+                                            window.location.href = "TmplDetail?id=" + p.row.ConfigId;
+                                        },
+                                    }
+                                }, '查看'),
+                                h('Button', {
+                                    on: {
+                                        click: function () {
+                                            vm.configid = p.row.ConfigId;
+                                            vm.show = true;
+                                        },
+                                    }
+                                }, '编辑'),
+                                h('Button', {
+                                    on: {
+                                        click: function () {
+                                            vm.delete(p.row.ConfigId);
+                                        },
+                                    }
+                                }, '删除'),
+
+                            ]
+                            if (p.row.AuditStatus === 'Pending') {
+                                elementArray.push(
+                                    h('Button', {
+                                        on: {
+                                            click: function () {
+                                                vm.audit_configid = p.row.ConfigId;
+                                                vm.audit_show = false;
+                                                vm.$nextTick(function () {
+                                                    vm.audit_show = true;
+                                                });
+                                            },
+                                        }
+                                    }, '审核')
+                                );
+                            }
+                            return h('div', elementArray);
+                        }
+                    }];
+                vm.getRedemptionCodeConfigs();
+            },
+            watch: {
+                "filterCondition.PageIndex": function (value) {
+                    this.getRedemptionCodeConfigs();
+                },
+                "filterCondition.PageSize": function (value) {
+                    this.search();
+                },
+            },
+            methods: {
+                append: function () {
+                    var vm = this;
+                    vm.configid = "00000000-0000-0000-0000-000000000000";
+                    vm.show = true;
+                },
+                submit: function (success) {
+                    if (success) {
+                        this.search();
+                    }
+                },
+                search: function () {
+                    var vm = this;
+                    if (vm.filterCondition.PageIndex !== 1) {
+                        vm.filterCondition.PageIndex = 1;
+                    }
+                    else {
+                        vm.getRedemptionCodeConfigs();
+                    }
+                },
+                getRedemptionCodeConfigs: function () {
+                    var vm = this;
+                    var filterCondition = vm.filterCondition;
+                    var data = {
+                        GenerateType: vm.type,
+                        SettlementMethod: filterCondition.SettlementMethod,
+                        CooperateId: filterCondition.CooperateId,
+                        CodeTypeConfigId: filterCondition.CodeTypeConfigId,
+                        PageIndex: filterCondition.PageIndex,
+                        PageSize: filterCondition.PageSize,
+                    }
+                    vm.loading = true;
+                    $.get("GetRedemptionCodeConfigs", data, function (result) {
+                        if (result.status) {
+                            vm.data = result.data;
+                            vm.total = result.total;
+                        } else {
+                            vm.data = [];
+                            vm.total = 0;
+                        }
+                        vm.loading = false;
+                    }).error(function () {
+                        vm.loading = false;
+                    });
+                },
+                delete: function (id) {
+                    var vm = this;
+                    vm.$Modal.confirm({
+                        title: '确认?',
+                        content: '<p>确认删除?</p>',
+                        loading: true,
+                        onOk: function () {
+                            $.post("DeleteRedemptionCodeConfig", { configId: id }, function (result) {
+                                if (result.status) {
+                                    vm.$Message.info('删除成功');
+                                    vm.getRedemptionCodeConfigs();
+                                }
+                                else {
+                                    vm.$Message.warning("删除失败！" + (result.msg || ""));
+                                }
+                            }).complete(function () {
+                                vm.$Modal.remove();
+                            });
+                        },
+                        onCancel: function () {
+                            vm.$Modal.remove();
+                        }
+                    })
+                },
+                audit: function (value) {
+                    if (value) {
+                        this.getRedemptionCodeConfigs();
+                    }
+                }
+            }
+        });
+        var vm = new Vue({
+            el: "#div",
+            data: {
+                services: [],
+                cooperations: [],
+                grouplist: [],
+                isClick: false,
+                isGroupShow:@dev,
+            },
+            created: function () {
+                this.getBeautyServiceCodeTypeConfigs();
+                this.getMrCooperateUserConfigs();
+                this.getGroupSettingConfigs();
+            },
+            methods: {
+                getGroupSettingConfigs: function () {
+                    var vm = this;
+                    $.post("/UnivRedemptionCode/GetGroupSettings", { PageIndex: 1, PageSize: 50 }, function (data) {
+                        vm.grouplist = (data.result || []).map(function (service) {
+                            return { id: service.GroupId, name: service.GroupName };
+                        });
+                    });
+                },
+                getBeautyServiceCodeTypeConfigs: function () {
+                    var vm = this;
+                    $.get("/BeautyServicePackage/GetAllBeautyServiceCodeTypeConfig", function (data) {
+                        vm.services = (data || []).map(function (service) {
+                            return { Id: service.PKID, Name: service.Name };
+                        });
+                    });
+                },
+                getMrCooperateUserConfigs: function () {
+                    var vm = this;
+                    $.get("/BankMRActivity/GetAllMrCooperateUserConfigs", function (data) {
+                        vm.cooperations = (data || []).map(function (cooperation) {
+                            return {
+                                Id: cooperation.PKID,
+                                Name: ((cooperation.CooperateName || ''))
+                            };
+                        });
+                    });
+                },
+                clickTabs: function (value) {
+                    if (!this.isClick && value === 'Interface') {
+                        this.isClick = true;
+                    }
+                    else if (value === 'GroupSetting') {
+                        window.location.href = 'GroupSetting';
+                    }
+                }
+            },
+        });
+    </script>
+}

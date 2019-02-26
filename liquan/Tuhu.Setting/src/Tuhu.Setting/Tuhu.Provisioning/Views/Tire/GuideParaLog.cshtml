@@ -1,0 +1,53 @@
+﻿@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.ConfigHistory>
+@{
+    ViewBag.Title = "轮胎价格指导参数日志";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var type = string.Empty;
+    var item = string.Empty;
+    if(Model!=null&&Model.Any())
+    {
+        var key = Model.FirstOrDefault().AfterValue;
+        key = key.Substring(0, key.Length - 1);
+        type = key.Split('|')[0];
+        item= key.Split('|')[1];
+    }
+    var typeValue = string.Empty;
+    switch (type)
+    {
+        case "Base": typeValue = "基础毛利率"; break;
+        case "TireSize": typeValue = "规格"; break;
+        case "Rim": typeValue = "尺寸"; break;
+        case "Rof": typeValue = "是否防爆"; break;
+        case "Brand": typeValue = "品牌"; break;
+        case "SalesQuantity": typeValue = "销量档位"; break;
+        case "Pattern": typeValue = "花纹"; break;
+    }
+}
+@if (Model != null && Model.Any())
+{
+  
+    <table style="width:100%;margin-top:20px">
+        <tr>
+            <th>类型</th>
+            <th>加权项</th>
+            <th>加权值</th>
+            <th>操作人</th>
+            <th>操作时间</th>
+        </tr>
+        @foreach (var opr in Model)
+        {
+            <tr>
+                <td>@typeValue</td>
+                <td>@item</td>
+                <td>@opr.BeforeValue</td>
+                <td>@opr.Author</td>
+                <td>@opr.ChangeDatetime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <h1>无操作</h1>
+}
+

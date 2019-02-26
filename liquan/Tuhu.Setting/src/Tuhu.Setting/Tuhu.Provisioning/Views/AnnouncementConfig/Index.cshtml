@@ -1,0 +1,132 @@
+﻿
+@{
+    ViewBag.Title = "公告";
+}
+
+<h2>保养公告</h2>
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    textarea {
+        width: 100px;
+        height: 100px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+</style>
+
+<div>
+    <table>
+        <tbody>
+            <tr>
+                <td>
+                    <a href="javascript:void(0)" class="btn" onclick="AnnouncementConfig.Add()">添加</a>
+                </td>
+                <td style="display:none"><input type="button" style="margin-top:0" class="btn" onclick="AnnouncementConfig.SearchList()" value="搜索" /></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="listdata"></div>
+<script>
+
+    function GetQueryString(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+        var r = window.location.search.substr(1).match(reg);
+        if (r != null) return decodeURIComponent(r[2]); return null;
+    }
+
+    var type = GetQueryString("type");
+    $(function () {
+        $(".listdata").load("/AnnouncementConfig/list");
+        $(".listdata").on("click", ".pager>a", function (event) {
+            event.preventDefault();
+            debugger;
+            $.ajax({
+                type: "POST",
+                url: this.href,
+                data: {},
+                success: function (result) {
+                    $(".listdata").html(result);
+                },
+                error: function (result) {
+                    alert("失败!")
+                }
+            });
+        });
+    })
+    var AnnouncementConfig = {
+        "SearchList": function () {
+            $.ajax({
+                type: "POST",
+                url: "/AnnouncementConfig/List",
+                data: {},
+                success: function (result) {
+                    $(".listdata").html(result);
+                },
+                error: function (result) {
+                    alert("失败!")
+                }
+            });
+        },
+        "Add": function () {
+            $("#AddItem").load('/AnnouncementConfig/Edit?id=0');
+            $("#AddItem").dialog({
+                title: "添加",
+                width: 500,
+                height: 600,
+                modal: true
+            });
+        },
+        "Update": function (id) {
+            $("#AddItem").load('/AnnouncementConfig/Edit?id=' + id);
+            $("#AddItem").dialog({
+                title: "修改",
+                width: 500,
+                height: 600,
+                modal: true
+            });
+        },
+        "Delete": function (id) {
+            if (window.confirm("您确定要删除吗？")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/AnnouncementConfig/Delete",
+                    data: { "id": id },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/AnnouncementConfig/Index";
+                        }
+                        else {
+                            alert("删除失败！");
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        }
+    }
+</script>  

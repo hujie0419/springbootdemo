@@ -1,0 +1,74 @@
+﻿.page-nav-cell {
+	text-align: right
+}
+.page-nav {
+	display: inline;
+	float: right;
+	margin-right: 2px;
+}
+.page-nav li {
+	display: inline;
+	float: left;
+	height: 25px;
+	margin-right: 3px;
+	line-height: 25px;
+	color: #aaa
+}
+.page-nav input {
+	vertical-align: middle
+}
+.page-nav a {
+	display: block;
+	min-width: 15px;
+	height: 23px;
+	padding: 0 5px;
+	line-height: 23px;
+	text-align: center;
+	white-space: nowrap;
+	background: #fff;
+	border: 1px solid #ccc;
+	color: #06c;
+	text-decoration: none;
+	_width: 15px
+}
+.page-nav a: hover {
+	color: red;
+	border-color: #f50
+}
+.page-nav .first-page a {
+	padding: 0 5px;
+	text-align: center
+}
+.page-nav .curr-page a {
+	font-weight: 700;
+	background-color: #FFEEE5;
+	border-color: #f50;
+	color: red
+}
+.page-nav .prev-page a,.page-nav .next-page a {
+	position: relative;
+	width: 22px;
+	padding: 0
+}
+.page-nav .hundreds {
+	width: auto;
+	padding: 0 5px
+}
+.page-nav .paginator-arrow {
+	top: 7px
+}
+.page-nav .prev-page .paginator-previous,.page-nav .next-page .paginator-next {
+	position: relative;
+	width: 45px;
+	padding: 0 6px
+}
+.page-nav .prev-page .paginator-previous: hover,.page-nav .next-page .paginator-next: hover {
+	text-decoration: none
+}
+.page-nav .prev-page .paginator-previous {
+	text-align: right
+}
+.page-nav .next-page .paginator-next {
+	text-align: left
+}
+

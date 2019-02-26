@@ -1,0 +1,1006 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@using Tuhu.Provisioning;
+@model List<TaskModel>
+    @{
+        ViewBag.Title = "会员任务配置";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+
+    <style>
+        .panel_title {
+            font-weight: bold;
+            background-color: lightgray;
+            font-size: 1.2em;
+        }
+
+        .ItemName {
+            width: 30%;
+            float: left;
+        }
+
+        .ItemValue {
+            width: 70%;
+            float: left;
+        }
+
+        .ConfigItem {
+            margin-top: 10px;
+            width: 90%;
+        }
+        .conditionItem td {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+        .task_t {
+            float: left;
+        }
+    </style>
+
+    <div class="title" style="margin-bottom:20px;">
+        <h1>会员任务配置</h1>
+    </div>
+    <div>
+        <button class="btn btn-primary" onclick="Func.AddTask(0)">新增+</button>
+        <button class="btn btn-primary" onclick="Func.RefreshCache()">刷新缓存</button>
+        <a class="btn btn-primary" target="_blank" href="/TaskConfig/ConfigOrderRule" style="margin-left:20px;">购买规则配置</a>
+    </div>
+    <div style="margin-top:10px;">
+        @if (Model.Any())
+        {
+            var id = 0;
+            <table class="table" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>任务名称</th>
+                        <th>任务类型</th>
+                        <th>任务图标</th>
+                        <th>显示顺序</th>
+                        <th>任务状态</th>
+                        <th>有效期（天）</th>
+                        <th>创建时间</th>
+                        <th>创建人</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        id += 1; var tasktype = item.TaskType == 0 ? "成长任务" : (item.TaskType == 1 ? "新手任务" :
+                "每日任务");
+                        <tr data="@(item.TaskId)">
+                            <td>@id</td>
+                            <td>@(item.TaskName)</td>
+                            <td>@tasktype</td>
+                            <td>
+                                <img src="@(item.TaskIcon)" style="height:20px;" alt="任务Icon" />
+                            </td>
+                            <td>@(item.Sequence)</td>
+                            <td>@(item.DisplayStatus == 0 ? "不显示" : "显示")</td>
+                            <td>@(item.Duration < 0 ? "永远" : item.Duration.ToString())</td>
+                            <td>@(item.CreateDateTime)</td>
+                            <td>@(item.Operator)</td>
+                            <td>
+                                <button class="btn btn-primary" onclick="Func.FetchTaskDetail(this,0)">查看</button>
+                                <button class="btn btn-primary" onclick="Func.FetchTaskDetail(this,1)">修改</button>
+                                <button class="btn btn-primary" onclick="Func.GetTaskOprLog('@(item.TaskId)')">历史</button>
+                                <button class="btn btn-primary" onclick="Func.DeleteTask('@(item.TaskId)')">删除</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <h1>暂无任务</h1>
+        }
+    </div>
+
+
+    <div id="taskEdit" style="display:none;" data="">
+        <div class="panel_title">任务展示</div>
+        <div class="ConfigItem">
+            <div class="ItemName">任务显示</div>
+            <div class="ItemValue">
+                <select id="displayStatus">
+                    <option value="0">不显示</option>
+                    <option value="1" selected="selected">显示</option>
+                </select>
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">任务显示版本:</div>
+            <div class="ItemValue">
+                <div style="float:left;width:40%;"><input type="text" style="width:100%;" placeholder="开始版本" id="startVersion" /></div>
+                <div style="float:left;width:40%;margin-left:30px;"><input type="text" style="width:100%;" placeholder="结束版本" id="endVersion" /></div>
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">任务顺序：</div>
+            <div class="ItemValue">
+                <input type="number" id="sequence" placeholder="任务顺序" />
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">任务名称：</div>
+            <div class="ItemValue">
+                <input type="text" id="taskname" placeholder="任务名称" />
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">任务图标：</div>
+            <div class="ItemValue">
+                <img id="taskicon" src='' style="width: 80px; height: 80px;" />
+                <input type="file" onchange="Func.UploadImage(this)" />
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">任务类型：</div>
+            <div class="ItemValue">
+                <select id="tasktype">
+                    <option value="0" selected="selected">成长任务</option>
+                    <option value="1">新手任务</option>
+                    <option value="2">每日任务</option>
+                </select>
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">特定人群：</div>
+            <div class="ItemValue">
+                <input type="number" id="populationsTag" value="0" placeholder="必填" />
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">推荐优先级：</div>
+            <div class="ItemValue">
+                <input type="number" id="recommendLevel" value="0" placeholder="必填" />
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">渠道：</div>
+            <div class="ItemValue" style="border:1px solid ; width:60%; height:50px;">
+                <label class="checkbox-inline">
+                    <input type="checkbox" class="taskChannel" value="8手机" checked> 安卓
+                </label>
+                <label class="checkbox-inline">
+                    <input type="checkbox" class="taskChannel" value="JIOS" checked> iOS
+                </label>
+                <label class="checkbox-inline">
+                    <input type="checkbox" class="taskChannel" value="WXAPP" checked> 途虎小程序
+                </label>
+            </div>
+            <div style="clear:both"></div>
+        </div>
+
+        <div class="ConfigItem">
+            <div class="ItemName">推荐任务显示图片：</div>
+            <div class="ItemValue">
+                <img id="recommendImg" src='' style="width: 80px; height: 80px;" />
+                <input type="file" onchange="Func.UploadImage(this)" />
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">任务规则：</div>
+            <div class="ItemValue">
+                <input type="text" id="taskrule" placeholder="必填" />
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">任务跳转链接：</div>
+            <div class="ItemValue">
+                <input type="text" id="tasklink" placeholder="必填" />
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="wxAppBox" style="display:none;">
+            <div class="ConfigItem">
+                <div class="ItemName">任务链接小程序：</div>
+                <div class="ItemValue">
+                    <select id="TaskAppId"></select>
+                </div>
+                <div style="clear:both"></div>
+            </div>
+            <div class="ConfigItem">
+                <div class="ItemName">任务跳转链接（小程序）：</div>
+                <div class="ItemValue">
+                    <input type="text" id="wxTaskLink" placeholder="必填" />
+                </div>
+                <div style="clear:both;"></div>
+            </div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">任务按钮文案：</div>
+            <div class="ItemValue">
+                <input type="text" id="buttontext" placeholder="必填" />
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <hr />
+        <div class="panel_title">任务条件</div>
+        <div class="ConfigItem">
+            <div class="ItemName">任务触发时间：</div>
+            <div class="ItemValue">
+                <input type="date" id="triggerTime" />
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">显示触发条件：</div>
+            <div class="ItemValue">
+                <button onclick="Func.AddTriggerTask(1)">编辑</button>
+                <div id="displayTriggerTask" style="margin-top:15px;">
+
+                </div>
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">显示触发条件（任务过期）：</div>
+            <div class="ItemValue">
+                <button onclick="Func.AddTriggerTask(3)">编辑</button>
+                <div id="displayTimeoutTask" style="margin-top:15px;">
+                    
+                </div>
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">进度触发条件：</div>
+            <div class="ItemValue">
+                <button onclick="Func.AddTriggerTask(2)">编辑</button>
+                <div id="triggerTask" style="margin-top:15px;">
+
+                </div>
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">任务达成条件：</div>
+            <div class="ItemValue">
+                <button onclick="Func.AddCondition()">增加</button>
+                <table style="margin-top:15px;table-layout: fixed;width:100%;font-size:0.8em;">
+                    <thead><tr><th>达成条件名称</th><th>数量</th><th>特殊参数</th><th>子任务名称</th><th>操作</th></tr></thead>
+                    <tbody id="conditionList"></tbody>
+                </table>
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">至少达成的条件数量:</div>
+            <div class="ItemValue">
+                <input type="number" id="requireActionCount" placeholder="需要达成条件的数量" value="1" />
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">任务有效期：</div>
+            <div class="ItemValue">
+                <input type="number" id="duration" placeholder="触发后有效天数" />
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <hr />
+        <div class="panel_title">任务奖励</div>
+        <div class="ConfigItem">
+            <div class="ItemName">奖励文案(全)：</div>
+            <div class="ItemValue">
+                <input type="text" id="awardText" placeholder="必填" />
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">奖励跳转链接：</div>
+            <div class="ItemValue">
+                <input type="text" id="awardLink" placeholder="必填" />
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="wxAppBox" style="display:none;">
+            <div class="ConfigItem">
+                <div class="ItemName">领奖链接小程序：</div>
+                <div class="ItemValue">
+                    <select id="AwardAppId"></select>
+                </div>
+                <div style="clear:both"></div>
+            </div>
+            <div class="ConfigItem">
+                <div class="ItemName">小程序跳转链接：</div>
+                <div class="ItemValue">
+                    <input type="text" id="wxAwardLink" placeholder="必填" />
+                </div>
+                <div style="clear:both;"></div>
+            </div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">领取奖励图片：</div>
+            <div class="ItemValue">
+                <img id="awardImg" src='' style="width: 80px; height: 80px;" />
+                <input type="file" onchange="Func.UploadImage(this)" />
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">奖励积分：</div>
+            <div class="ItemValue">
+                <input type="number" id="point" value="0" />
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">优惠券ID：</div>
+            <div class="ItemValue">
+                <button onclick="Func.AddCoupon()" class="btn btn-primary">增加</button>
+                <div id="couponList" style="margin-bottom:5px;padding-bottom:5px;">
+                    
+                </div>
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="ConfigItem">
+            <div class="ItemName">其他类型：</div>
+            <div class="ItemValue">
+                <div style="float:left; width:35%;">轮胎险：</div>
+                <div style="float:left;margin-left:20px;"><input type="checkbox" id="tireInsurance" /></div>
+                <div style="clear:both;"></div>
+                <div style="float:left;width:35%;">随机奖励：</div>
+                <div style="float:left;margin-left:20px;"><input type="checkbox" id="randomCoupon" /></div>
+                <div style="clear:both;"></div>
+            </div>
+            <div style="clear:both;"></div>
+        </div>
+    </div>
+
+    <div id="selectpanel" style="display:none;">
+    </div>
+
+    <div id="condition_panel" style="display:none;">
+        <table>
+            <tr>
+                <td>达成条件</td>
+                <td>
+                    <select id="c_Name"></select>
+                </td>
+            </tr>
+            <tr>
+                <td>数量</td>
+                <td><input type="number" placeholder="请输入数量" value="1" id="c_Count" /></td>
+            </tr>
+            <tr>
+                <td>特殊参数</td>
+                <td><input type="text" value='' placeholder="特殊参数" id="c_para"></td>
+            </tr>
+            <tr>
+                <td>子任务Id</td>
+                <td>
+                    <select id="c_ChildTask"></select>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="taskOprLog" style="display:none;">
+        <table>
+            <thead>
+                <tr><th>操作人</th><th>操作类型</th><th>操作时间</th></tr>
+            </thead>
+            <tbody id="oprLog"></tbody>
+        </table>
+    </div>
+
+
+    <script src="~/Scripts/ajaxfileupload.js"></script>
+    <script>
+        $(function () {
+            $.post("/TaskConfig/GetAppIdList", function (data) {
+                if (data.Code == 0) {
+                    alert("APPID列表获取失败");
+                } else {
+                    var html = '';
+                    $.each(data.Data, function (k, v) {
+                        html += `<option value="${v.AppId}">${v.Name}</option>`;
+                    });
+                    $("#AwardAppId").html(html);
+                    $("#TaskAppId").html(html);
+                }
+            });
+            $(".taskChannel").change(function () {
+                if ($(this).val() == "WXAPP") {
+                    if ($(this).is(':checked')) {
+                        $(".wxAppBox").show();
+                    }
+                    else {
+                        $(".wxAppBox").hide();
+                    }
+                }
+            });
+        });
+    </script>
+    <script>
+        Func = {
+            AddTriggerTask: function (index) {
+                var taskId = $("#taskEdit").attr("data");
+                var title, t_id, t_trigger_item;
+                if (index == 1) {
+                    title = "选择显示触发任务(任务完成触发)";
+                    t_id = "#displayTriggerTask";
+                    t_trigger_item = "d_trigger_item";
+                }
+                else if (index == 3) {
+                    title = "选择显示触发任务(任务过期触发)";
+                    t_id = "#displayTimeoutTask";
+                    t_trigger_item = "d_timeout_item";
+                }
+                else {
+                    title = "选择进度触发任务";
+                    t_id = "#triggerTask";
+                    t_trigger_item = "trigger_item";
+                }
+                $.post("/TaskConfig/GetTaskList", {
+                    TaskId: taskId
+                }, function (data) {
+                    if (data.length > 0) {
+                        var html = '';
+                        $.each(data, function (k, v) {
+                            html += `<div class="task_t">
+    <span style="float:left;margin-right:5px;" class="taskTitle" data="${v.TaskId}">${v.TaskName}</span>
+    <input type="checkbox" class="checkbox_t" style="float:left;margin-right:20px;" />
+    </div>`;
+                        });
+                        $("#selectpanel").html(html);
+                        $("#selectpanel").dialog({
+                            title: title,
+                            height: 'auto',
+                            width: 700,
+                            modal: true,
+                            buttons: {
+                                "保存": function () {
+                                    var htm = '';
+                                    $(".checkbox_t").each(function () {
+                                        if ($(this).is(':checked')) {
+                                            var name = $(this).prev().text();
+                                            var id = $(this).prev().attr('data');
+                                            htm += `<span class="${t_trigger_item}" data="${id}" style="margin-right:20px; color:red;">${name}</span>`;
+                                        }
+                                    });
+                                    $(t_id).html(htm);
+                                    $(this).dialog("close");
+                                },
+                                "关闭": function () {
+                                    $(this).dialog("close");
+                                }
+                            }
+                        })
+                    }
+                });
+            },
+            AddCondition: function () {
+                $("#c_para").val('');
+                $("#c_Count").val(0);
+                var taskId = $("#taskEdit").attr("data");
+                $.post("/TaskConfig/GetTaskActionList", function (data) {
+                    var html = '<option value="0">请选择</option>';
+                    if (data.length > 0) {
+                        $.each(data, function (k, v) {
+                            html += `<option value="${v.ActionName}">${v.Remark}</option>`;
+                        });
+                        $("#c_Name").html(html);
+                    }
+                });
+                $.post("/TaskConfig/GetTaskList", {
+                    TaskId: taskId
+                }, function (data) {
+                    var html = '<option value="0">请选择</option>';
+                    if (data.length > 0) {
+                        $.each(data, function (k, v) {
+                            html += `<option value="${v.TaskId}">${v.TaskName}</option>`;
+                        });
+                        $("#c_ChildTask").html(html);
+                    }
+                });
+                $("#condition_panel").dialog({
+                    title: '选择任务达成条件',
+                    height: 'auto',
+                    width: 700,
+                    modal: true,
+                    buttons: {
+                        "关闭": function () {
+                            $(this).dialog('close');
+                        },
+                        "保存": function () {
+                            var name = $("#c_Name :selected").val();
+                            var remark = $("#c_Name :selected").text();
+                            var count = $("#c_Count").val();
+                            var specialpara = $("#c_para").val();
+                            var child_name = $("#c_ChildTask :selected").text();
+                            var child_Id = $("#c_ChildTask :selected").val();
+                            if (name == 0 || count < 1) {
+                                alert("请检查参数");
+                                return;
+                            }
+                            if (specialpara == '') {
+                                specialpara = child_Id;
+                            } else {
+                                child_name = '';
+                            }
+                            var html = `<tr class="conditionItem">
+                    <td class="actionName" data="${name}">${remark}</td>
+                    <td class="actionCount">${count}</td>
+                    <td class="specialpara">${specialpara}</td>
+                    <td>${child_name}</td>
+                    <td><button class="btn btn-primary" onclick="Func.DeleteCondition(this)">删除</button></td>
+                    </tr>`;
+                            $("#conditionList").append(html);
+                            $(this).dialog('close');
+                        }
+                    }
+                });
+            },
+            AddCoupon: function () {
+                var html = `<div class="couponItem" style="margin-top:5px;margin-bottom:5px;height:40px;">
+                        <input type="text" value='' placeholder="优惠券GUID" style="float:left;width:30%;" class="couponId" />
+                        <input type="number" value=0 placeholder="优惠券数量" class="couponCount" style="float:left;width:30%;margin-left:10px;" />
+                        <button class="btn btn-primary" style="float:left;margin-left:10px;" onclick="Func.DeleteCoupon(this)">删除</button>
+                        <div style="clear:both;"></div>
+                        </div>`;
+                $("#couponList").append(html);
+            },
+            //显示详情弹窗
+            ShowDialog: function (taskId) {
+                $("#taskEdit").dialog({
+                    title: '任务编辑',
+                    height: 'auto',
+                    width: 800,
+                    modal: true,
+                    buttons: {
+                        "关闭": function () {
+                            $(this).dialog("close");
+                        },
+                        "保存": function () {
+                            Func.SaveConfig(taskId, this);
+                        }
+                    }
+                })
+            },
+            SaveConfig: function (taskId, target) {
+                var displayStatus = $("#displayStatus").val();
+                var startVersion = $("#startVersion").val();
+                var endVersion = $("#endVersion").val();
+                var sequence = $("#sequence").val();
+                var taskName = $("#taskname").val();
+                var taskIcon = $("#taskicon").attr('src');
+                var taskType = $("#tasktype").val();
+                var taskRule = $("#taskrule").val();
+                var taskLink = $("#tasklink").val();
+                var taskText = $("#buttontext").val();
+                var triggerTime = $("#triggerTime").val();
+                var duration = $("#duration").val();
+                var requireActionCount = $("#requireActionCount").val();
+                var awardText = $("#awardText").val();
+                var awardLink = $("#awardLink").val();
+                var awardImg = $("#awardImg").attr("src");
+                var tireInsurance = $("#tireInsurance").prop('checked');
+                var randomCoupon = $("#randomCoupon").prop('checked');
+                var point = $("#point").val();
+                var recommendImg = $("#recommendImg").attr("src");
+                var recommendLevel = $("#recommendLevel").val();
+                var populationsTag = $("#populationsTag").val();
+                var wxTaskAppId = $("#TaskAppId").val();
+                var wxTaskLink = $("#wxTaskLink").val();
+                var wxAwardAppId = $("#AwardAppId").val();
+                var wxAwardLink = $("#wxAwardLink").val();
+                var triggerTask = [];
+                var displayTriggerTask = [];
+                var conditionList = [];
+                var displayTimeoutTask = [];
+                var channelList = [];
+                $(".d_trigger_item").each(function () {
+                    var data = {
+                        "TaskId": $(this).attr("data"),
+                        "TaskName": $(this).text()
+                    };
+                    displayTriggerTask.push(data);
+                });
+                $(".d_timeout_item").each(function () {
+                    var data = {
+                        "TaskId": $(this).attr("data"),
+                        "TaskName": $(this).text()
+                    };
+                    displayTimeoutTask.push(data);
+                });
+                $(".trigger_item").each(function () {
+                    var data = {
+                        "TaskId": $(this).attr("data"),
+                        "TaskName": $(this).text()
+                    };
+                    triggerTask.push(data);
+                });
+                $(".conditionItem").each(function () {
+                    var actionName = $(this).find(".actionName").attr("data");
+                    var count = $(this).find(".actionCount").text();
+                    if (actionName != '' && !isNaN(count) && count > 0) {
+                        var data = {
+                            "ActionName": actionName,
+                            "Count": count,
+                            "SpecialPara": $(this).find('.specialpara').text()
+                        }
+                        conditionList.push(data);
+                    }
+                });
+                $(".taskChannel").each(function () {
+                    if ($(this).is(':checked')) {
+                        var channel = $(this).val();
+                        channelList.push(channel);
+                        //alert(channel);
+                    }
+                });
+                if (channelList.length < 1) {
+                    alert("至少选一个渠道！");
+                    return;
+                }
+                if (channelList.indexOf('WXAPP') > -1 && (wxAwardAppId == '' || wxAwardLink == '' || wxTaskAppId == '' || wxTaskLink == '')) {
+                    alert("小程序跳转链接以及领奖链接必填");
+                    return;
+                }
+                var taskChannel = channelList.join(";");
+                var couponList = [];
+                $(".couponItem").each(function () {
+                    var getruleid = $(this).find(".couponId").val();
+                    var count = $(this).find(".couponCount").val();
+                    if (getruleid != '' && !isNaN(count) && count > 0) {
+                        var data = {
+                            "GetRuleId": getruleid,
+                            "Count": count
+                        }
+                        couponList.push(data);
+                    }
+                });
+                if (taskName == '') { alert("任务名称不能为空!"); return; }
+                if (requireActionCount < 1 || requireActionCount > conditionList.length) {
+                    alert("任务达成数量不合法!");return; }
+                if (taskIcon == '') { alert("任务图标不能为空"); return; }
+                if (taskRule == '') { alert("任务规则不能为空！"); return; }
+                if (taskLink == '') { alert("任务链接不能为空"); return; }
+                if (taskText == '') { alert("任务按钮文案不能为空"); return; }
+                if (conditionList.length < 1) { alert("任务完成条件不能为空"); return; }
+                if (duration == '') { alert("任务有效期不能为空"); return; }
+                if (awardText == '') { alert("奖励文案不能为空"); return; }
+                if (awardLink == '') { alert("奖励跳转链接不能为空"); return; }
+                if (awardImg == '') { alert("领取奖励图片不能为空"); return; }
+                if (point < 0) { alert("奖励积分不能小于0"); return; }
+                if (startVersion == '' || endVersion == '') { alert("版本限制不合法"); return; }
+                if (couponList.length < 1 && point == 0 && !tireInsurance && !randomCoupon) { alert("奖励优惠券、积分、轮胎险和随机奖励不能同时为空"); return; }
+                if (populationsTag < 0) { alert("特定人群编号不能小于0！"); return; }
+                if (recommendLevel < 0) { alert("推荐任务优先级不能小于0！"); return; }
+                $("#savebtn").attr("disabled", true);
+                $.post("/TaskConfig/EditTaskConfig", {
+                    TaskName: taskName,
+                    TaskLink: taskLink,
+                    TaskIcon: taskIcon,
+                    TaskType: taskType,
+                    DisplayStatus: displayStatus,
+                    TaskId: taskId,
+                    Duration: duration,
+                    TaskText: taskText,
+                    TriggerTime: triggerTime,
+                    ConditionList: conditionList,
+                    AwardText: awardText,
+                    AwardLink: awardLink,
+                    AwardImg: awardImg,
+                    Integral: point,
+                    TaskRule: taskRule,
+                    CouponList: couponList,
+                    TireInsurance: tireInsurance,
+                    RandomCoupon: randomCoupon,
+                    Sequence: sequence,
+                    TriggerList: triggerTask,
+                    DisplayTriggerList: displayTriggerTask,
+                    TimeoutTriggerList: displayTimeoutTask,
+                    StartVersion: startVersion,
+                    EndVersion: endVersion,
+                    RequireActionCount: requireActionCount,
+                    RecommendImg: recommendImg,
+                    RecommendLevel: recommendLevel,
+                    PopulationsTag: populationsTag,
+                    TaskChannel: taskChannel,
+                    WXAwardAppId: wxAwardAppId,
+                    WXAwardLink: wxAwardLink,
+                    WXTaskAppId: wxTaskAppId,
+                    WXTaskLink: wxTaskLink
+                }, function (data) {
+                    if (data.Code === 1 || data.Code === 3) {
+                        window.location.reload();
+                    }
+                    $(target).dialog('close');
+                    alert(data.Info);
+                }, "json");
+            },
+            DeleteTask: function (taskId) {
+                var hasChild = false;
+                $.ajaxSettings.async = false;
+                $.post("/TaskConfig/CheckTaskHasChildTask", {
+                    TaskId: taskId
+                }, function (m) {
+                    hasChild = m.Code > 0;
+                });
+                $.ajaxSettings.async = true;
+                var confirmResult = false;
+                if (hasChild) {
+                    confirmResult = confirm("此任务与其他任务存在关联，请确认是否删除?");
+                    if (!confirmResult) {
+                        return false;
+                    }
+                }
+                if (!hasChild) {
+                    confirmResult = confirm("确定要删除该任务吗?");
+                    if (!confirmResult) {
+                        return false;
+                    }
+                }
+                $.post("/TaskConfig/DeleteTaskConfig", {
+                    TaskId: taskId
+                }, function (data) {
+                    switch (data.Code) {
+                        case "-1":
+                            alert(data.Info);
+                            break;
+                        case "0":
+                            alert("删除失败");
+                            break;
+                        default:
+                            alert("删除成功");
+                            window.location.reload();
+                            break;
+                    }
+                });
+            },
+            FetchTaskDetail: function (target, flag) {
+                Func.AddTask(1);
+                var taskid = $(target).parent().parent().attr("data");
+                if (taskid === '') {
+                    alert("未找到该任务，请稍后重试");
+                    return;
+                }
+                $.post("/TaskConfig/FetchTaskDetail", {
+                    "TaskId": taskid
+                }, function (data) {
+                    if (data.Code == 0) {
+                        alert(data.Info);
+                    } else {
+                        $(".wxAppBox").hide();
+                        $("#displayStatus").val(data.Data.DisplayStatus ? 1 : 0);
+                        $("#sequence").val(data.Data.Sequence);
+                        $("#taskname").val(data.Data.TaskName);
+                        $("#taskicon").attr("src", data.Data.TaskIcon);
+                        $("#tasktype").val(data.Data.TaskType);
+                        $("#taskrule").val(data.Data.TaskRule);
+                        $("#tasklink").val(data.Data.TaskLink);
+                        $("#buttontext").val(data.Data.TaskText);
+                        if (data.Data.TriggerTime != null) {
+                            $("#triggerTime").val(Func.FormatTime(data.Data.TriggerTime));
+                        }
+                        $("#startVersion").val(data.Data.StartVersion);
+                        $("#endVersion").val(data.Data.EndVersion);
+                        $("#duration").val(data.Data.Duration);
+                        $("#awardText").val(data.Data.AwardText);
+                        $("#awardLink").val(data.Data.AwardLink);
+                        $("#requireActionCount").val(data.Data.RequireActionCount);
+                        $("#awardImg").attr("src", data.Data.AwardImg);
+                        $("#recommendImg").attr("src", data.Data.RecommendImg);
+                        $("#recommendLevel").val(data.Data.RecommendLevel);
+                        $("#populationsTag").val(data.Data.PopulationsTag);
+                        var html = "";
+                        $.each(data.Data.CouponList, function (k, v) {
+                            html += `<div class="couponItem" style="margin-top:5px;margin-bottom:5px;height:40px;">
+                        <input type="text" value=${v.GetRuleId} placeholder="优惠券GUID" style="float:left;width:30%;" class="couponId" />
+                        <input type="number" value=${v.Count} placeholder="优惠券数量" class="couponCount" style="float:left;width:30%;margin-left:10px;" />
+                        <button class="btn btn-primary" style="float:left;margin-left:10px;" onclick="Func.DeleteCoupon(this)">删除</button>
+                        <div style="clear:both;"></div>
+                        </div>`;
+                        });
+                        $("#couponList").html(html);
+                        if (data.Data.DisplayTriggerList.length > 0) {
+                            html = '';
+                            $.each(data.Data.DisplayTriggerList, function (k, v) {
+                                html += `<span class="d_trigger_item" data="${v.TaskId}" style="margin-right:20px; color:blue;">${v.TaskName}</span>`;
+                            });
+                            $("#displayTriggerTask").html(html);
+                        }
+                        if (data.Data.TimeoutTriggerList.length > 0) {
+                            html = '';
+                            $.each(data.Data.TimeoutTriggerList, function (k, v) {
+                                html += `<span class="d_timeout_item" data="${v.TaskId}" style="margin-right:20px; color:blue;">${v.TaskName}</span>`;
+                            });
+                            $("#displayTimeoutTask").html(html);
+                        }
+                        if (data.Data.TriggerList.length > 0) {
+                            html = '';
+                            $.each(data.Data.TriggerList, function (k, v) {
+                                html += `<span class="trigger_item" data="${v.TaskId}" style="margin-right:20px; color:blue;">${v.TaskName}</span>`;
+                            });
+                            $("#triggerTask").html(html);
+                        }
+                        html = "";
+                        $.each(data.Data.ConditionList, function (k, v) {
+                            var childName = v.ChildName == null ? '-' : v.ChildName;
+                            html += `<tr class="conditionItem">
+                    <td class="actionName" data="${v.ActionName}">${v.Remark}</td>
+                    <td class="actionCount">${v.Count}</td>
+                    <td class="specialpara">${v.SpecialPara}</td>
+                    <td>${childName}</td>
+                    <td><button class="btn btn-primary" onclick="Func.DeleteCondition(this)">删除</button></td>
+                    </tr>`;
+                        });
+                        $("#conditionList").append(html);
+                        $("#tireInsurance").prop("checked", data.Data.TireInsurance);
+                        $("#randomCoupon").prop("checked", data.Data.RandomCoupon);
+
+                        var channelList = data.Data.TaskChannel.split(';');
+                        $(".taskChannel").each(function () {
+                            $(this).prop("checked", channelList.indexOf($(this).val()) > -1);
+                        });
+
+                        if (channelList.indexOf("WXAPP")>-1) {
+                            $("#TaskAppId").val(data.Data.WXTaskAppId);
+                            $("#wxTaskLink").val(data.Data.WXTaskLink);
+                            $("#AwardAppId").val(data.Data.WXAwardAppId);
+                            $("#wxAwardLink").val(data.Data.WXAwardLink);
+                            $(".wxAppBox").show();
+                        }
+
+                        $("#point").val(data.Data.Integral);
+                        if (flag === 1) {
+                            Func.ShowDialog(taskid);
+                        }
+                        else {
+                            $("#taskEdit").dialog({
+                                title: '任务编辑',
+                                height: 'auto',
+                                width: 800,
+                                modal: true,
+                                buttons: {
+                                    "关闭": function () {
+                                        $(this).dialog("close");
+                                    }
+                                }
+                            });
+                        }
+                    }
+
+                });
+            },
+            RefreshCache: function () {
+                $.post("/TaskConfig/RefreshTaskCache",
+                    function (data) {
+                        if (data.Code == 0) {
+                            alert("缓存刷新失败");
+                        } else {
+                            alert("缓存刷新成功");
+                        }
+                    });
+            },
+            AddTask: function (flag) {
+                var date = new Date();
+                var dateStr = date.Format("yyyy-MM-dd");
+                $("#displayStatus").val(1);
+                $("#startVersion").val('0.0.0');
+                $("#endVersion").val('9.9.9');
+                $("#sequence").val(0);
+                $("#taskname").val("");
+                $("#taskicon").attr("src", '');
+                $("#tasktype").val(0);
+                $("#taskrule").val('');
+                $("#tasklink").val('');
+                $("#buttontext").val('');
+                $("#triggerTime").val(dateStr);
+                $("#requireActionCount").val(1);
+                $("#triggerTask").empty();
+                $("#displayTriggerTask").empty();
+                $("#displayTimeoutTask").empty();
+                $("#conditionList").empty();
+                $("#duration").val('');
+                $("#awardText").val('');
+                $("#awardLink").val('');
+                $("#awardImg").attr("src", '');
+                $("#point").val(0);
+                $("#couponList").empty();
+                $("#tireInsurance").prop("checked", false);
+                $("#randomCoupon").prop("checked", false);
+                $("#recommendImg").attr("src", '');
+                $(".taskChannel").prop('checked', true);
+                $("#recommendLevel").val(0);
+                $("#populationsTag").val(0);
+                $("#TaskAppId").val('');
+                $("#wxTaskLink").val('');
+                $("#AwardAppId").val('');
+                $("#wxAwardLink").val('');
+                if (flag == 0) {
+                    Func.ShowDialog('');
+                }
+            },
+            DeleteCoupon: function (target) {
+                $(target).parent().parent().remove();
+            },
+            FormatTime: function (strTime) {
+                var obj = new Date(parseInt(strTime.replace("/Date(", "").replace(")/", ""), 10));
+                return obj.Format("yyyy-MM-dd");
+            },
+            FormatTime2: function (strTime) {
+                var obj = new Date(parseInt(strTime.replace("/Date(", "").replace(")/", ""), 10));
+                return obj.Format("yyyy-MM-dd hh:mm:ss");
+            },
+            UploadImage: function (target) {
+                var $target = $(target);
+                var $img = $target.prev();
+                var now = new Date().getTime();
+                $target.attr("id", now);
+                $target.attr("name", now);
+                var name = $target.val().split('.');
+                if (name[name.length - 1].toUpperCase() != "JPG" &&
+                    name[name.length - 1].toUpperCase() != "JPEG" &&
+                    name[name.length - 1].toUpperCase() != "GIF" &&
+                    name[name.length - 1].toUpperCase() != "PNG" &&
+                    name[name.length - 1].toUpperCase() != "BMP") {
+                    alert("格式错误", "支持jpg、jpeg、gif、png、bmp", "error");
+                    return false;
+                }
+                $.ajaxFileUpload({
+                    url: '/TaskConfig/UploadImage',
+                    secureuri: false,
+                    fileElementId: now,
+                    async: false,
+                    dataType: 'JSON',
+                    type: 'post',
+                    success: function (src) {
+                        var result = jQuery.parseJSON(jQuery(src).text());
+                        if (result != null) {
+                            $img.attr("src", result);
+                        } else
+                            alert("上传失败！");
+                    }
+                });
+            },
+            GetTaskOprLog: function (taskId) {
+                $.post("/TaskConfig/GetTaskOprLog", {
+                    "TaskId": taskId
+                }, function (response) {
+                    if (response.Code == 0) {
+                        alert(response.Info);
+                    } else {
+                        var html = '';
+                        $("#oprLog").empty();
+                        $.each(response.Data, function (k, v) {
+                            html += `<tr><td>${v.Operator}</td><td>${v.Operate}</td><td>${Func.FormatTime2(v.CreateDateTime)}</td><tr>`;
+                        });
+                        $("#oprLog").append(html);
+                        $("#taskOprLog").dialog({
+                            title: '修改记录',
+                            height: 'auto',
+                            width: 'auto',
+                            modal: true,
+                            buttons: {
+                                "关闭": function () {
+                                    $(this).dialog("close");
+                                }
+                            }
+                        });
+                    }
+                });
+            },
+            DeleteCondition: function (target) {
+                $(target).parent().parent().remove();
+            }
+        }
+
+    </script>

@@ -1,0 +1,51 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@{
+    ViewBag.Title = "搜索词关联配置";
+    var configType = ViewBag.configType as Dictionary<SearchWordConfigType, string>;
+}
+
+<link href="~/Content/ProductVehicleType/css/bootstrap.v3.css" type="text/css" rel="stylesheet" />
+
+<div class="container" style="margin-bottom: 400px">
+    <div class="row">
+        <div class="span12" style="float:left;text-align:center;margin-top:20px;"><h3>ES搜索词关联配置</h3></div>
+        <div>
+            <span style="color: Red; text-align: center;">@ViewBag.error</span>
+        </div>
+    </div>
+    @foreach (var item in configType)
+    {
+        <div class="row">
+            <div class="span12" style="float: left">
+
+                @using (Html.BeginForm("FileImport", "SearchWordConvertConfig", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                {
+                    @Html.Hidden("configType", item.Key)
+                    <div style="width: 50%; float: left; margin-top: 20px">
+                        <fieldset id="fileUpload">
+                            <legend>@("上传" + item.Value)</legend>
+
+                            <div class="form-group">
+                                <input type="file" id="inputFile" name="files">
+                                <p class="help-block"></p>
+
+                            </div>
+                            <input type="submit" value="上传导入" class="btn btn-success" id="btnImport" />
+
+                        </fieldset>
+                    </div>
+
+                    <div style="width: 50%; float: right; margin-top: 20px;">
+                        <fieldset>
+                            <legend>@("下载" + item.Value)</legend>
+                            <div class="form-group">
+                                @Html.ActionLink("下载excel配置模板(含当前最新配置数据)", "DownLoadFile", new { configType = item.Key }, new { target = "_blank" })
+                            </div>
+                        </fieldset>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+

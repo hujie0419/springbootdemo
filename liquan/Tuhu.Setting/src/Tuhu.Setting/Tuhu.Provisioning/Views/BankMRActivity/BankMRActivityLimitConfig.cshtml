@@ -1,0 +1,421 @@
+﻿@{
+    ViewBag.Title = "美容服务包";
+}
+@section head{
+    <link href="~/css/bankMRActivity.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/iview/iview.css" rel="stylesheet" />
+}
+
+<div id="div" v-cloak>
+    <h2>编辑限购</h2>
+    <div>
+            <div>
+                <div>
+                <label>每张银行卡限购:</label>
+                <select v-model="BankMRActivityLimitConfig.CardLimitType">
+                    <option value="0">请选择</option>
+                    <option value="1">年</option>
+                    <option value="2">季</option>
+                    <option value="3">月</option>
+                    <option value="4">天</option>
+                </select>
+                <input type="text" v-model="BankMRActivityLimitConfig.CardLimitValue" style="width:65px;" />次
+            </div>
+            <div>
+                    <label>场次限购总数:</label>
+                    <input type="text" v-model="BankMRActivityLimitConfig.RoundLimit" />
+                </div>
+                <div>
+                    <label>每日限购总数:</label>
+                    <input type="text" v-model="BankMRActivityLimitConfig.DayLimit" />
+                </div>
+                <div>
+                    <label>场次限购(每个用户场次内限购):</label>
+                    <input type="text" v-model="BankMRActivityLimitConfig.UserRoundLimit" />
+                </div>
+                <div>
+                    <label>每日限购(每个用户每日限购):</label>
+                    <input type="text" v-model="BankMRActivityLimitConfig.UserDayLimit" />
+                </div>
+                <div>
+                    <label>限制购买日期:</label>
+                    <label><input type="radio" name="roundLimitType" v-model="LimitDateType" v-bind:value="'month'" />按月</label>
+                    <label><input type="radio" name="roundLimitType" v-model="LimitDateType" v-bind:value="'week'" />按周</label>
+                    <br />
+                    <div style="">
+                        <span v-if="ShowDaysOfMonth" v-for="item in DaysOfMonth"><input type="checkbox" v-bind:value="item" v-model="DaysOfMonthArray" />{{item}}</span>
+                        <span v-if="ShowDaysOfWeek" v-for="item in DaysOfWeekTime">
+                            <input type="checkbox" v-bind:value="item.DayOfWeek" v-model="DaysOfWeekArray"/>{{item.DayOfWeek}} 
+                            <Time-Picker confirm type="timerange" placement="bottom-end" placeholder="Select time" style="width: 150px" format="HH:mm" :value="item.CombineTime"   v-on:on-change="handleChange($event,item.DayOfWeek)"></Time-Picker>
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <label>限购地区:</label>
+                    <div>
+                        <table style="width:100%">
+                            <thead style="width:100%">
+                                <tr style="width:100%">
+                                    <th style="width:33%">
+                                        /省/自治区/直辖市
+                                    </th>
+                                    <th style="width:33%">
+                                        市
+                                    </th>
+                                    <th style="width:33%">
+                                        <label><button v-on:click="AddRegion">添加</button></label>
+                                    </th>
+                                </tr>
+                            </thead>                       
+                            <tr v-for="limit in BankLimitConfig">
+                                <td>
+                                    <select v-on:change="ChangeProvince(limit)" v-model="limit.ProvinceId">
+                                        <option v-for="item in AllProvince" v-bind:value="item.RegionId">{{ item.RegionName }}</option>
+                                    </select>
+                                    <select v-on:change="ChangeCity(limit)" v-model="limit.CityId">
+                                        <option v-for="item in limit.Citys" v-bind:value="item.RegionId">{{ item.RegionName }}</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <label v-for="district in limit.Districts">
+                                        <span><input type="checkbox" name="district" v-model="limit.DistrictIds" v-bind:value="district.RegionId" :data-key="district.RegionId" :checked="limit.DistrictIds.indexOf(district.RegionId)>-1"  />{{district.RegionName}}</span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <button v-on:click="RemoveRegion(limit)">删除</button>
+                                </td>
+                            </tr>
+                        </table>                                         
+                    </div>
+                </div>
+            </div>
+            <div slot="footer">
+                <button class="modal-default-button" v-on:click="UpsertBankMRActivityLimitConfig()">确认</button>
+                <button class="modal-default-button" v-on:click="CloseBankMRActivityLimitConfigDialog()">取消</button>
+            </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <link href="~/Content/iview/iview.css" rel="stylesheet"/>
+    <script src="~/Scripts/vue.min.js"></script>
+    <script src="~/Scripts/iview/iview.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/dateJs/vue-date.min.js"></script>
+    <script type="text/javascript">
+        function formatDate(value) {
+            if (value) {
+                var time = value instanceof Date ? value : eval('new ' + value.toString().replace(/\//g, ""));
+                var year = time.getFullYear();
+                var day = time.getDate();
+                var month = time.getMonth() + 1;
+                var hours = time.getHours();
+                var minutes = time.getMinutes();
+                var seconds = time.getSeconds();
+                var func = function(value, number) {
+                    var str = value.toString();
+                    while (str.length < number) {
+                        str = "0" + str;
+                    }
+                    return str;
+                }
+                if (year == 1) {
+                    return "";
+                } else {
+                    return func(year, 4) + '-' + func(month, 2) + '-' + func(day, 2) + ' ';
+                }
+            }
+        }
+
+        Vue.filter('formatDate', formatDate);
+        
+        var RegionUniqueIndex = 0;
+        var vue = new Vue({
+            el: "#div",
+            data: {
+                BankMRActivityLimitConfig: {
+                    PKID: 0,
+                    ActivityId: "",
+                    DaysOfMonth: "",
+                    DaysOfWeek: "",
+                    DayLimit: 0,
+                    RoundLimit: 0,
+                    UserDayLimit: 0,
+                    UserRoundLimit: 0,
+                    ProvinceIds: "",
+                    CityIds: "",
+                    CreateTime: "",
+                    UpdateTime: "",
+                    CardLimitType: 0,
+                    CardLimitValue: '',
+                    BankLimitConfig: []
+                },
+                BankLimitConfig:[],
+                DaysOfMonthArray: [],
+                DaysOfWeekArray: [],
+                ProvinceCityList: [],
+                ProvinceCity: {
+                    ProvinceId: 0,
+                    CityList: [],
+                },
+                ProvinceIds: [],
+                CityIds: [],
+                LimitDateType: "",
+                DaysOfMonth: [],
+                DaysOfWeek: [],
+                ShowDaysOfMonth: false,
+                ShowDaysOfWeek: false,
+                IsChooseAllLimitDate: "checked",
+                LimitRegion: [],
+                AllProvince: [],
+                DaysOfWeekTime: [],
+            },
+            created: function() {
+                this.load();
+            },
+            watch: {
+                "LimitDateType": function() {
+                    var self = this;
+                    switch (self.LimitDateType) {
+                    case "month":
+                        self.ShowDaysOfMonth = true;
+                        self.ShowDaysOfWeek = false;
+                        break;
+                    case "week":
+                        self.ShowDaysOfMonth = false;
+                        self.ShowDaysOfWeek = true;
+                        break;
+                    }
+                }
+            },
+            methods: {
+                load: function(callback) {
+                    var self = this;
+                    var activityId = window.location.search.split('=')[1];
+                    self.FetchBankMRActivityLimitConfig(activityId);
+                    for (var i = 1; i <= 31; i++) {
+                        self.DaysOfMonth.push(i);
+                    }
+                    for (var j = 1; j <= 7; j++) {
+                        self.DaysOfWeek.push(j);
+                    }
+                },
+                FetchBankMRActivityLimitConfig: function(activityId) {
+                    var self = this;
+                    $.get("FetchBankMRActivityLimitConfig",
+                        { activityId: activityId },
+                        function(data) {
+                            self.GetAllProvince(function() {
+                                if (data && data.PKID > 0) {
+                                    self.BankMRActivityLimitConfig = data;
+                                    if (data.DaysOfMonth)
+                                        self.DaysOfMonthArray = data.DaysOfMonth.split(',');
+                                    if (data.DaysOfWeek)
+                                        self.DaysOfWeekArray = data.DaysOfWeek.split(',');
+                                    self.DaysOfWeekTime = data.WeekTimeLimit;
+                                    self.DaysOfWeekTime.forEach(function(item) {
+                                        item.BeginTime = item.CombineTime[0];
+                                        item.EndTime = item.CombineTime[1];
+                                        item.ActivityId = activityId;
+                                    });
+                                    
+                                    self.BankMRActivityLimitConfig.BankLimitConfig.forEach(function (item) {
+                                        RegionUniqueIndex++;
+                                        self.BankLimitConfig.push({
+                                            ProvinceId: item.ProvinceId,
+                                            CityId: item.CityId,
+                                            Citys: item.Citys,
+                                            DistrictIds: item.DistrictIds,
+                                            Districts: item.Districts,
+                                            RegionUniqueIndex: RegionUniqueIndex
+                                        });
+                                    });
+                                } else {
+                                    self.BankMRActivityLimitConfig.PKID = 0;
+                                    self.BankMRActivityLimitConfig.ActivityId = activityId;
+                                    self.BankMRActivityLimitConfig.DaysOfMonth = "";
+                                    self.BankMRActivityLimitConfig.DaysOfWeek = "";
+                                    self.BankMRActivityLimitConfig.DayLimit = data ? data.RoundLimit : 0;
+                                    self.BankMRActivityLimitConfig.UserDayLimit = data ? data.UserRoundLimit : 0;
+                                    self.BankMRActivityLimitConfig.RoundLimit = 0;
+                                    self.BankMRActivityLimitConfig.UserRoundLimit = 0;
+                                    self.BankMRActivityLimitConfig.ProvinceIds = "";
+                                    self.BankMRActivityLimitConfig.CityIds = "";
+                                    self.DaysOfMonthArray = [];
+                                    for (var i = 1; i <= 31; i++) {
+                                        self.DaysOfMonthArray.push(i);
+                                    }
+                                    self.DaysOfWeekArray = [];
+                                    for (var i = 1; i <= 7; i++) {
+                                        self.DaysOfWeekArray.push(i);
+                                    }
+                                    self.DaysOfWeekTime = [];
+                                    for (var i = 1; i <= 7; i++) {
+                                        self.DaysOfWeekTime.push({
+                                            BeginTime:'00:00:00',
+                                            EndTime: '23:59:59',
+                                            CombineTime: ['00:00:00', '23:59:59'],
+                                            ActivityId: activityId,
+                                            DayOfWeek:i
+                                        });
+                                    }
+                                }
+                                self.LimitDateType = "month";
+                            });
+                        });
+                },
+                UpsertBankMRActivityLimitConfig: function() {
+                    var self = this;
+                    self.BankMRActivityLimitConfig.DaysOfMonth = ArrayToStringJoin(self.DaysOfMonthArray, ',');
+                    self.BankMRActivityLimitConfig.DaysOfWeek = ArrayToStringJoin(self.DaysOfWeekArray, ',');
+                    var provinceIds = [];
+                    var cityIds = [];
+                    if (self.LimitRegion) {
+                        for (var i = 0; i < self.LimitRegion.length; i++) {
+                            if (self.LimitRegion[i]) {
+                                provinceIds.push(self.LimitRegion[i].ProvinceId);
+                                for (var j = 0; j < self.LimitRegion[i].CityIds.length; j++) {
+                                    if (self.LimitRegion[i].CityIds[j]) {
+                                        cityIds.push(self.LimitRegion[i].CityIds[j]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    self.BankMRActivityLimitConfig.ProvinceIds = ArrayToStringJoin(provinceIds, ',');
+                    self.BankMRActivityLimitConfig.CityIds = ArrayToStringJoin(cityIds, ',');
+                    self.BankMRActivityLimitConfig.WeekTimeLimit = self.DaysOfWeekTime;
+                    self.BankMRActivityLimitConfig.BankLimitConfig = [];
+                    if (self.BankLimitConfig.length > 0) {
+                        self.BankLimitConfig.forEach(function (item) {
+                            self.BankMRActivityLimitConfig.BankLimitConfig.push({
+                                ProvinceId: item.ProvinceId,
+                                CityId: item.CityId,
+                                DistrictIds: item.DistrictIds
+                            });
+                        });
+                    }
+                    console.log(self.BankMRActivityLimitConfig);
+                    $.post("UpsertBankMRActivityLimitConfig",
+                        { config: self.BankMRActivityLimitConfig },
+                        function(result) {
+                            if (result) {
+                                window.location.reload();
+                                alert("成功");
+                            } else {
+                                alert("失败");
+                            }
+                        });
+                },
+                AddRegion: function() {
+                    var self = this;
+                    self.BankLimitConfig.push({
+                        RegionUniqueIndex: RegionUniqueIndex++,
+                        AllProvince: self.AllProvince,
+                        ProvinceId: -1,
+                        Citys:[],
+                        CityId: -1,
+                        Districts: [],
+                        DistrictIds:[]
+                    });
+                },
+                ChangeProvince: function (item) {
+                    var self = this;
+                    if (item.ProvinceId > 0) {
+                        self.GetRegionByRegionId(item.ProvinceId,
+                            function (region) {
+                                item.Citys = region.ChildRegions;
+                                item.Districts = [];
+                            });
+                    }
+                },
+                ChangeCity: function (item) {
+                    var self = this;
+                    if (item.CityId > 0) {
+                        self.GetRegionByRegionId(item.CityId,
+                            function (region) {
+                                item.Districts = region.ChildRegions;
+                            });
+                    }
+                },
+                GetRegionByRegionId: function(regionId, callBack) {
+                    $.get("GetRegionByRegionId",
+                        { regionId: regionId },
+                        function(region) {
+                            return callBack(region);
+                        });
+                },
+                RemoveRegion: function(data) {
+                    var self = this;
+                    self.BankLimitConfig = self.BankLimitConfig.filter(function (v) {
+                        return v.RegionUniqueIndex != data.RegionUniqueIndex;
+                    });
+                },
+                GetAllProvince: function(callback) {
+                    var self = this;
+                    $.get("GetAllProvince",
+                        function(data) {
+                            self.AllProvince.push({
+                                RegionId: -1,
+                                RegionName: ""
+                            });
+                            self.AllProvince = data;
+                            self.AllProvince.unshift({
+                                RegionId: -1,
+                                RegionName: "请选择"
+                            });
+                            return callback();
+                        });
+                },
+                getDates(e) {
+                    var time = e instanceof Date ? e : eval('new ' + e.toString().replace(/\//g, ""));
+                    console.log(time);
+                    if (time < new Date(2018, 1, 1, 0, 0))
+                        time = new Date();
+                    return time;
+
+                },
+                getTimeSpan(time) {
+                    var year = time.getFullYear();
+                    var day = time.getDate();
+                    var month = time.getMonth() + 1;
+                    if (month < 10) {
+                        month = '0' + month;
+                    }
+                    if (day < 10) {
+                        day = '0' + day;
+                    }
+                    var hours = time.getHours();
+                    if (hours < 10) {
+                        hours = '0' + hours;
+                    }
+                    var minutes = time.getMinutes();
+                    if (minutes < 10) {
+                        minutes = '0' + minutes;
+                    }
+                    return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':00';
+                },
+                handleChange: function(time, day) {
+                    var _this = this;
+                    _this.DaysOfWeekTime.forEach(function(item) {
+                        if (item.DayOfWeek === day) {
+                            item.BeginTime = time[0];
+                            item.EndTime = time[1]+':59';
+                        }
+                    });
+                }
+            }
+        });
+
+        function ArrayToStringJoin(array, separate) {
+            var result = "";
+            for (var i = 0; i < array.length; i++) {
+                result += array[i] + separate;
+            }
+            if (result) {
+                result = result.substring(0, result.length - separate.length);
+            }
+            return result;
+        }
+    </script>
+}

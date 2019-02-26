@@ -1,0 +1,702 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@model Tuple<IEnumerable<string>>
+@{
+    ViewBag.Title = "花纹测评管理平台";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section head{
+    <link href="~/Content/sweetalert/sweetalert.css" rel="stylesheet" />
+    <style>
+        .title {
+            float: left;
+        }
+
+        .content {
+            clear: both;
+        }
+
+        .condition .name {
+            font-size: 16px;
+            font-weight: bold;
+            left: 0;
+        }
+
+        .right {
+            margin-left: 35px;
+        }
+
+        .condition {
+            margin-bottom: 10px;
+        }
+
+            .condition > div {
+                margin-bottom: 10px;
+            }
+
+
+
+                .condition > div label input[type=text] {
+                    width: 50px;
+                }
+
+        button.select, button.add {
+            width: 200px;
+            height: 30px;
+        }
+
+        table td, table th {
+            text-align: center;
+        }
+
+        #AddItem p, #UpdateOrAddItem p {
+            font-size: 17px;
+            font-weight: bolder;
+        }
+
+        #AddItem div, #UpdateOrAddItem div {
+            margin-bottom: 15px;
+        }
+
+        #AddItem span, #UpdateOrAddItem span {
+            font-weight: bolder;
+        }
+
+        #AddItem input[type=text], #UpdateOrAddItem input[type=text] {
+            width: 400px;
+        }
+
+        .pattern_list {
+            list-style-type: none;
+        }
+
+        .brand_t {
+            color: red;
+            font-size: 17px;
+        }
+
+        .pattern_t {
+            margin-left: 12px;
+            font-size: 17px;
+        }
+
+        .error {
+            color: red;
+            display: none;
+        }
+    </style>
+}
+<div class="title">
+    <h2>花纹测评管理平台</h2>
+</div>
+<div class="content">
+    <div class="condition">
+        <div>
+            <span class="name">品牌：</span>
+            <select class="brand">
+                <option value="">所有</option>
+                @foreach (var brand in Model.Item1)
+                {
+                    <option value="@brand">@brand.Split('/')[0]</option>
+                }
+            </select>
+
+            <span class="name right">花纹：</span>
+            <select class="pattern">
+                <option value="">所有</option>
+            </select>
+        </div>
+        <div>
+            <span class="name">标题：</span>
+            <input type="text" name="Title" value="" />
+        </div>
+        <div>
+            <span class="name">作者：</span>
+            <input type="text" name="Author" value="" />
+        </div>
+        <div>
+            <span class="name">花纹下文章数量：</span>
+            <label><input type="radio" name="radio_1" value="0" checked />所有</label>
+            <label><input type="radio" name="radio_1" value="1" />>0</label>
+            <label><input type="radio" name="radio_1" value="2" />=0</label>
+        </div>
+        <div>
+            <span class="name">详情页展示数量：</span>
+            <label><input type="radio" name="radio_2" value="0" checked />所有</label>
+            <label><input type="radio" name="radio_2" value="1" />>0</label>
+            <label><input type="radio" name="radio_2" value="2" />=0</label>
+        </div>
+        <button class="select" onclick="Func.LoadList(1)">查询</button>
+        <button class="add" style="float:right;" onclick="Func.AddArticle()">增加</button>
+    </div>
+    <div class="beforetable">
+        每页显示：
+        <select class="PageSize">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>条
+        <span class="data_count"></span>
+    </div>
+    <img class="loadimg" src="~/Scripts/layer/skin/default/loading-2.gif" style="margin:5% 50%;display:none;" />
+    <div class="list">
+    </div>
+
+</div>
+<div id="AddItem" style="display:none;">
+    <p>文章信息</p>
+    <div>
+        <span>图片：</span>
+        <img src="" style="width:100px;height:100px;cursor:pointer;" onclick="$(this).next().click()" />
+        <input type="file" style="display:none;" value="" onchange="Func.UploadImage(this)" />
+        <span class="error">请上传图片</span>
+        <span style="display: block;margin-left: 41px;font-weight: normal;color: blue;">＊请配置尺寸为220*220的图片</span>
+    </div>
+    <div>
+        <span>标题：</span>
+        <input type="text" name="name" class="title-add" onfocus="$(this).next().hide()" value="" />
+        <span class="error">请填写标题</span>
+    </div>
+    <div>
+        <span>描述：</span>
+        <textarea class="des-add" onfocus="$(this).next().hide()"></textarea>
+        <span class="error">请填写描述</span>
+    </div>
+    <div>
+        <span>作者：</span>
+        <input type="text" name="name" onfocus="$(this).next().hide()" class="author-add" value="" />
+        <span class="error">请填写作者</span>
+    </div>
+    <div>
+        <span>时间：</span>
+        <input type="text" class="Wdate" name="Date"  onclick="WdatePicker({ dateFmt :'yyyy-MM-dd'})" onfocus="$(this).next().hide()" id="Date" readonly value="" />
+        <span class="error">请选择时间</span>
+    </div>
+    <div>
+        <span>链接：</span>
+        <input type="text" name="name" onfocus="$(this).next().hide()" class="link-add" value="" />
+        <span class="error">请填写链接(以http://或https://开头)</span>
+    </div>
+    <div>
+        <span>是否启用：</span>
+        <select class="isactive">
+            <option value="1">启用</option>
+            <option value="0">禁用</option>
+        </select>
+    </div>
+    <p>关联花纹</p>
+    <span class="error pattern-error">请至少选择一个花纹</span>
+    <div>
+        <ul class="pattern_list"></ul>
+        <select class="dialog_brand">
+            @foreach (var brand in Model.Item1)
+            {
+                <option value="@brand">@brand.Split('/')[0]</option>
+            }
+        </select>
+        <div class="pattern_pool">
+
+        </div>
+    </div>
+</div>
+
+<div id="UpdateOrAddItem" style="display:none;">
+    <p>文章信息</p>
+    <div>
+        <span>图片：</span>
+        <img src="" style="width:100px;height:100px;cursor:pointer;" onclick="$(this).next().click()" />
+        <input type="file" style="display:none;" value="" onchange="Func.UploadImage(this)" />
+        <span class="error">请上传图片</span>
+        <span style="display: block;margin-left: 41px;font-weight: normal;color: blue;">＊请配置尺寸为220*220的图片</span>
+    </div>
+    <div>
+        <span>标题：</span>
+        <input type="text" name="name" class="title-update" onfocus="$(this).next().hide()" value="" />
+        <span class="error">请填写标题</span>
+    </div>
+    <div>
+        <span>描述：</span>
+        <textarea class="des-update" onfocus="$(this).next().hide()"></textarea>
+        <span class="error">请填写描述</span>
+    </div>
+    <div>
+        <span>作者：</span>
+        <input type="text" name="name" onfocus="$(this).next().hide()" class="author-update" value="" />
+        <span class="error">请填写作者</span>
+    </div>
+    <div>
+        <span>时间：</span>
+        <input type="text" class="Wdate" name="Date2" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd'})" onfocus="$(this).next().hide()" id="Date2" readonly value="" />
+        <span class="error">请选择时间</span>
+    </div>
+    <div>
+        <span>链接：</span>
+        <input type="text" name="name" onfocus="$(this).next().hide()" class="link-update" value="" />
+        <span class="error">请填写链接(以http://或https://开头)</span>
+    </div>
+    <div>
+        <span>是否在详情页展示：</span>
+        <label><input type="radio" name="radio_3" value="1" />是</label>
+        <label><input type="radio" name="radio_3" value="0" />否</label>
+    </div>
+    <div>
+        <span>是否启用：</span>
+        <select class="isactive_2">
+            <option value="1">启用</option>
+            <option value="0">禁用</option>
+        </select>
+    </div>
+</div>
+@section scripts{
+    <script src="~/Content/sweetalert/sweetalert.js"></script>
+    <script src="~/Scripts/ajaxfileupload.js"></script>
+<script type="text/javascript" src="~/Scripts/My97DatePicker/WdatePicker.js"></script>
+    <script>
+        Array.prototype.in_array = function (e) {
+            for (i = 0; i < this.length && this[i] != e; i++);
+            return !(i == this.length);
+        }
+        $(function () {
+            Func.LoadList(1);
+
+            $(".brand").on("change", function () {
+                var $target = $(this);
+                var brand = $target.find("option:selected").val();
+                $(".pattern").html('<option value="">所有</option>');
+                if (brand.length) {
+                    $.get("/Tire/GetPatternsByBrand", { brand: brand }, function (data) {
+                        if (data && data.length) {
+                            $.each(data, function (i, v) {
+                                $(".pattern").append('<option value="' + v + '">' + v + '</option>');
+                            });
+                        }
+                    });
+                }
+            });
+            $(".dialog_brand").on("change", function () {
+                var $target = $(this);
+                var $list = $target.prev();
+                var brand = $target.find("option:selected").val();
+                var patterns = [];
+                if ($list.length) {
+                    $list.find("li").each(function () {
+                        if ($(this).find(".brand_t").text() == brand)
+                            patterns = $(this).find(".pattern_t").text().split(',');
+
+                    });
+                }
+                $(".pattern_pool").empty();
+                if (brand.length) {
+                    $.get("/Tire/GetPatternsByBrand", { brand: brand }, function (data) {
+                        if (data && data.length) {
+                            $.each(data, function (i, v) {
+                                if (patterns.length && patterns.in_array(v))
+                                    $(".pattern_pool").append('<label><input type="checkbox" name="name" checked value="' + v + '" />' + v + '</label>');
+                                else
+                                    $(".pattern_pool").append('<label><input type="checkbox" name="name" value="' + v + '" />' + v + '</label>');
+                            });
+                            $(".pattern_pool").append('<button onclick="Func.SelectPattern(this)">确定</button>')
+                        }
+                    });
+                }
+            });
+            //浏览其他页
+            $(".list").on("click", ".pager>a", function (event) {
+                event.preventDefault();
+                var url = $(this).attr("href");
+                if (url) {
+                    $.post(url, function (html, status) {
+                        if (status === "success") {
+                            $(".list").html(html);
+                        }
+                    });
+                }
+            })
+            //时间选择控件
+            //$("#Date").datepicker({
+            //    dateFormat: "yy-mm-dd",
+            //    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+            //});
+            //$("#Date2").datepicker({
+            //    dateFormat: "yy-mm-dd",
+            //    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+            //});
+            //$('#Date').dateSelect();
+            //$('#Date2').dateSelect();
+            //每页条数切换
+            $(".PageSize").change(function () {
+                Func.LoadList(1);
+            });
+        });
+
+    </script>
+    <script>
+        var Func = {
+            LoadList: function (index) {
+                var Brand = $("select.brand>option:selected").val(),
+                    Pattern = $("select.pattern>option:selected").val(),
+                    Title = $("[name=Title]").val().trim(),
+                    Author = $("[name=Author]").val().trim(),
+                    Count = $("[name=radio_1]:checked").val(),
+                    ShowCount = $("[name=radio_2]:checked").val(),
+                    pageSize = $(".PageSize>option:selected").val();
+
+
+                $.get("/Tire/PatternList", {
+                    Brand: Brand,
+                    Pattern: Pattern,
+                    Title: Title,
+                    Author: Author,
+                    Count: Count,
+                    ShowCount: ShowCount,
+                    pageSize: pageSize,
+                    pageIndex: index
+                }, function (html, status) {
+                    if (status === "success") {
+                        $(".loadimg").hide();
+                        $(".list").html(html);
+                        $(".data_count").text('共' + ($("table").length ? $("table").attr("data-count") : 0) + '条数据');
+                    }
+                });
+            },
+            AddArticle: function () {
+                $("#AddItem").dialog({
+                    title: "添加",
+                    width: 800,
+                    height: 700,
+                    modal: true,
+                    buttons: {
+                        "保存": function () {
+                            var dialog = $(this);
+                            var Image = dialog.find("img").attr("data-src"),
+                                Title = dialog.find(".title-add").val().trim(),
+                                Describe = dialog.find(".des-add").val().trim(),
+                                Author = dialog.find(".author-add").val().trim(),
+                                Date = dialog.find("#Date").val(),
+                                ArticleLink = dialog.find(".link-add").val().trim(),
+                                $lis = dialog.find(".pattern_list>li"),
+                                IsActive = dialog.find(".isactive>option:selected").val(),
+                                flag = true,
+                                PatternArr = [];
+                            if (!(Image && Image.length)) {
+                                dialog.find("img").parent().find(".error").show();
+                                flag = false;
+                            }
+                            if (!Title.length) {
+                                dialog.find(".title-add").parent().find(".error").show();
+                                flag = false;
+                            }
+                            if (!Describe.length) {
+                                dialog.find(".des-add").parent().find(".error").show();
+                                flag = false;
+                            }
+                            if (!Author.length) {
+                                dialog.find(".author-add").parent().find(".error").show();
+                                flag = false;
+                            }
+                            if (!Date.length) {
+                                dialog.find("#Date").parent().find(".error").show();
+                                flag = false;
+                            }
+                            if (!ArticleLink.length || (ArticleLink.toUpperCase().indexOf("HTTP://") != 0 && ArticleLink.toUpperCase().indexOf("HTTPS://") != 0)) {
+                                dialog.find(".link-add").parent().find(".error").show();
+                                flag = false;
+                            }
+                            if ($lis.length) {
+                                $lis.each(function () {
+                                    var brand = $(this).find(".brand_t").text();
+                                    var patterns = $(this).find(".pattern_t").text();
+                                    var OBJ = {};
+                                    OBJ.Brand = brand;
+                                    OBJ.Patterns = patterns;
+                                    PatternArr.push(OBJ);
+                                });
+
+                            }
+                            else {
+                                dialog.find(".error.pattern-error").show();
+                                flag = false;
+                            }
+                            if (!PatternArr.length) {
+                                dialog.find(".error.pattern-error").show();
+                                flag = false;
+                            }
+
+                            if (flag) {
+                                $.post("/Tire/SaveAddMany", {
+                                    Image: Image,
+                                    Title: Title,
+                                    Describe: Describe,
+                                    Author: Author,
+                                    Date: Date,
+                                    ArticleLink: ArticleLink,
+                                    IsActive: IsActive,
+                                    Patterns: JSON.stringify(PatternArr)
+                                }, function (result) {
+                                    if (result > 0) {
+                                        swal({
+                                            title: "保存成功！"
+                                        },
+                                   function () {
+                                       // dialog.dialog("close");
+                                       // Func.LoadList($(".list .pager>a.current").text());
+                                       window.location.reload();
+                                   });
+                                    }
+                                    else
+                                        swal("保存失败!");
+                                });
+
+
+                            }
+
+                        },
+                        "关闭": function () {
+                            $(this).dialog("close"); //当点击取消按钮时，关闭窗口
+                        }
+                    }
+                });
+            },
+            SelectPattern: function (target) {
+                var $target = $(target),
+                 $parent = $target.parent(),
+                 $list = $parent.parent().find(".pattern_list"),
+                 $lis = $list.find("li"),
+                $checkeds = $parent.find("input:checked");
+                var brand = $parent.parent().find(".dialog_brand option:selected").val(),
+                    patterns = [];
+                $checkeds.each(function () {
+                    patterns.push($(this).val());
+                });
+                if (patterns.length)
+                    $(".pattern-error").hide();
+                if ($lis.length) {
+                    var $temp;
+                    $lis.each(function () {
+                        if ($(this).find(".brand_t").text() == brand)
+                            $temp = $(this);
+                    })
+                    if ($temp && $temp.length) {
+                        if (patterns.length)
+                            $temp.find(".pattern_t").text(patterns.join(','));
+                        else
+                            $temp.remove();
+                    }
+                    else {
+                        if (patterns.length)
+                            $list.append('<li><span class="brand_t">' + brand + '</span><span class="pattern_t">' + patterns.join(',') + '</span></li>');
+                    }
+                }
+                else {
+                    if (patterns.length)
+                        $list.append('<li><span class="brand_t">' + brand + '</span><span class="pattern_t">' + patterns.join(',') + '</span></li>')
+                }
+            },
+            UploadImage: function (target) {
+                var $target = $(target);
+                var $img = $target.prev();
+                var now = new Date().getTime();
+                $target.attr("id", now);
+                $target.attr("name", now);
+                if ($target.val().split('.')[1].toUpperCase() != "JPG"
+                && $target.val().split('.')[1].toUpperCase() != "JPEG"
+                && $target.val().split('.')[1].toUpperCase() != "GIF"
+                && $target.val().split('.')[1].toUpperCase() != "PNG"
+                && $target.val().split('.')[1].toUpperCase() != "BMP") {
+                    swal("格式错误", "支持jpg、jpeg、gif、png、bmp", "error");
+                    return false;
+                }
+                $target.next().hide();
+                $.ajaxFileUpload(
+                {
+                    url: '/WebSiteHomeAd/ImageUploadToAli',
+                    secureuri: false,
+                    fileElementId: now,
+                    async: false,
+                    dataType: 'text',
+                    data: { filepath: "/Tire/PatternArticle/" },
+                    success: function (src) {
+                        if (src != null) {
+                            $img.attr("src", "http://image.tuhu.cn" + src).attr("data-src", src);
+                        }
+                        else
+                            swal("上传失败！");
+                    }
+                });
+
+            },
+            UpdateOrAdd: function (json) {
+                json = JSON.parse(json);
+                //赋值
+                $("#UpdateOrAddItem").find("img").attr("data-src", json.Image);
+                $("#UpdateOrAddItem").find("img").attr("src", json.Image.length ? "http://image.tuhu.cn" + json.Image : json.Image)
+                $("#UpdateOrAddItem").find(".title-update").val(json.Title);
+                $("#UpdateOrAddItem").find(".des-update").val(json.Describe);
+                $("#UpdateOrAddItem").find(".author-update").val(json.Author);
+                $("#UpdateOrAddItem").find("#Date2").val(json.Date);
+                $("#UpdateOrAddItem").find(".link-update").val(json.ArticleLink);
+                $("#UpdateOrAddItem").find(".title-update").val(json.Title);
+                $("#UpdateOrAddItem").find(".isactive_2>option").each(function () {
+                    if ($(this).val() == json.IsActive)
+                        $(this).attr("selected", "selected");
+                    else
+                        $(this).removeAttr("selected");
+                });
+
+                $("#UpdateOrAddItem").find("[name=radio_3]").each(function () {
+                    if ($(this).val() == json.IsShow)
+                        $(this).prop("checked", true);
+                })
+                $("#UpdateOrAddItem").find(".title-update").val(json.Title);
+                $("#UpdateOrAddItem").dialog({
+                    title: "修改",
+                    width: 800,
+                    height: 600,
+                    modal: true,
+                    buttons: {
+                        "保存": function () {
+                            var dialog = $(this);
+                            var Image = dialog.find("img").attr("data-src"),
+                                Title = dialog.find(".title-update").val().trim(),
+                                Describe = dialog.find(".des-update").val().trim(),
+                                Author = dialog.find(".author-update").val().trim(),
+                                Date = dialog.find("#Date2").val(),
+                                ArticleLink = dialog.find(".link-update").val().trim(),
+                                IsShow = dialog.find("[name=radio_3]:checked").val() == 1,
+                                IsActive = dialog.find(".isactive_2>option:selected").val(),
+                                flag = true;
+
+                            if (!Image.length) {
+                                dialog.find("img").parent().find(".error").show();
+                                flag = false;
+                            }
+                            if (!Title.length) {
+                                dialog.find(".title-update").parent().find(".error").show();
+                                flag = false;
+                            }
+                            if (!Describe.length) {
+                                dialog.find(".des-update").parent().find(".error").show();
+                                flag = false;
+                            }
+                            if (!Author.length) {
+                                dialog.find(".author-update").parent().find(".error").show();
+                                flag = false;
+                            }
+                            if (!Date.length) {
+                                dialog.find("#Date2").parent().find(".error").show();
+                                flag = false;
+                            }
+                            if (!ArticleLink.length || (ArticleLink.toUpperCase().indexOf("HTTP://") != 0 && ArticleLink.toUpperCase().indexOf("HTTPS://") != 0)) {
+                                dialog.find(".link-update").parent().find(".error").show();
+                                flag = false;
+                            }
+                            if (flag) {
+                                if (IsShow) {
+                                    $.get("/Tire/CanShow", {
+                                        PKID: json.PKID,
+                                        Brand: json.Brand,
+                                        Pattern: json.Pattern
+                                    }, function (result) {
+                                        if (result) {
+                                            swal("此花纹已存在正在展示的文章!");
+                                        }
+                                        else {
+                                            $.post("/Tire/SaveUpdateOrAdd", {
+                                                PKID: json.PKID,
+                                                Image: Image,
+                                                Title: Title,
+                                                Describe: Describe,
+                                                Author: Author,
+                                                Date: Date,
+                                                ArticleLink: ArticleLink,
+                                                Brand: json.Brand,
+                                                Pattern: json.Pattern,
+                                                IsShow: IsShow,
+                                                IsActive: IsActive
+                                            }, function (result) {
+                                                if (result > 0) {
+                                                    swal({
+                                                        title: "保存成功！"
+                                                    },
+                                               function () {
+                                                   //dialog.dialog("close");
+                                                   //Func.LoadList($(".list .pager>a.current").text());
+                                                   window.location.reload();
+                                               });
+                                                }
+                                                else
+                                                    swal("保存失败!");
+                                            });
+                                        }
+                                    });
+                                }
+                                else {
+                                    $.post("/Tire/SaveUpdateOrAdd", {
+                                        PKID: json.PKID,
+                                        Image: Image,
+                                        Title: Title,
+                                        Describe: Describe,
+                                        Author: Author,
+                                        Date: Date,
+                                        ArticleLink: ArticleLink,
+                                        Brand: json.Brand,
+                                        Pattern: json.Pattern,
+                                        IsActive: IsActive,
+                                        IsShow: IsShow
+                                    }, function (result) {
+                                        if (result > 0) {
+                                            swal({
+                                                title: "保存成功！"
+                                            },
+                                       function () {
+                                           dialog.dialog("close");
+                                           Func.LoadList($(".list .pager>a.current").text());
+
+                                       });
+                                        }
+                                        else
+                                            swal("保存失败!");
+                                    });
+                                }
+                            }
+
+                        },
+                        "关闭": function () {
+                            $(this).dialog("close"); //当点击取消按钮时，关闭窗口
+                        }
+                    }
+                });
+            },
+            Delete: function (pkid) {
+                if (pkid > 0) {
+                    swal({
+                        title: "确认删除？",
+                        type: "warning",//图标
+                        showCancelButton: true,//是否展示取消按钮
+                        confirmButtonColor: "#DD6B55",//确认按钮颜色
+                        confirmButtonText: "确认!",//确认按钮的文本
+                        cancelButtonText: "取消",//取消按钮的文本
+                        closeOnConfirm: true,//点击确认按钮后是否关闭窗口
+                        closeOnCancel: true,//点击取消按钮后是否关闭窗口
+                    },
+                    function () {
+                        $.post("/Tire/DeletePatternArticle", { PKID: pkid }, function (result) {
+                            if (result > 0) {
+                                swal("删除成功！");
+                                window.location.reload();
+                            }
+                            else {
+                                swal("删除失败！");
+                            }
+                        });
+                    });
+                }
+
+            },
+        };
+
+    </script>
+}

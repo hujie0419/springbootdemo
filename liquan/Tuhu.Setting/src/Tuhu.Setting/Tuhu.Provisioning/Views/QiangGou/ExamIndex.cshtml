@@ -1,0 +1,29 @@
+﻿@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.QiangGouModel>
+@{
+    ViewBag.Title = "限时抢购审核列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div style="clear:both;float:left">
+    <h3>限时抢购价格审核表<span style="color:red;">@(Model != null && Model.Count() > 0 ? "(共" + Model.Count() + "个待审核活动)" : "暂无需要审核的活动")</span></h3>
+</div>
+@if (Model != null && Model.Count() > 0)
+{
+    <table style="width:100%">
+        <tr>
+            <th>活动ID</th>
+            <th>活动名称</th>
+            <th>活动时间</th>
+            <th>操作</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.ActivityID</td>
+                <td>@item.ActivityName</td>
+                <td>@item.StartDateTime.ToString("yyyy-MM-dd HH:mm")&nbsp;&nbsp;-&nbsp;&nbsp;@item.EndDateTime.ToString("yyyy-MM-dd HH:mm")</td>
+                <td><a href="/QiangGou/ExamDetail?aid=@item.ActivityID">查看</a></td>
+            </tr>
+        }
+    </table>
+}

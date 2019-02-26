@@ -1,0 +1,66 @@
+﻿<head>
+    <meta charset="utf-8">
+    <title>用户日增长明细</title>
+    <link href="~/Content/iview/iview.css" rel="stylesheet" />
+    <script src="~/Scripts/vue.min.js"></script>
+    <script src="~/Scripts/iview/iview.min.js"></script>
+
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+
+        table td {
+            border: solid 1px #ada9ab
+        }
+    </style>
+</head>
+<div class="title">
+    <h2>用户日增长明细</h2>
+</div>
+</br>
+<div id="incDetail" v-cloak>
+    <label>起始时间：</label><Date-Picker v-model="dpStartDate" type="datetime" format="yyyy-MM-dd" placeholder="开始时间" style="width: 150px"></Date-Picker>
+    <label>结束时间：</label><Date-Picker v-model="dpEndDate" type="datetime" format="yyyy-MM-dd" placeholder="结束时间" style="width: 150px"></Date-Picker>
+    <i-button type="primary" v-on:click="search()">查询</i-button>
+</div>
+<script>
+    var vm = new Vue({
+        el: '#incDetail',
+        data: {            
+        },
+        methods: {
+            search() {
+                var _this = this;
+                //参数校验
+                if (!this.dpStartDate) {
+                    this.$Notice.warning({
+                        title: '起始时间',
+                        desc: '起始时间必填'
+                    });
+                    return;
+                }
+                if (!this.dpEndDate) {
+                    this.$Notice.warning({
+                        title: '结束时间',
+                        desc: '结束时间必填'
+                    });
+                    return;
+                }
+                if (this.dpStartDate > this.dpEndDate) {
+                    this.$Notice.warning({
+                        title: '时间大小错乱',
+                        desc: '起始时间不得大于结束时间'
+                    });
+                    return;
+                }
+
+
+            }
+        }
+    })
+</script>
+
+
+
+

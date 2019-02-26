@@ -1,0 +1,1738 @@
+﻿@using System.Data.SqlTypes
+@using Newtonsoft.Json
+@model List<Tuhu.Provisioning.DataAccess.Entity.HomePagePopup>
+
+    @{
+        ViewBag.Title = "弹窗管理后台";
+        Layout = "../Shared/_Layout.cshtml";
+    }
+    @section head{
+        <link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+        <link href="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.css" rel="stylesheet" />
+        <style>
+            h3 { display: inline; }
+
+            .orderingTool { width: 150px; }
+
+            .choosed { border: 5px solid #FF6100; }
+
+            .addPopup { width: 103.6px; }
+
+            .list { border: 0; width: 99%; }
+
+            .titleInEditor { font-weight: bold; }
+
+            .inputForDate { width: 135px; }
+
+            .searchtimehint { display: none; color: red; font-weight: bold; }
+
+            .pagejumphint { display: none; color: red; font-weight: bold; }
+
+            #hintsInEditor { display: none; color: red; font-weight: bold; }
+
+            input:disabled { border: 1px solid #DDD; background-color: #F5F5F5; color: #ACA899; }
+
+            a { CURSOR: pointer; }
+
+            input { border: none; }
+
+            textarea { border: none; }
+            .uploadpre { position: absolute; top: 0; right: 0; opacity: 0; -ms-filter: 'alpha(opacity=0)'; height: 100%; }
+            .fileinput-button { width: 30%; position: relative; overflow: hidden; }
+        </style>
+    }
+    <div>
+        <h1>弹窗管理后台</h1><br />
+        <form method="post" name="submitPopupQuery" id="submitPopupQuery" enctype="multipart/form-data" action=@Url.Action("Index")>
+            <span class="titleInEditor">筛选条件</span>
+            <span>&nbsp;描述:</span>
+            <input type="text" style="width: 270px" name="DescriptionCriterion" id="DescriptionCriterion" maxlength="200">
+            <span>&nbsp;平台:</span>
+            @Html.DropDownList("ChannelCriterion",
+             new[]
+             {
+                        new SelectListItem() {Selected = true, Value = "0", Text = "全部"},
+                        new SelectListItem() {Value = "1", Text = "Android"},
+                        new SelectListItem() {Value = "2", Text = "IOS"},
+                        new SelectListItem() {Value = "3", Text = "小程序"},
+                        new SelectListItem() {Value = "4", Text = "拼团小程序"},
+                        new SelectListItem() {Value = "5", Text = "快应用"}
+             },
+             new
+             {
+                 id = "ChannelCriterion",
+                 @style = "width:115px"
+             })
+            <span>&nbsp;位置:</span>
+            @Html.DropDownList("PositionCriterion",
+            new[]
+            {
+                       new SelectListItem() {Selected = true, Value = "1", Text = "首页"}
+            },
+            new
+            {
+                id = "PositionCriterion",
+                @style = "width:70px"
+            })
+            <span>&nbsp;目标群体:</span>
+            @{
+                List<SelectListItem> listItems = new List<SelectListItem>();
+                var targetGroupDic = (Dictionary<string, string>)ViewBag.AllTargetGroups;
+                if (targetGroupDic != null && targetGroupDic.Any())
+                {
+                    foreach (var tg in targetGroupDic)
+                    {
+                        listItems.Add(new SelectListItem { Selected = false, Text = tg.Value, Value = tg.Key });
+                    }
+                    @Html.DropDownList("TargetGroupsCriterion", listItems, "--请选择--", new
+                   {
+                       id = "TargetGroupsCriterion",
+                       @style = "width:135px"
+                   });
+                }
+            }
+            <span>&nbsp;开始版本:</span>
+            <input type="text" maxlength="10" style="width: 150px" name="StartVersionCriterion" id="StartVersionCriterion">
+            <span>&nbsp;结束版本:</span>
+            <input type="text" maxlength="10" style="width: 150px" name="EndVersionCriterion" id="EndVersionCriterion">
+            <span>&nbsp;显示状态:</span>
+            @Html.DropDownList("VisibleCriterion",
+            new[]
+            {
+                new SelectListItem() {Selected = true, Value = "0", Text = "全部"},
+                new SelectListItem() {Value = "1", Text = "显示"},
+                new SelectListItem() {Value = "2", Text = "不显示"}
+            },
+            new
+            {
+                id = "VisibleCriterion",
+                @style = "width:95px"
+            })
+            <span>&nbsp;创建人:</span>
+            <input type="text" maxlength="50" style="width: 180px" name="CreatorCriterion" id="CreatorCriterion">
+            <input type="button" class="btn btn-primary" name="search" id="search" value="搜索" style="width:82px" />
+            <input type="button" class="btn btn-info addPopup" value="弹窗缓存刷新" onclick="CacheUpdate()" />
+            <br />
+            <br />
+            <span class="titleInEditor">排序条件</span>
+            <input type="button" class="btn btn-primary orderingTool" name="orderById" id="orderById" value="ID↓">
+            <input type="button" class="btn btn-primary orderingTool" name="orderByPriority" id="orderByPriority" value="优先级↓">
+            <input type="button" class="btn btn-primary orderingTool" name="orderByPeriod" id="orderByPeriod" value="周期↓">
+            <input type="button" class="btn btn-primary orderingTool" name="orderByCreateTime" id="orderByCreateTime" value="创建日期↓">
+            <input type="hidden" name="orderCriterion" id="orderCriterion" value="@(ViewBag.OrderCriterion)">
+            <br />
+            <br />
+            <input type="button" class="btn btn-info addPopup" value="+新建" onclick="CreateNewPopup();" />
+            <br />
+            <br />
+            <table id="popupInformation" class="list">
+                <tr>
+                    <th style="text-align: center; width: 95px">ID</th>
+                    <th style="text-align: center">描述（内部使用）</th>
+                    <th style="text-align: center">平台</th>
+                    <th style="text-align: center">位置</th>
+                    <th style="text-align: center">目标群体</th>
+                    <th style="text-align: center">优先级</th>
+                    <th style="text-align: center">周期</th>
+                    <th style="text-align: center">开始版本</th>
+                    <th style="text-align: center">结束版本</th>
+                    <th style="text-align: center">应用市场来源</th>
+                    <th style="text-align: center">应用市场渠道</th>
+                    <th style="text-align: center">是否显示</th>
+                    <th style="text-align: center">创建日期</th>
+                    <th style="text-align: center">创建人</th>
+                    <th width="100px"></th>
+                    <th width="100px"></th>
+                    <th width="100px"></th>
+                </tr>
+
+                @if (Model.Any())
+                {
+                    foreach (var popup in Model)
+                    {
+                        <tr>
+                            <td style="text-align: center" name="popupsPKID" id="popupsPKID_@(popup.PKID)">@popup.PKID</td>
+                            <td style="text-align: center" name="popupsDescription" data-value="@popup.Description">@((popup.Description != null && popup.Description.Length > 25) ? popup.Description.Substring(0, 25) + "..." : popup.Description)</td>
+                            <td style="text-align: center" name="popupsChannel" data-value="@popup.Channel">@(popup.Channel == 1 ? "Android" : (popup.Channel == 2 ? "IOS" : (popup.Channel == 3 ? "小程序" : (popup.Channel == 4 ? "拼团小程序" : (popup.Channel == 5 ? "快应用" : "全部")))))</td>
+                            <td style="text-align: center" name="popupsPosition" data-value="@popup.Position">@(popup.Position == 1 ? "首页" : "")</td>
+                            <td style="text-align: center" name="popupsTargetGroups" data-value="@popup.TargetGroups"></td>
+                            <td style="text-align: center" name="popupsSort">@popup.Sort</td>
+                            <td style="text-align: center" name="popupsPeriod">@popup.Period</td>
+
+                            <td style="text-align: center" name="popupsStartVersion">@popup.StartVersion</td>
+                            <td style="text-align: center" name="popupsEndVersion">@popup.EndVersion</td>
+                            <td style="text-align: center" name="popupsNoticeChannel" data-value="@popup.NoticeChannel">@(string.IsNullOrWhiteSpace(popup.NoticeChannel) ? "" : (string.Equals(popup.NoticeChannel, "all") ? "全部" : (popup.NoticeChannel.Length > 20 ? popup.NoticeChannel.Substring(0, 20) + "..." : popup.NoticeChannel)))</td>
+                            <td style="text-align: center" name="popupsNewNoticeChannel" data-value="@popup.NewNoticeChannel">@(string.IsNullOrWhiteSpace(popup.NewNoticeChannel) ? "" : (string.Equals(popup.NewNoticeChannel, "all") ? "全部" : (popup.NewNoticeChannel.Length > 20 ? popup.NewNoticeChannel.Substring(0, 20) + "..." : popup.NewNoticeChannel)))</td>
+                            <td style="text-align: center" name="popupsVisibility">@((popup.IsEnabled && popup.StartDateTime <= DateTime.Now && popup.EndDateTime >= DateTime.Now) ? "显示" : "不显示")</td>
+                            <td style="text-align: center">@popup.CreateTime</td>
+                            <td style="text-align: center" name="popupsCreator">@popup.Creator</td>
+                            <td style="text-align: center; width: 100px"><a onclick="UpdateExistingPopup(this)">查看/编辑</a></td>
+                            <td style="text-align: center; width: 100px"><a onclick="CopyPopup(this)">复制</a></td>
+                            <td style="text-align: center; width: 100px" name="popupHistory">
+                                <a onclick="CheckPopupsHistory(@popup.PKID)">历史</a>
+                                <input type="hidden" name="imagePath" value="@(popup.ImageUrl)" />
+                                <input type="hidden" name="popupStartTime" value="@(popup.StartDateTime.ToString("yyyy-MM-dd HH:mm:ss"))" />
+                                <input type="hidden" name="popupEndTime" value="@(popup.EndDateTime.ToString("yyyy-MM-dd HH:mm:ss"))" />
+                                <input type="hidden" name="popupIsEnabled" value="@(popup.IsEnabled)" />
+                                <input type="hidden" name="popupsLinkURL" value="@(popup.LinkUrl)" />
+                                <input type="hidden" name="popupsMGPageUrl" value="@(popup.MGPageUrl)" />
+                                <input type="hidden" name="popupsMiniGramId" value="@(popup.MiniGramId)" />
+                            </td>
+                        </tr>
+                    }
+                }
+            </table>
+            <br />
+            <div id="pagerOfPopups" style="float: right">
+                <label class="pagejumphint" id="pagejumphint">输入页数不符合要求！</label>
+                第<input type="hidden" name="page" id="page" value="@(ViewBag.Page)">@(ViewBag.Page)页
+                <input type="button" name="previousPage" id="previousPage" value="上一页" class="btn btn-primary" style="width:82px">
+                &nbsp;<input type="button" name="nextPage" id="nextPage" value="下一页" class="btn btn-primary" style="width:82px">
+                &nbsp;&nbsp;<label>跳转到第<input type="text" name="jumpPage" style="width: 125px" id="jumpPage" onfocus="discardJumpHints()" oninput="this.value = this.value.replace(/\D/g, '')">页</label>
+                &nbsp;<input type="button" name="jumpPageTriger" id="jumpPageTriger" value="跳转" class="btn btn-primary" style="width:82px">
+                &nbsp;&nbsp;共有@(ViewBag.NumOFPopups)条记录
+            </div>
+        </form>
+    </div>
+
+    <div class="modal fade" id="popupEditor" tabindex="-1" role="dialog"
+         aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="width:78%;height:83%;overflow-y: scroll">
+            <form method="post" name="submitPopupEdit" enctype="multipart/form-data" action=@Url.Action("AddOrUpdate")>
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <span class="titleInEditor">弹窗内容</span><br />
+                        <table id="popupContentEditorTable" class="table table-bordered">
+                            <tr>
+                                <td>ID</td>
+                                <td><input id="PKID" name="PKID" readonly style="width: 126px" /></td>
+                                <td>描述</td>
+                                <td><input id="Description" name="Description" maxlength="200" style="width: 566px" placeholder="请输入弹窗描述"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="file" id="imagePrevInEditor" name="imagePrev" onchange="UploadImg(this)" width="240" /></td>
+                                <td><img height="60" width="90" id="imagePreviewer" /></td>
+                                <td>图片路径</td>
+                                <td><textarea rows="2" id="ImageUrl" name="ImageUrl" readonly style="width: 566px"></textarea></td>
+                            </tr>
+                            <tr>
+                                <td>跳转链接</td>
+                                <td colspan="3"><input id="LinkUrl" name="LinkUrl" maxlength="500" style="width: 752px" placeholder="请输入跳转链接"><input type="hidden" id="Creator" name="Creator"></td>
+                            </tr>
+                            <tr>
+                                <td>微信小程序</td>
+                                <td>
+                                    <select id="MiniGramId" name="MiniGramId">
+                                        <option value="">请选择</option>
+                                    </select>
+                                </td>
+                                <td>页面路径</td>
+                                <td colspan="3">
+                                    <input id="MGPageUrl" name="MGPageUrl" maxlength="500" style="width: 752px" placeholder="请输入小程序页面路径">
+                                </td>
+                            </tr>
+                        </table>
+                        <span class="titleInEditor">弹窗位置</span><br />
+                        <table id="popupPosEditorTable" class="table table-bordered">
+                            <tr>
+                                <td style="width: 100px">平台</td>
+                                <td>
+                                    @Html.DropDownList("Channel",
+                                               new[]
+                                               {
+                                                   new SelectListItem() {Selected = true, Value = "0", Text = "全部"},
+                                                   new SelectListItem() {Value = "1", Text = "Android"},
+                                                   new SelectListItem() {Value = "2", Text = "IOS"},
+                                                   new SelectListItem() {Value = "3", Text = "小程序"},
+                                                   new SelectListItem() {Value = "4", Text = "拼团小程序"},
+                                                   new SelectListItem() {Value = "5", Text = "快应用"}
+                                               },
+                                               new
+                                               {
+                                                   id = "Channel",
+                                                   @style = "width:115px"
+                                               })
+                                </td>
+                                <td style="width: 100px">位置</td>
+                                <td>
+                                    @Html.DropDownList("Position",
+                                               new[]
+                                               {
+                                                   new SelectListItem() {Selected = true, Value = "1", Text = "首页"}
+                    },
+                                               new
+                                               {
+                                                   id = "Position",
+                                                   @style = "width:70px"
+                                               })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 100px">应用市场来源</td>
+                                <td>
+                                    <table border-collapse:collapse>
+                                        <tbody>
+                                            <tr>
+                                                <td style="border:1px solid #e8eef4;width:872px">
+                                                    <label><input id="SelectAllCheckbox" onclick="AllNoticeChannel_Checked(this,false);" type="checkbox" checked="checked" />全选/全不选</label>
+                                                    <label style="float:right">展开渠道<input id="ToShowNoticeChannelChoices" type="checkbox" onclick="ShowNoticeChannel_Checked(false)" /></label>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                @if (((List<Tuhu.Provisioning.DataAccess.Entity.NoticeChannel>)ViewBag.NoticeChannel).Any())
+                                                {
+                                                    <td style="border:1px solid #e8eef4;">
+
+                                                        @foreach (var item in (List<Tuhu.Provisioning.DataAccess.Entity.NoticeChannel>)ViewBag.NoticeChannel)
+                                                        {
+                                                            <label style="display:inline-block;width:150px;margin:2px 0;">
+                                                                <input data-id="NoticeChannel_Checked" value="@item.Name" checked="checked" type="checkbox" onclick="SingleNoticeChannel_Checked(this,false)" />@item.DisplayName
+                                                            </label>
+                                                        }
+                                                    </td>
+                                                }
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                                <td><input type="hidden" name="NoticeChannel" id="NoticeChannel" />
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td style="width: 100px">应用市场渠道</td>
+                                <td>
+                                    <table border-collapse:collapse>
+                                        <tbody>
+                                            <tr>
+                                                <td style="border:1px solid #e8eef4;width:872px">
+                                                    <label><input id="SelectAllCheckboxNew" onclick="AllNoticeChannel_Checked(this,true);" type="checkbox" checked="checked" />全选/全不选</label>
+                                                    <label style="float:right">展开渠道<input id="ToShowNoticeChannelChoicesNew" type="checkbox" onclick="ShowNoticeChannel_Checked(true)" /></label>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                @if (((List<Tuhu.Provisioning.DataAccess.Entity.NoticeChannel>)ViewBag.NewNoticeChannel).Any())
+                                                {
+                                                    <td style="border:1px solid #e8eef4;">
+
+                                                        @foreach (var item in (List<Tuhu.Provisioning.DataAccess.Entity.NoticeChannel>)ViewBag.NewNoticeChannel)
+                                                        {
+                                                            <label style="display:inline-block;width:150px;margin:2px 0;">
+                                                                <input data-id="NoticeChannel_CheckedNew" value="@item.Name" checked="checked" type="checkbox" onclick="SingleNoticeChannel_Checked(this,true)" />@item.DisplayName
+                                                            </label>
+                                                        }
+                                                    </td>
+                                                }
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                                <td><input type="hidden" name="NewNoticeChannel" id="NewNoticeChannel" />
+                                <td></td>
+                            </tr>
+                        </table>
+                        <span class="titleInEditor">显示状态</span>
+                        <table id="popupStatusEditorTable" class="table table-bordered">
+                            <tr>
+                                <td style="width: 100px">生效日期</td>
+                                <td>
+                                    <input class="inputForDate" id="StartDateTime" name="StartDateTime" readonly="readonly" style="CURSOR: pointer;" placeholder="请输入生效日期" onfocus="discardHints()" />
+                                    <label class="searchtimehint" id="searchtimehint1">结束时间不得早于开始时间！</label>
+                                </td>
+                                <td style="width: 100px">失效日期</td>
+                                <td>
+                                    <input class="inputForDate" id="EndDateTime" name="EndDateTime" readonly="readonly" style="CURSOR: pointer;" placeholder="请输入失效日期" onfocus="discardHints()" />
+                                    <label class="searchtimehint" id="searchtimehint2">结束时间不得早于开始时间！</label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 100px">状态</td>
+                                <td>
+                                    @Html.DropDownList("IsEnabled",
+                                               new[]
+                                               {
+                                                   new SelectListItem() {Selected = true, Value = "true", Text = "启用"},
+                                                   new SelectListItem() {Value = "false", Text = "禁用"},
+                                               },
+                                               new
+                                               {
+                                                   id = "IsEnabled",
+                                                   @style = "width:70px"
+                                               })
+                                </td>
+                                <td style="width: 100px">是否显示</td>
+                                <td>
+                                    <label id="popupToShow"></label>
+                                </td>
+                            </tr>
+                        </table>
+                        <span class="titleInEditor">弹出条件</span><br />
+                        <table id="popupConditionEditorTable" class="table table-bordered">
+                            <tr>
+                                <td>目标群体</td>
+                                <td></td>
+                                <td colspan="2"> <input type="hidden" id="TargetGroups" name="TargetGroups" /></td>
+                            </tr>
+                            <tr>
+                                <td style="width: 100px">优先级</td>
+                                <td><input id="Sort" name="Sort" maxlength="9" oninput="this.value=this.value.replace(/\D/g,'')" onfocus="discardHints()" placeholder="请输入优先级"></td>
+                                <td style="width: 100px">周期</td>
+                                <td><input id="Period" name="Period" maxlength="9" oninput="this.value = this.value.replace(/\D/g, '')" onfocus="discardHints()" placeholder="请输入周期"></td>
+                            </tr>
+                            <tr>
+                                <td style="width: 100px">开始版本</td>
+                                <td><input id="StartVersion" name="StartVersion" maxlength="10" placeholder="请输入开始版本"></td>
+                                <td style="width: 100px">结束版本</td>
+                                <td><input id="EndVersion" name="EndVersion" maxlength="10" placeholder="请输入结束版本"></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <label id="hintsInEditor"></label>
+                        <button type="button" class="btn btn-default"
+                                data-dismiss="modal">
+                            关闭
+                        </button>
+                        <input type="submit" id="submit" class="btn btn-primary" value="确认" />
+                        <img src="https://resource.tuhu.cn/Image/Public/loading-712.gif" style="vertical-align: middle; display:none" />
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="logsDisplay" tabindex="-1" role="dialog"
+         aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="width: 850px">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <table id="logsDisplayTable" class="table table-bordered">
+                        <tr>
+                            <td>操作人</td>
+                            <td>日期</td>
+                            <td>操作类型</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    @*Animation window page*@
+    <div id="popupAnimate" class="modal fade" tabindex="-1" role="dialog"
+         aria-labelledby="myModalLabel" aria-hidden="true" style="display:none;z-index:1000000">
+        <div class="modal-dialog" style="width: 1518px">
+            <div class="modal-content">
+                <div><input type="button" id="animationAdd" onclick="addAnimation();" class="btn btn-primary" style="margin:5px" value="添加" /></div>
+                <div class="modal-body" style="text-align:center">
+                    <table id="popupAnimateTable" class="table table-bordered" style=" margin:auto;width:100%;table-layout:fixed;word-break:break-all;">
+                        <tr>
+                            <th style="text-align: center; width: 57px">ID</th>
+                            <th style="text-align: center; width: 183px">图片预览</th>
+                            <th style="text-align: center; width: 151px">动画类型</th>
+                            <th style="text-align: center; width: 100px">图宽%</th>
+                            <th style="text-align: center; width: 100px">图高%</th>
+                            <th style="text-align: center; width: 100px">左边距%</th>
+                            <th style="text-align: center; width: 100px">上边距%</th>
+                            <th style="text-align: center; width: 100px">层级</th>
+                            <th style="text-align: center; width: 113px">跳转链接</th>
+                            <th style="text-align: center; width: 145px">微信小程序</th>
+                            <th style="text-align: center; width: 113px">页面路径</th>
+                            <th style="text-align: center; width: 136px">操作</th>
+                        </tr>
+                    </table>
+                </div>
+                <button type="button" style="margin:5px" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+        <input type="hidden" id="targetGroupBag" value="@JsonConvert.SerializeObject(ViewBag.AllTargetGroups)" />
+    </div>
+    <div id="popupCoupon" class="modal fade" tabindex="-1" role="dialog"
+         aria-labelledby="myModalLabel" aria-hidden="true" style="display:none;z-index:2000000">
+        <div class="modal-dialog" style="width: 930px">
+            <div class="modal-content">
+                <h4 style="text-align: center;font-weight:bold">优惠券内容</h4>
+                <div class="modal-body">
+                    <div><input type="button" id="couponAdd" onclick="addCoupon()" class="btn btn-primary" style="margin:5px; width: 100px" value="添加" />*点击（添加）批量添加优惠券，输入框填写优惠券ID*</div>
+                    <table id="popupCouponTable" class="table table-bordered" style="margin:auto;width:100%;table-layout:fixed;word-break:break-all;text-align:center">
+                        <tr>
+                            <th style="text-align: center; width: 100px">优惠券</th>
+                            <th style="text-align: center; width: 583px">ID</th>
+                            <th style="text-align: center; width: 218px">操作</th>
+                        </tr>
+                    </table>
+                </div>
+                <div style="text-align: center;"><button type="button" style="margin:5px; text-align: center; width:100px" class="btn btn-default" data-dismiss="modal">关闭</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="logsofCouponsInPopup" tabindex="-1" role="dialog"
+         aria-labelledby="myModalLabel" aria-hidden="true" style="display:none;z-index:3000000">
+        <div class="modal-dialog" style="width: 650px">
+            <div class="modal-content">
+                <h4 style="text-align: center;font-weight:bold">优惠券日志</h4>
+                <div class="modal-body">
+                    <table id="logsofCouponsInPopupTable" class="table table-bordered" style="text-align: center;"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="~/Content/nfine/js/bootstrap/bootstrap.js"></script>
+    <script src="~/Content/ProductVehicleType/js/bootstrap.min.js"></script>
+    <script src="../../Scripts/ajaxfileupload.js" type="text/javascript"></script>
+    <script src="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.js"></script>
+
+
+    <script>
+        var checkFlag = false, targetGroupDict = new Array(), configID, animationID = 0, Rowindex = 1, wxConfigs = new Array();
+
+        ($("#search").click(function () {
+            $("#page").val(1);
+            $("#orderCriterion").val(0);
+            $("#submitPopupQuery").submit();
+        }));
+
+        ($("#orderById").click(function () {
+            $("#page").val(1);
+            if ($("#orderById").val() === "ID↓") {
+                $("#orderCriterion").val(1);
+            } else {
+                $("#orderCriterion").val(0);
+            }
+            $("#submitPopupQuery").submit();
+        }));
+        ($("#orderByPriority").click(function () {
+            $("#page").val(1);
+            if ($("#orderByPriority").val() === "优先级↓") {
+                $("#orderCriterion").val(3);
+            } else {
+                $("#orderCriterion").val(2);
+            }
+            $("#submitPopupQuery").submit();
+        }));
+        ($("#orderByPeriod").click(function () {
+            $("#page").val(1);
+            if ($("#orderByPeriod").val() === "周期↓") {
+                $("#orderCriterion").val(5);
+            } else {
+                $("#orderCriterion").val(4);
+            }
+            $("#submitPopupQuery").submit();
+        }));
+        ($("#orderByCreateTime").click(function () {
+            $("#page").val(1);
+            if ($("#orderByCreateTime").val() === "创建日期↓") {
+                $("#orderCriterion").val(7);
+            } else {
+                $("#orderCriterion").val(6);
+            }
+            $("#submitPopupQuery").submit();
+        }));
+
+        ($("#previousPage").click(function () {
+            if (parseInt($("#page").val()) > 1) {
+                var curPage = parseInt($('#page').val()) - 1;
+                $("#page").val(curPage);
+            }
+            $("#submitPopupQuery").submit();
+        }));
+
+        ($("#nextPage").click(function () {
+            if (parseInt($("#page").val()) < Math.ceil(parseInt(@(ViewBag.NumOFPopups)) / 50)) {
+                var curPage = parseInt($('#page').val()) + 1;
+                $("#page").val(curPage);
+            }
+            $("#submitPopupQuery").submit();
+        }));
+
+        ($("#jumpPageTriger").click(function () {
+            if (parseInt($("#jumpPage").val()) < 1 || parseInt($("#jumpPage").val()) > Math.ceil(parseInt(@(ViewBag.NumOFPopups)) / 50)) {
+                $("#pagejumphint").show();
+                return;
+            } else {
+                $("#page").val(parseInt($("#jumpPage").val()));
+            }
+            $("#submitPopupQuery").submit();
+        }));
+
+        function discardJumpHints() {
+            $("#pagejumphint").hide();
+        }
+
+        $(document).ready(function () {
+            targetGroupDict = JSON.parse($("#targetGroupBag").val());
+            wxConfigs = eval('@(Html.Raw(ViewBag.WxConfigs))');
+            if (wxConfigs) {
+                var html = '';
+                for (var j = 0; j < wxConfigs.length; ++j) {
+                    html += '<option value=' + wxConfigs[j].appId + '>' + wxConfigs[j].name + '</option>';
+                }
+                $('#MiniGramId').append(html)
+            }
+            $("[name='popupsTargetGroups']").each(function ()
+            {
+                var TGNames = TargetGroupNameRec($(this).data("value"));
+                if (TGNames && TGNames.length > 20)
+                    $(this).html(TGNames.substring(0, 20) + "...");
+                else
+                    $(this).html(TGNames);
+            });
+
+            if (parseInt($("#page").val()) <= 1) {
+                $("#previousPage").attr("disabled", "disabled");
+            } else {
+                $("#previousPage").removeAttr("disabled");
+            }
+            if (parseInt($("#page").val()) >= Math.ceil(parseInt(@(ViewBag.NumOFPopups)) / 50)) {
+                $("#nextPage").attr("disabled", "disabled");
+            } else {
+                $("#nextPage").removeAttr("disabled");
+            }
+            $("#StartDateTime").datepicker({ timeFormat: "HH:mm:ss", dateFormat: "yy-mm-dd" });
+            $("#EndDateTime").datepicker({ timeFormat: "HH:mm:ss",dateFormat: 'yy-mm-dd' });
+
+            switch (Math.floor(parseInt(@(ViewBag.OrderCriterion)) / 2)) {
+                case 1:
+                    $("#orderByPriority").siblings(".orderingTool").removeClass("choosed");
+                    $("#orderByPriority").addClass("choosed");
+                    if (parseInt(@(ViewBag.OrderCriterion)) == 3)
+                        $("#orderByPriority").val("优先级↑");
+                    else
+                        $("#orderByPriority").val("优先级↓");
+                    break;
+                case 2:
+                    $("#orderByPeriod").siblings(".orderingTool").removeClass("choosed");
+                    $("#orderByPeriod").addClass("choosed");
+                    if (parseInt(@(ViewBag.OrderCriterion)) == 5)
+                        $("#orderByPeriod").val("周期↑");
+                    else
+                        $("#orderByPeriod").val("周期↓");
+                    break;
+                case 3:
+                    $("#orderByCreateTime").siblings(".orderingTool").removeClass("choosed");
+                    $("#orderByCreateTime").addClass("choosed");
+                    if (parseInt(@(ViewBag.OrderCriterion)) == 7)
+                        $("#orderByCreateTime").val("创建日期↑");
+                    else
+                        $("#orderByCreateTime").val("创建日期↓");
+                    break;
+                case 0:
+                    $("#orderById").siblings(".orderingTool").removeClass("choosed");
+                    $("#orderById").addClass("choosed");
+                    if (parseInt(@(ViewBag.OrderCriterion)) == 1)
+                        $("#orderById").val("ID↑");
+                    else
+                        $("#orderById").val("ID↓");
+                    break;
+            }
+        });
+
+        function TargetGroupNameRec(obj)
+        {
+            if (obj.toString())
+            {
+                var TargetGroupVisualNames = new Array();
+                var TargetGroupVisualKeys = obj.toString().split(',');
+                for(var key in TargetGroupVisualKeys)
+                {
+                    if (targetGroupDict[TargetGroupVisualKeys[key]])
+                    {
+                        TargetGroupVisualNames.push(targetGroupDict[TargetGroupVisualKeys[key]]);
+                    }
+                }
+                if (TargetGroupVisualNames.length > 0)
+                    return TargetGroupVisualNames.join(',');
+                else
+                    return '';
+            }
+        }
+
+        $("#EndDateTime").focus(function () {
+            $(".searchtimehint").hide();
+            checkFlag = false;
+        });
+
+        $("#StartDateTime").focus(function () {
+            $(".searchtimehint").hide();
+            checkFlag = false;
+        });
+
+        $("#StartDateTime").change(function () {
+            var startDate = $("#StartDateTime").val();
+            var endDate = $("#EndDateTime").val();
+            if (startDate.length > 0 && endDate.length > 0) {
+                var sDate = Date.parse(startDate);
+                var eDate = Date.parse(endDate);
+                if (sDate > eDate) {
+                    $("#searchtimehint1").show();
+                    checkFlag = true;
+                }
+            }
+        });
+
+        $("#EndDateTime").change(function () {
+            var startDate = $("#StartDateTime").val();
+            var endDate = $("#EndDateTime").val();
+            if (startDate.length > 0 && endDate.length > 0) {
+                var sDate = Date.parse(startDate);
+                var eDate = Date.parse(endDate);
+                if (sDate > eDate) {
+                    $("#searchtimehint2").show();
+                    checkFlag = true;
+                }
+            }
+        });
+
+        $(".inputForDate").datetimepicker({
+            timeFormat: "HH:mm:ss",
+            dateFormat: "yy-mm-dd"
+        });
+
+        function CreateNewPopup() {
+            discardHints();
+            $("#PKID").val("-1").hide();
+            $("#Description").val('');
+            $("#LinkUrl").val('');
+            $("#MGPageUrl").val('');
+            $("#MiniGramId").val('');
+            $("#Sort").val('');
+            $("#Period").val('');
+            $("#StartVersion").val('');
+            $("#EndVersion").val('');
+            $("#popupToShow").html('');
+            $("#Channel").val("0");
+            $("#Position").val("1");
+            $("#TargetGroups").val("0");
+            $("#StartDateTime").val('');
+            $("#EndDateTime").val('');
+            $("#imagePreviewer").attr("src", "");
+            $("#ImageUrl").val('');
+            $("#IsEnabled").val("true");
+            $("#Creator").val("@(HttpContext.Current.User.Identity.Name)");
+            TargetGroup();
+            UpdateNoticeChannel('all', false);
+            UpdateNoticeChannel('all', true);
+            $('#popupEditor').modal('show');
+            $("#ToShowNoticeChannelChoices").removeAttr("checked");
+            $("#popupPosEditorTable tr:eq(3)").hide();
+            $("#popupPosEditorTable tr:eq(6)").hide();
+            $("#ToShowNoticeChannelChoicesNew").removeAttr("checked");
+        }
+
+        function UpdateExistingPopup(obj) {
+            discardHints();
+            $("#PKID").val($(obj).parent().siblings("[name='popupsPKID']").html()).show();
+            $("#Description").val($(obj).parent().siblings("[name='popupsDescription']").data("value"));
+            $("#LinkUrl").val($(obj).parent().siblings("[name='popupHistory']").find("[name='popupsLinkURL']").val());
+            $("#MiniGramId").val($(obj).parent().siblings("[name='popupHistory']").find("[name='popupsMiniGramId']").val());
+            $("#MGPageUrl").val($(obj).parent().siblings("[name='popupHistory']").find("[name='popupsMGPageUrl']").val());
+            $("#Sort").val($(obj).parent().siblings("[name='popupsSort']").html());
+            $("#Period").val($(obj).parent().siblings("[name='popupsPeriod']").html());
+            $("#StartVersion").val($(obj).parent().siblings("[name='popupsStartVersion']").html());
+            $("#EndVersion").val($(obj).parent().siblings("[name='popupsEndVersion']").html());
+            $("#popupToShow").html($(obj).parent().siblings("[name='popupsVisibility']").html());
+            $("#Channel").val($(obj).parent().siblings("[name='popupsChannel']").data("value"));
+            $("#Position").val($(obj).parent().siblings("[name='popupsPosition']").data("value"));
+            $("#Creator").val($(obj).parent().siblings("[name='popupsCreator']").html());
+            $("#StartDateTime").val($(obj).parent().siblings("[name='popupHistory']").find("[name='popupStartTime']").val());
+            $("#EndDateTime").val($(obj).parent().siblings("[name='popupHistory']").find("[name='popupEndTime']").val());
+            $("#imagePreviewer").attr("src", $(obj).parent().siblings("[name='popupHistory']").find("[name='imagePath']").val());
+            $("#ImageUrl").val($(obj).parent().siblings("[name='popupHistory']").find("[name='imagePath']").val());
+            if ($(obj).parent().siblings("[name='popupHistory']").find("[name='popupIsEnabled']").val().length > 0 && $(obj).parent().siblings("[name='popupHistory']").find("[name='popupIsEnabled']").val() != "false")
+                $("#IsEnabled").val("true");
+            else
+                $("#IsEnabled").val("false");
+            TargetGroup($(obj).parent().siblings("[name='popupsTargetGroups']").data("value"));
+            UpdateNoticeChannel($(obj).parent().siblings("[name='popupsNoticeChannel']").data("value"), false);
+            UpdateNoticeChannel($(obj).parent().siblings("[name='popupsNewNoticeChannel']").data("value"), true);
+            $('#popupEditor').modal('show');
+            $("#ToShowNoticeChannelChoices").removeAttr("checked");
+            $("#popupPosEditorTable tr:eq(3)").hide();
+            $("#popupPosEditorTable tr:eq(6)").hide();
+            $("#ToShowNoticeChannelChoicesNew").removeAttr("checked");
+        }
+        //popupsTargetGroups
+        function CopyPopup(obj) {
+            discardHints();
+            $("#AnimationEdition").hide();
+            $("#PKID").val("-1").hide();
+            $("#Description").val($(obj).parent().siblings("[name='popupsDescription']").data("value"));
+            $("#LinkUrl").val($(obj).parent().siblings("[name='popupHistory']").find("[name='popupsLinkURL']").val());
+            $("#MiniGramId").val($(obj).parent().siblings("[name='popupHistory']").find("[name='popupsMiniGramId']").val());
+            $("#MGPageUrl").val($(obj).parent().siblings("[name='popupHistory']").find("[name='popupsMGPageUrl']").val());
+            $("#Sort").val($(obj).parent().siblings("[name='popupsSort']").html());
+            $("#Period").val($(obj).parent().siblings("[name='popupsPeriod']").html());
+            $("#StartVersion").val($(obj).parent().siblings("[name='popupsStartVersion']").html());
+            $("#EndVersion").val($(obj).parent().siblings("[name='popupsEndVersion']").html());
+            $("#popupToShow").html('');
+            $("#Channel").val($(obj).parent().siblings("[name='popupsChannel']").data("value"));
+            $("#Position").val($(obj).parent().siblings("[name='popupsPosition']").data("value"));
+            $("#Creator").val("@(HttpContext.Current.User.Identity.Name)");
+            $("#StartDateTime").val($(obj).parent().siblings("[name='popupHistory']").find("[name='popupStartTime']").val());
+            $("#EndDateTime").val($(obj).parent().siblings("[name='popupHistory']").find("[name='popupEndTime']").val());
+            $("#imagePreviewer").attr("src", $(obj).parent().siblings("[name='popupHistory']").find("[name='imagePath']").val());
+            $("#ImageUrl").val($(obj).parent().siblings("[name='popupHistory']").find("[name='imagePath']").val());
+            if ($(obj).parent().siblings("[name='popupHistory']").find("[name='popupIsEnabled']").val().length > 0 && $(obj).parent().siblings("[name='popupHistory']").find("[name='popupIsEnabled']").val() != "false")
+                $("#IsEnabled").val("true");
+            else
+                $("#IsEnabled").val("false");
+            TargetGroup($(obj).parent().siblings("[name='popupsTargetGroups']").data("value"));
+            UpdateNoticeChannel($(obj).parent().siblings("[name='popupsNoticeChannel']").data("value"), false);
+            UpdateNoticeChannel($(obj).parent().siblings("[name='popupsNewNoticeChannel']").data("value"), true);
+            $('#popupEditor').modal('show');
+            $("#ToShowNoticeChannelChoices").removeAttr("checked");
+            $("#popupPosEditorTable tr:eq(3)").hide();
+            $("#popupPosEditorTable tr:eq(6)").hide();
+            $("#ToShowNoticeChannelChoicesNew").removeAttr("checked");
+        }
+
+        function UpdateNoticeChannel(obj, isnew) {
+            if (!obj)
+            {
+                if (isnew) {
+                    $("#SelectAllCheckboxNew").removeAttr("checked");
+                    $("input=[data-id='NoticeChannel_CheckedNew']").removeAttr("checked");
+                }
+                else {
+                    $("#SelectAllCheckbox").removeAttr("checked");
+                    $("input=[data-id='NoticeChannel_Checked']").removeAttr("checked");
+                }
+            }
+            {
+                if (obj == 'all') {
+                    if (isnew) {
+                        $("#SelectAllCheckboxNew").attr("checked", "checked");
+                        $("input=[data-id='NoticeChannel_CheckedNew']").attr("checked", "checked");
+                    }
+                    else {
+                        $("#SelectAllCheckbox").attr("checked", "checked");
+                        $("input=[data-id='NoticeChannel_Checked']").attr("checked", "checked");
+                    }
+                }
+                else {
+                    var noticeChannels = obj.split(',');
+                    if (isnew) {
+                        $("#SelectAllCheckboxNew").removeAttr("checked");
+                        $("input=[data-id='NoticeChannel_CheckedNew']").each(function () {
+                            $(this).removeAttr("checked");
+                            if (noticeChannels && noticeChannels.length > 0) {
+                                for (var i = 0; i < noticeChannels.length; ++i) {
+                                    if (String($(this).val()) == noticeChannels[i]) {
+                                        $(this).attr("checked", "checked");
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        $("#SelectAllCheckbox").removeAttr("checked");
+                        $("input=[data-id='NoticeChannel_Checked']").each(function () {
+                            $(this).removeAttr("checked");
+                            if (noticeChannels && noticeChannels.length > 0) {
+                                for (var i = 0; i < noticeChannels.length; ++i) {
+                                    if (String($(this).val()) == noticeChannels[i]) {
+                                        $(this).attr("checked", "checked");
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
+        function AllNoticeChannel_Checked(obj, isnew) {
+            if (isnew)
+                $(obj).is(':checked') ? $("input=[data-id='NoticeChannel_CheckedNew']").attr("checked", "checked") : $("input=[data-id='NoticeChannel_CheckedNew']").removeAttr("checked");
+            else
+                $(obj).is(':checked') ? $("input=[data-id='NoticeChannel_Checked']").attr("checked", "checked") : $("input=[data-id='NoticeChannel_Checked']").removeAttr("checked");
+        }
+
+        function ShowNoticeChannel_Checked(isnew) {
+            if (isnew) {
+                $("#ToShowNoticeChannelChoicesNew").is(':checked') ? $("#popupPosEditorTable tr:eq(6)").show() : $("#popupPosEditorTable tr:eq(6)").hide();
+            }
+            else {
+                $("#ToShowNoticeChannelChoices").is(':checked') ? $("#popupPosEditorTable tr:eq(3)").show() : $("#popupPosEditorTable tr:eq(3)").hide();
+            }
+        }
+
+        function SingleNoticeChannel_Checked(obj) {
+            discardHints();
+            if (isnew)
+                if (!$(obj).is(':checked'))
+                    $("#SelectAllCheckboxNew").removeAttr("checked");
+            else
+                if (!$(obj).is(':checked'))
+                    $("#SelectAllCheckbox").removeAttr("checked");
+        }
+
+        function ConfirmNoticeChannels(isnew){
+            var noticeChannels = new Array();
+            if (isnew) {
+                $("input=[data-id='NoticeChannel_CheckedNew']").each(function () {
+                    if ($(this).is(':checked'))
+                        noticeChannels.push(String($(this).val()));
+                });
+                if (noticeChannels.length <= 0)
+                {
+                    $("#NewNoticeChannel").val('');
+                    return false;
+                }
+                if (noticeChannels.length >= @(((List<Tuhu.Provisioning.DataAccess.Entity.NoticeChannel>)ViewBag.NewNoticeChannel).Count))
+                {
+                    $("#NewNoticeChannel").val('all');
+				    return true;
+                }
+                $("#NewNoticeChannel").val(String(noticeChannels.join(',')));
+                return true;
+            }
+            $("input=[data-id='NoticeChannel_Checked']").each(function () {
+                if ($(this).is(':checked'))
+                    noticeChannels.push(String($(this).val()));
+            });
+            if (noticeChannels.length <= 0)
+            {
+                $("#NoticeChannel").val('');
+                return false;
+            }
+            if (noticeChannels.length >= @(((List<Tuhu.Provisioning.DataAccess.Entity.NoticeChannel>)ViewBag.NoticeChannel).Count))
+            {
+                $("#NoticeChannel").val('all');
+				return true;
+            }
+            $("#NoticeChannel").val(String(noticeChannels.join(',')));
+            return true;
+        }
+
+        function CacheUpdate() {
+            if (confirm("确定要刷新缓存吗？") == true) {
+                $.post('/HomePagePopup/CacheUpdate', function (data) {
+                    if (parseInt(data) == -1)
+                        alert("刷新缓存失败！")
+					else
+						alert("刷新缓存成功！")
+                });
+            }
+        }
+
+        function UploadImg(e) {
+            var row = $(e).parent().parent().parent();
+            discardHints();
+            var $e = $(e);
+            $.ajaxFileUpload({
+                url: '/HomePagePopup/UploadImage',
+                secureuri: false,
+                fileElementId: $e.attr("id"),
+                dataType: 'JSON',
+                type: 'post',
+                success: function (result) {
+                    result = JSON.parse($(result).text());
+                    if (result.success) {
+                        $("#imagePreviewer").attr("src", result.message);
+                        $("#ImageUrl").val(result.message);
+                        row.find("td").eq(1).find("div").eq(0).empty();
+                        row.find("td").eq(1).find("div").eq(0).append("<img src='" + result + "'height='100%' width='100%'>");
+                    } else {
+                        alert(result.message);
+                    }
+                },
+                error: function () {
+                    alert("上传失败！");
+                }
+            });
+        }
+
+        function UpReloadImg(e) {
+            var row = $(e).parent().parent().parent();
+            discardHints();
+            var $e = $(e);
+            $.ajaxFileUpload({
+                url: '/HomePagePopup/UploadImage',
+                secureuri: false,
+                fileElementId: $e.attr("id"),
+                dataType: 'JSON',
+                type: 'post',
+                success: function (result) {
+                    result = jQuery.parseJSON(jQuery(result).text());
+                    if (result != "") {
+                        row.find("td").eq(1).html("");
+                        row.find("td").eq(1).append("<img src='" + result + "' height='127px' width='174px'>");
+                    } else {
+                        alert("上传失败！");
+                    }
+                },
+                error: function () {
+                    alert("上传失败！");
+                }
+            });
+        }
+        function discardHints() {
+            $("#hintsInEditor").hide();
+        }
+
+        $(document.forms["submitPopupEdit"]).validate({
+            submitHandler: function (form) {
+                var flag = false;
+                var feedbacks = "保存失败";
+                if ($.trim($("#ImageUrl").val()).length <= 0) {
+                    flag = true;
+                    feedbacks += ", 未上传图片";
+                }
+                if ($.trim($("#Sort").val()).length <= 0) {
+                    flag = true;
+                    feedbacks += ", 优先级不可为空";
+                }
+                if ($.trim($("#Period").val()).length <= 0) {
+                    flag = true;
+                    feedbacks += ", 周期不可为空";
+                }
+                if ($("#StartDateTime").val().length <= 0) {
+                    flag = true;
+                    feedbacks += ", 生效日期不可为空";
+                }
+                if ($("#EndDateTime").val().length <= 0) {
+                    flag = true;
+                    feedbacks += ", 失效日期不可为空";
+                }
+
+                /********* 确认市场渠道和目标群体 ************/
+                if (!ConfirmTargetGroups()){
+                    flag = true;
+                    feedbacks += ", 至少选择一个目标群体";
+                }
+
+                var updateOldNCs = ConfirmNoticeChannels(false);
+                var updateNewNCs = ConfirmNoticeChannels(true);
+                if (!updateOldNCs && !updateNewNCs){
+                    flag = true;
+                    feedbacks += ", 至少选择一个应用市场来源或者一个应用市场渠道";
+                }
+
+                if (flag) {
+                    $("#hintsInEditor").html(feedbacks).show();
+                    return;
+                }
+                if (checkFlag)
+                    return;
+
+                form = $(form);
+                $("#submit").attr("disabled", "disabled").next().show();
+                form.ajaxSubmit({
+                    error: function () {
+                        $("#submit").removeAttr("disabled").next().hide();
+                        if (parseInt($("#PKID").val()) < 0){
+                            alert("创建时服务器出错");
+                        }
+                        else{
+                            alert("更新时服务器出错");
+                        }
+                    },
+                    success: function (data) {
+                        $("#submit").removeAttr("disabled").next().hide();
+                        if (parseInt($("#PKID").val()) < 0) {
+                            var rt = data.split(",");
+                            if (parseInt(rt[0]) == -1){
+                                alert("优先级出现重复，无法创建");
+                            }
+                            else if (parseInt(rt[0]) == 0){
+                                alert("创建失败");
+                            }
+                            else {
+                                var httpName = "@(HttpContext.Current.User.Identity.Name)";
+                                var myDate = new Date();
+                                var additionalLine = '<tr><td style="text-align: center" name="popupsPKID" id="popupsPKID_' + parseInt(rt[0]) + '">' + parseInt(rt[0]) +
+                                    '</td><td style="text-align: center" name="popupsDescription" data-value="' + $("#Description").val() + '">' + ($("#Description").val().length > 25 ? $("#Description").val().substring(0, 25) + '...' : $("#Description").val()) +
+                                    '</td>';
+                                if (parseInt($("#Channel").val()) == 1)
+                                    additionalLine += '<td style="text-align: center" name="popupsChannel" data-value="1">Android</td>';
+                                else if (parseInt($("#Channel").val()) == 2)
+                                    additionalLine += '<td style="text-align: center" name="popupsChannel" data-value="2">IOS</td>';
+                                else if (parseInt($("#Channel").val()) == 3)
+                                    additionalLine += '<td style="text-align: center" name="popupsChannel" data-value="3">小程序</td>';
+                                else if (parseInt($("#Channel").val()) == 4)
+                                    additionalLine += '<td style="text-align: center" name="popupsChannel" data-value="4">拼团小程序</td>';
+                                else if (parseInt($("#Channel").val()) == 5)
+                                    additionalLine += '<td style="text-align: center" name="popupsChannel" data-value="5">快应用</td>';
+                                else
+                                    additionalLine += '<td style="text-align: center" name="popupsChannel" data-value="0">全部</td>';
+                                if (parseInt($("#Position").val()) == 1)
+                                    additionalLine += '<td style="text-align: center" name="popupsPosition" data-value="1">首页</td>';
+                                else
+                                    additionalLine += '<td style="text-align: center" name="popupsPosition" data-value=""></td>';
+                                var TGNames = TargetGroupNameRec($("#TargetGroups").val())
+                                if (String(TGNames).length > 20) {
+                                    additionalLine += '<td style="text-align: center" name="popupsTargetGroups" data-value="' + $("#TargetGroups").val() + '">' + String(TGNames).substring(0, 20) + '...</td>';
+                                }
+                                else {
+                                    additionalLine += '<td style="text-align: center" name="popupsTargetGroups" data-value="' + $("#TargetGroups").val() + '">' + TGNames + '</td>';
+                                }
+                                additionalLine += '<td style="text-align: center" name="popupsSort">' + $("#Sort").val() + '</td><td style="text-align: center" name="popupsPeriod">' + $("#Period").val() +
+                                    '</td><td style="text-align: center" name="popupsStartVersion">' + $("#StartVersion").val() + '</td><td style="text-align: center" name="popupsEndVersion">' + $("#EndVersion").val() + '</td>';
+                                if (String($("#NoticeChannel").val()) == 'all')
+                                    additionalLine += '<td style="text-align: center" name="popupsNoticeChannel" data-value="all">全部</td>';
+                                else if (String($("#NoticeChannel").val()).length > 20)
+                                    additionalLine += '<td style="text-align: center" name="popupsNoticeChannel" data-value="' + String($("#NoticeChannel").val()) + '">' + String($("#NoticeChannel").val()).substring(0, 20) + '...</td>';
+                                else
+                                    additionalLine += '<td style="text-align: center" name="popupsNoticeChannel" data-value="' + String($("#NoticeChannel").val()) + '">' + String($("#NoticeChannel").val()) +'</td>';
+                                if (String($("#NewNoticeChannel").val()) == 'all')
+                                    additionalLine += '<td style="text-align: center" name="popupsNewNoticeChannel" data-value="all">全部</td>';
+                                else if (String($("#NewNoticeChannel").val()).length > 20)
+                                    additionalLine += '<td style="text-align: center" name="popupsNewNoticeChannel" data-value="' + String($("#NewNoticeChannel").val()) + '">' + String($("#NewNoticeChannel").val()).substring(0, 20) + '...</td>';
+                                else
+                                    additionalLine += '<td style="text-align: center" name="popupsNewNoticeChannel" data-value="' + String($("#NewNoticeChannel").val()) + '">' + String($("#NewNoticeChannel").val()) + '</td>';
+                                if (parseInt(rt[1]) == 1)
+                                    additionalLine += '<td style="text-align: center" name="popupsVisibility">显示</td>';
+                                else
+                                    additionalLine += '<td style="text-align: center" name="popupsVisibility">不显示</td>';
+                                if (httpName == undefined || httpName == '' || httpName == null)
+                                    additionalLine += '<td style="text-align: center">' + myDate.getFullYear() + '/' + (myDate.getMonth() + 1) + '/' + myDate.getDate() + " " + myDate.getHours() + ':' + myDate.getMinutes() + ':' + formatToTwoDigits(parseInt(myDate.getSeconds())) + '</td><td style="text-align: center" name="popupsCreator">';
+                                else
+                                    additionalLine += '<td style="text-align: center">' + myDate.getFullYear() + '/' + (myDate.getMonth() + 1) + '/' + myDate.getDate() + " " + myDate.getHours() + ':' + myDate.getMinutes() + ':' + formatToTwoDigits(parseInt(myDate.getSeconds())) + '</td><td style="text-align: center" name="popupsCreator">' + httpName;
+                                additionalLine += '</td><td style="text-align: center; width: 100px"><a onclick="UpdateExistingPopup(this)">查看/编辑</a></td><td style="text-align: center; width: 100px"><a onclick="AnimationReload(' + parseInt(rt[0]) + ')">动画</a></td><td style="text-align: center; width: 100px"><a onclick="CopyPopup(this)">复制</a></td><td style="text-align: center; width: 100px" name="popupHistory"><a onclick="CheckPopupsHistory(' + parseInt(rt[0]) + ')">历史</a><input type="hidden" name="imagePath" value=' + $("#ImageUrl").val() +
+                                    ' /> <input type="hidden" name="popupStartTime" value=' + $("#StartDateTime").val() + ' /> <input type="hidden" name="popupEndTime" value=' + $("#EndDateTime").val() + ' /> <input type="hidden" name="popupIsEnabled" value=' + $("#IsEnabled").val() + ' /> <input type="hidden" name="popupsLinkURL" value=' + $("#LinkUrl").val() + ' /></td> </tr>';
+                                $("#popupInformation").append(additionalLine);
+                                $('#popupEditor').modal('hide');
+                                alert("创建成功");
+                                location.reload();
+                            }
+                        }
+                        else {
+                            if (parseInt(data) == -1){
+                                alert("优先级出现重复，无法更新");
+                            }
+                            else if (parseInt(data) == 0){
+                                alert("更新失败");
+                            }
+                            else {
+                                if (parseInt(data) == 2)
+                                    $("#popupToShow").html("显示");
+                                else
+                                    $("#popupToShow").html("不显示");
+                                var object = $("#popupsPKID_" + $("#PKID").val());
+                                object.siblings("[name='popupsDescription']").html(($("#Description").val().length>25 ? $("#Description").val().substring(0, 25)+'...' : $("#Description").val()));
+                                object.siblings("[name='popupsDescription']").data("value", $("#Description").val());
+                                object.siblings("[name='popupHistory']").find("[name='popupsLinkURL']").val($("#LinkUrl").val());
+                                object.siblings("[name='popupHistory']").find("[name='popupsMGPageUrl']").val($("#MGPageUrl").val());
+                                object.siblings("[name='popupHistory']").find("[name='popupsMiniGramId']").val($("#MiniGramId").val());
+                                object.siblings("[name='popupsSort']").html($("#Sort").val());
+                                object.siblings("[name='popupsPeriod']").html($("#Period").val());
+                                object.siblings("[name='popupsStartVersion']").html($("#StartVersion").val());
+                                object.siblings("[name='popupsEndVersion']").html($("#EndVersion").val());
+                                object.siblings("[name='popupsChannel']").data("value", $("#Channel").val());
+                                if (parseInt($("#Channel").val()) == 1)
+                                    object.siblings("[name='popupsChannel']").html("Android");
+                                else if (parseInt($("#Channel").val()) == 2)
+                                    object.siblings("[name='popupsChannel']").html("IOS");
+                                else if (parseInt($("#Channel").val()) == 3)
+                                    object.siblings("[name='popupsChannel']").html("小程序");
+                                else if (parseInt($("#Channel").val()) == 4)
+                                    object.siblings("[name='popupsChannel']").html("拼团小程序");
+                                else if (parseInt($("#Channel").val()) == 5)
+                                    object.siblings("[name='popupsChannel']").html("快应用");
+                                else
+                                    object.siblings("[name='popupsChannel']").html("全部");
+                                object.siblings("[name='popupsPosition']").data("value", $("#Position").val());
+                                if (parseInt($("#Position").val()) == 1)
+                                    object.siblings("[name='popupsPosition']").html("首页");
+                                else
+                                    object.siblings("[name='popupsPosition']").html("");
+                                object.siblings("[name='popupsTargetGroups']").data("value", $("#TargetGroups").val());
+                                var TGNames = TargetGroupNameRec($("#TargetGroups").val())
+                                if (String(TGNames).length > 20) {
+                                    object.siblings("[name='popupsTargetGroups']").html(String(TGNames).substring(0, 20) + "...");
+                                }
+                                else {
+                                    object.siblings("[name='popupsTargetGroups']").html(TGNames);
+                                }
+                                object.siblings("[name='popupsNoticeChannel']").data("value", $("#NoticeChannel").val());
+                                if (String($("#NoticeChannel").val()) == 'all')
+                                    object.siblings("[name='popupsNoticeChannel']").html("全部");
+                                else if (String($("#NoticeChannel").val()).length > 20)
+                                    object.siblings("[name='popupsNoticeChannel']").html(String($("#NoticeChannel").val()).substring(0, 20) + '...');
+                                else
+                                    object.siblings("[name='popupsNoticeChannel']").html(String($("#NoticeChannel").val()));
+                                object.siblings("[name='popupsNewNoticeChannel']").data("value", $("#NewNoticeChannel").val());
+                                if (String($("#NewNoticeChannel").val()) == 'all')
+                                    object.siblings("[name='popupsNewNoticeChannel']").html("全部");
+                                else if (String($("#NewNoticeChannel").val()).length > 20)
+                                    object.siblings("[name='popupsNewNoticeChannel']").html(String($("#NewNoticeChannel").val()).substring(0, 20) + '...');
+                                else
+                                    object.siblings("[name='popupsNewNoticeChannel']").html(String($("#NewNoticeChannel").val()));
+                                object.siblings("[name='popupsVisibility']").html($("#popupToShow").html());
+                                object.siblings("[name='popupHistory']").find("[name='imagePath']").val($("#ImageUrl").val());
+                                object.siblings("[name='popupHistory']").find("[name='popupStartTime']").val($("#StartDateTime").val());
+                                object.siblings("[name='popupHistory']").find("[name='popupEndTime']").val($("#EndDateTime").val());
+                                object.siblings("[name='popupHistory']").find("[name='popupIsEnabled']").val($("#IsEnabled").val());
+                                $('#popupEditor').modal('hide');
+                                alert("更新成功");
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+        function CheckPopupsHistory(PKID) {
+            $.ajax({
+                url: "/HomePagePopup/SelectOprLogByPKID",
+                type: "GET",
+                data: { "PKID": PKID },
+                success: function (data) {
+                    var content = "<tr><td style='font-weight:bold; text-align:center'>操作人</td><td style='font-weight:bold; text-align:center'>日期</td><td style='font-weight:bold; text-align:center'>操作类型</td></tr>";
+                    if (data.status == "success") {
+                        $(data.data).each(function (index) {
+                            content += "<tr><td style='text-align:center'>" + data.data[index].Author + "</td><td style='text-align:center'>" + data_string(data.data[index].ChangeDatetime) + "</td><td style='text-align:center'>" + data.data[index].Operation + "</td></tr>";
+                        });
+                    } else {
+                        content = "暂无记录";
+                    }
+                    $('#logsDisplayTable').html(content);
+                    $('#logsDisplay').modal('show');
+                }
+            });
+        }
+        function data_string(str) {
+            var d = eval('new ' + str.substr(1, str.length - 2));
+            var ar_date = [d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds()];
+            for (var i = 0; i < ar_date.length; i++) ar_date[i] = dFormat(ar_date[i]);
+            return ar_date.slice(0, 3).join('-') + ' ' + ar_date.slice(3).join(':');
+
+            function dFormat(i) { return i < 10 ? "0" + i.toString() : i; }
+        }
+
+        function formatToTwoDigits(n) {
+            return n < 10 ? '0' + n : n;
+        }
+                                   /**************************  AnimationShow()*********************************/
+         //Globe var
+        function addAnimation() {
+            var Cellindex = 0;
+            var rowlength = document.getElementById("popupAnimateTable").rows.length;
+            var rowsindex = document.getElementById("popupAnimateTable").insertRow(rowlength);
+            rowsindex.classList.add("deletedata");
+            for (var i = 0; i < 12; i++){
+                Cellindex++;
+                if (i == 0) {
+                    var column = rowsindex.insertCell(i);
+                    column.innerHTML = rowlength;
+                    rowsindex.append(column);
+                }
+                else if (i == 1) {
+                    var column = rowsindex.insertCell(i);
+                    column.innerHTML = '<div id="index' + Rowindex + '' + Cellindex + '" style="height:127px"></div>';//index' + Rowindex + '' + Cellindex +'
+                    rowsindex.append(column);
+                }
+                else if (i == 2) {
+                    var column = rowsindex.insertCell(i);
+                    column.innerHTML = '<select class="MovementType" id="index' + Rowindex + '' + Cellindex + '" style="width:100%; height:100%;">'
+                        + '<option value="-1" disabled selected style="display: none;">请选择</option>'
+                        + '<option value="0">无动画效果</option><option value= "1">下落加旋转</option ><option value="2">斜向下落</option>'
+                        + '<option value="3">左右摇摆</option><option value="4">变大变小</option ><option value="5">延迟变大变小</option><option value="6">上下移动</option><option value="7">关闭</option><option value="8">'
+                        +'顺时针自转</option > <option value="9">顺时针旋转（小圈）</option> <option value="10">顺时针旋转（大圈）</option><option value="11">优惠券</option><option value="12">礼包</option>'
+                        +'</select>';
+                    rowsindex.append(column);
+                }
+                else if (i == 8) {
+                    var column = rowsindex.insertCell(i);
+                    column.innerHTML = '<input id="index' + Rowindex + '' + Cellindex + '" style="width:100%; height:100%;" type="text" placeholder="填写跳转链接" maxlength="1000"/>';
+                    rowsindex.append(column);
+                }
+                else if (i == 9) {
+                    var column = rowsindex.insertCell(i);
+                    var html = '<select class="MiniGramId" id="index' + Rowindex + '' + Cellindex + '" style="width:100%; height:100%;"><option value="" disabled selected style="display: none;">请选择</option>';
+                    if (wxConfigs) {
+                        for (var j = 0; j < wxConfigs.length; ++j) {
+                            html += '<option value=' + wxConfigs[j].appId + '>' + wxConfigs[j].name +'</option>';
+                        }
+                    }
+                    column.innerHTML = html + '</select>';
+                    rowsindex.append(column);
+                }
+                else if (i == 10) {
+                    var column = rowsindex.insertCell(i);
+                    column.innerHTML = '<input id="index' + Rowindex + '' + Cellindex + '" style="width:100%; height:100%;" type="text" placeholder="小程序页面路径" maxlength="1000"/>';
+                    rowsindex.append(column);
+                }
+                else if (i == 11) {
+                    var column = rowsindex.insertCell(i);
+                    //var inputid = 'index' + Rowindex + '' + Cellindex;
+                    //column.attr("id", inputid) ;
+                    column.innerHTML = '<div class="fileinput-button"><input style="margin-top:5px;" type="button" value="选图"/>'
+                        + '<input type= "file" class="uploadpre" id= "index' + Rowindex + '' + Cellindex +'" name= "imagePrev" onchange= "UploadImg(this)" /></div>'
+                        + '<input style="margin-left:5%;margin-top:5px; width:30%" onclick="animationSave(' + configID +',this);"  type="button" value="保存"/>'
+                        + '<input style="margin-left:5%;margin-top:5px; width:30%" onclick="deleteRow(this);" type="button" value="删除"/>';
+                    rowsindex.append(column);
+                }
+                 else {
+                    var column = rowsindex.insertCell(i);
+                    column.innerHTML = '<input id="index' + Rowindex + '' + Cellindex +'" style="width:100%; height:100%;" type="text" placeholder="请填写" maxlength="6"/>';
+                    rowsindex.append(column);
+                }
+            }
+            Rowindex++;
+        }
+
+        function addCoupon()
+        {
+            var rowlength = document.getElementById("popupCouponTable").rows.length;
+            var rowsindex = document.getElementById("popupCouponTable").insertRow(rowlength);
+            for (var i = 0; i < 3; i++) {
+                if (i == 0) {
+                    var column = rowsindex.insertCell(i);
+                    column.innerHTML = rowlength;
+                    rowsindex.append(column);
+                }
+                else if (i == 1) {
+                    var column = rowsindex.insertCell(i);
+                    column.innerHTML = '<input style="text-align:center;width:100%;border:none" type="text" placeholder="请填写" maxlength="500"/>';
+                    rowsindex.append(column);
+                }
+                else {
+                    var column = rowsindex.insertCell(i);
+                    column.innerHTML = "<input style='margin-left:7px; width:60px' onclick='AddOrUpdateCoupon(-1, this, " + animationID + ");'  type='button' value='保存'/>";
+                    rowsindex.append(column);
+                }
+            }
+        }
+                                   /*************** Add a row data into DB *****************/
+        function animationSave(PopupConfigId, index)
+        {
+            var data = {};
+            var row = $(index).parent().parent();
+            data.PopupConfigId = PopupConfigId;
+            data.ImageUrl = row.find("td").eq(1).find("div img").attr("src");
+            data.MovementType = row.find("td").eq(2).find("select option:selected").val();
+            data.ImageWidth = row.find("td").eq(3).find("input").eq(0).val();
+            data.ImageHeight = row.find("td").eq(4).find("input").eq(0).val();
+            data.LeftMargin = row.find("td").eq(5).find("input").eq(0).val();
+            data.TopMargin = row.find("td").eq(6).find("input").eq(0).val();
+            data.ZIndex = row.find("td").eq(7).find("input").eq(0).val();
+            data.LinkUrl = row.find("td").eq(8).find("input").eq(0).val();
+            data.MiniGramId = row.find("td").eq(9).find("select option:selected").val();
+            data.MGPageUrl = row.find("td").eq(10).find("input").eq(0).val();
+            var tbody = window.document.getElementById("tbody-result");
+            if (InputCheck(data))
+            {
+               $.ajax({
+                type: "post",
+                url: "/HomePagePopup/AnimationSave",
+                data: data,
+                success: function (msg) {
+                    if (msg) {
+                        alert("保存成功!");
+                        AnimationReload(PopupConfigId);
+                    }
+                    else {
+                        alert("保存失败");
+                    }
+                },
+                error: function () {
+                    alert("保存失败!");
+                }
+            });
+            }
+          }
+                                            /*************** Delete a row data from DB *****************/
+        function animationDelete(pkid, index, configid) {
+            var row = $(index).parent().parent();
+            if (confirm("您确定删除吗？") && pkid) {
+                $.ajax({
+                    url: '/HomePagePopup/AnimationDelete',
+                    type: 'post',
+                    data: { PKID: pkid, configId: configid },
+                }).done(function (result) {
+                    if (result == 1) {
+                        alert("删除成功");
+                        row.remove();
+                    }
+                    else {
+                        alert("删除失败");
+                    }
+                })
+            }
+        }
+
+        function DeleteCouponInPopup(pkid, index, aniamationid) {
+            var row = $(index).parent().parent();
+            if (confirm("您确定删除吗？")) {
+                $.ajax({
+                    url: '/HomePagePopup/DeleteCouponInPopup',
+                    type: 'post',
+                    data: { PKId: pkid, animationId: aniamationid },
+                }).done(function (result) {
+                    if (parseInt(result) > 0) {
+                        alert("删除成功");
+                        row.remove();
+                    }
+                    else {
+                        alert("删除失败");
+                    }
+                })
+            }
+        }
+
+        function DeleteCouponInPopup(pkid, index, aniamationid) {
+            var row = $(index).parent().parent();
+            if (confirm("您确定删除吗？")) {
+                $.ajax({
+                    url: '/HomePagePopup/DeleteCouponInPopup',
+                    type: 'post',
+                    data: { PKId: pkid, animationId: aniamationid },
+                }).done(function (result) {
+                    if (parseInt(result) > 0) {
+                        alert("删除成功");
+                        row.remove();
+                    }
+                    else {
+                        alert("删除失败");
+                    }
+                })
+            }
+        }
+                         /*************** Reload Animation page*****************/
+        function AnimationReload(PKID) {
+            $("#popupAnimateTable  tr:gt(0)").remove();
+            $.ajax({
+                url: "/HomePagePopup/GetAnimation",
+                type: "GET",
+                data: { "Pkid": PKID },
+                success: function (data) {
+                    if (data) {
+                        $(data).each(function (index) {
+                            var str = "<tr class='deletedata' style='width:90%;'><td style='text-align:center'>" + (index + 1)
+                                + "</td><td style= 'text-align:center'><img src='" + data[index].ImageUrl + "'height='127' width='174'>"
+                                + "</td><td> <select class='MovementType'>"
+                                + "<option value=" + data[index].MovementType + " selected style='display: none;'>" + TransMovementType(data[index].MovementType) + "</option>"
+                                + "<option value='0'>无动画效果</option><option value='1'>下落加旋转</option><option value='2'>斜向下落</option><option value='3'>左右摇摆</option><option value='4'>变大变小"
+                                + "</option > <option value='5'>延迟变大变小</option> <option value='6'>上下移动</option> <option value='7'>关闭</option> <option value='8'>顺时针自转</option> <option value='9'>"
+                                + "顺时针旋转（小圈）</option > <option value='10'>顺时针旋转（大圈）</option><option value='11'>优惠券</option><option value='12'>礼包</option>"
+                                + "</td><td> <input style='text-align:center;width:100%;border:none' type='text' maxlength='6' value='" + data[index].ImageWidth + "'/>"
+                                + "</td><td> <input style='text-align:center;width:100%;border:none' type='text' maxlength='6' value='" + data[index].ImageHeight + "'/>"
+                                + "</td><td> <input style='text-align:center;width:100%;border:none' type='text' maxlength='6' value='" + data[index].LeftMargin + "'/>"
+                                + "</td><td> <input style='text-align:center;width:100%;border:none' type='text' maxlength='6' value='" + data[index].TopMargin + "' />"
+                                +"</td><td> <input style='text-align:center;width:100%;border:none' type='text' maxlength='6' value='" + data[index].ZIndex + "' />"
+                                + "</td><td> <input style='text-align:center;width:100%;border:none' type='text' maxlength='1000' value='" + (!data[index].LinkUrl ? "" : data[index].LinkUrl) + "'/>"
+                                + "</td><td> <select class='MiniGramId'><option value=" + data[index].MiniGramId + " selected style='display: none;' disabled>" + TransMiniGramId(data[index].MiniGramId) + "</option>"
+                                + "<option value=''>请选择</option>";
+                                if (wxConfigs) {
+                                    for (var j = 0; j < wxConfigs.length; ++j) {
+                                        str += '<option value=' + wxConfigs[j].appId + '>' + wxConfigs[j].name + '</option>';
+                                    }
+                                }
+                                str += '</select>'
+                                + "</td><td> <input style='text-align:center;width:100%;border:none' type='text' maxlength='1000' value='" + (!data[index].MGPageUrl ? "" : data[index].MGPageUrl) + "'/>"
+                                + "</td ><td style='text-align:center'>"
+                                + "<div class='fileinput-button'>"
+                                + "<input type='button' value='选图'></input>" + "<input id='index" + index + "' type='file' class='uploadpre'  name='imagePre' onchange='UpReloadImg(this);'/>"
+                                + "</div>"
+                                + "<input style='margin-left:10%;margin-top:5px;' onclick='UpdateRow(" + data[index].PKId + ",this, " + data[index].PopupConfigId + ");' type='button' value='保存'/>"
+                                + "<input style='margin-left:10%;' id='delete' type='button' onclick='animationDelete(" + data[index].PKId + ",this," + data[index].PopupConfigId + ")' value='删除'/>";
+                                //+ "<input type='hidden' name='animaId' value='" + data[index].PKId+"'>";
+                            if (data[index].MovementType > 10)
+                                str += "<input style='margin-left:10%;width:89px' class='buttonCouponEditor' type='button' onclick='CouponPopupDisplay(" + data[index].PKId + ");' value='编辑优惠券'/></td></tr>";
+                            else
+                                str += "<input style='display:none' class='buttonCouponEditor' type='button' onclick='' value='编辑优惠券'/></td></tr>";
+                            $("#popupAnimateTable").append(str);
+                        });
+                    } else {
+                        console.log("暂无记录");
+                    }
+                    $('#popupAnimate').modal('show');
+                    configID = PKID;
+                },
+                 error: function () {
+                     alert("加载失败!")
+                 }
+            });
+        }
+
+        function CouponPopupDisplay(animaId)
+        {
+            $("#popupCouponTable  tr:gt(0)").remove();
+            $.ajax({
+                url: "/HomePagePopup/SelectCouponsInPopup",
+                type: "GET",
+                data: { "animaId": animaId },
+                success: function (data) {
+                    if (data) {
+                        $(data).each(function (index) {
+                            var str = "<tr style='width:90%;'><td style='text-align:center'>" + (index + 1)
+                                + '</td><td> <input style="text-align:center;width:100%;border:none" type="text" maxlength="500" value="' + data[index].CouponId + '" />'
+                                + "</td><td><input style='margin-left:7px; width:60px' onclick='AddOrUpdateCoupon(" + data[index].PKId + ",this, " + data[index].PopupAnimationId + ");' type='button' value='保存'/>"
+                                + "<input style='margin-left:7px; width:60px' onclick='DisplayCouponLogs(" + data[index].PKId + ");' type='button' value='日志'/>"
+                                + "<input style='margin-left:7px; width:60px' id='delete' type='button' onclick='DeleteCouponInPopup(" + data[index].PKId  + ",this," + data[index].PopupAnimationId + ")' value='删除'/></td></tr>";
+                            $("#popupCouponTable").append(str);
+                        });
+                    } else {
+                        console.log("暂无记录");
+                    }
+                    $('#popupCoupon').modal('show');
+                    animationID = animaId;
+                },
+                error: function () {
+                    alert("加载失败!")
+                }
+            });
+        }
+
+        /*******读取目标群体**********/
+        //$(obj).parent().siblings("[name='popupsTargetGroups']").data("value")
+        function UpdateTargetGroups(obj) {
+            if (obj === undefined)
+            {
+            }
+            else
+            {
+                var TargetGroups = obj.toString().split(',');
+                $("input=[data-id='TargetGroup_Checked']").each(function () {
+                    if (TargetGroups && TargetGroups.length > 0) {
+                        for (var i = 0; i < TargetGroups.length; ++i) {
+                            if (String($(this).val()) == TargetGroups[i]) {
+                                $(this).attr("checked", "checked");
+                                break;
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function TargetGroup(obj) {
+            $("#popupConditionEditorTable").find("tr").eq(0).find("td").eq(1).empty();
+            for(var key in targetGroupDict){
+                $("#popupConditionEditorTable").find("tr").eq(0).find("td").eq(1).append(
+                    "<label style='display:inline-block;width:300px; margin:2px 0;'>"
+                    + "<input data-id='TargetGroup_Checked' value='" + key + "' type= 'checkbox' onclick='discardHints()'/>"
+                    + targetGroupDict[key] + "</label >");
+            }
+            UpdateTargetGroups(obj);
+        }
+
+        function UpdateRow(Pkid, index, PopupConfigId) {
+            var row = $(index).parent().parent();
+            var data = {};
+            data.pkid = Pkid;
+            data.ImageUrl = row.find("td").eq(1).children("img").attr("src");
+            data.MovementType = row.find("td").eq(2).children("select").val();
+            data.ImageWidth = row.find("td").eq(3).children("input").val();
+            data.ImageHeight = row.find("td").eq(4).children("input").val();
+            data.LeftMargin = row.find("td").eq(5).children("input").val();
+            data.TopMargin = row.find("td").eq(6).children("input").val();
+            data.ZIndex = row.find("td").eq(7).children("input").val();
+            data.LinkUrl = row.find("td").eq(8).children("input").val();
+            data.MiniGramId = row.find("td").eq(9).children("select").val();
+            data.MGPageUrl = row.find("td").eq(10).children("input").val();
+            data.PopupConfigId = PopupConfigId;
+            if (InputCheck(data))
+           {
+                 $.ajax({
+                     url: "/HomePagePopup/AnimationUpdate",
+                      type: "POST",
+                      data: data,
+                         }).done(function (result) {
+                               if (result) {
+                                   alert("该行保存成功");
+                                   var couponButton = row.find("td").eq(11).children(".buttonCouponEditor");
+                                   if ((data.MovementType == 11 || data.MovementType == 12) && (!couponButton || couponButton.length <= 0))
+                                       row.find("td").eq(11).append("<input style='margin-left:10%;width:89px' class='buttonCouponEditor' type='button' onclick='CouponPopupDisplay(" + data.pkid + ");' value='编辑优惠券'/>");
+                                   if ((data.MovementType < 11) && (couponButton && couponButton.length > 0))
+                                       couponButton.remove();
+                                 }
+                                else {
+                                alert("该行保存失败");
+                                     }
+                                   })
+            }
+
+        }
+
+        function AddOrUpdateCoupon(Pkid, index, PopupAnimationId) {
+            var row = $(index).parent().parent();
+            var data = {};
+            data.pkid = Pkid;
+            data.CouponId = row.find("td").eq(1).children("input").val();
+            data.PopupAnimationId = PopupAnimationId;
+            data.Creator = "@(HttpContext.Current.User.Identity.Name)";
+            if (!isNull(data.CouponId) && funcChinese(data.CouponId)) {
+                $.ajax({
+                    url: "/HomePagePopup/AddOrUpdateCoupon",
+                    type: "POST",
+                    data: data,
+                }).done(function (result) {
+                    if (parseInt(Pkid) < 0) {
+                        if (result) {
+                            alert("该行保存成功");
+                            data.CouponId = row.find("td").eq(2).html("").html("<input style='margin-left:7px; width:60px' onclick='AddOrUpdateCoupon(" + result + ",this, " + PopupAnimationId + ");' type='button' value='保存'/>"
+                                + "<input style='margin-left:7px; width:60px' onclick='DisplayCouponLogs(" + result + ",this, " + PopupAnimationId + ");' type='button' value='日志'/>"
+                                + "<input style='margin-left:7px; width:60px' id='delete' type='button' onclick='DeleteCouponInPopup(" + result + ",this," + PopupAnimationId + ")' value='删除'/>");
+                        }
+                        else {
+                            alert("该行保存失败");
+                        }
+                    }
+                    else {
+                        if (result) {
+                            alert("该行更新成功");
+                        }
+                        else {
+                            alert("该行更新失败");
+                        }
+                    }
+                });
+            }
+            else
+            {
+                alert("优惠券ID不能为空或者包括汉字！");
+            }
+        }
+
+        function DisplayCouponLogs(PKId) {
+            $.ajax({
+                url: "/HomePagePopup/SelectOprLogsOfCouponsInPopup",
+                type: "GET",
+                data: { "PKId": PKId },
+                success: function (data) {
+                    var content = "<tr><td style='font-weight:bold;>发券人</td><td style='font-weight:bold;'>时间</td></tr>";
+                    if (data.status == "success") {
+                        $(data.data).each(function (index) {
+                            content += "<tr><td style='text-align:center'>" + data.data[index].Author + "</td><td style='text-align:center'>" + data_string(data.data[index].ChangeDatetime) + "</td></tr>";
+                        });
+                    } else {
+                        content = "暂无记录";
+                    }
+                    $('#logsofCouponsInPopupTable').html(content);
+                    $('#logsofCouponsInPopup').modal('show');
+                }
+            });
+        }
+
+        function funcChinese(couponId) {
+            if (/.*[\u4e00-\u9fa5]+.*$/.test(couponId)) {
+                return false;
+            }
+            return true;
+        }
+
+        function TransMiniGramId(index) {
+            var result = "请选择"
+            if (wxConfigs) {
+                for (var j = 0; j < wxConfigs.length; ++j) {
+                    if(wxConfigs[j].appId == index){
+                        result = wxConfigs[j].name;
+                        break;
+                    }
+                }
+            }
+            return result;
+        }
+
+        function TransMovementType(index) {
+            switch (index) {
+                case 0:
+                    value = "无动画效果";
+                    break;
+                case 1:
+                    value = "下落加旋转";
+                    break;
+                case 2:
+                    value = "斜向下落";
+                    break;
+                case 3:
+                    value = "左右摇摆";
+                    break;
+                case 4:
+                    value = "变大变小";
+                    break;
+                case 5:
+                    value = "延迟变大变小";
+                    break;
+                case 6:
+                    value = "上下移动";
+                    break;
+                case 7:
+                    value = "关闭";
+                    break;
+                case 8:
+                    value = "顺时针自转";
+                    break;
+ 				case 9:
+                    value = "顺时针旋转（小圈）";
+                    break;
+ 				case 10:
+                    value = "顺时针旋转（大圈）";
+                    break;
+                case 11:
+                    value = "优惠券";
+                    break;
+                case 12:
+                    value = "礼包";
+                    break;
+                default:
+                    value = "请选择";
+                    break;
+            }
+            return value;
+        }
+
+        function isInteger(obj) {
+            return (obj % 1 === 0)
+        }
+            /*************  empty this row when you add this row first***************/
+        function deleteRow(index) {
+            $(index).parent().parent().remove();
+        }
+
+        function isNull(str) {
+            if (str == "") return true;
+            var regu = "^[ ]+$";
+            var re = new RegExp(regu);
+            return re.test(str);
+        }
+
+        function InputCheck(index) {
+            if (!(index.ImageUrl)) {
+                alert("请选图后保存!");
+                return 0;
+            }
+            else if (index.MovementType < 0 || index.MovementType > 12) {
+                alert("请选择动画类型!");
+                return 0;
+            }
+            else if ((!isInteger(index.ImageWidth)) || index.ImageWidth > 100 || index.ImageWidth < 0 || (!isInteger(index.LeftMargin)) || index.LeftMargin > 100 || index.LeftMargin < 0 || (!isInteger(index.TopMargin)) || index.TopMargin > 100 || index.TopMargin < 0 || (!isInteger(index.ImageHeight)) || index.ImageHeight > 100 || index.ImageHeight < 0) {
+                alert("应输入0到100之间的整数!");
+                return 0;
+            }
+            else if (isNull(index.ImageWidth) || isNull(index.LeftMargin) || isNull(index.TopMargin) || isNull(index.ImageHeight))
+            {
+                alert("输入不可为空，请输入0到100之间的整数!");
+                return 0;
+            }
+            else if ((!isInteger(index.ZIndex)) || index.ZIndex <= 0) {
+                alert("层级应输入正整数!");
+                return 0;
+            }
+            else if ($(".MovementType[value=11], .MovementType[value=12]").length > 1) {
+                alert("动画类型是优惠券或者礼包的动画配置最多一条！");
+                return 0;
+            }
+            return 1;
+        }
+         /*********目标群体选择*******/
+        function ConfirmTargetGroups()
+        {
+               var targetGroups = new Array();
+               $("input=[data-id='TargetGroup_Checked']").each(function () {
+                   if ($(this).is(':checked')) {
+                       targetGroups.push(String($(this).val()));
+                   }
+               });
+               $("#TargetGroups").val(String(targetGroups.join(',')));
+            if (targetGroups.length <= 0)
+            {
+                return false;
+            }
+            return true;
+        }
+    </script>

@@ -1,0 +1,72 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@{
+    Layout = null;
+    ViewBag.Title = "ShowModuleChildList";
+    List<CategoryTagModel> ListItems = (List<CategoryTagModel>)ViewBag.ShowModuleChildList;
+}
+
+@{
+    if (ListItems != null && ListItems.Count > 0)
+    {
+        <text>
+            <div id="title_div" style="font-size:30px;font-weight:bold;">子标签</div>
+            <input type="hidden" id="areatype_input" value="123" />
+            <table>
+                <tbody>
+                    <tr style="background-color: #5c87b2; color: #ffffff;">
+                        <td width="6%">名称</td>
+                        <td width="6%">值</td>
+                        <td width="6%">描述</td>
+                        <td width="6%">图片</td>
+                        <td width="6%">是否启用</td>
+                        <td width="6%">是否首页显示</td>
+                        <td width="6%">显示顺序</td>
+                        <td width="10%" align="center">管理</td>
+                    </tr>
+                </tbody>
+                <tbody id="DataList">
+        </text>
+        foreach (var item in ListItems)
+        {
+            <tr>
+                <td width="6%">@item.name</td>
+                <td width="6%">@item.code</td>
+                <td width="6%">@item.describe</td>
+                <td width="6%"><img src="@item.image" width="30" height="30" /></td>
+                <td width="6%">@(item.disable == true ? "禁用" : "启用")</td>
+                <td width="6%">@(item.isHomePage == true ? "启用" : "禁用")</td>
+                <td width="6%">@item.sort</td>
+                <td width="15%" align="center">
+                    <input type="button" value="编辑" style="padding:0;margin:3px 0;" onclick="CategoryTagConfigs.BigModule.AddOrEdit('@item.name', @item.id, @item.parentId,0,0);">
+                    &nbsp;
+                    <input class="adddModule" type="button" value="添加子标签" style="padding:0;margin:3px 0;" onclick="CategoryTagConfigs.BigModule.AddOrEdit('@item.name', @item.id, @item.id, 0, 1);">
+                    &nbsp;
+                    <input class="showModule" type="button" value="查看子标签" style="padding:0;margin:3px 0;" onclick="CategoryTagConfigs.ShowModuleChildList(@item.id);">
+                </td>
+            </tr>
+        }
+        @:</tbody></table>
+    }
+    else
+    {
+        <table>
+            <tbody>
+                <tr style="background-color: #5c87b2; color: #ffffff;">
+                    <td width="6%">名称</td>
+                    <td width="6%">值</td>
+                    <td width="6%">描述</td>
+                    <td width="6%">图片</td>
+                    <td width="6%">是否启用</td>
+                    <td width="6%">是否首页显示</td>
+                    <td width="6%">显示顺序</td>
+                    <td width="10%" align="center">管理</td>
+                </tr>
+            </tbody>
+            <tbody id="DataList">
+                <tr>
+                    <td colspan="11" align="center"><b>无模块</b></td>
+                </tr>
+            </tbody>
+        </table>
+    }
+}

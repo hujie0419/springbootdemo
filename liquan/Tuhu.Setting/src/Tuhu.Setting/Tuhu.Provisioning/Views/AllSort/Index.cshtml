@@ -1,0 +1,296 @@
+﻿@{
+    ViewBag.Title = "全品类分类栏目";
+    Layout = null;
+}
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.AllSort.AllSortConfig>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700' rel='stylesheet' type='text/css'>
+    <!-- Add local styles, mostly for plugins css file -->
+    <!-- Add jQuery Style direct - used for jQGrid plugin -->
+    <link href="@Url.Content("~/Scripts/plugins/jquery-ui/jquery-ui.css")" rel="stylesheet" type="text/css" />
+    <link href="~/Scripts/multiple/multiple-select.css" rel="stylesheet" type="text/css" />
+    <!-- Primary Inspinia style -->
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/font-awesome/css")
+    <style type="text/css">
+        .module {
+            width: 100px;
+            text-align: center;
+            float: left;
+            margin-left: 5px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="fixed-sidebar">
+<div id="wrapper" class="">
+    <div style="">
+    <nav class="navbar-default navbar-static-side" role="navigation" style="overflow-y:auto">
+        <div class="sidebar-list">
+            <ul class="nav" id="side-menu">
+                <li class="nav-header" style="padding-left: 50px">
+                    <div class="dropdown profile-element">
+                        <span>
+                            <img alt="image" class="img-circle" src="https://resource.tuhu.cn/Image/UserCenter/hu.png" width="48" height="48"/>
+                        </span>
+                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                            <span class="clear">
+                                <span class="block m-t-xs">
+                                </span> <span class="text-muted text-xs block">@(string.IsNullOrWhiteSpace(User.Identity.Name) ? "管理员" : User.Identity.Name)</span>
+                            </span>
+                        </a>
+
+                    </div>
+                    <div class="logo-element">
+                        IN+
+                    </div>
+                </li>
+                <li role="presentation" class="active" >
+
+                    <a href="/AllSort/Index">全品类分类栏目</a>
+
+                    @if (Model != null)
+                    {
+                        foreach (var item in Model)
+                        {
+
+
+                            <li >
+                                <a href="javascript:void(0)"  name="btnSelectProduct" data-id="@item.PKID" data-toggle="modal" data-target="#edit">@item.Maintitle</a>
+                            </li>
+
+                        }
+                    }
+
+
+                </li>
+
+            </ul>
+        </div>
+    </nav>
+    </div>
+    <!-- Page wraper -->
+    <div id="page-wrapper" class="gray-bg" style="min-height: 949px;overflow-y:auto">
+        <!-- Top Navbar -->
+        <div class="row border-bottom">
+            <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
+                <div class="navbar-header">
+                    <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#"><i class="fa fa-bars"></i> </a>
+                    <form role="search" class="navbar-form-custom" method="post" action="">
+                        <div class="form-group">
+                        </div>
+                    </form>
+                </div>
+                <ul class="nav navbar-top-links navbar-right">
+                    @if (Request.IsAuthenticated)
+                    {
+                        <li>
+                            <span class="m-r-sm text-muted welcome-message" data-i18n="topnav.welcometext">您好 @Context.User.Identity.Name， 欢迎进入首页配置管理系统，祝您生活愉快！</span>
+                        </li>
+                        <li>
+                            <a href="@ThBiz.Common.Configurations.YewuDomainConfig.YewuSite/Account/LogOff">
+                                <i class="fa fa-sign-out"></i> 退出
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            <a href="@ThBiz.Common.Configurations.YewuDomainConfig.YewuSite/Account/LogOn">
+                                <i class="fa fa-sign-out"></i> 登录
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+
+
+        <!-- Main view -->
+        <div class="container-fluid">
+
+            <div class="ibox ibox-content">
+                <div class="row" style="text-align: right; margin-right: 2px;">
+                    <a class="btn btn-info btn-sm" href="javascript:void(0)" name="btnLog"  data-toggle="modal" data-target="#edit">日志</a>
+                    <a href="javascript:void(0)"  class="btn btn-info btn-sm" id="btnAdd" data-toggle="modal" data-target="#edit">新 增</a>
+                    <a href="javascript:void(0)" class="btn btn-primary btn-sm" id="btnReload" onclick="btn_Reload()">刷新缓存</a>
+                    
+                </div>
+                <table class="table table-bordered" style="text-align: center;">
+                    
+                        <thead>
+                            <tr>
+                                <th style="text-align: center;">ID</th>
+                                <th style="text-align: center;">名称</th>
+                                <th style="text-align: center;">开始版本</th>
+                                <th style="text-align: center;">结束版本</th>
+                                <th style="text-align: center;">优先级</th>
+                                <th style="text-align: center;">状态</th>
+                                <th style="text-align: center;">更新时间</th>
+                                <th style="text-align: center;">管理</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null)
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.PKID</td>
+                                        <td>@item.Maintitle</td>
+                                        <td>@item.StartVersion</td>
+                                        <td>@item.EndVersion</td>
+                                        <td>@item.Priority</td>
+                                        <td>@(item.State == 1 ? "启用" : "禁用")</td>
+                                        <td>@(item.UpdateDateTime)</td>
+                                        <td>
+                                            <a class="btn btn-info btn-sm" href="javascript:void(0)" name="btnSelectProduct" data-id="@item.PKID" data-toggle="modal" data-target="#edit">查看</a>
+                                            <a class="btn btn-default btn-sm" href="javascript:void(0)" data-id="@item.PKID" name="btnEdit" data-toggle="modal" data-target="#edit">编 辑</a>
+                                            <a class="btn btn-danger btn-sm" href="javascript:void(0)" name="btnDel" data-id="@item.PKID">删 除</a>
+                                        </td>
+
+
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+</table>
+            </div>
+            <div id="edit" class="modal fade" aria-hidden="true" role="dialog" tabindex="-1">
+
+            </div>
+
+        </div>
+
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="pull-right">
+            </div>
+            <div>
+                <strong>Copyright</strong> 途虎养车 &copy; @DateTime.Now.Year
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- End wrapper-->
+<!-- Section for main scripts render -->
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/bootstrap")
+@Scripts.Render("~/plugins/slimScroll")
+@Scripts.Render("~/bundles/inspinia")
+@*<script src="~/Scripts/jquery-ui.1.10.4.min.js" type="text/javascript"></script>*@
+<script src="~/Scripts/jquery-ui.1.12.1.min.js" type="text/javascript"></script>
+<script src="/Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<script type='text/javascript' src="/Scripts/jquery.validate-1.8.1.min.js"></script>
+<script type="text/javascript" src="~/Scripts/My97DatePicker/WdatePicker.js"></script>
+<script src="~/Scripts/multiple/multiple-select.js" type="text/javascript"></script>
+<!-- Skin config script - only for demo purpose-->
+@*@Scripts.Render("~/bundles/skinConfig")*@
+
+<!-- Handler for local scripts -->
+</body>
+</html>
+<div id="toobal" class="modal fade" aria-hidden="true" role="dialog" tabindex="-1">
+
+</div>
+
+<script type="text/javascript">
+    $(function () {
+
+        
+        
+        $('#btnAdd').on('click', function () {
+            var url = "/AllSort/EditConfig?id=0";
+            var dialog = $('#edit');
+            dialog.empty();
+            dialog.html(dialog.load(url));
+        });
+
+        $('a[name="btnEdit"]').on('click', function () {
+            var id = $(this).data("id");
+            if (id) {
+                var url = "/AllSort/EditConfig?id=" + id;
+                // dialogOpen("新增首页", url, "edit");
+                var dialog = $('#edit');
+                dialog.empty();
+                dialog.html(dialog.load(url));
+            }
+        });
+
+        $('a[name="btnDel"]').on('click', function () {
+            var id = $(this).data("id");
+            if (confirm("您确定删除吗？") && id) {
+                $.ajax({
+                    url: '/AllSort/DeleteConfig',
+                    type: 'post',
+                    data: { id: id },
+                    dataType: 'json'
+                }).done(function (result) {
+                    if (result == 1) {
+                        alert("删除成功");
+                        location.reload();
+                    } else {
+                        alert("删除失败");
+                    }
+                });
+            }
+        });
+
+
+        $('a[name="btnSelectProduct"]').on('click', function () {
+            var id = $(this).data("id");
+            if (id) {
+                var url = "/AllSort/List?id=" + id;
+                location.href = url;
+            }
+        });
+
+        $('a[name="btnLog"]').on('click', function () {
+           
+                var url = "/AllSort/Logger";
+                location.href = url;
+            
+        });
+
+        
+
+
+    });
+
+    function btn_Reload() {
+        $.ajax({
+            url: '/AllSort/Reload',
+            type: 'post'
+        }).done(function (result) {
+            if (result == 1) {
+                alert("缓存刷新成功！");
+            } else {
+                alert("缓存刷新失败！");
+            }
+        });
+    }
+
+    function Toolbar() {
+        var url = "/HomePageConfigV2/SmallToolbar";
+        // dialogOpen("新增首页", url, "edit");
+        var dialog = $('#toobal');
+        dialog.empty();
+        dialog.html(dialog.load(url));
+    }
+   
+</script>
+
+

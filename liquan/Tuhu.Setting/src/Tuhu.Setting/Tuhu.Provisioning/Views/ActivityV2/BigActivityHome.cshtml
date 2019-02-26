@@ -1,0 +1,487 @@
+﻿@{
+    ViewBag.Title = "大型活动会场";
+    Layout = null;
+  
+}
+@model Tuhu.Provisioning.DataAccess.Entity.BigActivityHome
+
+    <fieldset>
+        <legend>主会场</legend>
+        <form id="BigActivityHome">
+            <table>
+                <tr>
+                    <td>名称:</td>
+                    <td>
+                        <input type="text" id="BigHomeName" name="BigHomeName" value="@(Model.BigHomeName == "" ? "主会场" : Model.BigHomeName)" style="width:220px" />
+                    </td>
+                    <td>
+                        图标:
+                    </td>
+                    <td>
+                        @if (string.IsNullOrEmpty(Model.ImgBigHomePic))
+                        {
+                            <img id="ImgBigHomePic" style="width:30px;height:30px;" />
+                        }
+                        else {
+                            <img id="ImgBigHomePic" style="width:30px;height:30px;" src="@Model.ImgBigHomePic" />
+                        }
+                       
+                        <input type="file" id="BigHomePic" name="BigHomePic" width="120px" onchange="UploadImgFActivityHome(this, 'ImgBigHomePic', 'HidBigHomePic')" />
+                        <input type="hidden" id="HidBigHomePic" name="HidBigHomePic" value="@Model.HidBigHomePic" />
+                    </td>
+                    <td>网站图标:</td>
+                    <td>
+                        @if (string.IsNullOrEmpty(Model.ImgBigHomePicWww))
+                        {
+                            <img id="ImgBigHomePicWww" style="width:30px;height:30px;" />
+                        }
+                        else
+                        {
+                            <img id="ImgBigHomePicWww" style="width:30px;height:30px;" src="@Model.ImgBigHomePicWww" />
+                        }
+                     
+                        <input type="file" id="BigHomePicWww" name="BigHomePicWww" width="120px" onchange="UploadImgFActivityHome(this, 'ImgBigHomePicWww', 'HidBigHomePicWww')" />
+                        <input type="hidden" id="HidBigHomePicWww" name="HidBigHomePicWww" value="@Model.HidBigHomePicWww" />
+                    </td>
+                    <td>链接:</td>
+                    <td>
+                        <input type="text" id="BigHomeUrl" name="BigHomeUrl" style="width:130px;" value="@Model.BigHomeUrl" />
+                    </td>
+                    <td>
+                        网站链接:
+                    </td>
+                    <td>
+                        <input type="text" id="BigHomeUrlWww" name="BigHomeUrlWww" style="width:130px" value="@Model.BigHomeUrlWww" />
+                    </td>
+                </tr>
+            </table>
+        </form>
+</fieldset>
+<fieldset>
+    <legend>分会场信息</legend>
+    <form id="BigFHomeForm">
+        <table>
+            @if (Model.Rows != null)
+            {
+                int number = 0;
+                for (int i = 0; i < Model.Rows.Count; i++)
+                {
+                    if (Model.Rows[i] != null)
+                    {
+                        number = number + 1;
+                        var item = Model.Rows[i];
+                    <tr id="FHome@(number)">
+                        <td>组号:</td>
+                        <td>
+                            <input type="text" readonly="readonly" id="FHomeGroup@(number)" value="@item.BigFHomeGroup" />
+                        </td>
+                        <td>名称:</td>
+                        <td>
+                            <input type="text" name="FHomeName@(number)" id="FHomeName@(number)" style="width:220px"  value="@item.FHomeName"/>
+                        </td>
+                        <td>
+                            图标:
+                        </td>
+                        <td>
+                            <img style="width:30px; height:30px;" id="ImageFHome@(number)" src="@item.ImageFHome" />
+                            <input type="file" id="uploadFHome@(number)" name="uploadFHome@(number)" onchange="UploadImgFActivityHome(this, 'ImageFHome@(number)', 'HidImageFHome@(number)')" />
+                            <input type="hidden" id="HidImageFHome@(number)" name="HidImageFHome@(number)" value="@item.HidImageFHome" />
+                        </td>
+                    </tr>
+
+                    }
+
+
+                }
+                for (; number < 4;)
+                {
+                    number = number + 1;
+                    <tr id="FHome@(number)" style="display:none">
+                        <td>组号:</td>
+                        <td>
+                            <input type="text" readonly="readonly" id="FHomeGroup@(number)" />
+                        </td>
+                        <td>名称:</td>
+                        <td>
+                            <input type="text" name="FHomeName@(number)" id="FHomeName@(number)" style="width:220px" />
+                        </td>
+                        <td>
+                            图标:
+                        </td>
+                        <td>
+                            <img style="width:30px; height:30px;" id="ImageFHome@(number)" />
+                            <input type="file" id="uploadFHome@(number)" name="uploadFHome@(number)" onchange="UploadImgFActivityHome(this, 'ImageFHome@(number)', 'HidImageFHome@(number)')" />
+                            <input type="hidden" id="HidImageFHome@(number)" name="HidImageFHome@(number)" />
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+            <tr id="FHome1" style="display:none">
+                <td>组号:</td>
+                <td>
+                    <input type="text" readonly="readonly" id="FHomeGroup1"/>
+                </td>
+                <td>名称:</td>
+                <td>
+                    <input type="text" name="FHomeName1" id="FHomeName1" style="width:220px"/>
+                </td>
+                <td>
+                    图标:
+                </td>
+                <td>
+                    <img  style="width:30px; height:30px;"  id="ImageFHome1"/>
+                    <input type="file" id="uploadFHome1" name="uploadFHome1"  onchange="UploadImgFActivityHome(this, 'ImageFHome1', 'HidImageFHome1')" />
+                    <input type="hidden" id="HidImageFHome1" name="HidImageFHome1"/>
+                </td>
+            </tr>
+            <tr id="FHome2" style="display:none">
+                <td>组号:</td>
+                <td>
+                    <input type="text" readonly="readonly" id="FHomeGroup2" />
+                </td>
+                <td>名称:</td>
+                <td>
+                    <input type="text" name="FHomeName2" id="FHomeName2" style="width:220px" />
+                </td>
+                <td>
+                    图标:
+                </td>
+                <td>
+                    <img style="width:30px; height:30px;" id="ImageFHome2" />
+                    <input type="file" id="uploadFHome2" name="uploadFHome2" onchange="UploadImgFActivityHome(this, 'ImageFHome2', 'HidImageFHome2')" />
+                    <input type="hidden" id="HidImageFHome2" name="HidImageFHome2" />
+                </td>
+            </tr>
+            <tr id="FHome3" style="display:none">
+                <td>组号:</td>
+                <td>
+                    <input type="text" readonly="readonly" id="FHomeGroup3" />
+                </td>
+                <td>名称:</td>
+                <td>
+                    <input type="text" name="FHomeName3" id="FHomeName3" style="width:220px" />
+                </td>
+                <td>
+                    图标:
+                </td>
+                <td>
+                    <img style="width:30px; height:30px;" id="ImageFHome3" />
+                    <input type="file" id="uploadFHome3" name="uploadFHome3" onchange="UploadImgFActivityHome(this, 'ImageFHome3', 'HidImageFHome3')" />
+                    <input type="hidden" id="HidImageFHome3" name="HidImageFHome3" />
+                </td>
+            </tr>
+            <tr id="FHome4" style="display:none">
+                <td>组号:</td>
+                <td>
+                    <input type="text" readonly="readonly" id="FHomeGroup4" />
+                </td>
+                <td>名称:</td>
+                <td>
+                    <input type="text" name="FHomeName4" id="FHomeName4" style="width:220px" />
+                </td>
+                <td>
+                    图标:
+                </td>
+                <td>
+                    <img style="width:30px; height:30px;" id="ImageFHome4" />
+                    <input type="file" id="uploadFHome4" name="uploadFHome4" onchange="UploadImgFActivityHome(this, 'ImageFHome4', 'HidImageFHome4')" />
+                    <input type="hidden" id="HidImageFHome4" name="HidImageFHome4" />
+                </td>
+            </tr>
+            }
+        </table>
+    </form>
+</fieldset>
+    <fieldset>
+        <legend>分会场明细</legend>
+        @{ 
+            List<Tuhu.Provisioning.DataAccess.Entity.BigFHomeDeatil> list = new List<Tuhu.Provisioning.DataAccess.Entity.BigFHomeDeatil>();
+            if (Model.Rows != null)
+            {
+                foreach (var item in Model.Rows)
+                {
+                    list.AddRange(item.Items);
+                }
+            }
+        }
+        <table title="分会场信息" class="easyui-datagrid" id="BigFHome" data-options="singleSelect:true,rownumbers:true,fitColumns:true,remoteSort:false,multiSort:true,data:@(Newtonsoft.Json.JsonConvert.SerializeObject(list))">
+            <thead>
+                <tr>
+                    <th data-options="field:'BigFHomeGroup',fixed:true" width="15%">分会场组</th>
+                    <th data-options="field:'BigFHomeName',fixed:true"  width="10%">名称</th>
+                    <th  data-options="field:'ImgFHomePic',fixed:true,formatter:function(value,row,index){ if(value != '' && value != undefined){ return  '<img  style=\'width:45px;height:25px;\'  src=\''+value+'\' />'}else{return '';};} "  width="10%">图标</th>
+                    <th data-options="field:'BigFHomeMobileUrl',fixed:true"  width="10%">移动链接</th>
+                    <th data-options="field:'BigFHomeWwwUrl',fixed:true"  width="10%">网站链接</th>
+                    <th data-options="field:'BigFHomeOrder',fixed:true"  width="5%">排序</th>
+                </tr>
+            </thead>
+
+        </table>
+    </fieldset>
+
+
+<div id="BigFHomeDialog" title="编辑分会场信息" class="easyui-dialog" data-options="closed:true"></div>
+
+<script type="text/javascript">
+    var BigActivityHome = {
+        rules: {
+            BigHomeName: {
+                required: true
+            },
+            HidBigHomePic: {
+                required: true
+            },
+            HidBigHomePicWww: {
+                required:true
+            },
+            BigHomeUrl: {
+                url: true
+            },
+            BigHomeUrlWww: {
+                url: true
+            }
+
+        },
+        messages: {
+            BigHomeName: {
+                required: '名称必填'
+            },
+            HidBigHomePic: {
+                required: '图标必填'
+            },
+            HidBigHomePicWww: {
+                required:'图标必填'
+            },
+            BigHomeUrl: {
+                url: '请输入正确的网址'
+            },
+            BigHomeUrlWww: {
+                url: '请输入正确的网址'
+
+            }
+
+        }
+    };
+
+    var FHomeNumber =parseInt( @(Model.Rows != null?Model.Rows.Count.ToString():"0"));//0;
+
+            //   $('#BigActivityHome').validate(dd);
+
+            function EditBigFHome(rowData,indexRow) {
+        $('#BigFHomeDialog').dialog({
+            width: 1000,
+            height: 300,
+            cache: false,
+            href: '/ActivityV2/BigFHomeEdit' ,
+            method: 'post',
+            queryParams:{rows:JSON.stringify(rowData)},
+            buttons: [{
+                        text: '保 存',
+                iconCls: 'icon-ok',
+                handler: function () {
+                            var isResult = $('#BigFHomeForm').valid();
+
+                            if (isResult) {
+                                var dt = GetBigFHomeForm();
+                                dt.BigFHomeGroup = rowData.BigFHomeGroup;
+                        $('#BigFHome').datagrid('updateRow', {
+                                    index: indexRow,
+                            row:dt
+                        });
+                        $('#BigFHomeDialog').dialog('clear');
+                        $('#BigFHomeDialog').dialog('close');
+                        $('#BigFHome').datagrid('sort', {
+                                    BigFHomeOrder: 'asc'
+                        });
+                                MergeCells('BigFHome', 'BigFHomeGroup');
+                            }
+                        }
+            }, {
+                text: '取 消',
+                iconCls: 'icon-ok',
+                handler: function () {
+                    $('#BigFHomeDialog').dialog('clear');
+                    $('#BigFHomeDialog').dialog('close');
+                        }
+                    }]
+        });
+
+            }
+
+    $('#BigFHome').datagrid({
+                toolbar: [{
+                    iconCls: 'icon-add',
+            text: '添加会场',
+            handler: function () {
+                        if (FHomeNumber > 4) {
+                    $.messager.alert('系统提示','不能添加太多分会场');
+                            return false;
+                        }
+                        if (FHomeNumber > 0) {
+                            for (var i = 1; i <= FHomeNumber; i++) {
+                                var item = {};
+                                item.FHomeName = $('#FHomeName' + i).val();
+                                item.BigFHomeGroup = $('#FHomeGroup' + i).val();
+                                item.ImageFHome = $('#ImageFHome' + i).attr("src") || '';
+                                item.HidImageFHome = $('#HidImageFHome' + i).val();
+                                if (item.FHomeName == '' || item.FHomeName == null || item.FHomeName == undefined) {
+                            $.messager.alert("系统提示","请输入对象分会场的名称");
+                                    return false;
+                                }
+                                if (item.HidImageFHome == '' || item.HidImageFHome == null || item.HidImageFHome == undefined) {
+                            $.messager.alert("系统提示", "请输入对象分会场的图标");
+                                    return false;
+                                }
+                            }
+                        }
+
+
+
+                        var date = (new Date()).Format("yyyyMMddhhmmss");
+                $.messager.prompt('组 号', '默认组号:' + date, function (r) {
+                            if (r) {
+                                if (r.length == 14) {
+                                    date = r;
+                                } else {
+                            $.messager.alert('提 示', '输入组号格式不正确,采用默认组号');
+                                }
+
+                                for (var i = 1; i <= 9; i++) {
+                                    var data = {};
+                                    data.BigFHomeGroup = date;
+                                    data.BigFHomeName = '';
+                                    data.BigFHomeSmallPic = '';
+                                    data.BigFHomeMobileUrl = '';
+                                    data.BigFHomeWwwUrl = '';
+                                    data.BigFHomeOrder = i;
+                            $('#BigFHome').datagrid('appendRow', data);
+                                }
+
+                        $('#BigFHome').datagrid('sort', {
+                                    BigFHomeOrder: 'asc'
+                        });
+                                MergeCells('BigFHome', 'BigFHomeGroup');
+                                FHomeNumber = FHomeNumber + 1;
+                        $('#FHome' + FHomeNumber).show();
+                        $('#FHomeGroup' + FHomeNumber).val(date);
+                            }
+
+
+                        }, date);
+                    }
+                }, '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-',
+                '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-',
+                 '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-',
+                {
+                    iconCls: 'icon-edit',
+            text: '删 除',
+            handler: function () {
+                    $.messager.confirm('提示', '您确定删除吗?', function (r) {
+                            if (r) {
+                                var oldRow = $('#BigFHome').datagrid("getSelected");
+                                var group = oldRow.Group;
+                                var rows = $('#BigFHome').datagrid('getRows');
+                                for (var i = 0; i < rows.length; i++) {
+                                    var row = rows[i];
+                                    console.log(row.Group);
+                                    if (row.Group == group) {
+                                        var index = $('#BigFHome').datagrid('getRowIndex', row);
+                                    $('#BigFHome').datagrid('deleteRow', index);
+                                        rows = $('#BigFHome').datagrid('getRows');
+                                        MergeCells('BigFHome', 'BigFHomeGroup');
+                                        i = -1;
+                                    }
+                                }
+
+
+
+                            }
+                        });
+
+                    }
+                }],
+        onDblClickRow: function (rowIndex, rowData) {
+                    EditBigFHome(rowData, rowIndex);
+            $('#BigFHomeDialog').dialog('center');
+            $('#BigFHomeDialog').dialog('open');
+                },
+        onLoadSuccess: function () {
+                    MergeCells('BigFHome', 'BigFHomeGroup');
+                }
+            });
+
+
+    function GetBigActivityHome() {
+                var BigHomeName = $('#BigHomeName').val();
+                var ImgBigHomePic = $('#ImgBigHomePic').attr("src")||'';
+                var HidBigHomePic = $('#HidBigHomePic').val();
+                var BigHomeUrl = $('#BigHomeUrl').val();
+
+                var ImgBigHomePicWww = $('#ImgBigHomePicWww').attr('src') || '';
+                var HidBigHomePicWww = $('#HidBigHomePicWww').val();
+                var BigHomeUrlWww = $('#BigHomeUrlWww').val();
+                var datagrid = $('#BigFHome').datagrid('getRows');
+                var data = {};
+                data.BigHomeName = BigHomeName;
+                data.ImgBigHomePic = ImgBigHomePic;
+                data.HidBigHomePic = HidBigHomePic;
+                data.BigHomeUrl = BigHomeUrl;
+                data.ImgBigHomePicWww = ImgBigHomePicWww;
+                data.HidBigHomePicWww = HidBigHomePicWww;
+                data.BigHomeUrlWww = BigHomeUrlWww;
+
+                if (datagrid != undefined) {
+                    var FHome = [];
+                    for (var i = 1; i <= FHomeNumber; i++) {
+                        var item = {};
+                        item.FHomeName = $('#FHomeName' + i).val();
+                        item.BigFHomeGroup = $('#FHomeGroup' + i).val();
+                        item.ImageFHome = $('#ImageFHome' + i).attr("src")||'';
+                        item.HidImageFHome = $('#HidImageFHome' + i).val();
+                        item.Items = [];
+                        for (var j = 0; j < datagrid.length; j++) {
+                            if (datagrid[j].BigFHomeGroup == item.BigFHomeGroup) {
+                                var datagrid_row = datagrid[j];
+                                item.Items.push(datagrid_row);
+                            }
+                        }
+                        FHome.push(item);
+                    }
+                    data.Rows = FHome;
+                } else {
+                    data.Rows = '';
+                }
+                return data;
+
+            }
+
+
+            function UploadImgFActivityHome(obj, icon, hid) {
+                var pobj = $(obj);
+                var rd = Math.ceil(Math.random() * 9999) + 1;
+                var fileElId = $(obj).attr("id");
+
+        $.ajaxFileUpload({
+                    url: '/Article/ImageUploadToAli?rd=' + rd,
+            secureuri: false,
+            fileElementId: fileElId,
+            dataType: 'json',
+            async: false,
+            success: function (result) {
+                        if (result.BImage != "" && result.SImage != "") {
+                    $('#' + icon).attr("src", result.SImage);
+                    $('#' + hid).val(result.BImage);
+                        } else {
+                            alert("上传失败！");
+                        }
+                    },
+            error: function (data, status, e)//服务器响应失败处理函数
+            {
+                        alert(e);
+                    }
+                });
+            }
+
+</script>

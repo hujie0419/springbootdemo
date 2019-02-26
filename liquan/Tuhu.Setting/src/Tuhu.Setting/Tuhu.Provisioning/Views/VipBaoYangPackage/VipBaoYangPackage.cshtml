@@ -1,0 +1,1021 @@
+﻿@{
+    ViewBag.Title = "大客户保养套餐";
+}
+@section head{
+    <link href="~/css/beautyPackage.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="~/Content/iview/iview.css" />
+    <style type="text/css">
+        .ui-dialog { width: auto; }
+
+        .select2-selection__choice { color: black; }
+
+        .select2-container { margin-bottom: 10px; }
+
+        label.dialoglable { width: 20%; display: inline-block; font-weight: 900; }
+
+        div.dialogdiv { width: 60%; display: inline-block; }
+
+        .strike { display: block; text-align: center; overflow: hidden; white-space: nowrap; margin-top: 10px; }
+
+        .strike > span { position: relative; display: inline-block; }
+
+        .strike > span:before,
+        .strike > span:after { content: ""; position: absolute; top: 50%; width: 9999px; height: 1px; background: #808080; }
+
+        .strike > span:before { right: 100%; margin-right: 15px; }
+
+        .strike > span:after { left: 100%; margin-left: 15px; }
+
+        body { background-color: #71d6f3; /*font-size: 75%;*/ font-family: Verdana, Tahoma, Arial, "Helvetica Neue", Helvetica, Sans-Serif; margin: 0; padding: 0; color: #696969; }
+
+        .form-item-width { width: 93%; }
+
+        .wrap-line { position: absolute; text-align: center; width: 95%; }
+        .wrap-line div { line-height: 20px; }
+        .wrap-line div:after, .wrap-line div:before { position: absolute; top: 50%; background: #bbb; content: ""; height: 1px; width: 40%; }
+        .wrap-line div:before { left: 0; }
+        .wrap-line div:after { right: 0; }
+
+    </style>
+}
+
+<div id="div" v-cloak>
+    <h2 style="margin:20px 0;">
+        <a href="/VipBaoYangPackage/VipBaoYangPackage" style="color: #08c;">保养套餐配置</a>
+        <a href="/VipBaoYangPackage/VipPromotionOperation" style="color: #08c;margin-left:30px">给用户塞券</a>
+        <a href="/VipBaoYangPackage/PromotionOperationRecord" style="color: #08c;margin-left:30px">塞券记录</a>
+        <a href="/VipBaoYangPackage/VipBaoYangPackageSmsConfig" style="color: #08c;margin-left:30px">短信配置</a>
+    </h2>
+    <row type="flex" justify="start" v-bind:align="'middle'" style="margin-bottom:20px">
+        <i-col span="5">
+            <i-input type="text" placeholder="请输入套餐PID" v-model="filterCondition.pid"></i-input>
+        </i-col>
+        <i-col span="1"></i-col>
+        <i-col span="5">
+            <i-select filterable v-model="filterCondition.vipUserId">
+                <i-option value="00000000-0000-0000-0000-000000000000" key="00000000-0000-0000-0000-000000000000">请选择</i-option>
+                <i-option :value="item.VipUserId" :key="item.VipUserId" v-for="item in users">{{item.VipUserName}}</i-option>
+            </i-select>
+        </i-col>
+        <i-col span="1"></i-col>
+        <i-col span="5">
+            <i-button type="success" v-on:click="pager.index=0;">查询</i-button>
+            <i-button type="primary" v-on:click="append">新增</i-button>
+        </i-col>
+    </row>
+    <table class="tableContainer" style="margin-top:30px">
+        <thead>
+            <tr>
+                <th>套餐PID</th>
+                <th>套餐名称</th>
+                <th>机油</th>
+                <th>机油升数限制</th>
+                <th>结算方式</th>
+                <th>创建人</th>
+                <th>创建时间</th>
+            </tr>
+        </thead>
+        <tr v-show="loading">
+            <td colspan="10"><img src="/Images/loading.gif" /></td>
+        </tr>
+        <tr v-show="!loading && list.length <= 0">
+            <td colspan="10">无数据</td>
+        </tr>
+        <tr v-show="!loading && list.length > 0" v-for="item in list">
+            <td>{{item.PID}}</td>
+            <td><a v-on:click="edit(item.PKID)" style="cursor:pointer"><span>{{item.PackageName}}</span></a></td>
+            <td>
+                <div v-for="config in item.OilConfigs" style="margin-bottom:5px; margin-top:5px;">
+                    <span>{{config.Brand}}</span>
+                    <span v-if="!!config.Grade"> - {{config.Grade}}</span>
+                    <span v-if="(config.Series || []).length > 0"> - {{config.Series.join(',')}}</span>
+                </div>
+            </td>
+            <td>{{item.Volume | formatValue}}</td>
+            <td>{{item.SettlementMethod == 'PreSettled' ? '买断制' : '据实结算'}}</td>
+            <td>{{item.CreateUser}}</td>
+            <td>{{item.CreateDateTime | formatDate}}</td>
+        </tr>
+    </table>
+
+    <page show-sizer show-total style="margin-top:20px;"
+          placement="top" v-on:on-page-size-change="pager.size=$event"
+          :page-size="20" :current.sync="pager.index" :total="pager.total"
+          :page-size-opts="[10, 20, 50, 100, 200]"></page>
+
+    <form-modal :brand-series="brandSeries" :users="users" :ruleguids="ruleguids" :show.sync="show" :packageid="PackageId" v-on:submit="submit" ref="form"></form-modal>
+</div>
+
+
+
+<script type="text/x-template" id="form-modal">
+    <modal v-model="showModal" title="套餐产品详情页" width="900"
+           :loading="true"
+           :closable="!loading"
+           :mask-closable="false">
+        <i-form ref="packageForm" :rules="rules" :model="data" :label-width="160">
+            <form-item label="套餐所属大客户用户：" prop="VipUserId" class="form-item-width">
+                <i-select transfer filterable v-model="data.VipUserId" :disabled="disabled">
+                    <i-option value="00000000-0000-0000-0000-000000000000" key="00000000-0000-0000-0000-000000000000">请选择套餐所属大客户</i-option>
+                    <i-option :value="item.VipUserId" :key="item.VipUserId" v-for="item in users">{{item.VipUserName}}</i-option>
+                </i-select>
+            </form-item>
+            <form-item label="套餐名称：" prop="PackageName" class="form-item-width">
+                <i-input v-model="data.PackageName" placeholder="显示给用户的套餐名称" :disabled="disabled"></i-input>
+            </form-item>
+            <template v-if="!disabled">
+                <form-item label="选择机油品牌：" prop="OilConfigs" class="form-item-width">
+                    <oil-select-list :brand-series="brandSeries" v-model="data.OilConfigs" ref="select" v-if="showModal"></oil-select-list>
+                </form-item>
+            </template>
+            <form-item label="填写机油升数：" prop="Volume" class="form-item-width">
+                <i-select transfer v-model="data.Volume" :disabled="disabled">
+                    <i-option value="">暂无(不限制)</i-option>
+                    <i-option :value="4">4L</i-option>
+                    <i-option :value="5">5L</i-option>
+                </i-select>
+            </form-item>
+            <form-item label="套餐价格：" prop="Price" class="form-item-width">
+                <i-input v-model="data.Price" :disabled="disabled"></i-input>
+            </form-item>
+            <form-item label="结算方式：" prop="SettlementMethod" class="form-item-width">
+                <radio-group v-model="data.SettlementMethod">
+                    <radio label="PreSettled" :disabled="disabled"><span>买断制</span></radio>
+                    <radio label="ByPeriod" :disabled="disabled"><span>据实结算制</span></radio>
+                </radio-group>
+            </form-item>
+            <template v-if="disabled">
+                <row type="flex" style="margin-bottom:40px">
+                    <i-col span="24">
+                        <div class="wrap-line">
+                            <div>以上信息新建后不允许修改</div>
+                        </div>
+                    </i-col>
+                </row>
+                <form-item label="选择机油品牌：" prop="OilConfigs" class="form-item-width">
+                    <oil-select-list :brand-series="brandSeries" v-model="data.OilConfigs" ref="select" v-if="showModal"></oil-select-list>
+                </form-item>
+            </template>
+            <form-item label="套餐所属结算用户：" prop="SettlementVipUserId" class="form-item-width">
+                <i-select transfer filterable v-model="data.SettlementVipUserId">
+                    <i-option value="00000000-0000-0000-0000-000000000000" key="00000000-0000-0000-0000-000000000000">请选择套餐所属结算用户</i-option>
+                    <i-option :value="item.VipUserId" :key="item.VipUserId" v-for="item in users">{{item.VipUserName}}</i-option>
+                </i-select>
+            </form-item>
+            <form-item label="套餐渠道：" prop="Source" class="form-item-width">
+                <radio-group v-model="data.Source">
+                    <radio label="YunYing"><span>运营</span></radio>
+                    <radio label="Interface"><span>接口</span></radio>
+                </radio-group>
+            </form-item>
+            <form-item label="优惠券规则：" v-if="data.Source=='Interface'" prop="GetRuleGUID" class="form-item-width">
+                <i-select transfer filterable v-model="data.GetRuleGUID">
+                    <i-option value="00000000-0000-0000-0000-000000000000" key="00000000-0000-0000-0000-000000000000">领取规则（ID+优惠券名称+描述）</i-option>
+                    <i-option :value="item.RuleGUID" :key="item.RuleGUID" v-for="item in ruleguids">{{item.PKID}}-{{item.PromotionName}}-{{item.Description}}</i-option>
+                </i-select>
+            </form-item>
+        </i-form>
+        <div slot="footer">
+            <i-button type="text" v-on:click="showModal=false">取消</i-button>
+            <i-button type="primary" :loading="loading" v-on:click="handleSubmit">{{disabled?'修改':'添加'}}</i-button>
+        </div>
+    </modal>
+</script>
+
+<script type="text/x-template" id="oil-select">
+    <div>
+        <row type="flex" justify="space-between" v-bind:align="'middle'" style="margin-bottom:10px;">
+            <i-col span="6">
+                <i-select transfer filterable v-model="brand" placeholder="请选择机油品牌">
+                    <i-option value="" key="string.empty">请选择机油品牌</i-option>
+                    <i-option :value="item" :key="item" v-for="item in brands">{{item}}</i-option>
+                </i-select>
+            </i-col>
+            <i-col span="13">
+                <i-button type="success" v-on:click="addGrade">添加等级限制</i-button>
+                <span>(如若不填则表示不限制)</span>
+            </i-col>
+            <i-col span="4">
+                <i-button type="error" v-on:click="$emit('on-remove')">删除品牌限制</i-button>
+            </i-col>
+        </row>
+        <oil-select-grade v-for="(item, index) in grades"
+                          v-model="grades[index].value"
+                          :key="grades[index].key"
+                          :series-options="seriesOptions"
+                          style="margin-bottom:10px;"
+                          :selection="gradeSelection"
+                          v-on:on-remove="removeGrade(index)">
+        </oil-select-grade>
+    </div>
+</script>
+
+<script type="text/x-template" id="oil-select-grade">
+    <row type="flex" justify="space-between" v-bind:align="'middle'">
+        <i-col span="6">
+            <div style="display:inline-block; width:30%;"></div>
+            <i-select transfer v-model="grade" placeholder="请选择机油等级" style="width:67%">
+                <i-option value="" key="string.empty">请选择机油等级</i-option>
+                <i-option :value="item" :key="item" v-for="item in grades">{{item}}</i-option>
+            </i-select>
+        </i-col>
+        <i-col span="13">
+            <i-select transfer v-model="series" placeholder="请选择机油系列" multiple>
+                <i-option :value="item" :key="item" v-for="item in options">{{item}}</i-option>
+            </i-select>
+        </i-col>
+        <i-col span="4">
+            <i-button type="ghost" v-on:click="$emit('on-remove')">删除等级限制</i-button>
+        </i-col>
+    </row>
+</script>
+
+<script type="text/x-template" id="oil-select-list">
+    <div>
+        <oil-select v-for="(item,index) in data"
+                    v-model="data[index].value"
+                    :key="data[index].key"
+                    :brand-options="Object.keys(brandSeries)"
+                    :series-options="brandSeries[item.value.brand] || []"
+                    style="margin-bottom:10px;"
+                    ref="select"
+                    :selection="existData"
+                    v-on:on-remove="clickRemove(index)">
+        </oil-select>
+        <row>
+            <i-col span="6">
+                <i-button long type="dashed" icon="plus-round" v-on:click="clickAppend">新增机油品牌</i-button>
+            </i-col>
+        </row>
+    </div>
+</script>
+
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/iview/iview.min.js"></script>
+    <script type="text/javascript" src="~/Content/My97DatePicker/WdatePicker.js"></script>
+    <script src="~/Scripts/vue.common.js"></script>
+    <script type="text/javascript">
+
+        Array.prototype.any = function (callback) {
+            var array = this;
+            for (var i = 0; i < array.length; i++) {
+                var value = array[i];
+                if (callback(value, i)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        Array.prototype.groupBy = function (selector) {
+            var array = this;
+            var set = {};
+            var keys = [];
+            for (var i = 0; i < array.length; i++) {
+                var value = array[i];
+                var key = selector(value, i);
+                if (!set.hasOwnProperty(key)) {
+                    set[key] = [];
+                    keys.push(key);
+                }
+                set[key].push(value);
+            }
+            var result = [];
+            for (var i = 0; i < keys.length; i++) {
+                var key = keys[i];
+                var obj = {};
+                obj.key = key;
+                obj.value = set[key] || [];
+                result.push(obj);
+            }
+            return result;
+        }
+
+        Date.prototype.formatDate = function () {
+            var time = this;
+            var year = time.getFullYear();
+            var month = time.getMonth() + 1;
+            var days = time.getDate();
+            var hours = time.getHours();
+            var minutes = time.getMinutes();
+            var seconds = time.getSeconds();
+            var milliseconds = time.getMilliseconds();
+            var func = function (input, n) {
+                var text = (input || "").toString();
+                while (text.length < n) {
+                    text = '0' + text;
+                }
+                return text;
+            }
+            return func(year, 4) + '-' +
+                func(month, 2) + '-' +
+                func(days, 2) + ' ' +
+                func(hours, 2) + ':' +
+                func(minutes, 2) + ':' +
+                func(seconds, 2) + '.' + func(milliseconds, 3);
+        }
+
+        function formatValue(value) {
+            var result = value;
+            if (value == "" || value == null || value == undefined) {
+                result = "/"
+            }
+            return result;
+        }
+        Vue.filter('formatValue', formatValue);
+        Vue.component('oil-select-grade', {
+            template: "#oil-select-grade",
+            props: {
+                value: {
+                    type: Object,
+                    default: function () {
+                        var obj = {};
+                        obj.grade = '';
+                        obj.series = [];
+                        return obj;
+                    }
+                },
+                seriesOptions: {
+                    type: Array,
+                    default: function () {
+                        return [];
+                    },
+                },
+                selection: {
+                    type: Array,
+                    default: function () {
+                        return [];
+                    }
+                }
+            },
+            data: function () {
+                return {
+                    grade: '',
+                    series: []
+                };
+            },
+            methods: {
+                gradeWatcher: function (grade) {
+                    var vm = this;
+                    vm.$emit('input', { grade: grade, series: [] });
+                },
+                seriesWatcher: function () {
+                    var vm = this;
+                    var grade = vm.grade;
+                    var series = (vm.series || []);
+                    vm.$emit('input', { grade: grade, series: series });
+                },
+                valueWatcher: function (value) {
+                    var vm = this;
+                    var grade = vm.grade;
+                    var series = vm.series;
+                    var obj = { grade: grade, series: series };
+                    if (JSON.stringify(obj) !== JSON.stringify(value)) {
+                        vm.grade = value.grade;
+                        vm.series = value.series;
+                    }
+                },
+            },
+            mounted: function () {
+                var vm = this;
+                vm.grade = vm.value.grade || '';
+                vm.series = vm.value.series || [];
+                vm.$watch("grade", vm.gradeWatcher);
+                vm.$watch("series", vm.seriesWatcher);
+                vm.$watch("value", vm.valueWatcher);
+            },
+            computed: {
+                grades: function () {
+                    var vm = this;
+                    var selection = vm.selection || [];
+                    return ["全合成", "半合成", "矿物油"].filter(function (x) {
+                        return vm.grade === x || !selection.any(function (o) { return o.grade === x });
+                    });
+                },
+                options: function () {
+                    var vm = this;
+                    var series = vm.seriesOptions;
+                    if (!!vm.grade) {
+                        return series;
+                    } else {
+                        return [];
+                    }
+                },
+            },
+        });
+        Vue.component('oil-select', {
+            template: "#oil-select",
+            props: {
+                value: {
+                    type: Object,
+                    default: function () {
+                        var obj = {};
+                        obj.brand = '';
+                        obj.grades = [];
+                        return obj;
+                    }
+                },
+                brandOptions: {
+                    type: Array,
+                    default: function () {
+                        return [];
+                    },
+                },
+                seriesOptions: {
+                    type: Array,
+                    default: function () {
+                        return [];
+                    },
+                },
+                selection: {
+                    type: Array,
+                    default: function () {
+                        return [];
+                    }
+                }
+            },
+            data: function () {
+                return {
+                    brand: '',
+                    grades: [],
+                    uniqueKey: 0,
+                    brands:[],
+                };
+            },
+            methods: {
+                brandWatcher: function (brand) {
+                    var vm = this;
+                    var selection = vm.selection || [];
+                    vm.brands = vm.brandOptions.filter(function (x) {
+                        return x === vm.brand || !selection.any(function (s) { return s.brand === x });
+                    });
+                    vm.$emit('input', { brand: brand, grades: [] });
+                },
+                gradesWatcher: function () {
+                    var vm = this;
+                    var brand = vm.brand;
+                    var grades = vm.grades || [];
+                    var values = grades.map(function (o) { return o.value });
+                    vm.$emit('input', { brand: brand, grades: values });
+                },
+
+                valueWatcher: function (value) {
+                    var vm = this;
+                    var brand = vm.brand;
+                    var grades = (vm.grades || []).map(function (o) { return o.value });
+                    var obj = { brand: brand, grades: grades };
+                    if (JSON.stringify(obj) !== JSON.stringify(value)) {
+                        vm.brand = value.brand;
+                        (value.grades || []).forEach(function (x) {
+                            vm.addGrade(x);
+                        });
+                    }
+                },
+                addGrade: function (grade) {
+                    var vm = this;
+                    vm.grades = vm.grades || [];
+                    if (vm.grades.length < 3) {
+                        grade = grade || { grade: '', series: [] };
+                        vm.uniqueKey += 1;
+                        var key = vm.uniqueKey;
+                        var obj = {};
+                        obj.key = key;
+                        obj.value = {};
+                        obj.value.grade = grade.grade;
+                        obj.value.series = grade.series;
+                        vm.grades.push(obj);
+                    } else {
+                        vm.$Message.warning("等级限制已达上限");
+                    }
+                },
+                removeGrade: function (index) {
+                    var vm = this;
+                    vm.grades.splice(index, 1);
+                }
+            },
+            created: function () {
+                var vm = this;
+                vm.brand = vm.value.brand;
+                (vm.value.grades || []).forEach(function (x) {
+                    vm.addGrade(x);
+                });
+                var selection = vm.selection || [];
+                vm.brands = vm.brandOptions.filter(function (x) {
+                    return x === vm.brand || !selection.any(function (s) { return s.brand === x });
+                });
+                vm.$watch("brand", vm.brandWatcher);
+                vm.$watch("grades", vm.gradesWatcher, { deep: true });
+                vm.$watch("value", vm.valueWatcher);
+            },
+            computed: {
+                gradeSelection: function () {
+                    return (this.grades || []).map(function (x) { return x.value }).filter(function (x) { return x != null && x != undefined });
+                },
+            },
+        });
+        Vue.component('oil-select-list', {
+            template: "#oil-select-list",
+            props: {
+                value: {
+                    type: Array,
+                    default: function () {
+                        return [];
+                    },
+                },
+                brandSeries: {
+                    type: Object,
+                    default: function () {
+                        return {};
+                    },
+                }
+            },
+            data: function () {
+                return {
+                    data: [],
+                    uniqueKey: 0,
+                };
+            },
+            mounted: function () {
+                var vm = this;
+                vm.data = [];
+                var value = vm.convertToData();
+                value.forEach(function (item) {
+                    vm.addItem(item);
+                })
+            },
+            computed: {
+                existData: function () {
+                    return this.data.map(function (x) { return x.value });
+                }
+            },
+            watch: {
+                value: function () {
+                    var vm = this;
+                    var compareResult = vm.innerCompare();
+                    if (!compareResult.isEqual) {
+                        vm.data = [];
+                        var value = vm.convertToData();
+                        value.forEach(function (item) {
+                            vm.addItem(item);
+                        })
+                    }
+                },
+                data: {
+                    handler: function () {
+                        var vm = this;
+                        var compareResult = vm.innerCompare();
+                        if (!compareResult.isEqual) {
+                            var data = compareResult.data.map(function (item) {
+                                var obj = {};
+                                obj.Brand = item.brand;
+                                obj.Grade = item.grade;
+                                obj.Series = item.series;
+                                return obj;
+                            });
+                            vm.$emit('input', data);
+                        }
+                    },
+                    deep: true,
+                },
+            },
+            methods: {
+                clickRemove: function (index) {
+                    var vm = this;
+                    vm.data.splice(index, 1);
+                },
+                clickAppend: function () {
+                    var vm = this;
+                    vm.addItem();
+                },
+                addItem: function (item) {
+                    var vm = this;
+                    vm.uniqueKey += 1;
+                    var key = vm.uniqueKey;
+                    item = item || { brand: '', grades: [] };
+                    var obj = {};
+                    obj.brand = item.brand || '';
+                    obj.grades = item.grades || [];
+                    vm.data.push({ key: key.toString(), value: obj });
+                },
+                innerCompare() {
+                    var vm = this;
+                    var value = (vm.value || []).map(function (o) {
+                        var obj = {};
+                        obj.brand = o.Brand;
+                        obj.grade = o.Grade;
+                        obj.series = o.Series;
+                        return obj;
+                    });
+                    var data = vm.convertToValue();
+
+                    var str1 = JSON.stringify(value);
+                    var str2 = JSON.stringify(data);
+
+                    var result = {};
+                    result.isEqual = str1 === str2;
+                    result.value = value;
+                    result.data = data;
+                    return result;
+                },
+
+                convertToValue: function () {
+                    var vm = this;
+                    var array = (vm.data || []);
+                    var list = [];
+                    for (var i = 0; i < array.length; i++) {
+                        var brand = array[i].value;
+                        var grades = (brand.grades || []).filter(function (x) { return !!x.grade; });
+                        if (grades.length <= 0) {
+                            var obj = {};
+                            obj.brand = brand.brand || '';
+                            obj.grade = '';
+                            obj.series = '';
+                            list.push(obj);
+                            continue;
+                        }
+                        for (var j = 0; j < grades.length; j++) {
+                            var grade = grades[j];
+                            var seriesList = (grade.series || []).filter(function (x) { return !!x });
+                            if (seriesList.length <= 0) {
+                                var obj = {};
+                                obj.brand = brand.brand || '';
+                                obj.grade = grade.grade || '';
+                                obj.series = '';
+                                list.push(obj);
+                                continue;
+                            }
+                            for (var k = 0; k < seriesList.length; k++) {
+                                var series = seriesList[k];
+                                var obj = {};
+                                obj.brand = brand.brand || '';
+                                obj.grade = grade.grade || '';
+                                obj.series = series || '';
+                                list.push(obj);
+                            }
+                        }
+                    }
+                    return list;
+                },
+
+                convertToData: function () {
+                    var vm = this;
+                    var value = vm.value || [];
+                    var result = value.groupBy(function (b) {
+                        return b.Brand;
+                    }).map(function (group) {
+                        var grades = group.value.groupBy(function (g) {
+                            return g.Grade;
+                        }).map(function (groupGrade) {
+                            var series = groupGrade.value.map(function (s) {
+                                return s.Series;
+                            });
+                            var o = {};
+                            o.grade = groupGrade.key;
+                            o.series = series.filter(function (x) { return !!x });
+                            return o;
+                        });
+                        var obj = {};
+                        obj.brand = group.key;
+                        obj.grades = grades;
+                        return obj;
+                    });
+                    return result;
+                },
+            },
+        });
+        Vue.component('form-modal', {
+            template: '#form-modal',
+            props: {
+                show: {
+                    type: Boolean,
+                    default: false,
+                },
+                packageid: {
+                    type: Number,
+                    default: 0,
+                },
+                users: {
+                    type: Array,
+                    default: function () {
+                        return [];
+                    },
+                },
+                ruleguids: {
+                    type: Array,
+                    default: function () {
+                        return [];
+                    },
+                },
+                brandSeries: {
+                    type: Object,
+                    default: function () {
+                        return {};
+                    },
+                }
+            },
+            data: function () {
+                return {
+                    showModal: false,
+                    loading: false,
+                    disabled: false,
+                    data: {
+                        PKID: 0,
+                        VipUserId: '00000000-0000-0000-0000-000000000000',
+                        PackageName: '',
+                        Price: '',
+                        Volume: '',
+                        OilConfigs: [],
+                        SettlementMethod: '',
+                        OilGrades: [],
+                        GetRuleGUID: "00000000-0000-0000-0000-000000000000",
+                        Source: "YunYing",
+                        SettlementVipUserId:'00000000-0000-0000-0000-000000000000',
+                    },
+                    lockDisabled: true,
+                    rules: {
+                        VipUserId: [{
+                            validator: function (rule, value, callback) {
+                                if (value === '' || value === '00000000-0000-0000-0000-000000000000') {
+                                    callback(new Error('所属大客户是必选的'));
+                                    return;
+                                }
+                                callback();
+                            },
+                            trigger: 'change',
+                        }],
+                        PackageName: [{ required: true, message: "套餐名称是必填的", trigger: 'blur' }],
+                        Price: [{
+                            validator: function (rule, value, callback) {
+                                if (!/^\d+(\.\d+)?$/.test(value.toString().trim())) {
+                                    callback(new Error('价格必须是大于0的数字'));
+                                    return;
+                                }
+                                callback();
+                            },
+                            trigger: 'blur',
+                        }],
+                        Volume: [{
+                            validator: function (rule, value, callback) {
+                                if (value && !/^\d+(\.\d+)?$/.test(value.toString().trim())) {
+                                    callback(new Error('升数可不填或者必须是大于0的数字'));
+                                    return;
+                                }
+                                callback();
+                            },
+                            trigger: 'blur',
+                        }],
+                        SettlementMethod: [{ required: true, message: "结算方式不能为空", trigger: 'blur' }],
+                    }
+                };
+            },
+            watch: {
+                show: function (value) {
+                    var vm = this;
+                    if (value) {
+                        vm.getVipBaoYangPackageById(vm.packageid);
+                    }
+                    if (!value && vm.showModal) {
+                        vm.showModal = false;
+                    }
+                },
+                showModal: function (value) {
+                    var vm = this;
+                    if (value && !vm.show) {
+                        vm.$emit('update:show', true);
+                    } else if (!value) {
+                        vm.handleReset();
+                        if (vm.show) {
+                            vm.$emit('update:show', false);
+                        }
+                    }
+                }
+            },
+            methods: {
+                getVipBaoYangPackageById: function (pkid) {
+                    var vm = this;
+                    if (pkid > 0) {
+                        vm.disabled = true;
+                        vm.lockDisabled = true;
+                        $.get("SelectVipBaoYangPackageByPKID", { pkid: pkid }, function (result) {
+                            vm.data.PKID = pkid;
+                            vm.data.VipUserId = result.VipUserId.toUpperCase();
+                            vm.data.PackageName = result.PackageName;
+                            vm.data.Price = result.Price;
+                            vm.data.Volume = result.Volume;
+                            vm.data.OilConfigs = result.OilConfigs;
+                            vm.data.SettlementMethod = result.SettlementMethod;
+                            vm.data.GetRuleGUID = result.GetRuleGUID;
+                            vm.data.Source = (result.Source == "" || result.Source == null) ? "YunYing" : result.Source;
+                            vm.data.SettlementVipUserId = result.SettlementVipUserId.toUpperCase();
+                            vm.showModal = true;
+                        });
+                    }
+                    else {
+                        vm.disabled = false;
+                        vm.lockDisabled = false;
+                        vm.showModal = true;
+                    }
+                },
+                submit: function () {
+                    var vm = this;
+                    var formData = {
+                        PKID: vm.data.PKID,
+                        VipUserId: vm.data.VipUserId,
+                        PackageName: vm.data.PackageName,
+                        Price: vm.data.Price,
+                        Volume: vm.data.Volume,
+                        OilConfigs: vm.data.OilConfigs,
+                        SettlementMethod: vm.data.SettlementMethod,
+                        GetRuleGUID: vm.data.GetRuleGUID,
+                        Source: vm.data.Source,
+                        SettlementVipUserId: vm.data.SettlementVipUserId,
+                    };
+                    var content = formData.PKID > 0 ? '确认修改此套餐?' : '确认添加此套餐?';
+                    vm.$Modal.confirm({
+                        title: "操作确认",
+                        content: content,
+                        loading: true,
+                        onOk: function () {
+                            $.post("InsertVipBaoYangPackage", formData, function (result) {
+                                if (result.status) {
+                                    vm.$Message.info("操作成功！");
+                                    vm.showModal = false;
+                                    vm.$emit('submit', true);
+                                } else {
+                                    vm.$Message.warning("操作失败！" + (result.msg || ""));
+                                    vm.$emit('submit', false);
+                                }
+                            }).complete(function () {
+                                vm.$Modal.remove();
+                                vm.loading = false;
+                            });
+                        },
+                        onCancel: function () {
+                            vm.loading = false;
+                        }
+                    });
+                },
+                handleReset: function () {
+                    var vm = this;
+                    vm.data.PKID = 0;
+                    vm.data.VipUserId = '00000000-0000-0000-0000-000000000000';
+                    vm.data.PackageName = '';
+                    vm.data.Price = '';
+                    vm.data.Volume = '';
+                    vm.data.OilBrands = [];
+                    vm.data.OilGrades = [];
+                    vm.data.OilConfigs = [];
+                    vm.data.SettlementMethod = '';
+                    vm.data.GetRuleGUID = "00000000-0000-0000-0000-000000000000";
+                    vm.data.Source = "YunYing";
+                    vm.data.SettlementVipUserId = '00000000-0000-0000-0000-000000000000';
+                    vm.$refs['packageForm'].resetFields();
+                },
+                handleSubmit() {
+                    var vm = this;
+                    vm.loading = true;
+                    vm.$refs['packageForm'].validate(function (valid) {
+                        if (valid) {
+                            vm.submit();
+                            return;
+                        }
+                        vm.loading = false;
+                    });
+                },
+            }
+        });
+        var vue = new Vue({
+            el: "#div",
+            data: {
+                pager: {
+                    total: 0,
+                    index: 1,
+                    size: 20,
+                },
+                show: false,
+                PackageId: 0,
+                packages: [],
+                ruleguids: [],
+                brandSeries: {},
+                loading: false,
+                list: [],
+                filterCondition: {
+                    vipUserId: "00000000-0000-0000-0000-000000000000",
+                    pid: ""
+                },
+                options: [],
+                showdialog: false,
+                buttons: "",
+                users: [],
+            },
+            watch: {
+                "pager.size": function (size) {
+                    var vm = this;
+                    if (vm.pager.index == 1) {
+                        vm.Init();
+                    } else {
+                        vm.pager.index = 1;
+                    }
+                },
+                "pager.index": function (index) {
+                    var vm = this;
+                    if (index < 1) {
+                        vm.pager.index = 1;
+                        return;
+                    }
+                    vm.Init();
+                },
+            },
+            created: function () {
+                this.GetAllBaoYangPackageUser();
+                this.GetAllRulesIds();
+                this.GetOilBrands();
+            },
+            methods: {
+                Init: function () {
+                    var vm = this;
+                    vm.loading = true;
+                    vm.list = [];
+                    $.get("SelectVipBaoYangPackage", {
+                        pid: vm.filterCondition.pid,
+                        vipUserId: vm.filterCondition.vipUserId,
+                        pageIndex: vm.pager.index,
+                        pageSize: vm.pager.size
+                    }, function (result) {
+                        setTimeout(function () {
+                            vm.loading = false;
+                        }, 200);
+                        vm.list = result;
+                        vm.pager.total = result.length > 0 ? result[0].Total : 0;
+                    });
+                },
+                GetAllBaoYangPackageUser: function () {
+                    var vm = this;
+                    $.get("GetAllBaoYangPackageUser", function (result) {
+                        vm.packages = result || [];
+                        vm.users = vm.packages.map(function (package) {
+                            return { VipUserId: package.VipUserId.toUpperCase(), VipUserName: package.VipUserName };
+                        });
+                    });
+                },
+                GetAllRulesIds: function () {
+                    var self = this;
+                    $.get("/VipBaoYangPackage/GetCouponRules", function (result) {
+                        self.ruleguids = result || [];
+                    });
+                },
+                DeleteVipBaoYanPackage: function (pkid) {
+                    var self = this;
+                    if (confirm("是否确认删除")) {
+                        $.post("DeleteVipBaoYanPackage", { pkid: pkid }, function (result) {
+                            if (result.status) {
+                                alert("操作成功");
+                                self.Init();
+                            } else {
+                                alert(result.msg);
+                            }
+                        })
+                    }
+                },
+                GetOilBrands: function () {
+                    var vm = this;
+                    $.get("/Baoyang/GetOilBrandAndSeries", function (res) {
+                        var data = res.data || {};
+                        vm.brandSeries = data || {};
+                    });
+                },
+                append: function () {
+                    var vm = this;
+                    vm.show = false;
+                    vm.PackageId = 0;
+                    vm.$nextTick(function () {
+                        vm.show = true;
+                    });
+                },
+                edit: function (pkid) {
+                    var vm = this;
+                    vm.PackageId = pkid;
+                    vm.show = false;
+                    vm.$nextTick(function () {
+                        vm.show = true;
+                    })
+                },
+                submit: function (value) {
+                    var vm = this;
+                    if (value == true) {
+                        if (vm.pager.index == 1) {
+                            vm.Init();
+                        } else {
+                            vm.pager.index = 1;
+                        }
+                    }
+                },
+            },
+            mounted: function () {
+                this.Init();
+            }
+        });
+
+    </script>
+}

@@ -1,0 +1,659 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity.Discovery;
+@using Tuhu.Provisioning.Business.Discovery;
+@using Tuhu.Provisioning.Models;
+@model List<Article>
+@{
+    ViewBag.Title = "全部文章";
+    var pagerModel = ViewData["PagerModel"] as PagerModel;
+    SearchModel searchModel = new SearchModel() { Category = -1 };
+    if (ViewData["SearchModel"] != null)
+    {
+        searchModel = ViewData["SearchModel"] as SearchModel;
+    }
+}
+@helper ShowStatus(Article model)
+{
+var articleStatus = (ArticleStatus)Enum.Parse(typeof(ArticleStatus), model.Status);
+switch (articleStatus)
+{
+    case ArticleStatus.Saved:
+            <span>草稿</span>
+        break;
+    case ArticleStatus.Withdrew:
+            <span>已撤回</span>
+        break;
+    case ArticleStatus.Published:
+        if (model.PublishDateTime.Value <= DateTime.Now.AddMinutes(1))
+        {
+                <span>已发表</span>
+        }
+        else
+        {
+                <span>预发表</span>
+        }
+        break;
+    default:
+            <span>已发表</span>
+        break;
+}
+}
+<style type="text/css">
+    .search-result p span, .ibox-content .op span {
+        margin-right: 10px;
+    }
+
+    .ibox-content h2 .op {
+        float: right;
+        font-size: 14px;
+    }
+
+    .input-group .form-search {
+        position: relative;
+        z-index: 2;
+        float: left;
+        margin-bottom: 0;
+        height: 36px;
+        border-radius: 0;
+        display: table-cell;
+        padding: 5px 10px;
+        font-size: 14px;
+    }
+
+    .input-group-btn {
+        padding-left: 10px;
+        float: left;
+    }
+
+    .input-group input.pkid {
+        width: 100px;
+    }
+
+    .input-group .marleft {
+        margin-left: 0 !important;
+    }
+
+    .input-group input.title {
+        width: 268px;
+    }
+
+    .input-group input.btn-search {
+        padding: 6px 12px;
+        height: 36px;
+        border-top-left-radius: 3px !important;
+        border-bottom-left-radius: 3px !important;
+    }
+
+    .input-group .fontDesc {
+        float: left;
+        font-size: 14px;
+        margin-right: 10px;
+        margin-left: 10px;
+    }
+
+    .bgc {
+        background-color: #c1bebe;
+    }
+
+    .copy-tips {
+        position: fixed;
+        z-index: 999;
+        bottom: 50%;
+        left: 50%;
+        margin: 0 0 -20px -80px;
+        background-color: rgba(0,0,0,0.2);
+        filter: progid:DXImageTransform.Microsoft.Gradient(startColorstr=#30000000,endColorstr=#30000000);
+        padding: 6px;
+    }
+
+    .copy-tips-wrap {
+        padding: 10px 20px;
+        text-align: center;
+        border: 1px solid #f4d9a6;
+        background-color: #fffdee;
+        font-size: 14px;
+    }
+
+    .zclip {
+        margin-top: -12px;
+    }
+</style>
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-9">
+        <h2>头条管理</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="@Url.Action("Index", "Home")">首页</a>
+            </li>
+            <li class="active">
+                <strong>	文章列表</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <h2 style="height:38px">
+                        <!--<span class="text-navy">头条管理</span>-->
+                        <span class="op">
+                            <span id="sp_All"><a href="@Url.Action("Index","ArticleManage",new { status="All", type = ViewBag.Type })">全部</a></span>
+                            <span id="sp_Published"><a href="@Url.Action("Index","ArticleManage",new { status="Published", type = ViewBag.Type })">已发表</a></span>
+                            <span id="sp_PrePublish"><a href="@Url.Action("Index","ArticleManage",new { status="PrePublish", type = ViewBag.Type })">预发表</a></span>
+                            <span id="sp_Saved"><a href="@Url.Action("Index","ArticleManage",new { status="Saved", type = ViewBag.Type })">草稿</a></span>
+                            <span id="sp_Withdrew"><a href="@Url.Action("Index","ArticleManage",new { status="Withdrew", type = ViewBag.Type })">已撤回</a></span>
+                        </span>
+                    </h2>
+                    <div class="search-form">
+                        <form action="@Url.Action("Search", "ArticleManage")" method="get">
+                            <div class="input-group">
+                                <span style="line-height:36px;">
+                                    <span class="fontDesc">标题: </span><input type="text" placeholder="文章标题" name="Title" class="form-search input-lg" value="@searchModel.Title" />
+                                    <span class="fontDesc">ID: </span><input style="display:none" type="text"  name="Type" class="form-search input-lg type" value="@ViewBag.Type" /><input type="text" placeholder="文章ID" name="PKID" class="form-search input-lg pkid" value="@searchModel.PKID" />
+                                    <span class="fontDesc">开始时间: </span><input type="text" placeholder="开始时间" name="StartDate" id="d4311" class="form-search input-lg" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',maxDate:'#F{$dp.$D(\'d4312\')||\'2020-10-01\'}'})" value="@searchModel.StartDate">
+                                    <span class="fontDesc">结束时间: </span><input type="text" placeholder="结束时间" name="EndDate" id="d4312" class="form-search input-lg" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',minDate:'#F{$dp.$D(\'d4311\')}',maxDate:'2020-10-01'})" value="@searchModel.EndDate">
+                                    <input type="hidden" name="status" value="@ViewData["ArticleStatus"]" />
+                                </span>
+                                <br />
+                                <span style="line-height:36px">
+                                    <span class="fontDesc" style="margin-top:10px">类目: </span>
+                                    <select id="Category" name="Category" class="form-control m-b" style="width:20%;margin-top:10px" >
+                                        <option value="" selected="@(searchModel.Category==-1)">-请选择-</option>
+                                        <option value="1" selected="@(searchModel.Category==1)">汽车百科</option>
+                                        <option value="2" selected="@(searchModel.Category==2)">驾驶技巧</option>
+                                        <option value="3" selected="@(searchModel.Category==3)">保养秘诀</option>
+                                        <option value="4" selected="@(searchModel.Category==4)">必备车品</option>
+                                        <option value="8" selected="@(searchModel.Category==8)">精选</option>
+                                        <option value="13" selected="@(searchModel.Category==13)">虎友口碑</option>
+                                        <option value="10014" selected="@(searchModel.Category==10014)">选车攻略</option>
+                                    </select>
+                                </span>
+                                <div class="input-group-btn">
+                                    <input class="btn btn-lg btn-primary btn-search" name="OperationType" type="submit" style="margin-top:10px" value="搜索" />
+                                    @if (ViewBag.Type == 9)
+                                    {
+                                        <input class="btn btn-lg btn-primary btn-search" name="OperationType" style="margin-left:10px" type="submit" value="导出" />
+                                    }
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    @if (Model.Count > 0)
+                    {
+                        foreach (var item in Model)
+                        {
+                            var articleStatus = (ArticleStatus)ViewData["ArticleStatus"];
+                            <div class="search-result">
+                                <h3><a href="/ArticleManage/ArticleDetail?id=@item.PKID" target="_blank">@item.SmallTitle</a></h3>
+                                @if (ViewBag.Type == 99)
+                                {
+                                    <p style="line-height:28px;margin-bottom:-5px">H5链接：@(string.Format("https://faxian.tuhu.cn/react/messageShow/#/?id={0}&_k=vjosee", item.PKID))</p>
+                                }
+                                else
+                                {
+                                    <p style="line-height:28px;margin-bottom:-5px">H5链接：@(string.Format("https://faxian.tuhu.cn/react/find_new/#/detail?bgColor=%252523ffffff&id={0}&textColor=%252523333333&userid=&_k=xpbooq", item.PKID))</p>
+                                }
+                                @if (articleStatus == ArticleStatus.All)//全部
+                                {
+                                    if (item.Status == "Withdrew" || (item.Status == "Published" && item.PublishDateTime.Value <= DateTime.Now.AddMinutes(1)))//撤回  & 已发表  才显示这些数据
+                                    {
+                                        <p style="line-height:34px;margin-top:10px">
+                                            @if (item.IsTopMost != null && item.IsTopMost.Value)
+                                            {
+                                                <span style="width:80px;height:30px;color:white;background-color:red;">置顶</span>
+                                            }
+                                            <span>@item.CoverTag</span>
+                                            <span>@(item.PublishDateTime != null ? item.PublishDateTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "")</span>
+                                            <span>@ShowStatus(item)</span>
+                                            @if (item.Status == "Withdrew")//撤回
+                                            {
+                                                <span><a href="javascript:void(0)" class="clsRecovery" aid="@item.PKID">恢复</a></span>
+                                            }
+                                            else
+                                            {
+                                                if (ViewBag.Type == 9)
+                                                {
+                                                    <span><a href="/ArticleManage/YouXuanArticle?id=@item.PKID&source=Published">修改</a></span>
+                                                }
+                                                else if (ViewBag.Type == 98 || ViewBag.Type == 97)
+                                                {
+                                                    <span><a href="/ArticleManage/DaoGouArticle?id=@item.PKID&source=Published&type=@ViewBag.Type">修改</a></span>
+                                                }
+                                                else
+                                                {
+                                                    <span><a href ="/ArticleManage/Modify?id=@item.PKID&source=Published"> 修改 </a></span>
+                                                }
+                                                if (item.IsTopMost != null && item.IsTopMost.Value)
+                                                {
+                                                    <span><a href="javascript:void(0)" class="clsCancelTopMost" aid="@item.PKID">取消置顶</a></span>
+                                                }
+                                                else
+                                                {
+                                                    <span><a href="javascript:void(0)" class="clsTopMost" aid="@item.PKID">置顶</a></span>
+                                                }
+                                                <span><a href="javascript:void(0)" class="clsReturnBack" aid="@item.PKID">撤回</a></span>
+                                                <span><a href="javascript:void(0)" class="clsCopyPushLink" aid="@item.PKID">复制推送链接</a></span>
+                                            }
+                                            <span><a href="javascript:void(0)" class="clsPreView" aid="@item.PKID">快览</a></span>
+                                            <span><a href="javascript:void(0)" class="clsDeleteArticle" aid="@item.PKID">删除</a></span>
+                                            <span><a href="javascript:void(0)" class="clsOpHistory" aid="@item.PKID" data-target="#myModalLogList" data-toggle="modal">查看操作记录</a></span>
+                                            <div id="@item.PKID"></div>
+                                        </p>
+                                        <p>
+                                            <span>阅读：@(item.ClickCount ?? 0)</span>
+                                            <span>|</span>
+                                            <span>评论：@(ArticleBll.SelectCommentCount(item.PKID))</span>
+                                            <span>|</span>
+                                            <span>分享：@(item.ShareCountNum ?? 0)</span>
+                                            <span>|</span>
+                                            <span>收藏：@(ArticleBll.SelectVoteByArticleId(item.PKID))</span>
+                                        </p>
+                                    }
+                                    else//预发表  草稿
+                                    {
+                                        <p style="line-height:34px;margin-top:10px">
+                                            <span>@item.CoverTag</span>
+                                            <span>@item.CreateDateTime.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                                            <span>@ShowStatus(item)</span>
+
+
+                                            @if (item.Status != "Saved")//预发表
+                                            {
+                                                <span>预发表时间：@(item.PublishDateTime != null ? item.PublishDateTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "")</span>
+                                                if (ViewBag.Type == 9)
+                                                {
+                                                    <span><a href="/ArticleManage/YouXuanArticle?id=@item.PKID&source=PrePublish">修改</a></span>
+                                                }
+                                                else if (ViewBag.Type == 98 || ViewBag.Type == 97)
+                                                {
+                                                    <span><a href="/ArticleManage/DaoGouArticle?id=@item.PKID&source=Published&type=@ViewBag.Type">修改</a></span>
+                                                }
+                                                else
+                                                {
+                                                    <span><a href="/ArticleManage/Modify?id=@item.PKID&source=PrePublish">修改</a></span>
+                                                }
+                                            }
+                                            else//草稿
+                                            {
+                                                if (ViewBag.Type == 9)
+                                                {
+                                                    <span><a href="/ArticleManage/YouXuanArticle?id=@item.PKID&source=Saved">修改</a></span>
+                                                }
+                                                else if (ViewBag.Type == 98 || ViewBag.Type == 97)
+                                                {
+                                                    <span><a href="/ArticleManage/DaoGouArticle?id=@item.PKID&source=Published&type=@ViewBag.Type">修改</a></span>
+                                                }
+                                                else
+                                                {
+                                                    <span><a href="/ArticleManage/Modify?id=@item.PKID&source=Saved">修改</a></span>
+                                                }
+                                            }
+                                            <span><a href="javascript:void(0)" class="clsPreView" aid="@item.PKID">快览</a></span>
+                                            <span><a href="javascript:void(0)" class="clsDeleteArticle" aid="@item.PKID">删除</a></span>
+                                            <span><a href="javascript:void(0)" class="clsOpHistory" aid="@item.PKID" data-target="#myModalLogList" data-toggle="modal">查看操作记录</a></span>
+                                            <div id="@item.PKID"></div>
+                                        </p>
+                                    }
+
+                                }
+                                else if (articleStatus == ArticleStatus.Published)//已发表
+                                {
+                                    <p style="line-height:34px;margin-top:10px">
+                                        @if (item.IsTopMost != null && item.IsTopMost.Value)
+                                        {
+                                            <span style="width:80px;height:30px;color:white;background-color:red;">置顶</span>
+                                        }
+                                        <span>@item.CoverTag</span>
+                                        <span>@(item.PublishDateTime != null ? item.PublishDateTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "")</span>
+                                        <span>@ShowStatus(item)</span>
+                                        @if (ViewBag.Type == 9)
+                                        {
+                                        <span><a href="/ArticleManage/YouXuanArticle?id=@item.PKID&source=Published">修改</a></span>
+                                        }
+                                        else if (ViewBag.Type == 98 || ViewBag.Type == 97)
+                                        {
+                                            <span><a href="/ArticleManage/DaoGouArticle?id=@item.PKID&source=Published&type=@ViewBag.Type">修改</a></span>
+                                        }
+                                        else
+                                        {
+                                        <span><a href="/ArticleManage/Modify?id=@item.PKID&source=Published">修改</a></span>
+                                        }
+                                        @if (item.IsTopMost != null && item.IsTopMost.Value)
+                                        {
+                                            <span><a href="javascript:void(0)" class="clsCancelTopMost" aid="@item.PKID">取消置顶</a></span>
+                                        }
+                                        else
+                                        {
+                                            <span><a href="javascript:void(0)" class="clsTopMost" aid="@item.PKID">置顶</a></span>
+                                        }
+                                        <span><a href="javascript:void(0)" class="clsReturnBack" aid="@item.PKID">撤回</a></span>
+                                        <span><a href="javascript:void(0)" class="clsCopyPushLink" aid="@item.PKID">复制推送链接</a></span>
+                                        <span><a href="javascript:void(0)" class="clsPreView" aid="@item.PKID">快览</a></span>
+                                        <span><a href="javascript:void(0)" class="clsDeleteArticle" aid="@item.PKID">删除</a></span>
+                                        <span><a href="javascript:void(0)" class="clsOpHistory" aid="@item.PKID" data-target="#myModalLogList" data-toggle="modal">查看操作记录</a></span>
+                                        <div id="@item.PKID"></div>
+                                    </p>
+                                    <p>
+                                        <span>阅读：@(item.ClickCount ?? 0)</span>
+                                        <span>|</span>
+                                        <span>评论：@(ArticleBll.SelectCommentCount(item.PKID))</span>
+                                        <span>|</span>
+                                        <span>分享：@(item.ShareCountNum ?? 0)</span>
+                                        <span>|</span>
+                                        <span>收藏：@(ArticleBll.SelectVoteByArticleId(item.PKID))</span>
+                                    </p>
+                                }
+                                else if (articleStatus == ArticleStatus.PrePublish)//预发表
+                                {
+                                    <p style="line-height:34px;margin-top:10px">
+                                        <span>@item.CoverTag</span>
+                                        <span>@item.CreateDateTime.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                                        <span>@ShowStatus(item)</span>
+                                        @if (ViewBag.Type == 9)
+                                        {
+                                        <span><a href="/ArticleManage/YouXuanArticle?id=@item.PKID&source=PrePublish">修改</a></span>
+                                        }
+                                        else if (ViewBag.Type == 98 || ViewBag.Type == 97)
+                                        {
+                                            <span><a href="/ArticleManage/DaoGouArticle?id=@item.PKID&source=Published&type=@ViewBag.Type">修改</a></span>
+                                        }
+                                        else
+                                        {
+                                        <span><a href="/ArticleManage/Modify?id=@item.PKID&source=PrePublish">修改</a></span>
+                                        }
+                                        <span>预发表时间：@(item.PublishDateTime != null ? item.PublishDateTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "")</span>
+                                        <span><a href="javascript:void(0)" class="clsPreView" aid="@item.PKID">快览</a></span>
+                                        <span><a href="javascript:void(0)" class="clsDeleteArticle" aid="@item.PKID">删除</a></span>
+                                        <span><a href="javascript:void(0)" class="clsOpHistory" aid="@item.PKID" data-target="#myModalLogList" data-toggle="modal">查看操作记录</a></span>
+                                        <div id="@item.PKID"></div>
+                                    </p>
+                                }
+                                else if (articleStatus == ArticleStatus.Saved)//草稿（已保存）
+                                {
+                                    <p style="line-height:34px;margin-top:10px">
+                                        <span>@item.CoverTag</span>
+                                        <span>@item.CreateDateTime.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                                        <span>@ShowStatus(item)</span>
+                                        @if (ViewBag.Type == 9)
+                                        {
+                                        <span><a href="/ArticleManage/YouXuanArticle?id=@item.PKID&source=Saved">修改</a></span>
+                                        }
+                                        else if (ViewBag.Type == 98 || ViewBag.Type == 97)
+                                        {
+                                            <span><a href="/ArticleManage/DaoGouArticle?id=@item.PKID&source=Published">修改</a></span>
+                                        }
+                                        else
+                                        {
+                                        <span><a href="/ArticleManage/Modify?id=@item.PKID&source=Saved">修改</a></span>
+                                        }
+                                        <span><a href="javascript:void(0)" class="clsPreView" aid="@item.PKID">快览</a></span>
+                                        <span><a href="javascript:void(0)" class="clsDeleteArticle" aid="@item.PKID">删除</a></span>
+                                        <span><a href="javascript:void(0)" class="clsOpHistory" aid="@item.PKID" data-target="#myModalLogList" data-toggle="modal">查看操作记录</a></span>
+                                    </p>
+                                }
+                                else if (articleStatus == ArticleStatus.Withdrew)//撤回
+                                {
+                                    <p style="line-height:34px;margin-top:10px">
+                                        <span>@item.CoverTag</span>
+                                        <span>@(item.PublishDateTime != null ? item.PublishDateTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "")</span>
+                                        <span>@ShowStatus(item)</span>
+                                        <span><a href="javascript:void(0)" class="clsRecovery" aid="@item.PKID">恢复</a></span>
+                                        <span><a href="javascript:void(0)" class="clsPreView" aid="@item.PKID">快览</a></span>
+                                        <span><a href="javascript:void(0)" class="clsDeleteArticle" aid="@item.PKID">删除</a></span>
+                                        <span><a href="javascript:void(0)" class="clsOpHistory" aid="@item.PKID" data-target="#myModalLogList" data-toggle="modal">查看操作记录</a></span>
+                                        <div id="@item.PKID"></div>
+                                    </p>
+                                    <p>
+                                        <span>阅读：@(item.ClickCount ?? 0)</span>
+                                        <span>|</span>
+                                        <span>评论：@(ArticleBll.SelectCommentCount(item.PKID))</span>
+                                        <span>|</span>
+                                        <span>分享：@(item.ShareCountNum ?? 0)</span>
+                                        <span>|</span>
+                                        <span>收藏：@(ArticleBll.SelectVoteByArticleId(item.PKID))</span>
+                                    </p>
+                                }
+                            </div>
+                            <div class="hr-line-dashed"></div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="search-result">
+                            <p>数据为空</p>
+                        </div>
+                    }
+                    <div class="text-center">
+                        <div class="btn-group" id="tcdPageCode">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal inmodal fade" id="myModalLogList" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">操作记录</h4>
+            </div>
+            <div class="modal-body" style="padding: 0 1px">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th width="20%">操作人</th>
+                            <th width="30%">操作时间</th>
+                            <th>操作内容</th>
+                        </tr>
+                    </thead>
+                    <tbody id="opLogList">
+                        <tr>
+                            <td colspan="3">暂无操作记录</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/Scripts/jquery.qrcode.min.js"></script>
+    <script src="~/Scripts/CommentFile/jquery.page.js"></script>
+    <script src="~/Content/My97DatePicker/WdatePicker.js"></script>
+    <script src="~/Scripts/CommentFile/jquery.zclip.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#sp_@ViewData["ArticleStatus"]").addClass("bgc");
+
+            $("#tcdPageCode").createPage({
+                pageCount: @pagerModel.TotalPage,
+                current: @pagerModel.CurrentPage,
+                backFn: function (p) {
+                    //单击回调方法，p是当前页码
+                    var currentLink=window.location.href;
+                    if(currentLink.indexOf("status")!=-1){
+                        //搜索分页
+                        if(currentLink.indexOf("Search")!=-1){
+                            var reg = /pageIndex=[\d]/g;
+                            if(reg.test(currentLink)){
+                                location.href = currentLink.replace(reg, "pageIndex=" + p +"&type="+@ViewBag.Type);
+                            }else{
+                                location.href=currentLink+"&pageIndex="+p+"&type="+@ViewBag.Type;
+                            }
+                        }else{
+                            location.href="/ArticleManage/Index?status=@ViewData["ArticleStatus"]&pageIndex="+p+"&type="+@ViewBag.Type;
+                        }
+                    }else{
+                        location.href="/ArticleManage/Index?pageIndex="+p+"&type="+@ViewBag.Type;
+                    }
+                }
+            });
+            //撤回
+            $(".clsReturnBack").click(function () {
+                var thisObj = $(this);
+                var aid = thisObj.attr("aid");
+                if (confirm("确定要撤回吗？")) {
+                    $.ajax({
+                        type: "get",
+                        url: "/ArticleManage/ReturnBack?op=back&pkid=" + aid,
+                        success: function (data) {
+                            if (data == "ok") {
+                                location.reload()
+                            }
+                        }
+                    });
+                }
+            });
+            //恢复
+            $(".clsRecovery").click(function () {
+                var thisObj = $(this);
+                var aid = thisObj.attr("aid");
+                if (confirm("确定要恢复吗？")) {
+                    $.ajax({
+                        type: "get",
+                        url: "/ArticleManage/ReturnBack?op=recovery&pkid=" + aid,
+                        success: function (data) {
+                            if (data == "ok") {
+                                location.reload()
+                            }
+                        }
+                    });
+                }
+            });
+            //置顶
+            $(".clsTopMost").click(function () {
+                var thisObj = $(this);
+                var aid = thisObj.attr("aid");
+                if (confirm("确定要置顶吗？")) {
+                    $.ajax({
+                        type: "get",
+                        url: "/ArticleManage/TopMost?op=top&pkid=" + aid,
+                        success: function (data) {
+                            if (data == "ok") {
+                                location.reload()
+                            }
+                        }
+                    });
+                }
+            });
+            //取消置顶
+            $(".clsCancelTopMost").click(function () {
+                var thisObj = $(this);
+                var aid = thisObj.attr("aid");
+                if (confirm("确定要取消置顶吗？")) {
+                    $.ajax({
+                        type: "get",
+                        url: "/ArticleManage/TopMost?op=canceltop&pkid=" + aid,
+                        success: function (data) {
+                            if (data == "ok") {
+                                location.reload()
+                            }
+                        }
+                    });
+                }
+            });
+
+            //预览
+            $(".clsPreView").click(function () {
+                var thisObj = $(this);
+                var aid = thisObj.attr("aid");
+                var html=$("#"+aid).html();
+                if($.trim(html)==""){
+                    $.ajax({
+                        type: "get",
+                        url: "/ArticleManage/ListPreView?id=" + aid,
+                        success: function (url) {
+                            $('#' + aid).qrcode({render: "canvas",text: url});
+                        }
+                    });
+                }else{
+                    $("#"+aid).html('');
+                }
+            });
+             //复制推送链接
+            $(".clsCopyPushLink").zclip({
+                path: "/Scripts/CommentFile/ZeroClipboard.swf",
+                copy: function () {
+                    var content=$(this).attr("aid");
+                    return "https://faxian.tuhu.cn/react/findDetail/?id="+content+"&bgColor=%2523ffffff&textColor=%2523333333";
+                    //return "http://faxian.tuhu.cn/Article/Detail?id="+content+"&bgColor=%2523ffffff&textColor=%2523333333&utm_source=tuhu&utm_medium=TOUTIAO&utm_campaign=PUSH";
+                },
+                afterCopy: function () {/* 复制成功后的操作 */
+                    var $copysuc = $("<div class='copy-tips'><div class='copy-tips-wrap'>☺ 复制成功</div></div>");
+                    $("body").find(".copy-tips").remove().end().append($copysuc);
+                    $(".copy-tips").fadeOut(3000);
+                }
+            });
+
+            $(".clsDeleteArticle").click(function () {
+                var thisObj = $(this);
+                var pkid = thisObj.attr("aid");
+                if (confirm("是否确认删除，删除后不可恢复")) {
+                    $.ajax({
+                        type: "get",
+                        url: "/ArticleManage/DeleteArticleByPkid?id=" + pkid,
+                        success: function (data) {
+                            if (data) {
+                                alert("删除成功");
+                                window.location.reload();
+                            }
+                            else {
+                                alert("删除失败");
+                            }
+                        }
+                    });
+                }
+            });
+            //查看操作记录
+            $(".clsOpHistory").click(function(){
+                var thisObj = $(this);
+                var pkid = thisObj.attr("aid");
+                $.ajax({
+                    type: "get",
+                    url: "/ArticleManage/LogList?objectType=ArticleTblNew&objectID="+ pkid,
+                    success: function (data) {
+                        if(data.length>0){
+                            var htmlBuilder="";
+                            for (var i = 0; i < data.length; i++) {
+                                var row=data[i];
+                                htmlBuilder+="<tr><td>"+row.Author+"</td><td>"+eval(row.ChangeDatetime.replace(/\/Date\((\d+)\)\//gi, "new Date($1)")).format('yyyy-MM-dd hh:mm:ss')+"</td><td>"+row.Operation+"</td></tr>";
+                            }
+                            $("#opLogList").html(htmlBuilder);
+                        }
+                    }
+                });
+
+            });
+
+        });
+        Date.prototype.format = function (fmt) {
+            var o = {
+                "M+": this.getMonth() + 1, //月份
+                "d+": this.getDate(), //日
+                "h+": this.getHours(), //小时
+                "m+": this.getMinutes(), //分
+                "s+": this.getSeconds(), //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds() //毫秒
+            };
+            fmt = fmt || "yyyy-MM-dd";
+            if (/(y+)/.test(fmt))
+                fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt))
+                    fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        }
+    </script>
+}

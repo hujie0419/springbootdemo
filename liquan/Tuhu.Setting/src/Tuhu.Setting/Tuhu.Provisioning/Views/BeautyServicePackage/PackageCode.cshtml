@@ -1,0 +1,595 @@
+﻿@{
+    ViewBag.Title = "兑换码配置";
+    Layout = "~/Views/Shared/_LayoutNew.cshtml"; 
+}
+<link href="~/css/beautyPackage.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="~/Content/iview/iview.css"/>
+<div id="div" v-cloak>
+    <h2>
+        
+        <label>套餐名</label>
+        <i-input type="text" v-model="filterCondition.packageName" placeholder="请输入套餐名" style="width:200px"></i-input>
+        <label>公司</label>
+        <i-select v-model="filterCondition.cooperateId" :filterable="true" style="width:200px">
+            <i-option value="0">请选择</i-option>
+            <i-option v-for="item in  AllMrCooperateUserConfigs" v-bind:value="item.PKID">{{item.CooperateName}}</i-option>
+        </i-select>
+        <label>结算方式</label>
+        <i-select v-model="filterCondition.settleMentMethod" style="width:200px">
+            <i-option value="">请选择</i-option>
+            <i-option value="PreSettled">买断</i-option>
+            <i-option value="ByPeriod">据实</i-option>
+        </i-select>
+
+        <input style="float:right" type="button" value="新增兑换码" href="javascript:void(0)" v-on:click="clickUpsertBeautyServicePackage()" />
+    </h2>
+    <div class="table-responsive" style="margin-top:20px">
+        <table class="table table-striped table-bordered table-hover dataTables-example">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>套餐名</th>
+                    <th>公司</th>
+                    <th>兑换码数量</th>
+                    <th>兑换有效期(天)</th>
+                    <th>结算方式</th>
+                    <th>创建人</th>
+                    <th>描述</th>
+                    @*<th>是否生效</th>*@               
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tr v-for="item in list">
+                <td>{{item.PKID}}</td>
+                <td>{{item.PackageName}}</td>
+                <td>{{item.CooperateName}}</td>
+                <td>
+                    <div v-if="item.PackageType==='packageCode'">{{item.PackageCodeNum }}</div>
+                    <div v-else>\</div>
+                </td>
+                <td>
+                    <template v-if="item.PackageType==='packageCode'">
+                        {{item.PackageCodeStartTime | formatDate}}至{{item.PackageCodeEndTime | formatDate}}
+                    </template>
+                    <template v-else>
+                        \
+                    </template>
+                </td>
+                <td>
+                    <div v-if="item.PackageType==='serviceCode'">\</div>
+                    <div v-else-if="item.SettlementMethod==='ByPeriod'">据实结算</div>
+                    <div v-else-if="item.SettlementMethod==='PreSettled'">买断结算</div>
+                </td> 
+                <td>{{item.CreateUser}}</td>
+                <td>
+                    <div>{{item.Description }}</div>
+                    <div v-if="item.BuyoutOrderId>0">买断订单号：{{item.BuyoutOrderId}}</div>
+                </td>
+                @*<td>
+                    <template v-if="item.IsActive">
+                        是
+                    </template>
+                    <template v-else>
+                        否
+                    </template>
+                </td>*@               
+                <td>
+                    <a href="javascript:void(0)" v-on:click="lookPackageFunc(item)">查看</a>
+                    <a href="javascript:void(0)" v-on:click="clickUpsertBeautyServicePackage(item)">编辑</a>
+                    <a href="javascript:void(0)" v-on:click="clickDeletePackageFunc(item)">删除</a>
+                    <a href="javascript:void(0)" v-if="item.PackageType=='packageCode'&&!item.IsPackageCodeGenerated" v-on:click="GeneratePackageCode(item.PKID)">生成兑换码 </a>
+                    <a href="javascript:void(0)" v-if="item.PackageType=='packageCode'&& item.IsPackageCodeGenerated">已生成兑换码 </a>
+                    <a href="javascript:void(0)" v-if="item.PackageType=='packageCode'&& item.IsPackageCodeGenerated" v-on:click="exportPackageCodes(item.PKID, item.PackageName)">下载</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+   
+    <div style="margin-top:20px;">
+        <span>
+            每页显示:
+            <select v-model="pager.size">
+                <option v-for="size in sizes" v-bind:value="size">{{size}}</option>
+            </select>
+            条
+        </span>
+        <span>
+            <button type="button" v-on:click="pager.currentPage=1" v-bind:disabled="pager.currentPage==1">首页</button>
+            <button type="button" v-on:click="pager.currentPage-=1" v-bind:disabled="pager.currentPage==1">上一页</button>
+            <button type="button" v-on:click="pager.currentPage+=1" v-bind:disabled="pager.currentPage==pager.pages">下一页</button>
+            <button type="button" v-on:click="pager.currentPage=pager.pages" v-bind:disabled="pager.currentPage==pager.pages">尾页</button>
+        </span>
+        <span style="float:right">
+            <span>当前第{{pager.currentPage}}页/共{{pager.pages}}页&nbsp;&nbsp;转到<input style="width:30px" type="text" v-model="pager.inputPage">页</span>
+            <button type="button" v-on:click="pager.currentPage=pager.inputPage" v-bind:disabled="pager.inputPage<=0 || pager.inputPage>pager.pages">确定</button>
+        </span>
+    </div>
+    <div id="dialog">
+        <div class="content">
+            <modal v-if="packageDialog.show" v-on:close="packageDialog.show=false">
+                <h3 slot="header">头部</h3>
+                <div slot="body" class="vertical-group">
+                    <div>
+                        <label>名称</label>
+                        <input type="text" v-model="packageConfig.PackageName" />
+                    </div>
+                    <div>
+                        <label>选择公司</label>
+                        <input v-if="packageConfig.IsPackageCodeGenerated" v-model="packageConfig.CooperateName" readonly="readonly" />
+                        <i-select v-else v-model="packageConfig.CooperateId" filterable="true" style="width:60%">
+                            <i-option value="">请选择</i-option>
+                            <i-option v-for="item in AllMrCooperateUserConfigs" v-bind:value="item.PKID">
+                                {{item.CooperateName}}
+                            </i-option>
+                        </i-select>
+                    </div>
+                    <div>
+                        <label v-if="packageConfig.PackageType==='packageCode'">兑换码数量</label>
+                        <input v-if="packageConfig.PackageType==='packageCode'&&packageConfig.IsPackageCodeGenerated" type="text" v-model="packageConfig.PackageCodeNum" readonly="readonly" />
+                        <input v-else-if="packageConfig.PackageType==='packageCode'" type="text" v-model="packageConfig.PackageCodeNum" />
+                    </div>
+                    <div>
+                        <label>兑换开始时间：</label>
+                        <datepicker v-model="packageConfig.PackageCodeStartTime"></datepicker>
+                        <label>兑换结束时间</label>
+                        <datepicker v-model="packageConfig.PackageCodeEndTime"></datepicker>
+                    </div>
+                    <div>
+                        <label v-if="packageConfig.PackageType==='packageCode'">结算类型</label>
+                        <input v-if="packageConfig.IsPackageCodeGenerated" type="text" v-model="SettlementMethodDescription()" readonly="readonly" />
+                        <select v-if="!packageConfig.IsPackageCodeGenerated&&packageConfig.PackageType==='packageCode'" v-model="packageConfig.SettlementMethod">
+                            <option value="">请选择</option>
+                            <option value="PreSettled">买断结算</option>
+                            <option value="ByPeriod">据实结算</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>描述</label>
+                        <textarea v-model="packageConfig.Description" rows="3" cols="20"></textarea>
+                    </div>
+                    @*<div>
+                        <label>是否生效</label>
+                        <label><input type="radio" name="PackageIsActive" :value="false" v-model="packageConfig.IsActive" />否</label>
+                        <label><input type="radio" name="PackageIsActive" :value="true" v-model="packageConfig.IsActive" />是</label>
+                    </div>*@
+                </div>
+                <div slot="footer">
+                    <button class="modal-default-button" v-on:click="upsertBeautyServicePackageFunc()" v-bind:disabled="disableUpsertButton">确认</button>
+                    <button class="modal-default-button" v-on:click="cancelPackageFunc()">取消</button>
+                </div>
+            </modal>
+        </div>
+    </div>
+    <div>
+        <div class="content">
+            <modal v-if="deletePackageDialog.show" v-on:close="deletePackageDialog.show=false">
+                <h3 slot="header">删除礼包</h3>
+                <div slot="body" class="vertical-group">
+                    <div>
+                        <label>确定删除当前包？</label>
+                    </div>
+                </div>
+                <div slot="footer">
+                    <button class="modal-default-button" v-on:click="confirmDeletePackageFunc()">确认</button>
+                    <button class="modal-default-button" v-on:click="cancelDeletePackageFunc()">取消</button>
+                </div>
+            </modal>
+        </div>
+    </div>
+    <div>
+        <div class="content">
+            <modal v-if="Generateing" v-on:close="Generateing=false">
+                <h3 slot="header">兑换码生成中</h3>
+                <div slot="body" class="vertical-group">
+                    <div>
+                        <label>进度</label>
+                        <input v-model="GenerateingRate" />
+                    </div>
+                </div>
+                <div slot="footer">
+                    <button class="modal-default-button" v-on:click="closeGenerateingDialog()">确认</button>
+                </div>
+            </modal>
+        </div>
+    </div>
+</div>
+
+<script type="text/x-template" id="modal-template">
+    <transition name="modal">
+        <div class="modal-mask">
+            <div class="modal-wrapper">
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <slot name="header"></slot>
+                    </div>
+                    <div class="modal-body">
+                        <slot name="body"></slot>
+                    </div>
+                    <div class="modal-footer">
+                        <slot name="footer">
+                            <button class="modal-default-button" v-on:click="">OK</button>
+                        </slot>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</script>
+@section scripts{
+
+<script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+<script type="text/javascript" src="~/Scripts/dateJs/vue-date.min.js"></script>
+<script src="~/Scripts/vue.common.js"></script>
+<script src="~/Scripts/iview/iview.min.js"></script>
+<script type="text/javascript">
+    function formatDate(value) {
+        if (value) {
+            var time = value instanceof Date ? value : eval('new ' + value.toString().replace(/\//g, ""));
+            var year = time.getFullYear();
+            var day = time.getDate();
+            var month = time.getMonth() + 1;
+            var hours = time.getHours();
+            var minutes = time.getMinutes();
+            var seconds = time.getSeconds();
+            var func = function (value, number) {
+                var str = value.toString();
+                while (str.length < number) {
+                    str = "0" + str;
+                }
+                return str;
+            }
+            if (year == 1) {
+                return "";
+            } else {
+                return func(year, 4) + '-' + func(month, 2) + '-' + func(day, 2) + ' '
+            }
+        }
+    }
+    Vue.filter('formatDate', formatDate);
+    Vue.component('modal', {
+        template: '#modal-template'
+    });
+    var vue = new Vue({
+        el: "#div",
+        data: {
+            list: [],
+            pager: {
+                total: 0,
+                pages: 0,
+                currentPage: 1,
+                size: 20,
+                inputPage: 0,
+            },
+            packageConfig: {
+                PKID: 0,
+                PackageName: "",
+                PackageCodeNum: 0,
+                CooperateName: "",
+                CooperateId: 0,
+                SettlementMethod: "",
+                Description: "",
+                PackageCodeStartTime: "",
+                PackageCodeEndTime: "",
+                IsActive: true,
+                IsPackageCodeGenerated: false,
+                PackageType:"packageCode"
+            },
+            PackageTypeDescription: function () {
+                var self = this;
+                if (self.packageConfig.PackageType === "packageCode") {
+                    return "批量生成兑换券  需兑换";
+                } else {
+                    return "批量生成服务码  无需兑换";
+                }
+            },
+            SettlementMethodDescription: function () {
+                var self = this;
+                if (self.packageConfig.SettlementMethod === "PreSettled") {
+                    return "买断";
+                } else {
+                    return "据实";
+                }
+            },
+            packageDialog: {
+                show: false
+            },
+            deletePackageDialog: {
+                show: false
+            },
+            generatePackageCodeDialog: {
+                show: false
+            },
+            departMentAndUse: [],
+            departMent: [],//部门
+            allVipCompany: [],
+            companyUsers: [],
+            use: [],//用途
+            clickLookPackage: false,
+            sizes: [5, 10, 20, 40, 50, 100, 200],
+            lockGeneratePackageCode: false,
+            disableUpsertButton: false,
+            filterCondition: {
+                packageType: "packageCode",
+                packageName: "",
+                vipUser: "",
+                settleMentMethod: "",
+                cooperateId:0
+            },
+            filterVipCompanyNames: [],
+            Generateing: false,
+            GenerateingRate: "",
+            AllMrCooperateUserConfigs: []
+        },
+        components: { datepicker },
+        created: function () {
+            this.load();
+            this.GetAllMrCooperateUserConfigs();
+            this.GetAllVipUserName();
+        },
+        watch: {
+            "packageConfig.VipCompanyId": function () {
+                var self = this;
+                var companyId = self.packageConfig.VipCompanyId;
+                if (companyId && companyId > 0) {
+                    $.get("GetUsersByCompanyId", { companyId: companyId }, function (users) {
+                        self.companyUsers = users || [];
+                    })
+                }
+            },
+            "pager.total": function () {
+                var self = this;
+                var pager = self.pager;
+                pager.pages = Math.ceil(pager.total / pager.size);
+            },
+            "pager.size": function () {
+                var self = this;
+                if (self.pager.size <= 0) {
+                    self.pager.size = 1;
+                    return;
+                }
+                if (self.pager.size > 200) {
+                    self.pager.size = 200;
+                    return;
+                }
+                self.pager.pages = Math.ceil(self.pager.total / self.pager.size);
+                this.load();
+            },
+            "pager.currentPage": function () {
+                var self = this;
+                if (self.pager.currentPage <= 0) {
+                    self.pager.currentPage = 1;
+                    return;
+                }
+                if (self.pager.pages > 0 && self.pager.currentPage > self.pager.pages) {
+                    self.pager.currentPage = self.pager.pages;
+                    return;
+                }
+                self.load();
+            },
+            "filterCondition.packageType": function () {
+                var self = this;
+                self.load();
+            },
+            "filterCondition.packageName": function () {
+                var self = this;
+                self.load();
+            },
+            "filterCondition.vipUser": function () {
+                var self = this;
+                self.load();
+            },
+            "filterCondition.settleMentMethod": function () {
+                var self = this;
+                self.load();
+            },
+            "filterCondition.cooperateId": function () {
+                var self = this;
+                self.load();
+            },
+        },
+        methods: {
+            load: function (callback) {
+                var self = this;
+                self.loading = true;
+                $.get("GetBeautyServicePackage", {
+                    pageIndex: self.pager.currentPage, pageSize: self.pager.size, packageType: self.filterCondition.packageType,
+                    packageName: self.filterCondition.packageName, vipCompanyName: self.filterCondition.vipUser, settleMentMethod: self.filterCondition.settleMentMethod,
+                    cooperateId: self.filterCondition.cooperateId
+                }, function (rsp) {
+                    self.status = rsp.Status
+                    self.list = rsp.Data || [];
+                    self.pager.total = rsp.TotalCount || 0;
+                    if (Object.prototype.toString.call(callback) === '[object Function]')
+                        return callback();
+                });
+            },
+            delayLoad: function (callback) {
+                var self = this;
+                setTimeout(function () { self.load(callback); }, 1500);
+            },
+            GetAllVipUserName: function () {
+                var self = this;
+                $.get("GetAllVipUserName", function (result) {
+                    self.filterVipCompanyNames = result;
+                })
+            },
+            GetAllVipCompany: function () {
+                var self = this;
+                $.get("GetAllVipCompany", function (data) {
+                    self.allVipCompany = data || [];
+                })
+            },
+            clickUpsertBeautyServicePackage: function (item) {
+                this.GetAllVipCompany();
+                this.PackageConfigAssignment(item);
+                this.packageDialog.show = true;
+            },
+
+            upsertBeautyServicePackageFunc: function () {
+
+                var self = this;
+                self.disableUpsertButton = true;
+                var companyName = "";
+                var vipUserName = "";
+                self.allVipCompany.forEach(function (item) {
+                    if (item.Id == self.packageConfig.VipCompanyId) {
+                        self.packageConfig.VipCompanyName = item.Name;
+                    };
+                });
+                self.companyUsers.forEach(function (item) {
+                    if (item.UserId == self.packageConfig.VipUserId) {
+                        self.packageConfig.VipUserName = item.UserName;
+                    };
+                });
+                if (self.verifyPackage) {
+                    $.post("UpsertBeautyServicePackage", { package: self.packageConfig }, function (result) {
+                        if (result && result.IsSuccess) {
+                            self.delayLoad(function () { self.packageDialog.show = false; self.disableUpsertButton = false; });
+                        } else if (!result.IsSuccess) {
+                            self.disableUpsertButton = false;
+                            alert(result.Msg);
+                        } else {
+                            self.disableUpsertButton = false;
+                            alert("更新失败");
+                        }
+                    });
+                } else {
+                    self.disableUpsertButton = false;
+                    alert("信息不完整");
+                }
+            },
+            verifyPackage: function () {
+                if (packageConfig.CooperateId <=0 ||
+                    packageConfig.PackageName == "" ||
+                    packageConfig.PackageCodeNum == "" ||
+                    packageConfig.SettlementMethod == "" ||
+                    packageConfig.PackageType == "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            clickDeletePackageFunc: function (item) {
+                var packageConfig = this.packageConfig;
+                this.PackageConfigAssignment(item);
+                this.deletePackageDialog.show = true;
+            },
+            lookPackageFunc: function (item) {
+                var packageId = item.PKID;
+                var packageType = item.PackageType;
+                var isPackageCodeGenerated = item.IsPackageCodeGenerated;
+                window.open("/BeautyServicePackage/PackageDetail?packageId=" + packageId + "&packageType=" + packageType + "&isPackageCodeGenerated=" + isPackageCodeGenerated);
+            },
+            cancelPackageFunc: function () {
+                this.packageDialog.show = false;
+                this.addPackage = false;
+            },
+            cancelDeletePackageFunc: function () {
+                this.deletePackageDialog.show = false;
+            },
+            confirmDeletePackageFunc: function () {
+                var self = this;
+                $.post("DeleteBeautyServicePackage", { pkid: self.packageConfig.PKID }, function (rsp) {
+                    if (rsp && rsp.IsSuccess) {
+                        self.delayLoad(function () { self.deletePackageDialog.show = false; });
+                    } else if (rsp) {
+                        alert(rsp.Msg);
+                    } else {
+                        alert("删除失败");
+                    }
+                });
+            },
+            GeneratePackageCode: function (packageId) {
+                var self = this;
+                if (!self.lockGeneratePackageCode) {
+                    self.lockGeneratePackageCode = true;
+                    $.get("GetBeautyServicePackageDetail", { packageId: packageId }, function (data) {
+                        if (data && data.Status === "Success") {
+                            self.Generateing = true;
+                            var interval = setInterval(function () {
+                                $.get("GetPackageCodeGenerateingRate", { packageId: packageId }, function (result) {
+                                    self.GenerateingRate = (result < 1 ? result : 0.99) * 100 + "%";
+                                })
+                            }, 50);
+                            $.post("GeneratePackageCode", { packageId: packageId }, function (result) {
+                                window.clearInterval(interval);
+                                if (result && result.IsSuccess) {
+                                    self.delayLoad(function () { self.GenerateingRate = 100 + "%"; });
+                                } else if (result) {
+                                    self.Generateing = false;
+                                    alert(result.Msg);
+                                } else {
+                                    self.Generateing = false;
+                                    alert("失败");
+                                }
+                                self.lockGeneratePackageCode = false;
+                            })
+                        } else {
+                            self.lockGeneratePackageCode = false;
+                            alert("礼包下没有服务");
+                        }
+                    })
+
+                }
+
+            },
+
+            PackageConfigAssignment: function (item) {
+                var packageConfig = this.packageConfig;
+                if (item)//编辑包
+                {
+                    packageConfig.PKID = item.PKID;
+                    packageConfig.VipUserId = item.VipUserId;
+                    packageConfig.VipUserName = item.VipUserName;
+                    packageConfig.VipCompanyId = item.VipCompanyId;
+                    packageConfig.VipCompanyName = item.VipCompanyName;
+                    packageConfig.PackageName = item.PackageName;
+                    packageConfig.PackageCodeNum = item.PackageCodeNum;
+                    packageConfig.SettlementMethod = item.SettlementMethod;
+                    packageConfig.Description = item.Description;
+                    packageConfig.PackageType = item.PackageType;
+                    packageConfig.IsPackageCodeGenerated = item.IsPackageCodeGenerated;
+                    packageConfig.PackageCodeStartTime = formatDate(item.PackageCodeStartTime);
+                    packageConfig.PackageCodeEndTime = formatDate(item.PackageCodeEndTime);
+                    packageConfig.CooperateName = item.CooperateName;
+                    packageConfig.CooperateId = item.CooperateId;
+                }
+                else//新加包
+                {
+                    packageConfig.PKID = 0;
+                    packageConfig.VipUserId = "";
+                    packageConfig.VipUserName = "";
+                    packageConfig.VipCompanyId = "";
+                    packageConfig.VipCompanyName = "";
+                    packageConfig.PackageName = "";
+                    packageConfig.Department = "";
+                    packageConfig.Purpose = "";
+                    packageConfig.PackageCodeNum = "";
+                    packageConfig.SettlementMethod = "";
+                    packageConfig.Description = "";
+                    packageConfig.PackageType = "packageCode";
+                    packageConfig.PackageCodeStartTime = "";
+                    packageConfig.PackageCodeEndTime = "";
+                    packageConfig.IsPackageCodeGenerated = false;
+                    packageConfig.CooperateName = "";
+                    packageConfig.CooperateId = 0;
+                }
+            },
+            exportPackageCodes: function (packageId, name) {
+                window.location.href = "ExportPackageCodes?packageId=" + packageId + "&name=" + name + "";
+            },
+            closeGenerateingDialog: function () {
+                this.Generateing = false;
+            },
+            GetAllMrCooperateUserConfigs: function () {
+                var self = this;
+                $.get("/BankMRActivity/GetAllMrCooperateUserConfigs", function (data) {
+                    self.AllMrCooperateUserConfigs = data;
+                })
+            },
+        }
+    })
+
+
+</script>
+}

@@ -1,0 +1,706 @@
+﻿@model  Tuhu.Provisioning.Models.CommentItemModel
+@using Tuhu.Provisioning.Controls
+@using MVCControlsToolkit.Core
+@using MVCControlsToolkit.Controls
+@using Tuhu.Provisioning.Models
+@using ThBiz.Common.Configurations
+@using System.Linq.Expressions
+@using MVCControlsToolkit.Controls.Bindings
+
+<style>
+    .comment-label {
+        display: inline-block;
+        height: 30px;
+        max-width: 100%;
+        margin-bottom: 5px;
+        font-weight: bold;
+        margin-left: 10px;
+    }
+
+    .comment-select{
+    line-height: 1.42857143;
+    width: 100px;
+    height: 20px;
+    padding: 2px 2px 2px 5px;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+    -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+}
+</style>
+@{
+    string type = Request["t"] == null ? "1" : Request["t"];
+    string clo1 = "", clo2 = "", clo3 = "";
+
+    if (type == "1")
+    {
+        clo1 = "style=color:red;";
+    }
+    if (type == "2")
+    {
+        clo2 = "style=color:red;";
+    }
+    if (type == "3")
+    {
+        clo3 = "style=color:red;";
+    }
+}
+
+@{
+    var title = "";
+    switch (type)
+    {
+        case "1": title = "产品评论审核列表"; break;
+        case "2": title = "晒单列表"; break;
+        case "3": title = "试用报告"; break;
+        default:
+            break;
+    }
+    ViewBag.Title = title;
+}
+<h2><a href="CommentList?t=1" @clo1>产品评论审核列表</a>&nbsp;&nbsp;<a href="AdditionCommentList?pageIndex=1&">产品追评审核列表</a>&nbsp;&nbsp;<a href="CommentList?t=2" @clo2>晒单列表</a>&nbsp;&nbsp;<a href="CommentList?t=3" @clo3>试用报告</a></h2>
+@using (Html.BeginForm())
+{
+    <div>
+        @{var filter = Html.DataFilterBuilder(m => m.SoFilter, new CommentFilter());}
+        @*<label>@filter.RadioButton("CheckAll", 1, true, new Dictionary<string, object> { { "Text", "未审核" }, filter.ValueFor(m => m.CommentStatus) })<span>未审核</span></label>*@
+        @*@filter.DropDownListFor(m => m.CommentStatus, new SelectList(CommentFilter.istatus, filter.ValueFor(m => m.CommentStatus)), new Dictionary<string, object>() { {"change", "changefilter(this)" } })*@
+        <span>每页显示记录数：</span>
+        @Html.DropDownList("PageSize",
+        new SelectListItem[]{
+                    new SelectListItem() { Selected = ViewBag.PageSize == 10, Value = "10", Text = "10" },
+                    new SelectListItem() { Selected = ViewBag.PageSize == 20, Value = "20", Text = "20" },
+                    new SelectListItem() { Selected = ViewBag.PageSize == 50, Value = "50", Text = "50" },
+        },
+         new { onchange = "changeType()" })&nbsp;&nbsp;&nbsp;&nbsp;
+        @Html.DropDownList("SoFilter.$.FilterDescription.CommentStatus",
+            new SelectListItem[]
+                {
+                    new SelectListItem() { Selected = ViewBag.CommentStatus == -1, Value = "-1", Text = "全部" },
+                    new SelectListItem() { Selected = ViewBag.CommentStatus == 0, Value = "0", Text = "审核不通过" },
+                    new SelectListItem() { Selected = ViewBag.CommentStatus == 1, Value = "1", Text = "未审核" },
+                    new SelectListItem() { Selected = ViewBag.CommentStatus == 2, Value = "2", Text = "审核通过" },
+                    new SelectListItem() { Selected = ViewBag.CommentStatus == 3, Value = "3", Text = "仅打分" }
+                },
+            new
+            {
+                id = "SoFilter___FilterDescription_CommentStatus",
+                @class = "valid"
+            })
+        @Html.DropDownList("SoFilter.$.FilterDescription.Category",
+            new SelectListItem[]
+                {
+                    new SelectListItem() { Selected = ViewBag.Category == 0, Value = "0", Text = "全部" },
+                    new SelectListItem() { Selected = ViewBag.Category == 1, Value = "1", Text = "门店评论" },
+                    new SelectListItem() { Selected = ViewBag.Category == 2, Value = "2", Text = "产品评论" }
+                },
+            new
+            {
+                id = "SoFilter___FilterDescription_Category",
+                @class = "valid"
+            })
+        @Html.DropDownList("SoFilter.$.FilterDescription.CommentChannel",
+            new SelectListItem[]
+                {
+                    new SelectListItem() { Selected = ViewBag.CommentChannel == 0, Value = "0", Text = "全部" },
+                    new SelectListItem() { Selected = ViewBag.CommentChannel == 1, Value = "1", Text = "PC端" },
+                    new SelectListItem() { Selected = ViewBag.CommentChannel == 2, Value = "2", Text = "手机端" }
+                },
+            new
+            {
+                id = "SoFilter___FilterDescription_CommentChannel",
+                @class = "valid"
+            })
+        <input type="text" name="orderid" id="comment_orderid" placeholder="输入订单号搜索" value="@ViewBag.orderid" />
+        <span>关键词：</span>
+        <input type="text" style="width:25%" id="comment_KeyWord" name="keyWord" placeholder="例：好评 点赞 强烈推荐 很满意 非常满意" value="@ViewBag.keyWord" />&nbsp;&nbsp;&nbsp;&nbsp;
+        <span>字数上限：</span>
+        @Html.DropDownList("SoFilter.$.FilterDescription.WordCount",
+        new SelectListItem[]{
+                    new SelectListItem() { Selected = ViewBag.WordCount == 9999, Value = "9999", Text = "不限" },
+                    new SelectListItem() { Selected = ViewBag.WordCount == 10, Value = "10", Text = "10" },
+                    new SelectListItem() { Selected = ViewBag.WordCount == 20, Value = "20", Text = "20" },
+        },
+        new
+        {
+            id = "SoFilter___FilterDescription_WordCount",
+            @class = "valid"
+        })&nbsp;&nbsp;&nbsp;&nbsp;
+
+        <!--自动审核筛选-->
+
+        <span>自动审核状态：</span>
+        @Html.DropDownList("AutoApprove",
+        new SelectListItem[]{
+                    new SelectListItem() { Selected = ViewBag.AutoApprove == 0, Value = "0", Text = "全部" },
+                    new SelectListItem() { Selected = ViewBag.AutoApprove == 1, Value = "1", Text = "自动审核通过" },
+                    new SelectListItem() { Selected = ViewBag.AutoApprove == 2, Value = "2", Text = "自动审核不通过" },
+                    new SelectListItem() { Selected = ViewBag.AutoApprove == 3, Value = "3", Text = "未审核" },
+                    new SelectListItem() { Selected = ViewBag.AutoApprove == -1, Value = "-1", Text = "审核中" },
+        },
+        new
+        {
+            id = "AutoApprove",
+            @class = "valid"
+        })&nbsp;&nbsp;&nbsp;&nbsp;
+
+        <!--END-->
+
+        <span>投诉类型：</span>
+        @Html.DropDownList("SoFilter.$.FilterDescription.CommentTousuType",
+            new SelectListItem[]{ },
+            new
+            {
+                id = "SoFilter___FilterDescription_CommentTousuType",
+                @class = "valid"
+            })  <br /><br />
+        <span>评论门店的名称：</span>
+        <input type="text" style="width:10%" id="comment_InstallShop" name="InstallShop" placeholder="请输入门店的名称" value="@ViewBag.InstallShop" />
+        <span>评论产品的ID：</span>
+        <input type="text" style="width:10%" id="comment_ProductId" name="CommentProductId" placeholder="请输入评论产品的ID" value="@ViewBag.CommentProductId" />
+        <input type="hidden" id="selectCommentTousu" value="@ViewBag.CommentTousuType"/>
+        <span>评论时间：</span>
+        <input type="text" style="width:8%" id="CommentstartDate" name="CommentstartDate" readonly="readonly" value="@ViewBag.CommentstartDate" placeholder="请输入开始时间" />—<input style="width:8%" type="text" id="CommentendDate" name="CommentendDate" readonly="readonly" value="@ViewBag.CommentendDate" placeholder="请输入结束时间" />
+        <span>审核时间：</span>
+        <input type="text" style="width:8%" id="AuditstartDate" name="AuditstartDate" readonly="readonly" value="@ViewBag.AuditstartDate" placeholder="请输入开始时间" />—<input type="text" style="width:8%" id="AuditendDate" name="AuditendDate" readonly="readonly" value="@ViewBag.AuditendDate" placeholder="请输入结束时间" />
+        <span>手机端（总@(ViewBag.CommentfromPhone)条）</span>
+        <span>PC端（总@(ViewBag.CommentfromPC)条）</span>&nbsp;&nbsp;&nbsp;&nbsp;
+        <br />
+        <br />
+        <input type="submit" value="搜索" onmouseover="showMessage()" onmouseout="hideMessage()" name="OperationType"/>
+        <input type="button" onclick="clearAll()" value="清除" />
+        <input type="submit" value="导出" id="ExcelExport"  name="OperationType"/>
+        <a href="@YewuDomainConfig.ProvisioningSite/Comment/BatchOperationCommentList" target="_blank"><input type="button" value="批量操作" /></a>
+        <a href="@YewuDomainConfig.ProvisioningSite/Comment/CommentReport" target="_blank"><input type="button" value="评论报表" /></a><span>(根据时间统计报表)</span>
+        <span>(满足条件:@ViewBag.CommentCount)</span>
+        <input type="button" onclick="Export()" value="根据时间导出评论报表" />
+        <span id="message" style="display:none;color:red;font-size:10px;">搜索条件小于5000可以导出</span>
+        <br />
+        <script src="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $("#dialog-Complaint").dialog({
+                    modal: true,
+                    autoOpen: false
+                });
+
+                $("#CommentstartDate").datepicker({ dateFormat: 'yy-mm-dd' });
+                $("#CommentendDate").datepicker({ dateFormat: 'yy-mm-dd' });
+                $("#AuditstartDate").datepicker({ dateFormat: 'yy-mm-dd' });
+                $("#AuditendDate").datepicker({ dateFormat: 'yy-mm-dd' });
+
+                loadTousuType();
+            });
+
+            if(@(ViewBag.CommentCount)>=5000){
+                $("#ExcelExport").hide();
+            }
+
+            function showMessage()
+            {
+                $("#message").show();
+            }
+
+            function hideMessage()
+            {
+                $("#message").hide();
+            }
+
+            function clearAll()
+            {
+                $("#comment_ProductId").val("");
+                $("#comment_InstallShop").val("");
+                $("#comment_KeyWord").val("");
+                $("#comment_orderid").val("");
+                $("#AuditstartDate").val("");
+                $("#AuditendDate").val("");
+            }
+            var tousuTypeItems = new Array();
+
+            function loadTousuType()
+            {
+                $.get("GetAllTousuTypeItems", function (data) {
+                    $.each(data, function (index) {
+                        var item = {};
+                        item.DicType = data[index].DicType;
+                        item.DicValue = data[index].DicValue;
+                        item.DicText = data[index].DicText;
+                        item.TypeLevel = data[index].TypeLevel;
+                        tousuTypeItems.push(item);
+                    })
+                    if (tousuTypeItems.length!=0) {
+                        var tOption = "";
+                        tOption = document.createElement("Option");
+                        tOption.text = "-请选择-";
+                        tOption.value = "";
+                        document.all("SoFilter.$.FilterDescription.CommentTousuType").add(tOption);
+                        tOption = document.createElement("Option");
+                        tOption.text = "全部";
+                        tOption.value = "0";
+                        document.all("SoFilter.$.FilterDescription.CommentTousuType").add(tOption);
+                        $.each(tousuTypeItems, function (index) {
+                            if (tousuTypeItems[index].TypeLevel == 1) {
+                                tOption = document.createElement("Option");
+                                tOption.text = tousuTypeItems[index].DicText;
+                                tOption.value = tousuTypeItems[index].DicText;
+                                document.all("SoFilter.$.FilterDescription.CommentTousuType").add(tOption);
+                            }
+                        })
+                    }
+                    $("#SoFilter___FilterDescription_CommentTousuType option").each(function () {
+                        var selectCommentTousu = $("#selectCommentTousu").val();
+                        if ((this.value ==selectCommentTousu) ) {
+                            this.selected = true;
+                            return false;
+                        }
+                    });
+                })
+                console.log(tousuTypeItems);
+            }
+
+            function changeType() {
+                location.href ="/Comment/CommentList?keyWord=@ViewBag.keyWord&&PageDim=" + $("#PageSize").val();
+            }
+            var complant = new Array();
+            var firstTousuType = "";
+
+            function loadTousu()
+            {
+                $("#firstCommentTousu").empty().append("<option value=''>-请选择-</option>");
+                $("#secondCommentTousu").empty().append("<option value=''>-请选择-</option>");
+                $("#threeCommentTousu").empty().append("<option value=''>-请选择-</option>");
+                $("#fourCommentTousu").empty().append("<option value=''>-请选择-</option>");
+                $.each(tousuTypeItems, function (index) {
+                    if (tousuTypeItems[index].TypeLevel == 1) {
+                        $("#firstCommentTousu").append("<option value='" + tousuTypeItems[index].DicValue+ "'>" + tousuTypeItems[index].DicText + "</Option>")
+                    }
+                })
+            }
+
+            function DeleteComplaintItem(obj) {
+                var commentID = $(obj).attr("data-key");
+                if (window.confirm("你确定要删除吗？")) {
+                    $.post("DeleteComplaintItem", { CommentID: commentID }, function (data) {
+                        if (data == true) {
+                            alert("删除成功！");
+                            $("#"+commentID +"_span").html("<span id="+commentID +")_span></span>");
+                            $("#"+commentID+"_span").append("<input type='button' value='创建投诉类型' id="+commentID +"_button onclick='openDilag(this)' data-key="+commentID +" />");
+                        }
+                    })
+                }
+            }
+
+            function openDilag(obj) {
+                loadTousu();
+                firstTousuType = "";
+                complant.length = 0;
+                $("#addNewComplaint").empty();
+                var commentID = $(obj).attr("data-key");
+                $("#comment-Content").text($("#" + commentID + "comentContent").html());
+                $("#dialog-Complaint").dialog("option", "width", "45%");
+                $("#dialog-Complaint").dialog("option", "title", "创建投诉类型");
+                $("#dialog-Complaint").dialog("option", "buttons", [
+                    {
+                        text: "保存",
+                        click: function () {
+                            if (complant.length > 0) {
+                                var complaintItem = JSON.stringify(complant);
+                                $.post("AddComplaintItem", { CommentID: commentID, ComplaintItem: complaintItem, FirstTousuType: firstTousuType }, function (data) {
+                                    if (data == true) {
+                                        complant.length = 0;
+                                        alert("创建成功！");
+                                        $("#dialog-Complaint").dialog("close");
+                                        $("#"+commentID+"_span").html($("#addNewComplaint").html());
+                                        $("#"+commentID+"_span").append($("<br />"));
+                                        $("#"+commentID+"_span").append("<a onclick='openDilag(this)' style='cursor:pointer;text-decoration:none' data-key="+commentID+">&nbsp;&nbsp;&nbsp;<span>修改</span></a>");
+                                        $("#"+commentID+"_span").append("<a onclick='DeleteComplaintItem(this)' style='cursor:pointer;text-decoration:none' data-key="+commentID+">&nbsp;&nbsp;&nbsp;<span>删除</span></a>");
+                                    } else {
+                                        complant.length=0;
+                                        $("#dialog-Complaint").dialog("close");
+                                        $("#addNewComplaint").empty()
+                                        alert("创建失败！");
+                                    }
+                                })
+                            } else {
+                                alert("请选择投诉类别！");
+                            }
+                        }
+                    },
+                    {
+                        text: "取消",
+                        click: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                ]);
+
+                $("#dialog-Complaint").dialog("open");
+            }
+
+            function SetCommentStatus(button, commentStatus)
+            {
+                var self = $(button);
+                var ID = self.attr("data-value");
+                self.attr("disabled", "disabled");
+                self.siblings("input").each(function ()
+                {
+                    $(this).attr("disabled", false);
+                });
+
+                $.post('/Comment/UpdateCommentStatus', { "CommentId": self.attr("data-value"), "CommentStatus": commentStatus }, function ()
+                {
+                    var lable = $(document.getElementById(ID));
+                    if (commentStatus == 0)
+                    {
+                        lable.show().text("审核不通过");
+                        lable.next().hide().next().hide();
+                    }
+                    else if (commentStatus == 1)
+                    {
+                        $(".text" + ID).css("display", "none");
+                        lable.show().prev().remove();
+                        self.parent().next().show().prev().remove();
+                    }
+                    else if (commentStatus == 2)
+                    {
+                        lable.next().text("审核通过");
+                        $(".text" + ID).css("display", "block");
+                        lable.hide().next().show().next().hide();
+                    }
+                    else if (commentStatus == 3)
+                    {
+                        $(".text" + ID).css("display", "none");
+                        lable.next().text("仅通过打分");
+                        lable.hide().next().show().next().hide();
+                    }
+                    else if (commentStatus == 5)
+                    {
+                        $(".text" + ID).css("display", "none");
+                        lable.prev().text("敏感内容已屏蔽");
+                    }
+                });
+
+            }
+            function OfficialReply(button)
+            {
+                var self = $(button);
+                var id = self.attr("data-value");
+                var textarea = $(".replay" + self.attr("data-value")).val();
+                if (textarea == "" || textarea == null)
+                {
+                    alert("请输入回复内容！");
+                }
+                else
+                {
+                    $.post('/Comment/UpdateOfficialReply', { "CommentId": self.attr("data-value"), "OfficialReply": textarea }, function ()
+                    {
+                        self.hide();
+                        self.text($(".replay" + self.attr("data-value")).val());
+                        $(".replay" + self.attr("data-value")).attr("readonly", "readonly");
+                        $(".replay" + self.attr("data-value")).attr("style", "min-height:40px;height:40px;background:transparent;border:none;overflow: hidden;resize: none;");
+                        $("#" + id + "_hidden_non").val($(".replay" + self.attr("data-value")).val());
+                        alert($("#" + id + "_hidden_non").val());
+                        $("#"+id+"_ReplyUpdateNon_Button").show();
+                    });
+                }
+            }
+            function SaveOfficialReplyNon(button) {
+                var self = $(button);
+                var id = self.attr("data-value");
+                $("#"+id+"_ReplyNon_Button").hide();
+                $("#"+id+"_ReplySaveNon_Button").hide();
+                $("#"+id+"_ReplyCancelNon_Button").hide();
+                $("#"+id+"_ReplyUpdateNon_Button").show();
+               
+                var textarea=$(".replay" + self.attr("data-value")).val();
+                $(".replay" + self.attr("data-value")).attr("style", "min-height:40px;height:40px;background:transparent;border:none;overflow: hidden;resize: none;");
+               
+                $(".replay" + self.attr("data-value")).attr("readonly", "readonly");
+                $.post('/Comment/UpdateOfficialReply', { "CommentId": self.attr("data-value"), "OfficialReply": textarea }, function ()
+                {
+                    $("#" + id + "_hidden_non").val("");
+                });
+            }
+            function UpdateOfficialReplyNon(button) {
+             
+                var self = $(button);
+                var id = self.attr("data-value");
+                $("#"+id+"_ReplyNon_Button").hide();
+                $("#" + id + "_hidden_non").val($(".replay" + self.attr("data-value")).val());
+                $("#" + id + "_ReplyUpdateNon_Button").hide();
+                $("#"+id+"_ReplyCancelNon_Button").show();
+                $("#"+id+"_ReplySaveNon_Button").show();
+                $(".replay" + self.attr("data-value")).attr("style", "min-height:40px;height:40px;");
+                $(".replay" + self.attr("data-value")).removeAttr("readonly") ;
+            }
+            function CancelOfficialReplyNon(button) {
+                var self = $(button);
+                var id = self.attr("data-value");
+                $("#"+id+"_ReplyNon_Button").hide();
+                $("#"+id+"_ReplyUpdateNon_Button").show();
+                $("#"+id+"_ReplySaveNon_Button").hide();
+                $("#"+id+"_ReplyCancelNon_Button").hide();
+                
+                $(".replay" + self.attr("data-value")).attr("style", "min-height:40px;height:40px;background:transparent;border:none;overflow: hidden;resize: none;");
+                $(".replay" + self.attr("data-value")).attr("readonly", "readonly");
+                $(".replay" + self.attr("data-value")).val($("#" + id + "_hidden_non").val());
+                $("#" + id + "_hidden_non").val("");
+            }
+
+            function SaveOfficialReply(button) {
+                var self = $(button);
+                var id = self.attr("data-value");
+                $("#"+id+"_ReplySave_Button").hide();
+                $("#"+id+"_ReplyCancel_Button").hide();
+                $("#"+id+"_ReplyUpdate_Button").show();
+               
+                var textarea=$(".replay" + self.attr("data-value")).val();
+                $(".replay" + self.attr("data-value")).attr("style", "min-height:40px;height:40px;background:transparent;border:none;overflow: hidden;resize: none;");
+               
+                $(".replay" + self.attr("data-value")).attr("readonly", "readonly");
+                $.post('/Comment/UpdateOfficialReply', { "CommentId": self.attr("data-value"), "OfficialReply": textarea }, function ()
+                {
+                    $("#" + id + "_hidden").val("");
+                });
+            }
+            function UpdateOfficialReply(button) {
+             
+                var self = $(button);
+                var id = self.attr("data-value");
+                $("#" + id + "_hidden").val($(".replay" + self.attr("data-value")).val());
+                $("#" + id + "_ReplyUpdate_Button").hide();
+                $("#"+id+"_ReplyCancel_Button").show();
+                $("#"+id+"_ReplySave_Button").show();
+                $(".replay" + self.attr("data-value")).attr("style", "min-height:40px;height:40px;");
+                $(".replay" + self.attr("data-value")).removeAttr("readonly") ;
+            }
+            function CancelOfficialReply(button) {
+                var self = $(button);
+                var id = self.attr("data-value");
+                
+                $("#"+id+"_ReplyUpdate_Button").show();
+                $("#"+id+"_ReplySave_Button").hide();
+                $("#"+id+"_ReplyCancel_Button").hide();
+                
+                $(".replay" + self.attr("data-value")).attr("style", "min-height:40px;height:40px;background:transparent;border:none;overflow: hidden;resize: none;");
+                $(".replay" + self.attr("data-value")).attr("readonly", "readonly");
+                $(".replay" + self.attr("data-value")).val($("#" + id + "_hidden").val());
+                $("#" + id + "_hidden").val("");
+            }
+            function addNewComplaint() {
+                var firstCommentTousu = $("#firstCommentTousu").val();
+                var secondCommentTousu = $("#secondCommentTousu").val();
+                var threeCommentTousu = $("#threeCommentTousu").val();
+                var fourCommentTousu = $("#fourCommentTousu").val();
+                var firstCommentText = "";
+                var secondCommentText = "";
+                var threeCommentText = "";
+                var fourCommentText = "";
+                var firstType = "";
+                if (firstCommentTousu != "") {
+                    firstCommentText = $("#firstCommentTousu option:selected").text();
+                }
+                if (secondCommentTousu != "") {
+                    secondCommentText = $("#secondCommentTousu option:selected").text();
+                }
+
+                if (threeCommentTousu != "") {
+                    threeCommentText = $("#threeCommentTousu option:selected").text();
+                }
+                if (fourCommentTousu != "") {
+                    fourCommentText = $("#fourCommentTousu option:selected").text();
+                }
+                var temp = {};
+                firstTousuType += firstCommentText+"|";
+                if (firstCommentTousu != "") {
+                    if (secondCommentTousu == "") {
+                        temp.key = firstCommentTousu;
+                        temp.value = firstCommentText;
+                        complant.push(temp);
+                        $("#addNewComplaint").append("<div class='comment_tousuType' style='margin-left:5%'>" + firstCommentText + "</div>");
+                    } else if (threeCommentTousu == "") {
+                        temp.key = secondCommentTousu;
+                        temp.value = secondCommentText;
+                        complant.push(temp);
+                        $("#addNewComplaint").append("<div class='comment_tousuType' style='margin-left:5%'>" + firstCommentText + "-" + secondCommentText + "</div>");
+                    } else if (fourCommentTousu == "") {
+                        temp.key = threeCommentTousu;
+                        temp.value = threeCommentText;
+                        complant.push(temp);
+                        $("#addNewComplaint").append("<div class='comment_tousuType' style='margin-left:5%'>" + firstCommentText + "-" + secondCommentText + "-" + threeCommentText + "</div>");
+                    } else if (fourCommentTousu != "") {
+                        temp.key = fourCommentTousu;
+                        temp.value = fourCommentText;
+                        complant.push(temp);
+                        $("#addNewComplaint").append("<div class='comment_tousuType' style='margin-left:5%'>" + firstCommentText + "-" + secondCommentText + "-" + threeCommentText + "-" + fourCommentText + "</div>");
+                    }
+                } else {
+                    alert("投诉类型的第一级别不为空！");
+                }
+                console.log(complant);
+            }
+
+            function LookOpr(commentId) {
+                var content="";
+                $("#OprHistory").empty();
+                $.get("SelectOprLogByCommentID", { commentID: commentId }, function (data) {
+                    if (data.status == "success") {
+                        console.log(data);
+                        $(data.data).each(function (index) {
+                            var changeDatetime = data_string(data.data[index].ChangeDatetime);
+                            content += "<span style='display:block;margin-bottom:5px;'>操作人：" + data.data[index].Author + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;操作：" + data.data[index].Operation + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;操作时间：" + changeDatetime + "</span>";
+                        })
+                    } else {
+                        content = "暂无记录";
+                    }
+                    $("#OprHistory").append(content);
+
+                })
+
+                $("#OprHistory").dialog({
+                    title: "操作历史",
+                    width: 600,
+                    height: 500,
+                    modal: true
+                });
+
+            }
+
+            function data_string(str) {
+                var d = eval('new ' + str.substr(1, str.length - 2));
+                var ar_date = [d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds()];
+                for (var i = 0; i < ar_date.length; i++) ar_date[i] = dFormat(ar_date[i]);
+                return ar_date.slice(0, 3).join('-') + ' ' + ar_date.slice(3).join(':');
+
+                function dFormat(i) { return i < 10 ? "0" + i.toString() : i; }
+            }
+
+            function ClearComplaint() {
+                $(".comment_tousuType").remove();
+                complant.length = 0;
+                firstTousuType = "";
+                console.log(complant);
+            }
+
+            function changType(level){
+                if(level=="1"){
+                    var firstCommentKey = $("#firstCommentTousu").val()
+                    $("#secondCommentTousu").empty().append("<option value=''>-请选择-</option>");
+                    $("#threeCommentTousu").empty().append("<option value=''>-请选择-</option>");
+                    $("#fourCommentTousu").empty().append("<option value=''>-请选择-</option>");
+                    $.each(tousuTypeItems, function (index) {
+                        if (tousuTypeItems[index].TypeLevel == 2 && tousuTypeItems[index].DicType == firstCommentKey) {
+                            $("#secondCommentTousu").append("<option value='" + tousuTypeItems[index].DicValue + "'>" + tousuTypeItems[index].DicText + "</Option>")
+                        }
+                    })
+                }else if(level=="2"){
+                    var secondCommentKey = $("#secondCommentTousu").val()
+                    $("#threeCommentTousu").empty().append("<option value=''>-请选择-</option>");
+                    $("#fourCommentTousu").empty().append("<option value=''>-请选择-</option>");
+                    $.each(tousuTypeItems, function (index) {
+                        if (tousuTypeItems[index].TypeLevel == 3 && tousuTypeItems[index].DicType == secondCommentKey) {
+                            $("#threeCommentTousu").append("<option value='" + tousuTypeItems[index].DicValue + "'>" + tousuTypeItems[index].DicText + "</Option>")
+                        }
+                    })
+                } else if (level == "3") {
+                    var threeCommentKey = $("#threeCommentTousu").val()
+                    $("#fourCommentTousu").empty().append("<option value=''>-请选择-</option>");
+                    $.each(tousuTypeItems, function (index) {
+                        if (tousuTypeItems[index].TypeLevel == 4 && tousuTypeItems[index].DicType == threeCommentKey) {
+                            $("#fourCommentTousu").append("<option value='" + tousuTypeItems[index].DicValue + "'>" + tousuTypeItems[index].DicText + "</Option>")
+                        }
+                    })
+                }
+            };
+            //根据时间导出
+            function Export()
+            {
+                var startDate = new Date(Date.parse($("#CommentstartDate").val())); 
+                var endDate = new Date(Date.parse($("#CommentendDate").val()));
+
+                if (getDays(startDate, endDate) > 7) {
+                    alert("评论时间范围不能超过7天");
+                    return;
+                }
+                var href = "/Comment/ExcelExport?StartDate=" + $("#CommentstartDate").val() + "&EndDate=" + $("#CommentendDate").val();
+                window.location.href = href;
+            }
+
+            // 计算两个日期的时间间隔天数，参数时间字符串的格式：月-日-年
+            function getDays(date1, date2) {
+                //将时间字符串转化为距离1970年1月1日午夜零时的时间间隔的毫秒数  
+                var time1 = Date.parse(date1);
+                var time2 = Date.parse(date2);
+
+                //将两个时间相减，求出相隔的天数  
+                var dayCount = (Math.abs(time2 - time1)) / 1000 / 60 / 60 / 24;
+                return dayCount;
+            }
+        </script>
+        <div id="DivCommentList">
+            @Html.DataGridFor(m => m.CommentItemList, ItemContainerType.tr, null,
+                  "_UCCommentListItemDisplay",
+                    _S.H<CommentItem>(
+                        @<table style="text-align: center; width: 100%;">
+                            <tr>
+                                <th style="width:5%">@item.LabelFor(m => m.CommentChannel)</th>
+                                <th style="width:5%">@item.LabelFor(m => m.CommentUserName)</th>
+                                <th style="width:5%">@item.LabelFor(m => m.CreateTimeDate) </th>
+                                <th style="width:5%">@item.LabelFor(m => m.CommentProductId) </th>
+                                <th style="width:5%">@item.LabelFor(m => m.CommentOrderId) </th>
+                                <th style="width:10%">评论的门店 </th>
+                                <th style="width:2%">@item.LabelFor(m => m.CommentR1) </th>
+                                <th style="width:2%">@item.LabelFor(m => m.CommentR2) </th>
+                                <th style="width:2%">@item.LabelFor(m => m.CommentR3) </th>
+                                <th style="width:2%">@item.LabelFor(m => m.CommentR4) </th>
+                                <th style="width:2%">@item.LabelFor(m => m.CommentR5) </th>
+                                <th style="width:2%">@item.LabelFor(m => m.CommentR6) </th>
+                                <th style="width:2%">@item.LabelFor(m => m.CommentR7) </th>
+                                <th style="width:10%">@item.LabelFor(m => m.CommentImages) </th>
+                                <th style="width:5%">自动审核状态 </th>
+                                <th style="width:5%">审核状态 </th>
+                                <th style="width:5%">详细信息 </th>
+                                <th style="width:5%">审核操作 </th>
+                                <th style="width:11%">投诉类型</th>
+                                <th style="width:5%">官方回复 </th>
+                                <th style="width:5%">操作历史</th>
+                            </tr>
+                            @item.ViewData["Content"]
+                        </table>
+	    ), null, null, itemCss: "normalRow", altItemCss: "alternateRow")
+        </div>
+        <div class="BatchPager">
+            @{ var pager = Html.PagerFor(m => m.CurrPage, m => m.PrevPage, m => m.TotalPages);}
+            @pager.PageButton("<<", PageButtonType.First, PageButtonStyle.Link)
+            @pager.PageButton("<", PageButtonType.Previous, PageButtonStyle.Link)
+            @pager.PageChoice(5)
+            @pager.PageButton(">", PageButtonType.Next, PageButtonStyle.Link)
+            @pager.PageButton(">>", PageButtonType.Last, PageButtonStyle.Link)
+            @pager.PageButton("转到页", PageButtonType.GoTo, PageButtonStyle.Button)
+            @pager.GoToText(new { style = "width:30px;" })
+        </div>
+        @Html.EnableSortingFor(m => m.CommentItemList, m => m.OrderOrder, "NormalHeader", "AscendingHeader", "DescendingHeader", page: m => m.CurrPage)
+        @Html.HiddenFor(m => m.TotalPages)
+    </div>
+    <div  id="dialog-Complaint" title="" width="400px">
+        <div class="form">
+            <div>
+                <label class="comment-label">评论内容：</label><span id="comment-Content"></span>
+            </div>
+            <div id="selectGroup">
+                <label class="comment-label">投诉类型：</label><select class="comment-select" id="firstCommentTousu" onchange="changType('1')"></select><select class="comment-select" id="secondCommentTousu" onchange="changType('2')"></select><select class="comment-select" id="threeCommentTousu" onchange="changType('3')"></select><select class="comment-select" id="fourCommentTousu"></select>&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" value="添加" onclick="addNewComplaint()"/>&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" value="清除" onclick="ClearComplaint()" />
+            </div>
+            <label class="comment-label">展示区域：</label>
+            <div id="addNewComplaint">
+                
+            </div>
+        </div>
+    </div>
+    <div id="OprHistory"></div>
+  }

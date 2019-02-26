@@ -1,0 +1,119 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@{
+    ViewBag.Title = "车载优惠券配置";
+    List<Region> provincelist = ViewBag.ProvinceList as List<Region>;
+}
+
+<h2>车载优惠券配置</h2>
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    textarea {
+        width: 100px;
+        height: 100px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+</style>
+
+<div>
+    <table>
+        <tbody>
+            <tr>
+                <td>
+                    <a href="javascript:void(0)" class="btn" onclick="Add()">添加</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="listdata"></div>
+
+<script>
+
+    $(function () {
+
+        $(".listdata").load("/VehicleMountedCouponConfig/list");
+
+        $(".listdata").on("click", ".pager>a", function (event) {
+            event.preventDefault();
+            if ($(this).attr("href")) {
+                $.ajax({
+                    type: "POST",
+                    url: this.href,
+                    data: { },
+                    success: function (result) {
+                        $(".listdata").html(result);
+                    },
+                    error: function (result) {
+                        alert("失败!")
+                    }
+                });
+            }
+        });
+    })
+
+    function SearchList() {
+        $.ajax({
+            type: "POST",
+            url: "/VehicleMountedCouponConfig/List",
+            data: { },
+            success: function (result) {
+                $(".listdata").html(result);
+            },
+            error: function (result) {
+                alert("失败!")
+            }
+        });
+    };
+
+    function Add() {
+        window.location.href = '/VehicleMountedCouponConfig/Edit?id=0'
+    };
+
+    function Update(id) {
+        window.location.href = '/VehicleMountedCouponConfig/Edit?id=' + id
+    };
+
+    function Delete(id) {
+        if (window.confirm("您确定要删除吗？")) {
+            $.ajax({
+                type: "POST",
+                url: "/VehicleMountedCouponConfig/Delete",
+                data: { "id": id },
+                dataType: "json",
+                success: function (result) {
+                    if (result) {
+                        window.location.href = "/VehicleMountedCouponConfig/Index";
+                    }
+                    else {
+                        alert("删除失败！");
+                    }
+                },
+                error: function (result) {
+                }
+            })
+        }
+    }
+</script>

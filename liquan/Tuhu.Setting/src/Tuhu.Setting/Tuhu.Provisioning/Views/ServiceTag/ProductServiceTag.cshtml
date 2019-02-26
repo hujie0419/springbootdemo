@@ -1,0 +1,308 @@
+﻿@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.ServiceTagModel>
+@{
+    ViewBag.Title = "商品服务标签配置";
+    var nofreeServiceids = "";
+    foreach (var item in Model.Where(m => m.Type == 2))
+    {
+        nofreeServiceids += item.StrServiceIDs + ";";
+    }
+}
+
+<style>
+    table td {
+        padding: 10px;
+        border: solid 1px #cbe3ff;
+    }
+
+    table th {
+        background-color: #cbe3ff;
+        color: #000000;
+        font-size: 16px;
+        height: 20px;
+    }
+
+    a {
+        cursor: pointer;
+    }
+
+    .title > h3 > label {
+        font-weight: normal;
+    }
+
+    input {
+        width: 300px;
+    }
+    textarea{
+        width: 600px;
+        height: 2px;
+        resize : none; 
+    }
+
+    .bottom {
+        font-size: 30px;
+        margin-top: 40px;
+        text-align: center;
+    }
+
+        .bottom > a {
+            color: black;
+        }
+
+            .bottom > a:hover {
+                text-decoration: none;
+                font-weight: bold;
+            }
+
+            .bottom > a:first-of-type {
+                background-color: aquamarine;
+                padding: 10px 20px;
+                margin-right: 20px;
+            }
+</style>
+
+<div style="clear:both;"></div>
+
+<div style="float:left;" class="title">
+    <h2>
+        <span>商品服务标签配置</span>
+    </h2>
+</div>
+<div style="float:left;clear:both;">
+    <h1>
+        类别:
+    </h1>
+</div>
+<table style="width:100%;" class="no-free" data-serviceids="@nofreeServiceids">
+    <tr>
+        <th width="40%">类别</th>
+        <th width="10%">服务标签</th>
+        <th width="15%">服务描述</th>
+        <th width="10%">产品标签</th>
+        <th width="15%">产品描述</th>
+        <th width="10%">操作</th>
+    </tr>
+    @foreach (var item in Model.Where(m => m.Type == 2))
+    {
+        <tr class="rule" data-pkid="@item.PKID">
+            <td data-serviceids="@(item.StrServiceIDs);" id="@("no-free_" + new Random().Next(0, 10000000) + item.PKID)"><a href="javascript:void(0);" onclick="javascript:ShowRegionDialog(this,2)" style=" float:right;">编辑</a>@(item.StrDisplayNames.Length > 50 ? item.StrDisplayNames.Substring(0, 50) + "......" : item.StrDisplayNames)</td>
+            <td><input type="text" name="name" value="@item.ServiceTag"></td>
+            <td><input type="text" name="" value="@item.ServiceDescribe"></td>
+            <td><input type="text" name="ProductTag" value="@item.ProductTag" /> </td>
+            <td><input type="text" name="ProductDescribe" value="@item.ProductDescribe" /> </td>
+            <td><a href="javascript:void(0);" onclick="javascript:DelRule(this)">删除</a></td>
+        </tr>
+    }
+    <tr>
+        <td colspan="6"><a href="javascript:void(0);" onclick="javascript: AddCategory(this)">+新增服务标签</a></td>
+    </tr>
+</table>
+
+<div style="float:left;clear:both;margin-top:30px;">
+    <h1>
+        PID:
+    </h1>
+</div>
+<table style="width:100%;" class="free">
+    <tr>
+        <th width="40%">PIDs</th>
+        <th width="20%">服务标签</th>
+        <th width="30%">服务描述</th>
+        <th width="1%">操作</th>
+    </tr>
+    @foreach (var item in Model.Where(m => m.Type == 1))
+    {
+        <tr class ="rule" data-pkid="@item.PKID">
+            <td><textarea>@item.StrServiceIDs</textarea></td>
+            <td><input type="text" name="name" value="@item.ServiceTag"></td>
+            <td><input type="text" name="" value="@item.ServiceDescribeTID" /></td>
+            <td><a href="javascript:void(0);" onclick="javascript:DelRule(this)">删除</a></td>
+        </tr>
+    }
+    <tr>
+        <td colspan="3"><a href="javascript:void(0);" onclick="javascript: AddPids(this)">+新增服务标签</a></td>
+    </tr>
+</table>
+
+<div class="bottom">
+    <a href="javascript:void(0);" onclick="javascript:Save()">保 存</a>
+    <a href="javascript:void(0);" onclick="javascript:Cancel()">取 消</a>
+</div>
+<div id="AddItem" style="display: none"></div>
+@section scripts{
+<script>
+        Array.prototype.S = String.fromCharCode(2);
+        Array.prototype.in_array = function (e) {
+            var r = new RegExp(this.S + e + this.S);
+            return (r.test(this.S + this.join(this.S) + this.S));
+        };
+
+        var ShowRegionDialog = function (target, type) {
+            var id = "";
+            //type  1新建  2编辑
+            if (type == 1) {
+                id = $(target).parents("table").prop("class") + "_" + new Date().getTime();
+                $(target).parent().prop("id", id)
+            }
+            else {
+                id = $(target).parent().prop("id");
+            }
+            $("#AddItem").load('/ServiceTag/Categorys?id=' + id);
+
+            $("#AddItem").dialog({
+                title: "选择类别",
+                width: 750,
+                height: 700,
+                modal: true
+            });
+
+        }
+        //新增类别
+        var AddCategory = function (target) {
+            $(target).parent().parent().before('<tr class="rule"><td data-serviceids=""><a href="javascript:void(0);" onclick="javascript:ShowRegionDialog(this,1)" >选择类别</a></td><td><input type="text" name="name" value="" ></td><td><input type="text" name="" value="" /></td>   <td><input type="text" name="ProductTag" value="" /> </td>  <td><input type="text" name="ProductDescribe" value="" /> </td> <td><a href="javascript:void(0);" onclick="javascript:DelRule(this)">删除</a></td></tr>');
+        };
+        //新增PID
+        var AddPids = function (target) {
+            $(target).parent().parent().before('<tr class="rule"><td><textarea></textarea></td><td><input type="text" name="name" value="" ></td><td><input type="text" name="" value="" /></td><td><a href="javascript:void(0);" onclick="javascript:DelRule(this)">删除</a></td></tr>');
+        }
+        //删除
+        var DelRule = function (target) {
+            if (!confirm("确认删除这条规则?"))
+                return;
+            var pkid = $(target).parent().parent().attr("data-pkid");
+            if (pkid > 0)          //原有的服务标签
+            {
+                $.ajax(
+                {
+                    url: "/ServiceTag/DeleteTag",
+                    type: "post",
+                    datatype: "int",
+                    data: { PKID: pkid },
+                    success: function (result)
+                    {
+                        if (result > 0) {
+                            var tr = target.parentNode.parentNode;
+                            var tbody = tr.parentNode;
+                            tbody.removeChild(tr);
+                            alert("删除成功");
+
+                        }
+                        else {
+                            alert("删除成功");
+                        }
+                    }
+                }
+                    )
+            }
+            else     //删除未存入数据库的新增标签
+            {
+                var tr = target.parentNode.parentNode;
+                var tbody = tr.parentNode;
+                tbody.removeChild(tr);
+                alert("删除成功");
+            }
+        }
+
+        var Cancel = function () {
+            location.href = "/ServiceTag/Index";
+        }
+        //保存
+        var Save = function () {
+            var arrdata = [];
+            var sb = "";
+            //PID
+            var pid_rule = $(".free").find(".rule");
+            if (pid_rule.length) {
+                //校验(还需进行差异性验证)
+                pid_rule.each(function (i) {
+                    var ids = $(this).find("td:eq(0)").children().val();
+                    if (!ids) {
+                        sb += "请输入第：" + (i + 1) + "个PIDs\n";
+                    }
+                    var tag = $(this).find("td:eq(1)").children().val();
+                    if (tag == "") {
+                        sb += "请输入第：" + (i + 1) + "个PIDs的服务标签\n";
+                    }
+                })
+                if (sb) {
+                    alert(sb);
+                    return false;
+                }
+                //封装保存
+                var res;
+                pid_rule.each(function (i) {
+                    var o = {};
+                    o.StrServiceIDs = $(this).find("td:eq(0)").children().val();
+                    if ($(this).attr("data-pkid"))
+                        o.PKID = parseInt($(this).attr("data-pkid"));
+                    o.Type = 1;
+                    o.ServiceTag = $(this).find("td:eq(1)>input").val();
+                    o.ServiceDescribeTID = $(this).find("td:eq(2)>input").val();
+                    arrdata.push(o);
+                }
+            )
+
+        }
+            //Category
+            var lb_rule = $(".no-free").find(".rule");
+            if (lb_rule.length) {
+                //校验
+                lb_rule.each(function (i) {
+                    var ids = $(this).find("td:eq(0)").attr("data-serviceids");
+                    if (!ids) {
+                        sb += "请选择第：" + (i + 1) + "个类别\n";
+                    }
+                    var tag = $(this).find("td:eq(1)>input").val();
+                    console.log(tag);
+                    if (!tag) {
+                        sb += "请输入第：" + (i + 1) + "个类别的服务标签\n";
+                    }
+                })
+
+                if (sb) {
+                    alert(sb);
+                    return false;
+                }
+                //封装保存
+                lb_rule.each(function (i) {
+                    var o = {};
+                    o.StrServiceIDs = $(this).find("td:eq(0)").attr("data-serviceids");
+                    if ($(this).attr("data-pkid"))
+                        o.PKID = parseInt($(this).attr("data-pkid"));
+                    o.Type = 2;
+                    o.ServiceTag = $(this).find("td:eq(1)>input").val();
+                    o.ServiceDescribe = $(this).find("td:eq(2)>input").val();
+                    o.ProductTag = $(this).find("td:eq(3)>input").val();
+                    o.ProductDescribe = $(this).find("td:eq(4)>input").val();
+                    arrdata.push(o);
+                })
+            }
+            if (arrdata.length > 0) {
+                $.ajax(
+                {
+                    url: "/ServiceTag/InsertAndUpdateTag",
+                    type: "post",
+                    datatype: "json",
+                    data: { data: JSON.stringify(arrdata) },
+                    success: function (result) {
+                        if (Object.prototype.toString.call(result) == '[object String]') {
+                            alert("不存在的PID："+result);
+                        }
+                        else if (result > 0) {
+                            alert("保存成功");
+                            location.href = "/ServiceTag/Index";
+                        }
+                        else if (result == -5) {
+                            alert("PID不唯一");
+                        }
+                        else {
+                            alert("保存失败");
+                        }
+                    }
+                }
+                    )
+            }
+        }
+
+</script>
+}
+

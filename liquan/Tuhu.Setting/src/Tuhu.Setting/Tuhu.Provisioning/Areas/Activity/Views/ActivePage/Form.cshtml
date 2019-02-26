@@ -1,0 +1,237 @@
+﻿
+@{
+    ViewBag.Title = "Form";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+
+<div style="padding-top:20px;padding-left:20px;padding-right:20px;">
+    <form id="form1">
+        <table class="form">
+            @*<tr>
+                    <th class="formTitle">会场名称：</th>
+                    <td class="formValue">
+                        <input type="text" id="BigHomeName" name="BigHomeName" class="form-control required" />
+                    </td>
+                </tr>*@
+            <tr>
+                <th class="formTitle">图标:</th>
+                <td class="formValue">
+                    <img id="imgH5" width="30" height="30" />
+                    <input type="hidden" id="HidBigHomePic" name="HidBigHomePic" />
+                    <input type="file" id="fileUpload1" name="fileUpload1" style="display:inline;" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">H5链接：</th>
+                <td class="formValue">
+                    <input type="text" class="form-control" id="BigHomeUrl" name="BigHomeUrl" />
+                </td>
+            </tr>
+            @*<tr>
+                    <th class="formTitle">网站图标：</th>
+                    <td class="formValue">
+                        <img id="imgWWW" width="30" height="30" />
+                        <input type="hidden" id="HidBigHomePicWww" name="HidBigHomePicWww" />
+                        <input type="file" id="fileUpload2" name="fileUpload2" style="display:inline;" />
+                    </td>
+                </tr>*@
+            <tr>
+                <th class="formTitle">网站链接:</th>
+                <td class="formValue">
+                    <input type="text" id="BigHomeUrlWww" name="BigHomeUrlWww" class="form-control" />
+                </td>
+            </tr>
+
+            @*<tr>
+                    <th class="formTitle">微信小程序图标：</th>
+                    <td class="formValue">
+                        <img id="imgWxApp" width="30" height="30" />
+                        <input type="hidden" id="HidBigHomePicWxApp" name="HidBigHomePicWxApp" />
+                        <input type="file" id="fileUpload3" name="fileUpload3" style="display:inline;" />
+                    </td>
+                </tr>*@
+            <tr>
+                <th class="formTitle">微信小程序链接:</th>
+                <td class="formValue">
+                    <input type="text" id="BigHomeUrlWxApp" name="BigHomeUrlWxApp" class="form-control" />
+                </td>
+            </tr>
+
+
+            <tr>
+                <th class="formTitle">选 项:</th>
+                <td class="formValue">
+                    <div class="ckbox">
+                        <input id="IsHome" name="IsHome" type="checkbox"><label for="IsHome">是否主会场</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">排 序:</th>
+                <td class="formValue">
+                    <input type="number" id="Sort" name="Sort" class="form-control required" />
+                </td>
+            </tr>
+        </table>
+        <input type="hidden" id="PKID" value="PKID" />
+    </form>
+</div>
+
+<script type="text/javascript">
+
+    var keyValue = $.request("keyValue");
+    var fkActivityID = $.request("fkActivityID");
+
+    function fileImage() {
+        $.uploadFile({
+            id: $("#fileUpload1").attr("id"),
+            preBack: function () {
+                var size = $("#fileUpload1")[0].files[0].size / 1024 * 1.0;
+                if (size > 500) {
+                    $.modalMsg("上传的图片过大不能超过500KB", "warning");
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            callBack: function (res) {
+                $("#HidBigHomePic").attr("data-height", "");
+                $("#HidBigHomePic").attr("data-width", "");
+                $('#imgH5').attr("src", res.BImage);
+                $("#HidBigHomePic").val(res.BImage);
+                var image = new Image();
+                image.onload = function () {
+                    var width = this.width;
+                    var height = this.height;
+                    console.log(width, height);
+                    $("#HidBigHomePic").attr("data-height", height);
+                    $("#HidBigHomePic").attr("data-width", width);
+                    //if (width != 157.5 || height != 157.5) {
+                    //    $.modalMsg("请上传157.5px*157.5px的图片", "warning");
+                    //    $('#imgH5').attr("src", "");
+                    //    $("#HidBigHomePic").val("");
+                    //}
+                }
+                image.src = res.BImage;
+            },
+            complete: function () {
+                $("#fileUpload1").on("change", fileImage);
+            }
+        });
+    }
+
+    //function fileImage1() {
+    //    $.uploadFile({
+    //        id: $("#fileUpload2").attr("id"),
+    //        preBack: function () {
+    //            var size = $("#fileUpload2")[0].files[0].size / 1024 * 1.0;
+    //            if (size > 500) {
+    //                $.modalMsg("上传的图片过大不能超过500KB", "warning");
+    //                return false;
+    //            } else {
+    //                return true;
+    //            }
+    //        },
+    //        callBack: function (res) {
+    //            $('#imgWWW').attr("src", res.BImage);
+    //            $("#HidBigHomePicWww").val(res.BImage);
+    //        },
+    //        complete: function () {
+    //            $("#fileUpload2").on("change", fileImage);
+    //        }
+    //    });
+    //}
+
+
+    //function fileImage2() {
+    //    $.uploadFile({
+    //        id: $("#fileUpload3").attr("id"),
+    //        preBack: function () {
+    //            var size = $("#fileUpload3")[0].files[0].size / 1024 * 1.0;
+    //            if (size > 500) {
+    //                $.modalMsg("上传的图片过大不能超过500KB", "warning");
+    //                return false;
+    //            } else {
+    //                return true;
+    //            }
+    //        },
+    //        callBack: function (res) {
+    //            $('#imgWxApp').attr("src", res.BImage);
+    //            $("#HidBigHomePicWxApp").val(res.BImage);
+    //        },
+    //        complete: function () {
+    //            $("#fileUpload3").on("change", fileImage);
+    //        }
+    //    });
+    //}
+
+
+    function initControl() {
+        $("#fileUpload1").on("change", fileImage);
+        //$("#fileUpload2").on("change", fileImage1);
+        //$("#fileUpload3").on("change", fileImage2);
+        if (keyValue) {
+            $.ajax({
+                url: "/Activity/ActivePage/GetFormJson",
+                data: { keyValue: keyValue },
+                dataType: "json",
+                success: function (res) {
+                    if (res) {
+                        $("#form1").formSerialize(res);
+                        if (res.HidBigHomePic) {
+                            $("#imgH5").attr("src", res.HidBigHomePic);
+                        }
+                        if (res.HidBigHomePicWww) {
+                            $("#imgWWW").attr("src", res.HidBigHomePicWww);
+                        }
+                        if (res.BigHomeUrl) {
+                            $("#BigHomeUrl").val(decodeURIComponent(res.BigHomeUrl));
+                        }
+
+                    }
+                }
+            })
+        }
+    }
+
+    function submitForm() {
+        if (!$('#form1').formValid()) {
+            return false;
+        }
+
+        var data = $("#form1").formSerialize();
+
+        data.BigHomeUrl = encodeURIComponent(data.BigHomeUrl);
+        if (!data.HidBigHomePic || data.HidBigHomePic == '' || data.HidBigHomePic == '&nbsp;') {
+            $.modalMsg("请上传158px*158px的图片", "warning");
+            return false;
+        }
+        var height = $("#HidBigHomePic").attr("data-height");
+            
+        var width = $("#HidBigHomePic").attr("data-width");
+        if (height != 158 || width != 158) {
+            $.modalMsg("请上传158px*158px的图片", "warning");
+            return false;
+        }
+
+        data.HidBigHomePicWww = data.HidBigHomePicWxApp = data.HidBigHomePic;
+        data.FKActiveID = fkActivityID;
+        $.submitForm({
+            url: "/Activity/ActivePage/SubmitForm?keyValue=" + keyValue,
+            param: data,
+            success: function () {
+                top.ActivePageList.$("#gridList").resetSelection();
+                top.ActivePageList.$("#gridList").trigger("reloadGrid");
+                self.$.modalClose();
+                top.$("#loadingPage").css("display", "none");
+            }
+        })
+
+    }
+
+
+    $(function () {
+        initControl();
+    });
+
+</script>

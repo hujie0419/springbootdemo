@@ -1,0 +1,215 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@model Dictionary<string, Dictionary<string, List<VehicleModel>>>
+@{
+    Layout = null;
+}
+<style>
+    #select_vehicle input {
+        width: 18px;
+    }
+
+    .brands {
+        float: left;
+        margin: 10px;
+        width: 200px;
+        position: relative;
+    }
+
+    .trigger {
+        margin-left: 5px;
+        width: 14px;
+    }
+
+    .brands_label {
+        font-size: 16px;
+    }
+
+    .vehicles {
+        width: 200px;
+        border: 1px solid blue;
+        background-color: #fff;
+        position: absolute;
+        top: 20px;
+        left: 0;
+        z-index: 9999;
+    }
+
+    #select_vehicle .close_button {
+        width: 50px;
+    }
+
+    .vehicles div {
+        float: left;
+    }
+
+    .check_num {
+        color: red;
+    }
+
+    .tab-nav {
+        height: 30px;
+    }
+
+        .tab-nav li {
+            color: #333;
+            padding: 3px 10px;
+            cursor: pointer;
+            list-style: none;
+            float: left;
+        }
+
+            .tab-nav li:hover, .tab-nav li.active {
+                background-color: #ddd;
+            }
+
+    .tab-content .pannel {
+        display: none;
+    }
+
+    .tab-content > .pannel.active {
+        display: block;
+    }
+</style>
+
+<div id="select_vehicle">
+    <div id="tab">
+        <div class="tab-nav">
+            <ul>
+                @foreach (var item in Model.Keys)
+                {
+                    <li class="@(item=="A"?"active":"")">@item</li>
+                }
+            </ul>
+        </div>
+        <div class="tab-content">
+            @foreach (var item in Model.Values)
+            {
+                <div class="pannel @(item.First().Key.StartsWith("A")?"active":"")">
+                    @foreach (var v in item)
+                    {
+                        <div class="brands">
+                            <span>
+                                <label class="brands_label"><input type="checkbox" value="@v.Key.Split('-')[1].Trim()">@v.Key.Split('-')[1].Trim()</label>
+                                <span class="check_num">(0)</span>
+                                <img class="trigger" src="//gtd.alicdn.com/tps/i1/T1XZCWXd8iXXXXXXXX-8-8.gif">
+                            </span>
+                            <div style="display: none;" class="vehicles">
+                                @foreach (var vv in v.Value)
+                                {
+                                    <div>
+                                        <label><input type="checkbox" value="" data-brand="@v.Key.Split('-')[1].Trim()" data-vehileID="@vv.ProductID">@vv.Vehicle</label>
+                                    </div>
+                                }
+                                <p style="text-align:right;clear:both;"><input type="button" value="关闭" class="close_button"></p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    //渲染已选的
+    if (vehicleIdArr.length) {
+        $.each(vehicleIdArr, function (i, v) {
+            $("[data-vehileid='" + v + "']").prop("checked", true);
+        });
+        $(".brands").each(function () {
+            var $target = $(this);
+            var all = $target.find(".vehicles>div>label>input[type='checkbox']").length;
+            var selected = $target.find(".vehicles>div>label>input[type='checkbox']:checked").length;
+            $target.find("span .check_num").text('(' + selected + ')');
+            if(all==selected)
+                $target.find("span label>input[type='checkbox']").prop("checked", true);
+        });
+        $("")
+    }
+    var tabnav = function (tag, tagContent) {
+        var $tag = tag,
+            $tagCont = tagContent;
+        $tag.addClass("active").siblings().removeClass("active");
+        $tagCont.eq($tag.index()).addClass("active").siblings().removeClass("active");
+    }
+    $("#tab").on("click", ".tab-nav li", function () {
+        $this = $(this);
+        tabnav($this, $this.parents(".tab-nav").next(".tab-content").find(".pannel"));
+    });
+</script>
+
+<script>
+    $("#select_vehicle").on("click", ".trigger", function ()//打开车型弹框
+    {
+        $self = $(this);
+        $(".vehicles").hide();
+        $self.parent().next().show();
+    }).on("click", ".close_button", function ()//关闭车型弹框
+    {
+        $(this).parent().parent().hide();
+    }).on("click", ".brands>span>label>input[type='checkbox']", function ()//点击省复选框
+    {
+        var $target = $(this);
+
+        if ($target.prop("checked") == true) {
+            $target.parent().parent().next().find("input[type='checkbox']").each(function () {
+                var $self = $(this);
+                if ($self.prop("checked") != true) {
+                    $self.prop("checked", true);
+                }
+            })
+            $target.parent().next().text("(" + $target.parent().parent().next().find("input[type='checkbox']").length + ")");
+        }
+        else {
+            $target.parent().parent().next().find("input[type='checkbox']").each(function () {
+                var $self = $(this);
+                $self.prop("checked", false);
+            })
+            $target.parent().next().text("(0)");
+        }
+    }).on("click", ".vehicles>div>label>input[type='checkbox']", function ()//点击车系复选框
+    {
+        var $target = $(this);
+        var $checknum = $target.parent().parent().parent().prev().find(".check_num");
+
+        if ($target.prop("checked") == true) {
+            var flag = true;
+            $target.parent().parent().parent().find("input[type = 'checkbox']").each(function () {
+                if ($(this).prop("checked") == false)
+                    flag = false;
+            })
+            if (flag == true)
+                $target.parent().parent().parent().prev().find("input[type='checkbox']").prop("checked", true);
+            $checknum.text("(" + (parseInt($checknum.text().replace("(", "").replace(")", "")) + 1) + ")");
+        }
+        else {
+            $target.parent().parent().parent().prev().find("input[type='checkbox']").prop("checked", false);
+            $checknum.text("(" + (parseInt($checknum.text().replace("(", "").replace(")", "")) - 1) + ")");
+        }
+    })
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,82 @@
+﻿@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.PriceApply>
+@{
+    ViewBag.Title = "券后价审批";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="title">
+    <h2>待审批券后价</h2>
+</div>
+<h2 style="float:left;"><a href="/Tire/ExamPrice">待审批</a></h2>
+<h2 style="float:left;margin-left:30px;"><a href="/Tire/ExamLog">已审批日志</a></h2>
+<h2 style="float:left;margin-left:30px;"><a target="_blank" href="/Tire/PriceGuidePara?type=Base">修改指导价参数</a></h2>
+<h2 style="float:left;margin-left:30px;">待审批券后价</h2>
+<h2 style="float:left;margin-left:30px;"><a href="/Tire/CouponPriceApprovalLog">券后价审批日志</a></h2>
+<h2 style="float:left;margin-left:30px;"><a href="/Tire/GetQPLPriceApplyList">待审批汽配龙</a></h2>
+<h2 style="float:left;margin-left:30px;"><a href="/Tire/GetQPLPriceAuditList">汽配龙审批日志</a></h2>
+@if (Model.Any())
+{
+    <table>
+        <tr>
+            <th>申请人</th>
+            <th>提交时间</th>
+            <th>品牌</th>
+            <th>PID</th>
+            <th>产品名称</th>
+            <th>进货价</th>
+            <th>最近一次采购价</th>
+            <th>当前库存</th>
+            <th>近7天销量</th>
+            <th>近30天销量</th>
+            <th>实际指导价</th>
+            <th>当前券后价</th>
+            <th>申请券后价</th>
+            <th>京东自营价</th>
+            <th>汽车超人零售</th>
+            <th>官网价格</th>
+            <th>毛利额</th>
+            <th>申请原因</th>
+            <th>操作</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.ApplyPerson</td>
+                <td>@item.ApplyDateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@item.Brand</td>
+                <td><a href="https://item.tuhu.cn/Products/@(item.PID.Replace("|","/")).html" target="_blank">@item.PID</a></td>
+                <td>@item.PoductName</td>
+                <td>@(item.CostPrice == null ? "-" : item.CostPrice.ToString("0.00"))</td>
+                <td>@(item.LastCostPrice == null ? "-" : ((decimal)item.LastCostPrice).ToString("0.00"))</td>
+                <td>@item.StockCount</td>
+                <td>@item.WeekSaleCount</td>
+                <td>@item.MonthSaleCount</td>
+                <td>@(item.GuidePrice == null ? "-" : ((decimal)item.GuidePrice).ToString("0.00"))</td>
+                <td>@(item.NowPrice == null ? "-" : ((decimal)item.NowPrice).ToString("0.00"))</td>
+                <td style="background-color:aquamarine">@(item.NewPrice.ToString("0.00"))</td>
+                <td>@(item.JDPrice == null ? "-" : ((decimal)item.JDPrice).ToString("0.00"))</td>
+                <td>@(item.CarPrice == null ? "-" : ((decimal)item.CarPrice).ToString("0.00"))</td>
+                <td>@(item.TuhuPrice == null ? "-" : ((decimal)item.TuhuPrice).ToString("0.00"))</td>
+                <td>@(item.GrossProfit == null ? "-" : item.GrossProfit.ToString("0.00"))</td>
+                <td>@item.ApplyReason</td>
+                <td><a href="javascript:void(0)" onclick="FuncApproval('@item.PKID',true)">通过</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="javascript:void(0)" onclick="FuncApproval('@item.PKID',false)">驳回</a></td>
+            </tr>
+        }
+    </table>
+}
+<script>
+    var FuncApproval = function (pkid, pass) {
+        $.post("/Tire/ApprovalCouponPrice", {
+            PKID: pkid,
+            pass: pass
+        }, function (result) {
+            if (result > 0) {
+                alert("操作成功！");
+                window.location.reload();
+            }
+            else {
+                alert("操作失败！");
+            }
+
+        });
+    };
+</script>

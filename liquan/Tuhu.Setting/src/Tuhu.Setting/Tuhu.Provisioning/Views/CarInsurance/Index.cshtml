@@ -1,0 +1,439 @@
+﻿
+@{
+    ViewBag.Title = "车险配置";
+}
+@using CarInsuranceManage = Tuhu.Provisioning.Business.CarInsurance.CarInsuranceManage;
+
+@section head{
+
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/jquery-ui-1.8.9.custom.css" rel="stylesheet" />
+
+    <style type="text/css">
+        #divgap {
+            margin-top: 30px;
+        }
+
+        #divgap label {
+            margin-bottom: 0px;
+            background-color: #5c87b2;
+        }
+
+        #divgap hr {
+            margin-top: 0px;
+            opacity: 100;
+            background: linear-gradient(to right,#5c87b2, #aabbcc);
+            width: 100%;
+            height: 5px;
+        }
+
+        #session > button {
+            width: 80px;
+            margin-bottom: 20px;
+        }
+
+        form {
+            font-size: 13px;
+        }
+
+        #sub-btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        #sub-btn button {
+            width: 60px;
+            margin-top: 10px;
+            margin-right: 20px;
+        }
+
+        select {
+            width: 100%;
+            height: 30px;
+        }
+    </style>
+}
+
+
+<div id="session">
+    <div id="divgap">
+        <label class="label label-sm label-info">Banner滚图</label>
+        <hr />
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="AddBanner()">添 加</button>
+    <button id="bannerDragBtn" class="btn btn-primary btn-sm" onclick="bannerSort()">拖动排序</button>
+    <button type="button" class="btn btn-danger btn-sm" onclick="UpdateBannerCache()">清除缓存</button>
+    <br />
+
+    <div class="table-condensed">
+        <table class="table" style="width:100%;">
+            <thead style="text-align:center;">
+                <tr>
+                    <th class="col-sm-1">ID</th>
+                    <th class="col-sm-1">名称</th>
+                    <th class="col-sm-2">图片</th>
+                    <th class="col-sm-4">活动链接</th>
+                    <th class="col-sm-1">展示页面</th>
+                    <th class="col-sm-1">状态</th>
+                    <th class="col-sm-2">管理</th>
+                </tr>
+            </thead>
+            <tbody id="bannerTableBody" class="sorted_table">
+                @{
+                    var bannerList = CarInsuranceManage.SelectBanners();
+                    foreach (var banner in bannerList)
+                    {
+                        <tr>
+                            <td>@banner.PKID</td>
+                            <td>@banner.Name</td>
+                            <td style="text-align:center;">
+                                <img src="@banner.Img" style="width:150px;height:50px;" />
+
+                            </td>
+                            <td style="word-wrap:break-word;word-break:break-all;"><a href="@banner.LinkUrl">@banner.LinkUrl</a></td>
+                            @{
+                                string page = "";
+                                if (banner.DisplayPage == "Marketing")
+                                {
+                                    page = "营销页面";
+                                }
+
+                                else if (banner.DisplayPage == "Normal")
+                                {
+                                    page = "常规页面";
+                                }
+                                else
+                                {
+                                    page = "全部";
+                                }
+                            }
+
+                            <td>@page</td>
+                            @if (banner.IsEnable == 0)
+                            {
+                                <td>禁用</td>
+                                <td>
+                                    <button class="btn btn-success" onclick="bannerSwitch(this)">启用</button>
+                                    <button class="btn btn-info" onclick="bannerEdit(this)">编辑</button>
+                                    <button class="btn btn-default" onclick="bannerDelete(this)">删除</button>
+                                </td>
+                            }
+                            else
+                            {
+                                <td>启用</td>
+                                <td>
+                                    <button class="btn btn-danger" onclick="bannerSwitch(this)">禁用</button>
+                                    <button class="btn btn-info" onclick="bannerEdit(this)">编辑</button>
+                                    <button class="btn btn-default" onclick="bannerDelete(this)">删除</button>
+                                </td>
+                            }
+
+                        </tr>
+                                }
+
+                }
+            </tbody>
+        </table>
+    </div>
+
+
+    <div id="bannerConfigPanel" class="panel panel-primary" style="width:60%;display:none;">
+        <div class="panel-body">
+            <form id="bannerForm" class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">滚图名称<span style="color:red;font-weight:bold">*</span></label>
+                    <div class="col-sm-9">
+                        <input type="text" name="name" class="form-control" maxlength="64">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">图片</label>
+                    <div class="col-sm-5">
+                        <input type="file" maxlength="256" id="Carinsurance2" name="CarinsuranceImg" class="form-control" onchange="uploadPic('Carinsurance2', HandlerPicResult, 0.375);">
+                    </div>
+                    <div class="col-sm-4">
+                        <img id="bannerPic" src="" style="width:150px;height:50px;" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">图片链接<span style="color:red;font-weight:bold">*</span></label>
+                    <div class="col-sm-6">
+                        <input id="bannerImg" type="text" name="img" class="form-control">
+                    </div>
+                    <div class="col-sm-3">
+                        <button type="button" class="btn btn-default" onclick="$(this).parent().prev().children().val(null);">清空</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">活动链接</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="linkUrl" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">展示页面</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="displayPage" value="常规页面" hidden />
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-info" onclick="$(this).parent().children().removeClass('btn-info'); $(this).parent().children().addClass('btn-default'); $(this).addClass('btn-info'); $(this).parent().prev().val($(this).html());">常规页面</button>
+                            <button type="button" class="btn btn-default" onclick="$(this).parent().children().removeClass('btn-info'); $(this).parent().children().addClass('btn-default'); $(this).addClass('btn-info');$(this).parent().prev().val($(this).html());">营销页面</button>
+                            <button type="button" class="btn btn-default" onclick="$(this).parent().children().removeClass('btn-info'); $(this).parent().children().addClass('btn-default'); $(this).addClass('btn-info'); $(this).parent().prev().val($(this).html());">全部</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sub-btn">
+                    <button type="button" class="btn btn-success" onclick="bannerSave()">保存</button>
+                    <button type="reset" id="ImgConfigCancel" class="btn btn-default">清空</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="divgap">
+        <label class="label label-sm label-info">车险合作伙伴</label>
+        <hr />
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="AddPartner()">添 加</button>
+    <button id="insuranceDragBtn" class="btn btn-primary btn-sm" onclick="insuranceSort()">拖动排序</button>
+    <button type="button" class="btn btn-danger btn-sm" onclick="UpdatePartnerCache()">清除缓存</button>
+    <br />
+
+    <div class="table-condensed">
+        <table class="table" style="width:100%;">
+            <thead>
+                <tr>
+                    <th width="3%">ID</th>
+                    <th width="9%">名称</th>
+                    <th width="9%">栏目标题</th>
+                    <th width="9%">栏目副标题</th>
+                    <th width="9%">保险公司ID</th>
+                    <th width="9%">区域ID</th>
+                    <th width="9%">供应商ID</th>
+                    <th width="15%">活动链接</th>
+                    <th width="6%">标签文字</th>
+                    <th width="5%">状态</th>
+                    <th width="18%">管理</th>
+                </tr>
+            </thead>
+            <tbody id="insuranceTableBody" class="sorted_table">
+                @{
+                    var insuranceList = CarInsuranceManage.SelectInsurance();
+                    foreach (var insurance in insuranceList)
+                    {
+                        <tr>
+                            <td>@insurance.PKID</td>
+                            <td>@insurance.Name</td>
+                            <td>@insurance.Title</td>
+                            <td>@insurance.SubTitle</td>
+                            <td>@insurance.InsuranceId</td>
+                            <td>@insurance.RegionCode</td>
+                            <td>@insurance.ProviderCode</td>
+                            <td>@insurance.LinkUrl</td>
+                            <td>@insurance.TagText</td>
+                            @if (insurance.IsEnable == 0)
+                            {
+                                <td>禁用</td>
+                                <td>
+                                    <button class="btn btn-success" onclick="insuranceSwitch(this)">启用</button>
+                                    <button class="btn btn-info" onclick="insuranceEdit(this)">编辑</button>
+                                    <button class="btn btn-info" onclick="insuranceRegion(this)">地区</button>
+                                    <button class="btn btn-default" onclick="insuranceDelete(this)">删除</button>
+                                </td>
+                            }
+                            else
+                            {
+                                <td>启用</td>
+                                <td>
+                                    <button class="btn btn-danger" onclick="insuranceSwitch(this)">禁用</button>
+                                    <button class="btn btn-info" onclick="insuranceEdit(this)">编辑</button>
+                                    <button class="btn btn-info" onclick="insuranceRegion(this)">地区</button>
+                                    <button class="btn btn-default" onclick="insuranceDelete(this)">删除</button>
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+
+
+    <div id="insuranceConfigPanel" class="panel panel-primary" style="display:none; width:50%">
+        <div class="panel-body">
+            <form id="insuranceForm" class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">车险名称<span style="color:red;font-weight:bold">*</span></label>
+                    <div class="col-sm-9">
+                        <input type="text" name="name" class="form-control" maxlength="64">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">图片</label>
+                    <div class="col-sm-5">
+                        <input type="file" id="Carinsurance" name="CarinsuranceImg" class="form-control" onchange="uploadPic('Carinsurance', HandlerPicResult1, 1);">
+                    </div>
+                    <div class="col-sm-4">
+                        <img id="insurancePic" src="" style="width:150px;height:50px;" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">图片链接<span style="color:red;font-weight:bold">*</span></label>
+                    <div class="col-sm-7">
+                        <input id="insuranceImg" type="text" name="img" class="form-control">
+                    </div>
+                    <div class="col-sm-2">
+                        <button type="button" class="btn btn-default" onclick="$(this).parent().prev().children().val(null);">清空</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">传参方式<span style="color:red;font-weight:bold">*</span></label>
+                    <div class="col-sm-9">
+                        <label class="radio-inline">
+                            <input type="radio" name="paramtype" id="withparam" value="withparam">传参页面
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="paramtype" id="withoutparam" value="withoutparam">不传参页面
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">供应商ID<span style="color:red;font-weight:bold">*</span></label>
+                    <div class="col-sm-9">
+                        <input type="text" name="providerCode" class="form-control" maxlength="30">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">保险公司ID</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="insuranceId" class="form-control" maxlength="30">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">区域ID</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="regionCode" class="form-control" maxlength="30">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">活动链接<span style="color:red;font-weight:bold">*</span></label>
+                    <div class="col-sm-9">
+                        <input type="text" name="linkUrl" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">备注</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="remarks" class="form-control" maxlength="256">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">栏目标题<span style="color:red;font-weight:bold">*</span></label>
+                    <div class="col-sm-9">
+                        <input type="text" name="title" class="form-control" placeholder="最多9个字" maxlength="9">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">栏目副标题</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="subTitle" class="form-control" placeholder="最多8个字" maxlength="8">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">标签文字</label>
+                    <div class="col-sm-3">
+                        <input type="text" name="tagText" class="form-control" placeholder="最多2个字" maxlength="2">
+                    </div>
+                    <label class="col-sm-3 control-label">标签颜色</label>
+                    <div class="col-sm-3">
+                        <input type="color" name="tagColor" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">排序</label>
+                    <div class="col-sm-3">
+                        <input type="number" name="displayIndex" class="form-control" value="-1" min="-1" max="99">
+                    </div>
+                    <label class="col-sm-3 control-label">状态</label>
+                    <div class="col-sm-3">
+                        <input type="number" name="isEnable" value="1" hidden />
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-info" onclick="$(this).next().removeClass('btn-info'); $(this).next().addClass('btn-default'); $(this).addClass('btn-info'); $(this).parent().prev().val('1');">启用</button>
+                            <button type="button" class="btn btn-default" onclick="$(this).prev().removeClass('btn-info'); $(this).prev().addClass('btn-default'); $(this).addClass('btn-info'); $(this).parent().prev().val('0');">禁用</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-3" style="text-align:right;">
+                        <button id="insuranceConfigAddRegion" class="btn btn-primary" type="button" onclick="addregion(this)">添加省/市</button>
+                    </div>
+                </div>
+            </form>
+            <div id="sub-btn">
+                <button id="insuranceConfigSubmit" class="btn btn-success" onclick="insuranceSave()">保存</button>
+                <button id="configCancel" form="insuranceForm" type="reset" class="btn btn-default">清空</button>
+            </div>
+
+        </div>
+    </div>
+
+
+    <div id="locationConfigPanel" class="panel panel-primary" style="display:none;width:50%">
+        <div class="panel-body">
+            <form id="regionForm" class="form-horizontal">
+                <div class="form-group">
+                    <div class="col-sm-3" style="text-align:right;">
+                        <button type="button" class="btn btn-primary" onclick="addregion(this)">添加省/市</button>
+                    </div>
+                </div>
+            </form>
+            <div id="sub-btn">
+                <button class="btn btn-success" onclick="insuranceRegionUpdate()">更新</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="divgap">
+        <label class="label label-sm label-info">FAQ</label>
+        <hr />
+    </div>
+    @{
+        var text = CarInsuranceManage.SelectFAQ();
+    }
+    <textarea id="txteditor" name="txteditor" runat="server" style="width:80%; height:200px">@text</textarea>
+    <button style="margin:10px;" class="btn btn-success" onclick="updateFAQ(this)">保存</button>
+    <button style="margin:10px;" class="btn btn-danger" type="button" onclick="UpdateFooterCache()">清除缓存</button>
+
+</div>
+
+<div id="opConfirm" title="提示">
+    <p id="tipText"></p>
+</div>
+
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.8.9.custom.min.js"></script>
+    <script src="/Scripts/ajaxfileupload.js"></script>
+    <script src="~/Scripts/UEditor/ueditor.config.js"></script>
+    <script src="~/Scripts/UEditor/ueditor.all.min.js"></script>
+    <script src="~/Scripts/UEditor/lang/zh-cn/zh-cn.js"></script>
+    <script src="~/Scripts/CarInsurance/CarInsurance.js?v=20170907"></script>
+}

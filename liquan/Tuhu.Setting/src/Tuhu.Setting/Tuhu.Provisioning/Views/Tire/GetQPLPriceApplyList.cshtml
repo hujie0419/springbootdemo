@@ -1,0 +1,115 @@
+﻿@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.QPLPriceApplyModel>
+
+@{
+    ViewBag.Title = "待审批汽配龙";
+}
+
+<style>
+    .table th {
+        text-align: center;
+    }
+</style>
+<div class="title">
+    <h2>汽配龙待审批列表</h2>
+</div>
+<h2 style="float:left;"><a href="/Tire/ExamPrice">待审批</a></h2>
+<h2 style="float:left;margin-left:30px;"><a href="/Tire/ExamLog">已审批日志</a></h2>
+<h2 style="float:left;margin-left:30px;"><a target="_blank" href="/Tire/PriceGuidePara?type=Base">修改指导价参数</a></h2>
+<h2 style="float:left;margin-left:30px;"><a href="/Tire/GetCouponPriceApply">待审批券后价</a></h2>
+<h2 style="float:left;margin-left:30px;"><a href="/Tire/CouponPriceApprovalLog">券后价审批日志</a></h2>
+<h2 style="float:left;margin-left:30px;">汽配龙待审批列表</h2>
+<h2 style="float:left;margin-left:30px;"><a href="/Tire/GetQPLPriceAuditList">汽配龙审批日志</a></h2>
+
+<table class="table" style="text-align: center; width: 99%">
+    <tr>
+        <th>
+            申请人
+        </th>
+        <th>
+            提交时间
+        </th>
+        <th>
+            品牌
+        </th>
+        <th>
+            PID
+        </th>
+        <th>
+            产品名称
+        </th>
+        <th>
+            进货价
+        </th>
+        <th>
+            官网价格
+        </th>
+        <th>
+            申请汽配龙价格
+        </th>
+
+        <th>
+            申请原因
+        </th>
+        <th>操作</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+
+            <td>
+                @Html.DisplayFor(modelItem => item.ApplyUser)
+            </td>
+            <td>
+                @(item.ApplyDateTime.HasValue ? item.ApplyDateTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "")
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Brand)
+            </td>
+            <td>
+                <a href="https://item.tuhu.cn/Products/@(item.PID.Replace("|","/")).html" target="_blank">@item.PID</a>
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ProductName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StandPrice)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TuHuPrice)
+            </td>
+            <td style="background-color:aquamarine">
+                @Html.DisplayFor(modelItem => item.NowPrice)
+            </td>
+
+            <td>
+                @Html.DisplayFor(modelItem => item.ApplyReason)
+            </td>
+            <td><a href="javascript:void(0)" onclick="FuncApproval('@item.ApplyId','@item.PID','@item.NowPrice','@item.ApplyUser',1)">通过</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="javascript:void(0)" onclick="FuncApproval('@item.ApplyId','@item.PID','@item.NowPrice','@item.ApplyUser',2)">驳回</a></td>
+        </tr>
+    }
+
+</table>
+<script type="text/javascript">
+    //审核
+    var FuncApproval = function (PKID, PId, Price, ApplyUser, ApplyStatus) {
+
+        $.post("/Tire/AuditQPLPrice", {
+            PKID: PKID,
+            PId: PId,
+            Price: Price,
+            ApplyUser: ApplyUser,
+            ApplyStatus: ApplyStatus
+        }, function (result) {
+            if (result) {
+                alert(result.Msg);
+                window.location.reload();
+            }
+            else {
+                alert("操作失败！");
+            }
+
+        });
+    };
+</script>

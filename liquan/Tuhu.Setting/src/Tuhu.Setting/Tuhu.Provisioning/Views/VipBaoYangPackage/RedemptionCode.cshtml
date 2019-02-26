@@ -1,0 +1,1113 @@
+﻿
+@{
+    ViewBag.Title = "大客户兑换码生成工具";
+}
+
+@section head{
+    <link rel="stylesheet" href="/Scripts/artDialog6.0.4/css/ui-dialog.css" />
+    <link rel="stylesheet" href="~/Content/plugins/select2/select2.min.css" />
+    <link rel="stylesheet" href="~/Content/iview/iview.css" />
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
+
+        .ui-dialog {
+            width: auto;
+        }
+
+        .tableContainer {
+            width: 100%;
+        }
+
+        .tableContainer th {
+            background: #66ABEF;
+            color: #F3F7FA;
+            border: 1px solid #559BD0;
+            font-weight: 600;
+            font-family: "Microsoft Yahei";
+            text-align: center;
+        }
+
+        .tableContainer td {
+            font-size: 75%;
+            padding: 8px 3px 8px 3px;
+            font-family: "Microsoft Yahei";
+            text-align: center;
+            border: 1px solid #eee;
+        }
+
+        .tableContainer-dialog {
+            width: 100%;
+        }
+
+        .tableContainer-dialog th {
+            background-color: #eee;
+            border: 1px solid #aaa;
+            font-weight: 600;
+            font-family: "Microsoft Yahei";
+            text-align: center;
+            font-size: 95%;
+        }
+
+        .tableContainer-dialog td {
+            font-size: 75%;
+            padding: 8px 3px 8px 3px;
+            font-family: "Microsoft Yahei";
+            text-align: center;
+            border: 1px solid #aaa;
+        }
+
+        .form > div {
+            width: 65%;
+            display: inline-block;
+        }
+
+        .form > label {
+            width: 25%;
+            display: inline-block;
+        }
+
+        .form {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+            display: block;
+        }
+
+        .form input, .form select {
+            line-height: 1.42857143;
+            width: 100%;
+            height: 32px;
+            padding: 2px 2px 2px 5px;
+            color: #555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+            -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+            -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+            transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+            box-sizing: border-box;
+        }
+
+        .btn-primary {
+            font-weight: bold;
+            color: #fff;
+            background-color: #5cb85c;
+            border-color: #4cae4c;
+            width: auto;
+            min-width: 80px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.42857143;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            -ms-touch-action: manipulation;
+            touch-action: manipulation;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background-image: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+
+        .btn-danger {
+            font-weight: bold;
+            color: #fff;
+            background-color: #d9534f;
+            border-color: #d43f3a;
+            width: auto;
+        }
+
+        label.dialoglable {
+            width: 20%;
+            display: inline-block;
+            font-weight: 900;
+        }
+
+        div.dialogdiv {
+            width: 60%;
+            display: inline-block;
+        }
+
+        .strike {
+            display: block;
+            text-align: center;
+            overflow: hidden;
+            white-space: nowrap;
+            margin-top: 10px;
+        }
+
+        .strike > span {
+            position: relative;
+            display: inline-block;
+        }
+
+        .strike > span:before,
+        .strike > span:after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 9999px;
+            height: 1px;
+            background: #808080;
+        }
+
+        .strike > span:before {
+            right: 100%;
+            margin-right: 15px;
+        }
+
+        .strike > span:after {
+            left: 100%;
+            margin-left: 15px;
+        }
+
+        input.inputcls, select.inputcls {
+            line-height: 1.42857143;
+            width: 100%;
+            height: 28px;
+            padding: 2px 2px 2px 5px;
+            color: #555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+            -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+            -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+            transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        }
+
+        div.dialog-content > div {
+            padding-top: 5px;
+            padding-bottom: 5px;
+            height: auto;
+            width: 100%;
+        }
+
+        body {
+            background-color: #71d6f3;
+            /*font-size: 75%;*/
+            font-family: Verdana, Tahoma, Arial, "Helvetica Neue", Helvetica, Sans-Serif;
+            margin: 0;
+            padding: 0;
+            color: #696969;
+        }
+
+        .form-item-width {
+            width: 93%;
+        }
+    </style>
+}
+<h2 style="margin:20px 0;">大客户兑换码生成工具</h2>
+
+<div id="div" v-cloak>
+    <div>
+        <button type="button" style="float:right; margin-bottom:10px;" class="btn btn-primary" v-on:click="addClick">新增</button>
+    </div>
+    <div is="pager" v-model="pager" :total="total">
+        <table class="tableContainer">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>礼包名称</th>
+                    <th>关联大客户保养套餐</th>
+                    <th>是否有效</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody v-if="loading">
+                <tr><td colspan="7"><img src="/Images/loading.gif" />玩命加载中，请稍候...</td></tr>
+            </tbody>
+            <tbody v-else-if="giftPacks.length==0">
+                <tr><td colspan="7">暂无数据</td></tr>
+            </tbody>
+            <tbody v-else>
+                <tr v-for="it, index in giftPacks">
+                    <td>{{it.PackId}}</td>
+                    <td>{{it.PackName}}</td>
+                    <td><a href="javascript:void(0)" v-on:click="showDetail(it.PackageId)">{{it.PackageName}}</a></td>
+                    <td>
+                        <span v-if="it.IsValid" style="color:#0ec40c">有效</span>
+                        <span v-else style="color:red">无效</span>
+                    </td>
+                    <td>
+                        <a href="javascript:void(0)" v-on:click="currentPackId=it.PackId">查看</a> |
+                        <a href="javascript:void(0)" v-on:click="generateRedemptionCode.PackId=it.PackId">生成兑换码</a> |
+                        <a href="javascript:void(0)" v-on:click="exportPackId = it.PackId">下载列表</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div is="artdialog" v-if="showAddGiftPackDialog" ref="addGiftPackDialog"
+         v-on:close="showAddGiftPackDialog=false" v-on:save="addGiftPack"
+         :title="'新增礼包'" :height="'auto'">
+        <div>
+            <div class="form">
+                <label>*礼包名称</label>
+                <div>
+                    <input type="text" v-model="giftPack.PackName" />
+                </div>
+            </div>
+            <div class="form">
+                <label>*关联保养套餐</label>
+                <div>
+                    <select is="select2" v-model="giftPack.PackageId" :closeonselect="true" :options="simplePackages" :styles="{'width':'50%'}"></select>
+                </div>
+            </div>
+            <div class="form">
+                <label>*是否有效</label>
+                <div>
+                    <select type="text" v-model="giftPack.IsValid">
+                        <option value="true">是</option>
+                        <option value="false">否</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <Modal title="查看礼包详情" width='800' :value="currentPackId > 0" :closable="true" :mask-closable="false" 
+           :ok-text="'关闭'"
+           v-on:on-cancel="currentPackId=0" v-on:on-ok="currentPackId=0">
+        <div style="max-height: 600px; height: auto; width: auto; min-width: 750px; overflow-y: auto;">
+            <i-button type="error" v-on:click="showAddPromotionDialog=true" style="margin-bottom:10px;" v-show="!existsRedemptionCode">添加优惠券</i-button>
+            <div v-show="existsRedemptionCode" style="color:red;margin-bottom:10px;font-size: 13px;">已经生成过兑换码不能再添加优惠券</div>
+            <table class="tableContainer-dialog">
+                <thead>
+                    <tr>
+                        <th>优惠券编号</th>
+                        <th>优惠券名称</th>
+                        <th>优惠券数量</th>
+                        <th>优惠券规则ID</th>
+                        <th>优惠券名称</th>
+                        <th>描述ID</th>
+                        <th>优惠有效期</th>
+                    </tr>
+                </thead>
+                <tbody v-if="loadingCoupon">
+                    <tr><td colspan="7"><img src="/Images/loading.gif" />玩命加载中，请稍候...</td></tr>
+                </tbody>
+                <tbody v-else-if="coupons.length==0">
+                    <tr><td colspan="7">暂无优惠券</td></tr>
+                </tbody>
+                <tbody>
+                    <tr v-for="item in coupons">
+                        <td>{{item.RuleID}}</td>
+                        <td>{{item.Name}}</td>
+                        <td>{{item.Quantity}}</td>
+                        <td>{{item.GetRuleID}}</td>
+                        <td>{{item.PromtionName}}</td>
+                        <td>{{item.Description}}</td>
+                        <td>
+                            <span v-if="!!item.Term">自领取后{{item.Term}}天</span>
+                            <span v-else>从{{item.ValiStartDate}}至{{item.ValiEndDate}}</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </Modal>
+    <div is="artdialog" v-if="showAddPromotionDialog && currentPackId > 0"
+         :title="'添加优惠券'" :height="'auto'"
+         v-on:save="addCouponClick" ref="addPromotionDialog"
+         v-on:close="showAddPromotionDialog=false">
+        <div>
+            <div class="form">
+                <label>优惠券</label>
+                <div>
+                    <select2 v-model="promotion.RuleID"
+                             :closeonselect="true" :options="couponRules"
+                             :styles="{'width':'50%'}">
+                    </select2>
+                </div>
+            </div>
+            <div class="form">
+                <label>领取规则</label>
+                <div>
+                    <select2 v-model="promotion.GetRuleID"
+                             :closeonselect="true" :options="couponGetRules"
+                             :styles="{'width':'100%', 'display':'none'}">
+                    </select2>
+                </div>
+            </div>
+            <div class="form">
+                <label>领取数量</label>
+                <div>
+                    <input type="number" v-model="promotion.Quantity" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div is="artdialog" v-if="generateRedemptionCode.PackId > 0"
+         :title="'生成兑换码'" ref="generateRedemptionDialog"
+         v-on:close="generateRedemptionCode.PackId=0"
+         :height="'auto'" :width="500"
+         v-on:save="generateRedemptionCodeClick">
+        <div class="form">
+            <label>生成兑换码数量</label>
+            <div>
+                <input type="number" v-model="generateRedemptionCode.Quantity" />
+            </div>
+        </div>
+        <div class="form">
+            <label>有效开始时间</label>
+            <div>
+                <div is="datepicker-beta" v-model="generateRedemptionCode.StartTime"></div>
+            </div>
+        </div>
+        <div class="form">
+            <label>有效截至时间</label>
+            <div>
+                <input is="datepicker-beta" v-model="generateRedemptionCode.EndTime" />
+            </div>
+        </div>
+    </div>
+    <div is="artdialog" v-if="exportPackId > 0" :title="'下载列表'" :buttons="[]"
+         :height="'auto'" :width="'auto'"
+         v-on:close="exportPackId=0">
+        <div style="min-width:600px;">
+            <table class="tableContainer-dialog">
+                <thead>
+                    <tr>
+                        <th rowspan="2">生成券码批次</th>
+                        <th rowspan="2">生成日期</th>
+                        <th rowspan="2">生成日期</th>
+                        <th colspan="2">下载信息</th>
+                    </tr>
+                    <tr>
+                        <th>下载人员</th>
+                        <th>下载时间</th>
+                    </tr>
+                </thead>
+                <tbody v-if="exportSimpleInfo.length==0">
+                    <tr><td colspan="5">暂无数据</td></tr>
+                </tbody>
+                <tbody v-else>
+                    <tr v-for="item in convertData(exportSimpleInfo)">
+                        <td v-show="!item.Hidden" v-bind:rowspan="item.Count">
+                            <a href="javascript:void(0)" v-on:click="downloadRedemptionCodes(item.BatchCode)">{{item.BatchCode}}</a>
+                        </td>
+                        <td v-show="!item.Hidden" v-bind:rowspan="item.Count">{{item.CreateUser}}</td>
+                        <td v-show="!item.Hidden" v-bind:rowspan="item.Count">{{item.CreateDateTime}}</td>
+                        <td>{{item.DownloadUser}}</td>
+                        <td>{{item.DownloadTime}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <form-modal :brands="brands" :users="users" :show.sync="show" :packageid="packageId"></form-modal>
+</div>
+
+
+<script type="text/x-template" id="form-modal">
+    <div>
+        <modal v-model="showModal" title="套餐产品详情页" width="750"
+               :loading="true"
+               :closable="!loading"
+               :mask-closable="false">
+            <i-form ref="packageForm" :model="data" :label-width="160">
+                <form-item label="套餐所属大客户：" prop="VipUserName" class="form-item-width">
+                    <i-input v-model="data.VipUserName" placeholder="套餐所属大客户" readonly></i-input>
+                </form-item>
+                <form-item label="套餐名称：" prop="PackageName" class="form-item-width">
+                    <i-input v-model="data.PackageName" placeholder="显示给用户的套餐名称" readonly></i-input>
+                </form-item>
+
+                <form-item label="机油品牌：" prop="OilBrands" class="form-item-width">
+                    <div v-for="setting in settings">
+                        <i-input :value="setting.brand" readonly style="width:200px"></i-input>
+                        <template v-if="(setting.grades ||[]).length > 0">
+                            <div v-for="grade in setting.grades">
+                                <div style="display:inline-block; width:30px;"></div>
+                                <i-input :value="grade.grade" readonly style="width:200px"></i-input>
+                                <i-input :value="(grade.series||[]).join(',')" readonly style="width:200px"></i-input>
+                            </div>
+                        </template>
+                    </div>
+                </form-item>
+                <form-item label="填写机油升数：" prop="Volume" class="form-item-width">
+                    <i-input v-model="data.Volume" readonly></i-input>
+                </form-item>
+                <form-item label="套餐价格：" prop="Price" class="form-item-width">
+                    <i-input v-model="data.Price" readonly></i-input>
+                </form-item>
+                <form-item label="结算方式：" prop="SettlementMethod" class="form-item-width">
+                    <radio-group v-model="data.SettlementMethod">
+                        <radio label="PreSettled" disabled><span>买断制</span></radio>
+                        <radio label="ByPeriod" disabled><span>据实结算制</span></radio>
+                    </radio-group>
+                </form-item>
+            </i-form>
+            <div slot="footer">
+                <i-button type="text" v-on:click="showModal=false">取消</i-button>
+            </div>
+        </modal>
+    </div>
+</script>
+
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/iview/iview.min.js"></script>
+    <script src="/Scripts/artDialog6.0.4/dist/dialog-min.js"></script>
+    <script src="/Scripts/artDialog6.0.4/dist/dialog-plus-min.js"></script>
+    <script src="~/Scripts/plugins/select2/select2.full.min.js"></script>
+    <script src="~/Scripts/vue.common.js"></script>
+    <script type="text/javascript">
+
+        Array.prototype.any = function (callback) {
+            var array = this;
+            for (var i = 0; i < array.length; i++) {
+                var value = array[i];
+                if (callback(value, i)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        Array.prototype.groupBy = function (selector) {
+            var array = this;
+            var set = {};
+            var keys = [];
+            for (var i = 0; i < array.length; i++) {
+                var value = array[i];
+                var key = selector(value, i);
+                if (!set.hasOwnProperty(key)) {
+                    set[key] = [];
+                    keys.push(key);
+                }
+                set[key].push(value);
+            }
+            var result = [];
+            for (var i = 0; i < keys.length; i++) {
+                var key = keys[i];
+                var obj = {};
+                obj.key = key;
+                obj.value = set[key] || [];
+                result.push(obj);
+            }
+            return result;
+        }
+
+        Vue.component('datepicker-beta', {
+            props: {
+                value: {
+                    type: String,
+                    default: '',
+                },
+                readonly: {
+                    type: Boolean,
+                    default: true
+                }
+            },
+            'template': '<input :readonly="readonly" type="text" />',
+            watch: {
+                value: function (value) {
+                    $(this.$el).datepicker('setDate', value);
+                }
+            },
+            mounted: function () {
+                var vm = this;
+                $(this.$el).datepicker({
+                    changeMonth: true,
+                    changeYear: true,
+                    dateFormat: 'yy-mm-dd',
+                    onClose: function (dateText) {
+                        vm.$emit('input', dateText);
+                    },
+                });
+                $(this.$el).datepicker('setDate', this.value);
+            },
+            destroyed: function () {
+                $(this.$el).datepicker('destroy');
+                this.readonly = false;
+            }
+        });
+        Vue.component('form-modal', {
+            template: '#form-modal',
+            props: {
+                show: {
+                    type: Boolean,
+                    default: false,
+                },
+                packageid: {
+                    type: Number,
+                    default: 0,
+                },
+                users: {
+                    type: Array,
+                    default: [],
+                },
+                brands: {
+                    type: Array,
+                    default: [],
+                }
+            },
+            data: function () {
+                return {
+                    showModal: false,
+                    loading: false,
+                    disabled: false,
+                    data: {
+                        PKID: 0,
+                        VipUserId: '00000000-0000-0000-0000-000000000000',
+                        VipUserName: '',
+                        PackageName: '',
+                        Price: '',
+                        Volume: '',
+                        OilBrands: [],
+                        SettlementMethod: '',
+                        OilGrades: [],
+                        OilConfigs: [],
+                    }
+                };
+            },
+            watch: {
+                show: function (value) {
+                    var vm = this;
+                    if (value) {
+                        vm.getVipBaoYangPackageById(vm.packageid);
+                    }
+                    if (!value && vm.showModal) {
+                        vm.showModal = false;
+                    }
+                    vm.$emit('update:show', value);
+                },
+                showModal: function (value) {
+                    var vm = this;
+                    if (value && !vm.show) {
+                        vm.show = true;
+                    } else if (!value) {
+                        vm.handleReset();
+                        if (vm.show) {
+                            vm.show = false;
+                        }
+                    }
+                }
+            },
+            computed: {
+                settings: function () {
+                    var vm = this;
+                    var value = vm.data.OilConfigs || [];
+                    var result = value.groupBy(function (b) {
+                        return b.Brand;
+                    }).map(function (group) {
+                        var grades = group.value.groupBy(function (g) {
+                            return g.Grade;
+                        }).map(function (groupGrade) {
+                            var series = groupGrade.value.map(function (s) {
+                                return s.Series;
+                            });
+                            var o = {};
+                            o.grade = groupGrade.key;
+                            o.series = series.filter(function (x) { return !!x });
+                            return o;
+                        });
+                        var obj = {};
+                        obj.brand = group.key;
+                        obj.grades = grades;
+                        return obj;
+                    });
+                    return result;
+                },
+            },
+            methods: {
+                getVipBaoYangPackageById: function (pkid) {
+                    var vm = this;
+                    if (pkid > 0) {
+                        vm.disabled = true;
+                        $.get("SelectVipBaoYangPackageByPKID", { pkid: pkid }, function (result) {
+                            vm.data.PKID = pkid;
+                            vm.data.VipUserId = result.VipUserId.toUpperCase();
+                            vm.data.PackageName = result.PackageName;
+                            vm.data.Price = result.Price;
+                            vm.data.Volume = result.Volume;
+                            vm.data.OilBrands = result.Brands;
+                            vm.data.SettlementMethod = result.SettlementMethod;
+                            vm.data.VipUserName = result.VipUserName;
+                            vm.data.OilConfigs = result.OilConfigs;
+                            vm.showModal = true;
+                        });
+                    }
+                    else {
+                        vm.disabled = false;
+
+                        vm.showModal = true;
+                    }
+                },
+                submit: function () {
+                    var vm = this;
+                    var formData = {
+                        PKID: vm.data.PKID,
+                        VipUserId: vm.data.VipUserId,
+                        PackageName: vm.data.PackageName,
+                        Price: vm.data.Price,
+                        Volume: vm.data.Volume,
+                        Brands: vm.data.OilBrands,
+                        SettlementMethod: vm.data.SettlementMethod,
+                    };
+                    var content = formData.PKID > 0 ? '确认修改此套餐?' : '确认添加此套餐?';
+                    vm.$Modal.confirm({
+                        title: "操作确认",
+                        content: content,
+                        loading: true,
+                        onOk: function () {
+                            $.post("InsertVipBaoYangPackage", formData, function (result) {
+                                if (result.status) {
+                                    vm.$Message.info("操作成功！");
+                                    vm.showModal = false;
+                                    vm.$emit('submit', true);
+                                } else {
+                                    vm.$Message.warning("操作失败！" + (result.msg || ""));
+                                    vm.$emit('submit', false);
+                                }
+                            }).complete(function () {
+                                vm.$Modal.remove();
+                                vm.loading = false;
+                            });
+                        },
+                        onCancel: function () {
+                            vm.loading = false;
+                        }
+                    });
+                },
+                handleReset: function () {
+                    var vm = this;
+                    vm.data.PKID = 0;
+                    vm.data.VipUserId = '00000000-0000-0000-0000-000000000000';
+                    vm.data.PackageName = '';
+                    vm.data.Price = '';
+                    vm.data.Volume = '';
+                    vm.data.OilBrands = [];
+                    vm.data.OilGrades = [];
+                    vm.data.SettlementMethod = '';
+                    vm.$refs['packageForm'].resetFields();
+                },
+                handleSubmit:function() {
+                    var vm = this;
+                    vm.loading = true;
+                    vm.$refs['packageForm'].validate(function (valid) {
+                        if (valid) {
+                            vm.submit();
+                            return;
+                        }
+                        vm.loading = false;
+                    });
+                },
+
+            }
+        });
+
+        var vm = new Vue({
+            el: "#div",
+            data: {
+                package: { PKID: 0 },
+                total: 0,
+                pager: { index: 1, size: 20 },
+                loading: false,
+                giftPacks: [],
+                giftPack: {
+                    PackId: 0,
+                    PackName: "",
+                    PackageId: 0,
+                    IsValid: true,
+                    PackageName: "",
+                },
+                showAddGiftPackDialog: false,
+                showAddPromotionDialog: false,
+                simplePackages: [],
+                promotion: { RuleID: 0, GetRuleID: 0, Quantity: 1 },
+                couponRules: [],
+                couponGetRules: [],
+                coupons: [],
+                loadingCoupon: false,
+                currentPackId: 0,
+                showGenerateRedemptionCodeDialog: false,
+                generateRedemptionCode: {
+                    "PackId": 0,
+                    StartTime: "",
+                    EndTime: "",
+                    Quantity: "",
+                },
+                exportPackId: 0,
+                exportSimpleInfo: [],
+                hasBeeneEecutedAddPromotion: false,
+                hasBeeneEecutedAddPack: false,
+                hasBeeneEecutedGenerate: false,
+                users: [],
+                brands: [],
+                packageId: 0,
+                show: false,
+                existsRedemptionCode: true,
+            },
+            created: function () {
+                this.getBaoYangPackagesSimpleInfo();
+                this.promotion.RuleID = 123128;
+            },
+            mounted: function () {
+                this.getGiftPacks();
+                this.getAllCouponRules();
+                this.GetAllBaoYangPackageUser();
+                this.GetOilBrands();
+            },
+            watch: {
+                "pager.size": function () {
+                    var vm = this;
+                    if (vm.pager.index === 1) {
+                        this.getGiftPacks()
+                    } else {
+                        vm.pager.index = 1;
+                    }
+                },
+                "pager.index": function () {
+                    this.getGiftPacks();
+                },
+                "promotion.RuleID": function () {
+                    if (this.promotion.RuleID > 0) {
+                        this.promotion.GetRuleID = 0;
+                        this.getCouponGetRules();
+                    }
+                    else {
+                        this.promotion.GetRuleID = 0;
+                        this.couponGetRules = [{ id: 0, text: '-请选择优惠券领取规则-' }];
+                    }
+                },
+                "currentPackId": function () {
+                    if (this.currentPackId > 0) {
+                        this.getGiftPackCouponConfig();
+                    }
+                    else {
+                        this.coupons = [];
+                    }
+                },
+                "exportPackId": function () {
+                    if (this.exportPackId > 0) {
+                        this.getRedemptionCodeSimpleInfo();
+                    }
+                    else {
+                        this.exportSimpleInfo = [];
+                    }
+                },
+                "package.PKID": function (id) {
+                    var vm = this;
+                    if (id <= 0) {
+                        vm.package.VipUserId = "";
+                        vm.package.PackageName = "";
+                        vm.package.Price = 0;
+                        vm.package.Volume = 0;
+                        vm.package.Brands = "";
+                        vm.package.SettlementMethod = "";
+                        vm.package.VipUserName = "";
+                    }
+                },
+                "generateRedemptionCode.PackId": function (value) {
+                    var vm = this;
+                    if (value <= 0) {
+                        vm.generateRedemptionCode.StartTime = "";
+                        vm.generateRedemptionCode.EndTime = "";
+                        vm.generateRedemptionCode.Quantity = "";
+                    }
+                },
+            },
+            methods: {
+                getGiftPacks: function () {
+                    var vm = this;
+                    vm.loading = true;
+                    $.get("GetVipBaoYangGiftPackConfig", {
+                        index: vm.pager.index,
+                        size: vm.pager.size
+                    }, function (rsp) {
+                        vm.giftPacks = rsp.data || [];
+                        vm.total = rsp.total;
+                        vm.loading = false;
+                    }).error(function (rsp) {
+                        vm.loading = false;
+                    });
+                },
+                getVipBaoYangPackage: function (pkid) {
+                    var vm = this;
+                    $.get("SelectVipBaoYangPackageByPKID", { pkid: pkid }, function (result) {
+                        vm.package.VipUserId = result.VipUserId.toUpperCase();
+                        vm.package.PackageName = result.PackageName;
+                        vm.package.Price = result.Price;
+                        vm.package.Volume = result.Volume;
+                        vm.package.Brands = result.Brands.split(',');
+                        vm.package.SettlementMethod = result.SettlementMethod;
+                        vm.package.VipUserName = result.VipUserName;
+                        vm.package.PKID = pkid;
+                    });
+                },
+                getGiftPackCouponConfig: function () {
+                    var vm = this;
+                    vm.loadingCoupon = true;
+                    $.get("GetGiftPackCouponConfig", { packId: vm.currentPackId }, function (rsp) {
+                        vm.coupons = rsp.data || [];
+                        vm.existsRedemptionCode = rsp.ExistsRedemptionCode;
+                        vm.loadingCoupon = false;
+                    }).error(function (rsp) {
+                        vm.loadingCoupon = false;
+                    });
+                },
+                getBaoYangPackagesSimpleInfo: function () {
+                    var vm = this;
+                    $.get("GetVipBaoYangConfigSimpleInfo", function (result) {
+                        var data = result.data || [];
+                        vm.simplePackages = [{ id: 0, text: "请选择" }]
+                        data.forEach(function (item) {
+                            vm.simplePackages.push({ id: item.PackageId, text: item.PackageName });
+                        });
+                    });
+                },
+                getAllCouponRules: function () {
+                    var vm = this;
+                    $.get("GetAllCouponRules", function (rsp) {
+                        var data = rsp.data || [];
+                        vm.couponRules = [{ id: 0, text: "-请选择优惠券-" }];
+                        data.forEach(function (item) {
+                            var id = item.RuleID,
+                                text = item.RuleID.toString() + '-' + (item.Name || "");
+                            vm.couponRules.push({ id: id, text: text });
+                        });
+                    });
+                },
+                getCouponGetRules: function () {
+                    var vm = this;
+                    $.post("GetCouponGetRules", {
+                        ruleId: vm.promotion.RuleID
+                    }, function (rsp) {
+                        var data = rsp.data || [];
+                        vm.couponGetRules = [{ id: 0, text: "-请选择优惠券领取规则-" }];
+                        data.forEach(function (item) {
+                            var id = item.GetRuleGUID,
+                                text = item.GetRuleID.toString() + '-' + (item.PromtionName || "") + '-' + (item.Description || "");
+                            vm.couponGetRules.push({ id: id, text: text });
+                        });
+                    });
+                },
+
+                getRedemptionCodeSimpleInfo: function () {
+                    var vm = this;
+                    $.post("GetRedemptionCodeSimpleInfo", {
+                        packId: vm.exportPackId
+                    }, function (rsp) {
+                        vm.exportSimpleInfo = rsp.data || [];
+                    });
+                },
+                //-------------
+
+                //-------------
+                addClick: function () {
+                    var vm = this;
+                    vm.giftPack.PackageId = 0;
+                    vm.giftPack.PackageName = "";
+                    vm.giftPack.PackId = 0;
+                    vm.giftPack.PackName = "";
+                    vm.giftPack.IsValid = true;
+
+                    vm.showAddGiftPackDialog = true;
+                },
+                addCouponClick: function () {
+                    var vm = this;
+                    if (vm.hasBeeneEecutedAddPromotion) {
+                        console.log("正在执行,不要重复点击");
+                        return;
+                    }
+                    if (!(vm.promotion.Quantity > 0) || vm.currentPackId < 0 || vm.promotion.GetRuleID < 0) {
+                        alert("优惠券数量必须大于0、必须选中礼包、必须选择优惠券领取规则");
+                        return;
+                    }
+                    if (!confirm("确认添加优惠券规则?")) {
+                        return;
+                    }
+                    vm.hasBeeneEecutedAddPromotion = true;
+                    $.post("AddGiftPackCouponConfig", {
+                        packId: vm.currentPackId,
+                        getRuleId: vm.promotion.GetRuleID,
+                        quantity: vm.promotion.Quantity
+                    }, function (rsp) {
+                        if (!rsp.status) {
+                            alert("操作失败！" + (rsp.msg || ""));
+                            vm.hasBeeneEecutedAddPromotion = false;
+                            return;
+                        }
+                        alert("操作成功");
+                        vm.$refs.addPromotionDialog.close();
+                        vm.hasBeeneEecutedAddPromotion = false;
+                        vm.getGiftPackCouponConfig();
+                    }).error(function (rsp) {
+                        alert("操作失败!");
+                        vm.hasBeeneEecutedAddPromotion = false;
+                    });;
+                },
+                //eidtClick: function (item) {
+                //    var vm = this;
+                //    vm.giftPack.PackageId = item.PackageId;
+                //    vm.giftPack.PackId = item.PackId;
+                //    vm.giftPack.PackName = item.PackName;
+                //    vm.giftPack.IsValid = item.IsValid;
+                //    vm.showAddGiftPackDialog = true;
+                //},
+                addGiftPack: function () {
+                    var vm = this;
+                    if (vm.hasBeeneEecutedAddPack) {
+                        console.log("正在执行,不要重复点击");
+                        return;
+                    }
+                    var data = vm.giftPack;
+                    if (data.PackageId <= 0 || data.PackName == "") {
+                        alert("礼包名称或者套餐不能为空");
+                        return;
+                    }
+                    if (!confirm((data.PackId > 0 ? "确认修改?" : "确认添加?"))) {
+                        return;
+                    }
+                    vm.hasBeeneEecutedAddPack = true;
+                    $.post("AddOrUpdateGiftPackConfig", data, function (rsp) {
+                        if (!rsp.status) {
+                            alert("操作失败!" + (rsp.msg || ""));
+                            vm.hasBeeneEecutedAddPack = false;
+                            return;
+                        }
+                        alert("操作成功");
+                        vm.$refs.addGiftPackDialog.close();
+                        vm.hasBeeneEecutedAddPack = false;
+                        vm.getGiftPacks();
+                    }).error(function (rsp) {
+                        alert("操作失败!");
+                        vm.hasBeeneEecutedAddPack = false;
+                    });
+                },
+
+                generateRedemptionCodeClick: function () {
+                    var vm = this;
+                    if (vm.hasBeeneEecutedGenerate) {
+                        console.log("正在执行,不要重复点击");
+                        return;
+                    }
+                    var packId = vm.generateRedemptionCode.PackId,
+                        quantity = vm.generateRedemptionCode.Quantity,
+                        startTime = vm.generateRedemptionCode.StartTime,
+                        endTime = vm.generateRedemptionCode.EndTime;
+                    if (packId < 1 || quantity < 1 || !startTime || !endTime || startTime > endTime) {
+                        alert("必须选择礼包,数量必须大于0,时间范围是必填的并且开始时间必须小于截至时间");
+                        return;
+                    }
+                    if (!confirm("确认操作？")) {
+                        return;
+                    }
+                    vm.hasBeeneEecutedGenerate = true;
+                    $.post("generateRedemptionCode", {
+                        packId, packId,
+                        quantity: quantity,
+                        startTime: startTime,
+                        endTime, endTime
+                    }, function (rsp) {
+                        if (rsp.status) {
+                            alert("生成成功");
+                            vm.$refs.generateRedemptionDialog.close();
+                        } else {
+                            alert("生成失败!" + (rsp.msg || ""));
+                        }
+                        vm.hasBeeneEecutedGenerate = false;
+                    }).error(function (rsp) {
+                        alert("生成失败");
+                        vm.hasBeeneEecutedGenerate = false;
+                    });
+                },
+                downloadRedemptionCodes: function (batchCode) {
+                    var vm = this;
+                    window.location.href = "/VipBaoYangPackage/DownloadRedemptionCode?batchCode=" + batchCode + '&packId=' + vm.exportPackId;
+                },
+
+                GetAllBaoYangPackageUser: function () {
+                    var vm = this;
+                    $.get("GetAllBaoYangPackageUser", function (result) {
+                        vm.packages = result || [];
+                        vm.users = vm.packages.map(function (package) {
+                            return { VipUserId: package.VipUserId.toUpperCase(), VipUserName: package.VipUserName };
+                        });
+                    });
+                },
+                GetOilBrands: function () {
+                    var vm = this;
+                    $.get("GetOilBrands", function (result) {
+                        vm.brands = (result || []).map(function (brand) { return { Brand: brand } });
+                    });
+                },
+                showDetail: function (pkid) {
+                    var vm = this;
+                    vm.packageId = pkid;
+                    vm.show = false;
+                    vm.$nextTick(function () {
+                        vm.show = true;
+                    });
+                },
+            }
+        });
+
+        function convertData(data) {
+            var result = [];
+            var data = data || [];
+            data = data instanceof Array ? data : [];
+            if (data.length > 0) {
+                data.forEach(function (item) {
+                    var start = 0;
+                    var records = item.Records;
+                    if (records != null && records.length > 0) {
+                        var count = records.length;
+                        records.forEach(function (record) {
+                            result.push({
+                                BatchCode: item.BatchCode,
+                                CreateDateTime: item.CreateDateTime,
+                                CreateUser: item.CreateUser,
+                                DownloadUser: record.DownloadUser,
+                                DownloadTime: record.DownloadTime,
+                                Hidden: start > 0,
+                                Count: count,
+                            });
+                            start++;
+                        });
+                    }
+                    else {
+                        result.push({
+                            BatchCode: item.BatchCode,
+                            CreateDateTime: item.CreateDateTime,
+                            CreateUser: item.CreateUser,
+                            DownloadUser: "",
+                            DownloadTime: "",
+                            Hidden: start > 0,
+                            Count: 1,
+                        });
+                    }
+                });
+            }
+            return result;
+        }
+
+        function getQueryStringByName(name) {
+            var result = location.search.match(new RegExp("[\?\&]" + name + "=([^\&]+)", "i"));
+            if (result == null || result.length < 1) {
+                return "";
+            }
+            return result[1];
+        }
+    </script>
+}

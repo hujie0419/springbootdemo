@@ -1,0 +1,388 @@
+﻿@{
+    ViewBag.Title = "消息推送";
+}
+<style type="text/css">
+    * {
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    #CreateTime, #ExpireTime {
+        width: 150px;
+    }
+
+    .floor-top {
+        font-size: 12px;
+        margin-top: 15px;
+    }
+
+        .floor-top .piece, .showbox .piece {
+            display: inline-block;
+            color: #696969;
+            margin-right: 10px;
+        }
+
+            .floor-top .piece input, .floor-top .piece select, .showbox .piece input, .showbox .piece select {
+                padding: 5px 0;
+                font-size: 12px;
+                text-align: center;
+                border: 1px solid #ccc;
+                color: #696969;
+            }
+
+            .floor-top .piece select {
+                padding: 5px 20px;
+            }
+
+    input[type="text"] {
+        border: 1px solid #CCC;
+    }
+
+    input[type="text"] {
+        line-height: 1.42857143;
+        width: 300px;
+        height: 30px;
+        padding: 2px 2px 2px 5px;
+        color: #555;
+        background-color: #fff;
+        background-image: none;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+        transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+    }
+
+
+
+    .btn {
+        display: inline-block;
+        padding: 5px 20px;
+        border-radius: 5px;
+        color: #fff;
+        margin-right: 25px;
+        width: 100px;
+    }
+
+    .submitBtn {
+        background-color: #688af1;
+        cursor: pointer;
+    }
+
+    .floor-top .renwu {
+        background-color: #24c11c;
+    }
+
+    .floor-top .youhuiquan {
+        background-color: #f5940e;
+        cursor: pointer;
+    }
+
+    .floor-table {
+        margin-top: 30px;
+        display: inline-block;
+        text-align: center;
+        width: 95%;
+    }
+
+        .floor-table table {
+            border: solid 1px #cbcbcb;
+            border-collapse: collapse;
+            clear: both;
+            text-align: left;
+            width: 100%;
+            font-size: 12px;
+        }
+
+            .floor-table table th, .floor-table table td {
+                padding: 10px 20px;
+                border: 1px solid #cbcbcb;
+            }
+
+            .floor-table table th {
+                background-color: #66abef;
+                color: #fff;
+                text-align: center;
+            }
+
+            .floor-table table tbody tr td:first-child {
+                color: #2900dc;
+            }
+
+            /*.floor-table table tbody tr td span {
+        padding: 5px 5px;
+        color: #000;
+        border-radius: 5px;
+    }*/
+
+            .floor-table table tbody tr td span.shenhe {
+                background-color: #5d90f9;
+                cursor: pointer;
+            }
+
+            .floor-table table tbody tr td span.guanbi {
+                background-color: #f95d5d;
+                cursor: pointer;
+            }
+
+            .floor-table table tbody tr td span.caozuo {
+                background-color: #f8e71c;
+                cursor: pointer;
+            }
+
+            .floor-table table tbody tr td span.disabled {
+                background-color: #c4c4c4;
+            }
+
+    .page-number {
+        margin: 10px;
+    }
+
+        .page-number span {
+            border: 1px solid #f2f2f2;
+            padding: 5px 10px;
+            color: #56c1f1;
+        }
+
+        .page-number .active {
+            background-color: #ff7816;
+            color: #fff;
+            border: 1px solid #ff6500;
+        }
+
+    .showbox {
+        position: fixed;
+        top: 100px;
+        left: 140px;
+        display: inline-block;
+        padding: 30px;
+        text-align: center;
+        background-color: #fff;
+        -moz-box-shadow: 0 0 0 10px rgba(3, 3, 3, .2);
+        -webkit-box-shadow: 0 0 0 10px rgba(3, 3, 3, .2);
+        box-shadow: 0 0 0 10px rgba(3, 3, 3, .2);
+    }
+
+        .showbox .floor-table table th {
+            background-color: #fff;
+            color: #000;
+        }
+
+        .showbox .floor-table table tbody tr td:first-child {
+            color: #000;
+        }
+
+        .showbox .chaxunbox {
+            background-color: #169bd5;
+        }
+
+        .showbox .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+
+    .alert_info {
+        color: #3a87ad;
+        font-weight: bold;
+        background-color: #d9edf7;
+        border-color: #bce8f1;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    .alert {
+        padding: 2px 10px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+
+    .rc {
+        width: 15px;
+        height: 15px;
+        margin: 2px;
+    }
+</style>
+
+
+<form method="post" name="PushMessage" enctype="multipart/form-data" action=@Url.Action("SubmitPushMessage")>
+    <div class="floor-table">
+        <table>
+            <thead>
+                <tr><th colspan="2">消息推送</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width: 20%">消息描述：</td>
+                    <td>@Html.TextBox("Description", "", new { placeholder = "用于标识消息，方便管理查找（必填）" })</td>
+                </tr>
+                <tr>
+                    <td>标题：</td>
+                    <td>@Html.TextBox("Title", "", new { placeholder = "请输入消息标题（必填）" })</td>
+                </tr>
+                <tr>
+                    <td>内容：</td>
+                    <td>@Html.TextArea("Content", "", new { placeholder = "请输入消息内容（必填）", rows = 5, style = "padding: 2px;width:300px;border:1px solid #ccc" })</td>
+                </tr>
+                <tr>
+                    <td>推送类型：</td>
+                    <td>
+                        @Html.RadioButton("PushType", "1", true, new { @class = "rc" })
+                        &nbsp;<span title="推送后，广播类型可在友盟后台看到对应记录">广播</span>
+                        <div class="alert alert_info">（排除不接收广播标签Not_Accept_Advertising的所有用户）</div><br />
+                        @Html.RadioButton("PushType", "3", false, new { @class = "rc" })
+                        &nbsp;<span title="推送后，组播类型可在友盟后台看到对应记录">组播</span><br />
+                        <div id="divTag" style="display: none;">
+                            <ul id="treeTag" class="ztree"></ul>
+                        </div>
+                        @Html.RadioButton("PushType", "2", false, new { @class = "rc" })
+                        &nbsp;<span title="推送后，单播类型不会展示在友盟后台">单播</span><br />
+                        <div id="divFile" style="display: none;">
+                            上传手机号：
+                            <input type="file" style="width: 170px; height: 20px;" name="FilePhones" id="FilePhones" accept="text/plain" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>App消息类型：</td>
+                    <td>
+                        @Html.RadioButton("AppMsgType", "activity", true, new { @class = "rc" })
+                        &nbsp;<img src="https://image.tuhu.cn/news/activity.png" width="20" height="20" />
+                        <span>活动</span>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        @Html.RadioButton("AppMsgType", "discovery", false, new { @class = "rc" })
+                        &nbsp;<img src="https://image.tuhu.cn/news/faxian.png" width="20" height="20" />
+                        <span>发现</span>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        @Html.RadioButton("AppMsgType", "system", false, new { @class = "rc" })
+                        &nbsp;<img src="https://image.tuhu.cn/news/wuliu.png" width="20" height="20" />
+                        <span>系统</span>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        @Html.RadioButton("AppMsgType", "logistics", false, new { @class = "rc" })
+                        &nbsp;<img src="https://image.tuhu.cn/news/logistics.png" width="20" height="20" />
+                        <span>物流</span>
+                        @*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            @Html.RadioButton("HeadImageUrl", "http://image.tuhu.cn/news/default.png", false, new {@class = "rc"})
+                            &nbsp;<img src="http://image.tuhu.cn/news/default.png" width="20" height="20"/>
+                            <span>默认</span>*@
+                    </td>
+                </tr>
+                <tr>
+                    <td>上传大图：(可选)</td>
+                    <td>
+                        <input type="file" name="imgUpload" id="imgUpload" onchange="upImage(this)" style="cursor: pointer;" accept=".png,.jpg,.jpeg,.jpe" />
+                        <input type="text" name="BigImagePath" id="BigImagePath" style="display: none" />
+                        <div algin='center'><img id="imgUploadUrl" name="imgUploadUrl" src=""/></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>富文本图片：(可选)</td>
+                    <td>
+                        <input type="file" name="RichTextImgUpload" id="RichTextImgUpload" onchange="upImageR(this)"  style="cursor: pointer;" accept=".png,.jpg,.jpeg,.jpe" />
+                        <input type="text" name="RichTextImage" id="RichTextImage" style="display: none" />
+                        <div algin='center'><img id="RichTextImgUploadUrl" name="RichTextImgUploadUrl" src="" /></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <br />
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="2" style="background-color: #cccccc; width: 50%">Andriod</th>
+                    <th style="background-color: #cccccc; width: 50%">IOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width: 10%">后续动作：</td>
+                    <td>
+                        @Html.RadioButton("AfterOpen", "0", true, new { @class = "rc" })
+                        &nbsp;<span>打开应用</span><br />
+                        @Html.RadioButton("AfterOpen", "1", false, new { @class = "rc" })
+                        &nbsp;<span>打开指定页面(Activity)</span>
+                        @Html.TextBox("AppActivity", "", new { style = "display: none;width: 400px;", placeholder = "请填写完整的包名和Activity名字。例如：com.umeng.MainActivity" })
+                    </td>
+                    <td>
+                        @Html.CheckBox("CheckBadge")&nbsp;&nbsp;<span>显示角标</span>
+                        @Html.Hidden("IOSShowBadge", "false")
+                        <div style="margin: 10px 3px;">主标题: @Html.TextBox("IOSMainTitle", "", new {placeholder = "IOS10 主标题： (选填)", style = "width: 300px;"})</div>
+                        <div style="margin: 3px;">副标题: @Html.TextBox("IOSTitle", "", new { style = "width: 300px;", placeholder = "IOS10 副标题： (选填)" })</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <span style="color: #0000cd">自定义参数：</span>
+                        <div style="margin: 3px;">
+                            Key: @Html.TextBox("AndriodKey1", "", new { style = "width: 200px;", placeholder = "(选填)" })
+                            &nbsp; Value: @Html.TextBox("AndriodValue1", "", new { style = "width: 200px;", placeholder = "(选填)" })
+                        </div>
+                        <div style="margin: 3px;">
+                            key: @Html.TextBox("AndriodKey2", "", new { style = "width: 200px;", placeholder = "(选填)" })
+                            &nbsp; Value: @Html.TextBox("AndriodValue2", "", new { style = "width: 200px;", placeholder = "(选填)" })
+                        </div>
+                    </td>
+                    <td>
+                        <span style="color: #0000cd">自定义参数：</span>
+                        <div style="margin: 3px;">
+                            Key: @Html.TextBox("IOSKey1", "", new { placeholder = "示例：appoperateval(选填)", style = "width: 200px;" })
+                            &nbsp; Value: @Html.TextBox("IOSValue1", "", new { style = "width: 200px;", placeholder = "(选填)" })
+                        </div>
+                        <div style="margin: 3px;">
+                            key: @Html.TextBox("IOSKey2", "", new { placeholder = "示例：keyvaluelenth(选填)", style = "width: 200px;" })
+                            &nbsp; Value: @Html.TextBox("IOSValue2", "", new { style = "width: 200px;", placeholder = "(选填)" })
+                        </div>
+                        <div style="margin: 3px;">
+                            key: @Html.TextBox("IOSKey3", "", new { placeholder = "(选填)", style = "width: 200px;" })
+                            &nbsp; Value: @Html.TextBox("IOSValue3", "", new { style = "width: 200px;", placeholder = "(选填)" })
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <br />
+        <table>
+            <tbody>
+                <tr>
+                    <td style="width: 20%">发送时间：</td>
+                    <td><input type="text" value="" name="SendTime" id="SendTime" placeholder="请输入发送时间（缺省立即）" style="width: 200px;" /></td>
+                </tr>
+                <tr>
+                    <td>过期时间：</td>
+                    <td>
+                        <input type="text" value="" name="ExpireTime" id="ExpireTime" placeholder="请输入过期时间（选填）" style="width: 200px;" />
+                        <div class="alert alert_info">说明：过期时间需要至少晚于发送时间30分钟</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>APP过期时间：</td>
+                    <td>
+                        <input type="text" value="" name="APPExpireTime" id="APPExpireTime" placeholder="请输入过期时间（选填）" style="width: 200px;" />
+                        <div class="alert alert_info">说明：过期时间需要至少晚于发送时间30分钟</div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="2" style="text-align: right">
+                        <input type="button" value="历史纪录" class="btn submitBtn" style="margin-right: 0px"
+                               onclick="window.open('/Push/SeachPushHis?pageno=1')" />
+                        <input type="submit" value="提交" id="submit" class="btn submitBtn" style="background-color: rgb(36, 193, 28);" />
+                        <img src="https://resource.tuhu.cn/Image/Public/loading-712.gif" style="vertical-align: middle; visibility: hidden;" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    @Html.Hidden("Tags")
+</form>
+
+<script type='text/javascript' src="/Scripts/Push/PushMessage.js?v=20160912"></script>
+<script src="/Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<script type="text/javascript" src="/Scripts/TimeObjectUtil.js"></script>
+<link href="/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.css" rel="stylesheet" type="text/css" />
+<link href="/Scripts/ztree/css/zTreeStyle/zTreeStyle.css" rel="stylesheet" type="text/css" />
+<script src="/Scripts/jquery-ui-timepicker-addon/jquery-ui-sliderAccess.js" type="text/javascript"></script>
+<script src="/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.js" type="text/javascript"></script>
+<script src="/Scripts/zTree/js/jquery.ztree.core-3.5.min.js" type="text/javascript"></script>
+<script src="/Scripts/zTree/js/jquery.ztree.excheck-3.5.min.js" type="text/javascript"></script>

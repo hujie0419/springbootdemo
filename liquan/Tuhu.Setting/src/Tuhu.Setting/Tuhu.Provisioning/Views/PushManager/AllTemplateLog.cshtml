@@ -1,0 +1,230 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .log_page {
+        font-weight: 900;
+        height: 40px;
+        text-align: center;
+        color: #888;
+        margin: 20px auto 0;
+        background: #f2f2f2;
+    }
+
+    .log_pagelist {
+        font-size: 0;
+        background: #fff;
+        height: 50px;
+        line-height: 50px;
+    }
+
+        .log_pagelist span {
+            font-size: 14px;
+        }
+
+        .log_pagelist .jump {
+            border: 1px solid #ccc;
+            padding: 5px 8px;
+            -webkit-border-radius: 4px;
+            -moz-border-radius: 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .log_pagelist .bgprimary {
+            cursor: default;
+            color: #fff;
+            background: #337ab7;
+            border-color: #337ab7;
+        }
+
+    .jumpinp input {
+        width: 55px;
+        height: 26px;
+        font-size: 13px;
+        border: 1px solid #ccc;
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        text-align: center;
+    }
+
+    .ellipsis {
+        padding: 0px 8px;
+    }
+
+    .jumppoint {
+        margin-left: 30px;
+    }
+
+    .pagelist .gobtn {
+    }
+
+    .bgprimary {
+        cursor: default;
+        color: #fff;
+        background: #337ab7;
+        border-color: #337ab7;
+    }
+
+    #AllTemplateModifyLog {
+        padding-top: 10px;
+    }
+
+    .main-content {
+        margin-top: 10px;
+    }
+
+    .export_btn {
+        color: #fff;
+        background-color: #337ab7;
+        border-color: #2e6da4;
+        padding: 6px 11px;
+        cursor: pointer;
+        border-radius: 3px;
+        font-size: 13px;
+        margin-left: 10px;
+    }
+
+    .compareText {
+        max-width: 400px;
+        display: inline-block;
+    }
+</style>
+@section head{
+    <link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+}
+
+
+<div class="content" id="AllTemplateModifyLog">
+    <div class="form-inline">
+        <div class="form-group">
+            <label>模板ID：</label>
+            <input style="width:100px;" class="form-control" name="TemplateId" type="number" v-model="TemplateId" />
+
+            <label>推送计划ID：</label>
+            <input style="width:100px;" class="form-control" name="PushPlanId" type="number" v-model="PushPlanId" />
+
+            <label>计划名称：</label>
+            <input class="form-control" name="PushPlanTitle" v-model="PushPlanTitle" type="text" />
+
+            <label>修改人员：</label>
+            <input class="form-control" name="ModifyUser" v-model="ModifyUser" type="text" />
+
+            @*<label>计划状态：</label>
+            <select class="form-control" v-model="IsEnable">
+                <option value="">All</option>
+                <option value="True">启用</option>
+                <option value="False">禁用</option>
+            </select>*@
+
+            <label>推送渠道：</label>
+            <select class="form-control" v-model="DeviceType">
+                <option value="">All</option>
+                <option value="1">iOS</option>
+                <option value="2">Android</option>
+                <option value="3">MessageBox</option>
+                <option value="4">WeChat</option>
+                <option value="6">WeiXinApp</option>
+            </select>
+        </div>
+        <div class="form-group" style="margin-top:10px;">
+            <label>创建时间</label> <input class="form-control" name="ModifyStartTime" id="ModifyStartTime" v-model="ModifyStartTime" type="text" />
+            <label>-</label> <input class="form-control" name="ModifyEndTime" id="ModifyEndTime" v-model="ModifyEndTime" type="text" />
+
+            <input class="form-control btn-primary" v-on:click="DoSearch" :disabled="status.loading" value="搜索" type="button" />
+            <input class="form-control btn-primary" v-on:click="DoExport" value="导出" type="button" />
+             
+
+        </div>
+
+
+    </div>
+
+    <div>
+        <table class="table main-content" style="table-layout: fixed;width:100%">
+            <tr>
+                @*<th  style="max-width: 147px;">操作时间</th>
+        <th style="max-width: 54px;">计划ID</thstyle="width:>
+        <th style="max-width: 150px;">计划名称</th>
+        <th style="max-width: 54px;">模板ID</thstyle="width:>
+        <th style="max-width: 150px;">模版标题</th>
+        <th style="max-width: 80px;">模板类型</th>
+        <th style="max-width: 65px;">计划状态</th>
+        <th style="max-width: 100px;">操作人</th>
+        <th style="max-width: 100px;">操作前</th>
+        <th style="max-width: 100px;">操作后</th>*@
+
+                <th>序号ID</th>
+                <th style="width: 150px;">操作时间</th>
+                <th>计划ID</thstyle="width:>
+                <th>计划名称</th>
+                <th>模板ID</thstyle="width:>
+                <th>模版标题</th>
+                <th>模板类型</th>
+                @*<th>计划状态</th>*@
+                <th style="width: 150px;">操作人</th>
+                <th style="width: 300px;">操作前</th>
+                <th style="width: 300px;">操作后</th>
+
+            </tr>
+            <tr v-for="template in TemplateModifyLogs">
+                <td>{{template.PKID}}</td>
+                <td>{{template.LastUpdateDateTime}}</td>
+                <td>{{template.PushPlanId}}</td>
+                <td>{{template.PushPlanTitle}}</td>
+                <td>{{template.TemplateId}}</td>
+                <td>{{template.TemplateTitle}}</td>
+                <td>{{template.DeviceType}}</td>
+                @*<td>{{template.IsEnable?"启用":"禁用"}}</td>*@
+                <td>{{template.ModifyUser}}</td>
+                <td style="word-wrap:break-word">  {{template.OriginTemplate}} </td>
+                <td style="word-wrap:break-word">  {{template.NewTemplate}} </td>
+            </tr>
+        </table>
+
+        <div class="row">
+            <div class="log_page" v-show="show">
+                <div class="log_pagelist">
+                    <span class="jump" v-show="current_page>1" v-on:click="PreviousPage">上一页</span>
+
+                    <span v-show="current_page>5" class="jump" v-on:click="JumpPage(1)">1</span>
+
+                    <span class="ellipsis" v-show="efont">...</span>
+
+                    <span class="jump" v-for="num in indexs" :class="{bgprimary:current_page==num}" v-on:click="JumpPage(num)">{{num}}</span>
+
+                    <span class="ellipsis" v-show="efont&&current_page<pages-4">...</span>
+
+                    <span class="jump" v-on:click="NextPage">下一页</span>
+
+                    <span v-show="current_page<pages-1" class="jump" class="jump" v-on:click="JumpPage(pages)">{{pages}}</span>
+
+                    <span class="jumppoint">跳转到：</span>
+                    <span class="jumpinp"><input type="text" v-model="changePage"></span>
+                    <span class="jump gobtn" v-on:click="JumpPage(changePage)">立即跳转</span>
+
+                 
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://res.tuhu.org/lib/vuejs/vue.min.js?v=20160704" type="text/javascript"></script>
+<script src="https://res.tuhu.org/lib/require/require.min.js" type="text/javascript"></script>
+<script src="/Scripts/jquery-ui-timepicker-addon/jquery-ui-sliderAccess.js" type="text/javascript"></script>
+<script src="/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.js" type="text/javascript"></script>
+<script src="~/Scripts/Push/TemplateModifyLogs.js"></script>
+<script>
+    $(function () {
+        $("[id=ModifyStartTime],[id=ModifyEndTime]").datetimepicker({
+            controlType: 'select',
+            dateFormat: "yy-mm-dd",
+            timeFormat: 'HH:mm'
+        });
+    });
+    require(['vue-template-modifylog']);
+</script>

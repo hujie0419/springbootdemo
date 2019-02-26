@@ -1,0 +1,240 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@using Tuhu.Service.Activity.Models;
+@model IEnumerable<SalePromotionActivityLogModel>
+    @{
+    Layout = null;
+    ViewBag.Title = "大翻盘操作日志";
+    }
+    <style type="text/css">
+
+        #kkpager {
+            width: 90%;
+            padding: 10px !important;
+            clear: none !important
+        }
+
+            #kkpager span.disabled {
+                cursor: no-drop
+            }
+
+        .pager-left {
+            text-align: center;
+            float: left;
+            color: #999;
+            padding: 10px 0 !important;
+        }
+
+        .pager-right {
+            text-align: center;
+            float: left;
+        }
+
+        .pager-limits {
+            vertical-align: top;
+            padding: 0;
+            border: none;
+        }
+
+            .pager-limits select {
+                height: 22px;
+                padding: 1px;
+                cursor: pointer;
+                border: 1px solid #DFDFDF;
+                box-sizing: content-box;
+            }
+
+                .pager-limits select:focus {
+                    outline: 0;
+                    border-color: #31ACE2 !important;
+                }
+
+        .btn-groups {
+            height: 64px;
+            line-height: 40px;
+            border-radius: 4px;
+            text-align: right;
+            padding: 0 10px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            color: rgba(39,56,72,.85);
+            font-weight: 500;
+        }
+
+            .btn-groups button:focus {
+                outline: none
+            }
+    </style>
+    <link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/cloudjs/cloudcss/combobox.css" rel="stylesheet" />
+    <link href="~/Content/cloudjs/cloudcss/dialog.css" rel="stylesheet" />
+    <link href="~/Content/cloudjs/cloudcss/validate.css" rel="stylesheet" />
+    <link href="~/Content/cloudjs/cloudcss/message.css" rel="stylesheet" />
+    <script type="text/javascript" src="~/Scripts/My97DatePicker/WdatePicker.js"></script>
+    @*
+    <script src="~/Scripts/jquery.cookie.js"></script>*@
+    <script src="~/Scripts/jquery-1.10.2.js"></script>
+    <script src="~/Content/nfine/js/bootstrap/bootstrap.js"></script>
+    <script src="~/Content/ProductVehicleType/js/bootstrap.min.js"></script>
+    <script src="~/Scripts/kkpager/kkpager.min.js"></script>
+    <link href="~/Scripts/kkpager/kkpager_blue.css" rel="stylesheet" />
+
+    <div style="margin:30px;">
+        <div class="title">
+            <h4>大翻盘配置操作日志</h4>
+        </div>
+
+        <form id="searchArguments" method="post" action="/BigBrand/BigBrandReward/GetOperationLogList">
+            <div>
+                <input id="pageIndex" name="PageIndex" value="@ViewBag.pageIndex" type="hidden" />
+                <input id="PID" name="activityid" value="@ViewBag.activityid" type="hidden" />
+                <input id="pageSize" name="PageSize" value="@ViewBag.pageSize" type="hidden" />
+            </div>
+
+        </form>
+        <table id="tbl_grid" style="margin:20px;" border="1">
+            <tr style="height:40px;">
+                <td align="center" style="width:230px;">
+                    操作类型
+                </td>
+                <td align="center" style="width:330px;">
+                    操作时间
+                </td>
+                <td align="center" style="width:330px;">
+                    操作人
+                </td>
+                <td align="center" style="width:230px;"></td>
+            </tr>
+
+            @foreach (var item in Model)
+            {
+                <tr style="height:30px;">
+                    <td align="center">
+                        @Html.DisplayFor(modelItem => item.OperationLogDescription)
+                    </td>
+                    <td align="center">
+                        @Html.DisplayFor(modelItem => item.CreateDateTime)
+                    </td>
+                    <td align="center">
+                        @Html.DisplayFor(modelItem => item.CreateUserName)
+                    </td>
+                    <td align="center">
+                        @if (item.DetailCount > 0)
+                        {
+                            <a href="#" onclick="ShowDetailList(@item.PKID)">详情</a>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td colspan="3">
+                        <div style="font-weight:300;">
+                            <table id="detail_@item.PKID" style="display:none; table-layout: fixed" border="1"></table>
+                        </div>
+                    </td>
+                </tr>
+            }
+
+        </table>
+        <div style="margin-left:30px;">
+            <div class="pager-left">
+                <span class="pager-limits">
+                    <select id="pager-size" onchange="changePager()">
+                        @*
+                        <option value="">请选择每页条数</option>*@
+                        <option value="10">10 条/页</option>
+                        <option value="20">20 条/页</option>
+                        <option value="30">30 条/页</option>
+                        <option value="50">50 条/页</option>
+                        <option value="100">100 条/页</option>
+                    </select>
+                </span>
+            </div>
+            <div style="width:500px;" id="kkpager" class="pager-right"></div>
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+
+        $(function () {
+            $('.pager-limits select').val($("#pageSize").val());
+        });
+
+        var totalPage = @(ViewBag.totalPage),
+        totalRecords = @(ViewBag.totalRecords),
+        pageIndex = @(ViewBag.pageIndex),
+        pageNo = pageIndex || 1;
+
+        //生成分页
+        kkpager.generPageHtml({
+            pno: pageNo,
+            //总页码
+            total: totalPage,
+            //总数据条数
+            totalRecords: totalRecords,
+            mode: 'click',
+            isShowCurrPage: false,
+            isShowTotalRecords: true,
+            click: function (_pageIndex) {
+                $("#pageIndex").attr("value", _pageIndex);
+                $("#searchArguments").submit();
+            },
+            isGoPage: false,
+            getLink: function () {
+                return 'javascript:void(0);';
+            }
+        });
+        kkpager.selectPage(pageIndex);
+
+        /**
+         * 重置页码
+         */
+        function resetPager() {
+            $("#pageIndex").attr("value", "1");
+        }
+
+        /**
+         * 改变页码大小
+         */
+        function changePager() {
+            $('#pageSize').val($('.pager-limits select').find("option:selected").val());
+            $("#searchArguments").submit();
+        }
+
+        //获取日志详情信息
+        function ShowDetailList(pkid) {
+            var node = $("#detail_" + pkid);
+            if (node.css("display") != "none") {
+                node.hide();
+                return false;
+            }
+            $.post("/BigBrand/BigBrandReward/GetOperationLogDetailList",
+                {
+                    PKID: pkid
+                },
+                function (logList) {
+                    AppendDetailHtml(pkid, logList)
+                }
+            );
+        }
+
+        function AppendDetailHtml(pkid, logList) {
+            var node = $("#detail_" + pkid);
+            node.empty();
+            var nodeStr = "<tr><td align=\"center\" style=\"width:200px;\">操作内容</td>"
+                + "<td align=\"center\" style=\"width:300px;\">操作前</td>"
+                + "<td align=\"center\" style=\"width:300px;\">操作后</td></tr>";
+
+            for (var i = 0; i < logList.length; i++) {
+                nodeStr = nodeStr + " <tr><td align=\"center\">" + logList[i].Property +
+                    "</td><td align=\"center\" style=\"word-wrap:break-word; word-break:break-all;\">" + logList[i].OldValue
+                    + "</td><td align=\"center\" style=\"word-wrap:break-word; word-break:break-all;\">" + logList[i].NewValue + "</td></tr >"
+            }
+            node.append(nodeStr);
+            $("#detail_" + pkid).show();
+        }
+
+
+    </script>

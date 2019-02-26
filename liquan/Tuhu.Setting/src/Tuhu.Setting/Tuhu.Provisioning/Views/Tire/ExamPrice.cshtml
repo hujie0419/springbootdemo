@@ -1,0 +1,146 @@
+﻿@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.ExamUpdatePriceModel>
+@{
+    ViewBag.Title = "轮胎价格审批系统";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="title">
+    <h2>轮胎价格修改待审批</h2>
+</div>
+<h2 style="float:left;">待审批</h2>
+<h2 style="float:left;margin-left:30px;"><a href="/Tire/ExamLog">已审批日志</a></h2>
+<h2 style="float:left;margin-left:30px;"><a target="_blank" href="/Tire/PriceGuidePara?type=Base">修改指导价参数</a></h2>
+<h2 style="float:left;margin-left:30px;"><a href="/Tire/GetCouponPriceApply">待审批券后价</a></h2>
+<h2 style="float:left;margin-left:30px;"><a href="/Tire/CouponPriceApprovalLog">券后价审批日志</a></h2>
+<h2 style="float:left;margin-left:30px;"><a href="/Tire/GetQPLPriceApplyList">待审批汽配龙</a></h2>
+<h2 style="float:left;margin-left:30px;"><a href="/Tire/GetQPLPriceAuditList">汽配龙审批日志</a></h2>
+@if (Model.Any())
+{
+    <table>
+        <tr>
+            <th>申请人</th>
+            <th>提交时间</th>
+            <th>品牌</th>
+            <th>PID</th>
+            <th>产品名称</th>
+            <th>进货价</th>
+            <th>最近一次采购价</th>
+            <th>当前库存</th>
+            <th>近7天销量</th>
+            <th>近30天销量</th>
+            <th>实际指导价</th>
+            <th>当前价格</th>
+            <th>京东自营</th>
+            <th>官网申请价</th>
+            <th>毛利额</th>
+            <th>毛利率</th>
+            <th>超出指导价</th>
+            <th>申请原因</th>
+            <th>操作</th>
+        </tr>
+        @foreach (var item in Model.OrderBy(c => c.ApplyDateTime))
+        {
+            var guidePriceStr = item.cost == null ? "-" : (item.cost.Value + item.cost.Value * item.JiaQuan / 100).ToString("0.00");
+            var guidePriceStr_1 = "-";
+            if (guidePriceStr == "-")
+            {
+                if (item.JDSelfPrice != null)
+                {
+                    guidePriceStr_1 = item.JDSelfPrice.Value.ToString("0.00");
+                }
+            }
+            else
+            {
+                if (item.JDSelfPrice == null)
+                {
+                    guidePriceStr_1 = guidePriceStr;
+                }
+                else
+                {
+                    if (Convert.ToDecimal(guidePriceStr) >= Convert.ToDecimal(item.JDSelfPrice))
+                    {
+                        guidePriceStr_1 = item.JDSelfPrice.Value.ToString("0.00");
+                    }
+                    else
+                    {
+                        guidePriceStr_1 = guidePriceStr;
+                    }
+                }
+            }
+            var chaochu = "-";
+            if (guidePriceStr_1 != "-" && Convert.ToDecimal(guidePriceStr_1) > 0)
+            {
+                chaochu = ((item.Price - Convert.ToDecimal(guidePriceStr_1)) / Convert.ToDecimal(guidePriceStr_1)).ToString("0.00%");
+            }
+            <tr>
+                <td>@item.ApplyPerson</td>
+                <td>@item.ApplyDateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@item.Brand</td>
+                <td><a href="https://item.tuhu.cn/Products/@(item.PID.Replace("|","/")).html" target="_blank">@item.PID</a></td>
+                <td>@item.ProductName</td>
+                <td class="cost">@(item.cost == null ? "-" : item.cost.Value.ToString("0.00"))</td>
+                <td class="PurchasePrice">@(item.PurchasePrice == null ? "-" : item.PurchasePrice.Value.ToString("0.00"))</td>
+                <td class="totalstock">@(item.totalstock == null ? "-" : item.totalstock.Value.ToString())</td>
+                <td class="num_week">@(item.num_week == null ? "-" : item.num_week.Value.ToString())</td>
+                <td class="num_month">@(item.num_month == null ? "-" : item.num_month.Value.ToString())</td>
+                <td class="guidePrice">@guidePriceStr_1</td>
+                <td class="nowPrice">@item.ListPrice.ToString("0.00")</td>
+                <td class="jdself">@(item.JDSelfPrice == null ? "-" : item.JDSelfPrice.Value.ToString("0.00"))</td>
+                <td style="background-color:aquamarine">@item.Price.ToString("0.00")</td>
+                <td class="maolie">@(item.cost.GetValueOrDefault(0) > 0 && item.Price > 0 ? (item.Price - item.cost.Value).ToString("0.00") : "-")</td>
+                <td class="maoliLv">@(item.cost.GetValueOrDefault(0) > 0 && item.Price > 0 ? ((item.Price - item.cost.Value) / item.Price).ToString("0.00%") : "-")</td>
+                <td class="chaochu">@chaochu</td>
+                <td>@item.Reason</td>
+                <td><a href="javascript:void(0)" onclick="FuncExam('@item.PKID','@item.PID','@item.Price',1,this)">通过</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="javascript:void(0)" onclick="FuncExam('@item.PKID','@item.PID','@item.Price',-1,this)">驳回</a></td>
+            </tr>
+        }
+    </table>
+}
+<script>
+    var FuncExam = function (pkid, pid, price, type, target) {
+        var $target = $(target);
+        var cost = $target.parent().parent().find(".cost").text();
+        var PurchasePrice = $target.parent().parent().find(".PurchasePrice").text();
+        var totalstock = $target.parent().parent().find(".totalstock").text();
+        var num_week = $target.parent().parent().find(".num_week").text();
+        var num_month = $target.parent().parent().find(".num_month").text();
+        var guidePrice = $target.parent().parent().find(".guidePrice").text();
+        var nowPrice = $target.parent().parent().find(".nowPrice").text();
+        var maoliLv = $target.parent().parent().find(".maoliLv").text();
+        var chaochu = $target.parent().parent().find(".chaochu").text();
+        var maolie = $target.parent().parent().find(".maolie").text();
+        var jdself = $target.parent().parent().find(".jdself").text();
+
+        $.post("/Tire/GotoExam", {
+            pkid: pkid,
+            pid: pid,
+            price: price,
+            type: type,
+            cost: cost,
+            PurchasePrice: PurchasePrice,
+            totalstock: totalstock,
+            num_week: num_week,
+            num_month: num_month,
+            guidePrice: guidePrice,
+            nowPrice: nowPrice,
+            maoliLv: maoliLv,
+            chaochu: chaochu,
+            maolie: maolie,
+            jdself: jdself
+        }, function (result) {
+            if (result > 0) {
+                alert("操作成功！");
+                window.location.reload();
+            }
+            else if (result == -2) {
+                alert("PID不存在！");
+            }
+            else if (result == -3) {
+                alert("价格未变,无需审核！");
+            }
+            else {
+                alert("操作失败！");
+            }
+
+        });
+    };
+</script>

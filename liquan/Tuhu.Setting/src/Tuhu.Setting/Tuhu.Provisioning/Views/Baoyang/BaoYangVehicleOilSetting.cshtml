@@ -1,0 +1,472 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "保养车型机油粘度配置";
+}
+
+<style>
+    .ModuleList, .ModuleList ul, .ModuleList ul li {
+        width: 100%;
+        float: left;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .select {
+        line-height: 1.42857143;
+        width: 200px;
+        height: 30px;
+        padding: 2px 2px 2px 5px;
+        color: #555;
+        background-color: #fff;
+        background-image: none;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+        -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+        -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    }
+
+    .vaild-result {
+        color: #008000;
+    }
+
+        .vaild-result:before {
+            content: "\2714";
+            margin-right: 3px;
+        }
+
+    .inVaild-result {
+        color: #f00;
+    }
+
+        .inVaild-result:before {
+            content: "\2716";
+            margin-right: 3px;
+        }
+</style>
+<body>
+    <div>
+        <h2>
+            <span style="color:red">@ViewBag.PartName</span>保养车型机油粘度配置
+        </h2>
+    </div>
+    <input type="hidden" value="@ViewBag.PartName" id="BaoyangPartName" />
+    <input type="hidden" value="@ViewBag.Key" id="BaoyangPriority" />
+    <input type="hidden" value="" id="PageIndex" />
+
+    <div class="ModuleList">
+        <label>品牌：</label>
+        <select id="brand" name="brand" onchange="BrandChange(this.value)"></select>
+        <label>车系：</label>
+        <select id="vehicleSeries" name="vehicleSeries" onchange="VehicleChange(this.value)"></select>
+        <label>排量：</label>
+        <select id="paiLiang" name="paiLiang" style="width: 90px" ></select>
+        <input type="checkbox" id="isConfig" /><span>只显示已配置车型</span>&nbsp;&nbsp;&nbsp;&nbsp;
+        <button class="buttonStyle" style="width:100px;" onclick="Search()">查询</button>
+        <button class="buttonStyle" style="width:100px;" onclick="EditViscosity('batch')">批量编辑</button>
+    </div>
+    <div id="editViscosity-dialog" style="display: none">
+        <div>
+            <div>
+                <label>粘度:</label>
+                <input type="text" id="recommendViscosityDialog" />
+            </div>
+            <div style="display: none">
+                <a class="VehicleIdDialog"></a>
+                <a class="PaiLiangDialog"></a>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="AddItem" style="display: none"></div>
+    <div id="div_table" style="padding-top:40px">
+
+    </div>
+
+    <div id="PageLoadingEffects" style="display:none;">
+        <table>
+            <tr>
+                <td><img src="~/Content/images/Loading.gif" /></td>
+                <td>玩命加载中，请稍后...</td>
+            </tr>
+        </table>
+    </div>
+    <div>
+        <br />
+        <span>每页显示：</span>
+        <select onchange="selChange(this);" style="width:70px">
+            <option value="10" selected="selected">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select><span>&nbsp;&nbsp;条</span>
+    </div>
+    <div class="pager" style="height:25px;padding-left:0px;margin-top:15px;text-align:left"></div>
+
+</body>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        reFresh();
+        $.get("GetVehicleBrands", function (data) {
+            if (data.status === "success") {
+                var html = "<option value=''>-选择品牌-</option>";
+                $(data.data).each(function (index) {
+                    html += "<option value='" + data.data[index] + "'>" + data.data[index] + "</option>";
+                });
+                $("#brand").empty();
+                $("#brand").append(html);
+                BrandChange($("#brand").val());
+            } else {
+                var html = "<option value=''>无数据</option>";
+                $("#brand").empty();
+                $("#brand").append(html);
+                BrandChange("");
+            }
+        });
+    });
+
+    function BrandChange(brand) {
+        $.get("GetVehicleSeries", { brand: encodeURIComponent(brand) }, function (data) {
+            if (data.status === "success") {
+                var html = "<option value=''>-选择车系-</option>";
+                for (var item in data.data)
+                {
+                    if (data.data.hasOwnProperty(item)) {
+                        html += "<option value='" + item + "'>" + data.data[item] + "</option>";
+                    }
+                }
+                $("#vehicleSeries").empty();
+                $("#vehicleSeries").append(html);
+                VehicleChange($("#vehicleSeries").val());
+            } else {
+                var html = "";
+                if (brand == "") {
+                    html = "<option value=''>-选择车系-</option>";
+                } else {
+                    html = "<option value=''>无数据</option>";
+                }
+                $("#vehicleSeries").empty();
+                $("#vehicleSeries").append(html);
+                VehicleChange("");
+            }
+        });
+    }
+
+    function VehicleChange(vehicle) {
+        $.get("SelectVehiclePaiLiang", { vid: encodeURIComponent(vehicle) }, function (data) {
+            if (data.status === "success") {
+                var html = "<option value=''>-选择排量-</option>";
+                for (var item in data.data) {
+                    if (data.data.hasOwnProperty(item)) {
+                        html += "<option value='" + data.data[item] + "'>" + data.data[item] + "</option>";
+                    }
+                }
+                $("#paiLiang").empty();
+                $("#paiLiang").append(html);
+            } else {
+                var html = "";
+                if (vehicle == "") {
+                    html = "<option value=''>-选择排量-</option>";
+                } else {
+                    html = "<option value=''>无数据</option>";
+                }
+                $("#paiLiang").empty();
+                $("#paiLiang").append(html);
+            }
+        });
+    }
+    
+
+    function SeriesChangeOne(series, brand) {
+        var priorityType = $("#BaoyangPriority").val();
+        $.get("GetJYBrandByPriorityTypeAndSeries", { priorityType: priorityType, series: series }, function(data) {
+            if (data.status === "success") {
+                var html = "<option value=''>-选择品牌-</option>";
+                $.each(data.data, function(index) {
+                    html += "<option value='" + data.data[index] + "'>" + data.data[index] + "</option>";
+                });
+                $("#JYbrand-level1").empty();
+                $("#JYbrand-level1").append(html);
+                $("#JYSeries1").val(series);
+                $("#JYbrand-level1").val(brand);
+            } else {
+                $("#JYbrand-level1").empty();
+                $("#JYbrand-level1").append("<option value=''>-选择品牌-</option>");
+            }
+        });
+    }
+
+    function Deleted(self) {
+        var $this = $(self);
+        var vehicleId = $this.parent().parent().find(".vehicleId").text();
+        var paiLiang = $this.parent().parent().find(".paiLiang").text();
+        var recommendViscosity = $this.parent().parent().find(".recommendViscosity").text();
+        if (recommendViscosity ==="") {
+            alert("无需删除");
+        } else {
+            if (confirm("是否确认删除？")) {
+                $.get("/Baoyang/DeleteVehicleOilViscosity", { vehicleId: vehicleId, paiLiang: paiLiang }, function (result) {
+                    if (result.status === "success") {
+                        $this.parent().parent().find(".recommendViscosity").text("");
+                    } else {
+                        alert("删除失败！");
+                    }
+                });
+            }
+        }       
+    }
+
+    function changeItem(obj) {
+        if (obj.checked) {
+            $(obj).attr("checked", true);
+
+        } else {
+            $(obj).attr("checked", false);
+        }
+    }
+
+    function EditViscosity(mark) {
+        $("#recommendViscosityDialog").val("");
+        if (mark === "batch") {
+            var $checkedRows = $(".table-striped input[checked='checked'] ").parent().parent();
+            if ($checkedRows.length === 0) {
+                alert("至少选择一行");
+            } else {
+                $("#editViscosity-dialog").dialog({
+                    title: "推荐粘度",
+                    width: 500,
+                    height: 300,
+                    modal: true,
+                    draggable: false,
+                    resizable: false,
+                    buttons: {
+                        "保存": function () {
+                            var $checkedRows = $(".table-striped input[checked='checked'] ").parent().parent();
+                            var batchVehicle = new Array();
+                            for (var i = 0; i < $checkedRows.length; i++) {
+                                var row = $checkedRows.eq(i);
+                                batchVehicle.push({
+                                    PaiLiang: row.find(".paiLiang").text(),
+                                    VehicleId: row.find(".vehicleId").text()
+                                });
+                            }
+                            var recommendViscosity = $("#recommendViscosityDialog").val();
+                            if (/[0-9]+[A-Z]+-[0-9]+/.test(recommendViscosity)) {
+                                var $this = $(this);
+                                if (recommendViscosity !== '') {
+                                    $.post("BatchUpsertVehicleOilViscosity", { batchVehicle: JSON.stringify(batchVehicle), recommendViscosity: recommendViscosity }, function (result) {
+                                        if (result.status === "success") {
+                                            for (var i = 0; i < $checkedRows.length; i++) {
+                                                var row = $checkedRows.eq(i);
+                                                row.find(".recommendViscosity").text(recommendViscosity);
+                                            }
+                                            $this.dialog("close");
+                                        } else {
+                                            alert("更新失败");
+                                            $this.dialog("close");
+                                        }                                      
+                                    });
+                                }
+                            } else {
+                                alert("格式不正确，注意大小写");
+                            }
+                           
+
+                        },
+                        "取消": function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }               
+        } else {
+            var $self = $(mark);
+            $self.parent().parent().addClass("active");
+            $("#editViscosity-dialog").dialog({
+                title: "保养推荐产品配置",
+                width: 500,
+                height: 300,
+                modal: true,
+                draggable: false,
+                resizable: false,
+                buttons: {
+                    "保存": function () {
+                        var recommendViscosity = $("#recommendViscosityDialog").val();
+                        var $this = $(this);
+                        if (/[0-9]+[A-Z]+-[0-9]+/.test(recommendViscosity)) {
+                            var vehicleId = $(".table-striped .active .vehicleId").text();
+                            var paiLiang = $(".table-striped .active .paiLiang").text();
+                            $.post("UpsertVehicleOilViscosity", { vehicleId: vehicleId, paiLiang: paiLiang, recommendViscosity: recommendViscosity }, function(result) {
+                                if (result.status === "success") {
+                                    $(".table-striped .active .recommendViscosity").text(recommendViscosity);
+                                    $this.dialog("close");                                  
+                                } else {
+                                    alert("更新失败");
+                                    $this.dialog("close");
+                                }
+                                for (var i = 0; i < $(".table-striped tr").length; i++) {
+                                    $(".table-striped tr").eq(i).removeClass("active");
+                                }
+                            });
+                        } else {
+                            alert("格式不正确，注意大小写");
+                        }
+                    },
+                    "取消": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        }     
+    }
+
+    function reFresh() {
+        $("#PageLoadingEffects").css("display", "block");
+        pageIndex = 1;
+        pageSize = 10;
+        groupCurNum = 1;
+        initTable(1);
+    }
+
+    var groupCurNum = 1;
+    var groupSize = 10;
+    var num = 0;
+
+    function initTable(isFalg) {
+        pageIndex = isFalg;
+        $("#div_table").html("");
+        $("#PageIndex").val(isFalg);
+        var isChecked = 0;
+        var partName = $("#BaoyangPartName").val();
+        var brand = $("#brand").val();
+        var vehicleID = $("#vehicleSeries").val();
+        var staPrice = $("#startPrice").val();
+        var endPrice = $("#endPrice").val();
+        var checked = document.getElementById("isConfig");
+        if (checked.checked) { isChecked = 1; }
+        var type = $("#Search_type").val();
+        var value = $("#value_Search").val();
+        var startDate = $("#startDate").val();
+        var paiLaing = $("#paiLiang").val();
+        $("#PageLoadingEffects").css("display", "block");
+        $.ajax({
+            url: '/Baoyang/BaoYangVehicleOilSettingList',
+            type: 'get',
+            data:
+            {
+                "pageIndex": pageIndex,
+                "pageSize": pageSize,
+                "brand": brand,
+                "vehicleID": vehicleID,
+                "paiLiang":paiLaing,
+                "isConfig": isChecked
+            },
+            success: function (html) {
+                $("#PageLoadingEffects").css("display", "none");
+                $("#div_table").append(html);
+                initPage($("#Totalcount").val());
+            }
+        });
+    }
+
+    function Search() {
+            initTable(1);      
+    }
+
+    function initPage(total) {
+        $("div.pager").find("*").remove().empty();
+        //上一组
+        var prevGroup = "<a href=\"#\" id=\"prevGroup\" onclick=\"prevClick();return false;\" style=\"display:none;\">上一组</a>";
+        $("div.pager").append(prevGroup);
+        //下一组
+        var nextGroup = "<a href=\"#\" id=\"nextGroup\" onclick=\"nextClick();return false;\" style=\"display:none;\">下一组</a>";
+        $("div.pager").append(nextGroup);
+        //转业
+        num = Math.floor(total / pageSize) + (total % pageSize > 0 ? 1 : 0);
+        var turnPage = "";
+        if (total > 0) {
+            turnPage = "<a href=\"#\" id=\"turnGroup\" onclick=\"turnClick();return false;\">转到</a><input type=\"text\" id=\"txtTurn\" value=\"" + pageIndex + "\" style=\"width:30px;  padding: 1px 1px 0px 1px;\" /><span style=\"width:100px;border:0;\">页 当前页/总页：</span><span id=\"_numInfo\" style=\"width:80px;border:0;text-align:left;\">" + pageIndex + "/" + num + "</span>";
+        } else {
+            turnPage = "<input type=\"text\" id=\"txtTurn\" value=\"1\" style=\"width:30px;\" /><span style=\"width:100px;border:0;\">页 当前页/总页：</span><span id=\"_numInfo\" style=\"width:80px;border:0;text-align:left;\">" + pageIndex + "/" + (num + 1) + "</span>";
+        }
+        $("div.pager").append(turnPage);
+        pageOnPage();
+    }
+    function selChange(e) {
+        pageSize = parseInt($(e).val());
+        pageIndex = 1;
+        groupCurNum = 1;
+        initTable(1);
+    }
+    //分页的分页
+    function pageOnPage() {
+        $("a[name='pageA']").remove();
+        var groupNums = Math.floor(num / groupSize) + (num % groupSize > 0 ? 1 : 0);
+        if (groupNums == 1 || groupNums == 0) {
+            $("#prevGroup").css("display", "none");
+            $("#nextGroup").css("display", "none");
+        }
+        else if (groupCurNum == 1 && groupNums > 1) {
+            $("#prevGroup").css("display", "none");
+            $("#nextGroup").css("display", "");
+        }
+        else if (groupCurNum < groupNums && groupNums > 1) {
+            $("#prevGroup").css("display", "");
+            $("#nextGroup").css("display", "");
+        }
+        else {
+            $("#prevGroup").css("display", "");
+            $("#nextGroup").css("display", "none");
+        }
+        var start = (groupCurNum - 1) * groupSize;
+        var end = (groupCurNum * groupSize > num ? num : groupCurNum * groupSize);
+        var temp = ""
+        for (var i = start; i < end; i++) {
+            if (i == (pageIndex - 1))
+                temp += "<a name=\"pageA\" id=\"_" + (i + 1).toString() + "\" href=\"javascript:;\" class=\"current\" onclick=\"pageClick(this," + (i + 1).toString() + ");return false;\">" + (i + 1).toString() + "</a>";
+            else
+                temp += "<a name=\"pageA\" id=\"_" + (i + 1).toString() + "\" href=\"javascript:;\" onclick=\"pageClick(this," + (i + 1).toString() + ");return false;\">" + (i + 1).toString() + "</a>";
+        }
+        if (i == 0 && start == 0 && end == 0) {
+            temp += "<a name=\"pageA\" id=\"_" + (i + 1).toString() + "\" href=\"javascript:;\" class=\"current\" onclick=\"pageClick(this," + (i + 1).toString() + ");return false;\">" + (i + 1).toString() + "</a>";
+        }
+        $("div.pager a").eq(0).after(temp);
+    }
+    function prevClick() {
+        groupCurNum -= 1;
+        pageOnPage();
+    }
+    function nextClick() {
+        groupCurNum += 1;
+        pageOnPage();
+    }
+    function turnClick() {
+        var rex = /^[0-9]*$/;
+        if (!rex.test($("#txtTurn").val()))
+            return;
+        pageIndex = parseInt($("#txtTurn").val());
+        pageIndex = (pageIndex > num ? num : pageIndex);
+        $("#txtTurn").val(pageIndex);
+        groupCurNum = Math.floor(pageIndex / groupSize) + (pageIndex % groupSize > 0 ? 1 : 0);
+        pageOnPage();
+        pageClick($("#_" + pageIndex.toString()), pageIndex);
+        //页信息
+        var nInfo = pageIndex + "/" + num;
+        $("#_numInfo").text(nInfo);
+    }
+    function pageClick(e, inum) {
+        $("a[name='pageA']").removeClass("current");
+        $(e).addClass("current");
+        pageIndex = inum;
+        initTable(inum);
+        //页信息
+        var nInfo = pageIndex + "/" + num;
+        $("#_numInfo").text(nInfo);
+    }
+</script>

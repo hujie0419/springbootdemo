@@ -1,0 +1,466 @@
+﻿@{
+    ViewBag.Title = "优惠券领取配置";
+}
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.SE_GetPromotionActivityConfig>
+@section head{
+    <link href="~/Scripts/jQuery-EasyUI/themes/default/easyui.css" type="text/css" rel="stylesheet" />
+    <link href="~/Scripts/jQuery-EasyUI/themes/icon.css" type="text/css" rel="stylesheet" />
+    <style type="text/css">
+        .tabs {
+            width:100% !important;
+        }
+    </style>
+}
+
+
+
+<div id="toolbar">
+    <span>活动名称:</span>
+    <input type="text" id="txtTitle" name="txtTitle" class="easyui-textbox" />
+    <span>活动状态:</span>
+    <select id="sealStatus" name="sealStatus" class="easyui-combobox">
+        <option  value="1">进行中</option>
+        <option value="2">已结束</option>
+        <option value="3">即将开始</option>
+    </select>
+    <a href="javascript:void(0)" class="easyui-linkbutton" id="btnSearch" data-options="iconCls:'icon-search'">查 询</a>
+    <br/>
+    <a href="javascript:void(0)" class="easyui-linkbutton" id="btnAdd" data-options="iconCls:'icon-add'">新 增</a>
+
+    <a href="javascript:void(0)" class="easyui-linkbutton" id="btnEdit" data-options="iconCls:'icon-edit',disabled:true">编 辑</a>
+    
+    <a href="javascript:void(0)" class="easyui-linkbutton" id="btnLog" data-options="iconCls:'icon-search',disabled:true">查看日志</a>
+
+    <a href="javascript:void(0)" class="easyui-linkbutton" id="btnDelete" data-options="iconCls:'icon-cancel',disabled:true">删 除</a>
+</div>
+<table id="tList" class="easyui-datagrid"  title="优惠券领取配置列表">
+    <thead>
+        <tr>
+            <th data-options="field:'ID', checkbox: true,width:'5%'"></th>
+            <th data-options="field: 'ActivityName',width:'20%'">活动名称</th>
+            <th data-options="field: 'Channel',width:'10%'">渠道</th>
+            <th data-options="field: 'NewUserText',width:'10%'">用户类型</th>
+            <th data-options="field: 'StatusText',width:'5%'">状态</th>
+            <th data-options="field:'GetCouponTotal',width:'5%'">剩余数量</th>
+            <th data-options="field:'GetCouponNumbers',width:'5%'">领取数量</th>
+            <th data-options="field: 'Uri',width:'20%'">访问地址</th>
+
+            <th data-options="field: 'StartDateTime',width:'15%'">开始时间</th>
+            <th data-options="field: 'EndDateTime',width:'15%'">结束时间</th>
+        </tr>
+    </thead>
+</table>
+<div id="Edit"></div>
+<div id="LogDialog"></div>
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/jQuery-EasyUI/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jQuery-EasyUI/locale/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="~/Scripts/ajaxfileupload.js"></script>
+    <script type="text/javascript">
+        var Opeartor = {
+            open: function(id) {
+                $('#Edit').dialog({
+                    title: '编辑优惠券领取',
+                    width: 1000,
+                    height: 820,
+                    cache: false,
+                    href: '/PromotionActivity/PromotionEdit',
+                    method: 'post',
+                    queryParams: { ID: id },
+                    shadow: true,
+                    modal: true,
+                    buttons: [
+                        {
+                            text: '保 存',
+                            iconCls: 'icon-save',
+                            handler: function() {
+                                var couponData = $('#couponTable').datagrid('getData');
+                                var userType = $('input[name="IsNewUser"]:checked', '#PromotionForm').val();
+                                var isResult = true;
+                                if (couponData.total > 0) {
+
+                                    if (userType == "true") {
+                                        //新用户
+                                        couponData.rows.forEach(function(e) {
+                                            if (e.GetUserType == 0 || e.GetUserType == 1) {
+                                                isResult = false;
+                                                return;
+                                            }
+                                        });
+                                    }
+
+                                    if (userType == "false") { //老用户
+                                        couponData.rows.forEach(function(e) {
+                                            if (e.GetUserType == 0 || e.GetUserType == 2) {
+                                                isResult = false;
+                                                return;
+                                            }
+                                        });
+                                    }
+
+                                    if (isResult) {
+                                        if (userType == "true") {
+                                            $.messager.alert('系统提示', '请添加新用户类型的优惠券或者全部用户类型的优惠券');
+                                        } else {
+                                            $.messager.alert('系统提示', '请添加老用户类型的优惠券或者全部用户类型的优惠券');
+                                        }
+                                    } else {
+                                        var data = {};
+                                        $('#PromotionForm').form('submit',
+                                            {
+                                                url: '/PromotionActivity/SubmitPromitionActivity',
+                                                queryParams: { CouponItems: JSON.stringify(couponData.rows) },
+                                                success: function(result) {
+                                                    if (result == 1) {
+                                                        $('#Edit').dialog('close');
+                                                        location.reload();
+                                                    } else {
+                                                        $.messager.alert("系统提示", "保存失败！");
+                                                    }
+                                                }
+                                            });
+                                    }
+                                } else {
+                                    $.messager.alert('系统提示', '请添加优惠券');
+                                }
+                            }
+                        }, {
+                            text: '取 消',
+                            iconCls: 'icon-cancel',
+                            handler: function() {
+                                $('#Edit').dialog("close");
+                                $('#btnEdit').linkbutton('disable');
+                                $('#btnDelete').linkbutton('disable');
+                                $('#tList').datagrid("clearSelections");
+                            }
+                        }
+                    ]
+                });
+            },
+            openCoupon: function(model) {
+                $('#EditCouponInfo').dialog({
+                    title: '优惠券信息',
+                    width: 600,
+                    height: 400,
+                    cache: false,
+                    href: '/PromotionActivity/CouponInfo',
+                    method: 'post',
+                    queryParams: model,
+                    shadow: true,
+                    modal: true,
+                    buttons: [
+                        {
+                            text: '保 存',
+                            iconCls: 'icon-add',
+                            handler: function() {
+                                var form = $('#CouponInfo');
+                                var GetRuleGUID = $('#GetRuleGUID', form).textbox('getValue');
+                                if (GetRuleGUID) {
+
+                                    var data = {};
+                                    data.VerificationMode = $('input[name="VerificationMode"]:checked', form).val();
+                                    data.UserType = $('input[name="UserType"]:checked', form).val();
+                                    data.GetRuleGUID = GetRuleGUID;
+                                    data.GetRuleID = $('#GetRuleID', form).val();
+                                    data.Discount = $('#Discount', form).textbox('getValue');
+                                    data.ValidStartDateTime = $('#ValidStartDateTime', form).textbox("getValue");
+                                    data.ValidEndDateTime = $('#ValidEndDateTime', form).textbox("getValue");
+                                    data.MinMoney = $('#MinMoney', form).textbox("getValue");
+                                    data.Description = $('#Description', form).textbox("getValue");
+                                    data.ValidDays = $('#ValidDays', form).textbox("getValue");
+                                    data.SingleQuantity = $('#SingleQuantity', form).textbox("getValue");
+                                    data.Quantity = $('#Quantity', form).textbox("getValue");
+                                    data.GetUserType = $('input[name="GetUserType"]:checked', form).val();
+                                    var result =
+                                        Opeartor.couponTableValidate(data.SingleQuantity, data.Quantity, data.UserType);
+                                    if (!result.status) {
+                                        $.messager.alert('系统提示', result.msg);
+                                        return false;
+                                    }
+
+                                    if (!Opeartor.fousCouponValidate()) {
+                                        return false;
+                                    }
+                                    $('#couponTable').datagrid('appendRow', data);
+                                    $('#EditCouponInfo').dialog('close');
+                                } else {
+                                    $.messager.alert("系统提示", "请输入优惠券Guid!");
+                                }
+                            }
+                        }, {
+                            text: '取 消',
+                            iconCls: 'icon-cancel',
+                            handler: function() {
+                                $('#EditCouponInfo').dialog('close');
+                            }
+                        }
+                    ]
+                });
+            },
+            couponValidate: function() {
+                var value = $('#GetRuleGUID').val();
+                var form = $('#CouponInfo');
+                if (value) {
+                    $.ajax({
+                        type: 'post',
+                        url: '/PromotionActivity/GetCouponValidate',
+                        data: { GUID: value }
+                    }).done(function(result) {
+                        if (!result) {
+                            $.messager.alert("系统提示", "请输入正确的优惠券GUID或者每人限领数目不为1，请确认");
+                            $('#GetRuleGUID', '#CouponInfo').textbox("setValue", "");
+                            return false;
+                        }
+                        result = JSON.parse(result);
+
+                        console.log(result);
+                        $('#GetRuleID', form).val(result.GetRuleID);
+                        $('input[name="VerificationMode"][value=' + result.VerificationMode + ']', form)
+                            .attr("checked", "checked");
+                        $('#Discount', form).textbox("setValue", result.Discount);
+                        $('#ValidStartDateTime', form).textbox("setValue", result.ValidStartDateTime);
+                        $('#ValidEndDateTime', form).textbox("setValue", result.ValidEndDateTime);
+                        $('#MinMoney', form).textbox("setValue", result.MinMoney);
+                        $('input[name="UserType"][value=' + result.UserType + ']', form).attr("checked", "checked");
+                        $('#Description', form).textbox("setValue", result.Description);
+                        $('#ValidDays', form).textbox("setValue", result.ValidDays);
+                        $('#SingleQuantity', form).textbox("setValue", result.SingleQuantity);
+                        $('#Quantity', form).textbox("setValue", result.Quantity);
+                    }).fail(function(result) {
+                        console.log("校验失败");
+                    });;
+                }
+            },
+            removeCouponRow: function() {
+                $.messager.confirm('系统提示',
+                    '您确定删除吗？',
+                    function(r) {
+                        if (r) {
+                            var row = $('#couponTable').datagrid('getSelected');
+                            if (row) {
+                                var index = $('#couponTable').datagrid('getRowIndex', row);
+                                $('#couponTable').datagrid('deleteRow', index);
+                                $('#couponTable').datagrid('clearSelections');
+                                $('#btnDeleteCoupon').linkbutton('disable');
+                            }
+                        }
+                    });
+            },
+            couponTableValidate: function(SingleQuantity, Quantity, UserType) {
+                var data = $('#couponTable').datagrid('getData');
+                if (data.total > 0) {
+                    var rows = data.rows;
+                    var result = true;
+                    var msg = "";
+                    rows.forEach(function(e) {
+                        if (SingleQuantity != 1) {
+                            result = false;
+                            msg = "每人限领数目不为1，不能保存。";
+                        }
+                        if (e.Quantity != Quantity) {
+                            result = false;
+                            msg = "总限领数目不同，不能保存。";
+                        }
+
+                        //if (e.UserType != UserType) {
+                        //    result = false;
+                        //    msg = "支持的用户类型不同，不能保存";
+                        //}
+                    });
+                    return { status: result, msg: msg };
+                } else {
+                    return { status: true, msg: "" };
+                }
+            },
+            fousCouponValidate: function() {
+                var form = $('#CouponInfo');
+                var isReturn = true;
+                var GetUserType = $('input[name="GetUserType"]:checked', form).val();
+                if (GetUserType == 1) {
+                    var userType = $('input[name="UserType"]:checked', form).val();
+                    if (userType == 2) {
+                        $.messager.alert("系统提示", "请填写全部类型或者新用户类型的优惠券");
+                        isReturn = false;
+                    }
+                } else {
+                    var userType = $('input[name="UserType"]:checked', form).val();
+                    if (userType != 0) {
+                        $.messager.alert("系统提示", "请填写全部类型的优惠券");
+                        isReturn = false;
+                    }
+                }
+                return isReturn;
+            },
+            showLog: function (id) {
+                $("#LogDialog").load('/Promotion/HistoryActions?objectId=' + id.toLowerCase() + '&objectType=PromotionActivity');
+                var logDialog = $("#LogDialog").dialog({
+                    title: "操作历史",
+                    width: 600,
+                    height: 500,
+                    cache: false
+                });
+            }
+        };
+        $('#btnAdd').on('click',
+            function() {
+                Opeartor.open(null);
+            });
+        $('#btnEdit').on('click',
+            function() {
+                var row = $('#tList').datagrid("getSelected");
+                if (row) {
+                    Opeartor.open(row.ID);
+                }
+            });
+        $("#btnLog").on("click",
+            function() {
+                var row = $('#tList').datagrid("getSelected");
+                if (row) {
+                    Opeartor.showLog(row.ID);
+                }
+            });
+        $('#btnDelete').on('click',
+            function() {
+                $.messager.confirm('系统提示',
+                    '您确定删除吗?',
+                    function(r) {
+                        if (r) {
+                            var row = $('#tList').datagrid("getSelected");
+                            if (row) {
+                                $.ajax({
+                                    url: '/PromotionActivity/PromitionActivityDelete',
+                                    type: 'post',
+                                    data: { ID: row.ID }
+                                }).done(function(result) {
+                                    if (result == 1) {
+                                        $.messager.alert('系统提示', '删除优惠券领取配置信息成功');
+                                        location.reload();
+                                    } else {
+                                        $.messager.alert('系统提示', '删除优惠券领取配置信息失败');
+                                    }
+                                }).fail(function() {
+
+                                });
+                            }
+
+                        }
+                    });
+
+            });
+
+        $('#btnSearch').on('click',
+            function() {
+                var title = $('#txtTitle').textbox("getValue");
+                var status = $('#sealStatus').combobox("getValue");
+                $("#hidTitle").val(title);
+                $("#hidStatus").val(status);
+                $.ajax({
+                    url: "/PromotionActivity/GetPromotionActivityListJson",
+                    type: "post",
+                    data: {
+                        title: title,
+                        status: status
+                    },
+                    success: function(result) {
+                        $('#tList').datagrid("loadData", JSON.parse(result));
+                    }
+                });
+            });
+
+        function Upload(obj, showImg, hidImg) {
+
+            var pobj = $(obj);
+            var rd = Math.ceil(Math.random() * 9999) + 1;
+            var fileElId = $(obj).attr("id");
+            console.log(fileElId);
+            $.ajaxFileUpload({
+                url: '/Article/ImageUploadToAli?rd=' + rd,
+                secureuri: false,
+                fileElementId: fileElId,
+                dataType: 'json',
+                async: false,
+                success: function(result) {
+                    if (result.BImage != "" && result.SImage != "") {
+                        $("#" + showImg).attr("src", result.SImage).show();
+                        $('#' + hidImg).val(result.BImage);
+                    } else {
+                        alert("上传失败！");
+                    }
+                },
+                error: function(data, status, e) //服务器响应失败处理函数
+                {
+                    alert(e);
+                }
+            });
+        }
+
+
+        // 对Date的扩展，将 Date 转化为指定格式的String
+        // 月(M)、日(d)、小时(h)、分(m)、秒(s)、季度(q) 可以用 1-2 个占位符，
+        // 年(y)可以用 1-4 个占位符，毫秒(S)只能用 1 个占位符(是 1-3 位的数字)
+        // 例子：
+        // (new Date()).Format("yyyy-MM-dd hh:mm:ss.S") ==> 2006-07-02 08:09:04.423
+        // (new Date()).Format("yyyy-M-d h:m:s.S")      ==> 2006-7-2 8:9:4.18
+        Date.prototype.Format = function(fmt) { //author: meizz
+            var o = {
+                "M+": this.getMonth() + 1, //月份
+                "d+": this.getDate(), //日
+                "h+": this.getHours(), //小时
+                "m+": this.getMinutes(), //分
+                "s+": this.getSeconds(), //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds() //毫秒
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt))
+                    fmt = fmt.replace(RegExp.$1,
+                        (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        }
+
+
+        $('#tList').datagrid({
+            url: '/PromotionActivity/GetPromotionActivityJson',
+            toolbar: '#toolbar',
+            width: $('#main').width() || $('body').width(),
+            height: 600,
+            rownumbers: true,
+            pagination: true,
+            singleSelect: true,
+            pageSize: 20,
+            onSelect: function(rowIndex, rowData) {
+                $('#btnEdit').linkbutton('enable');
+                $('#btnLog').linkbutton('enable');
+                $('#btnDelete').linkbutton('enable');
+            }
+        });
+
+        //var pager = $('#tList').datagrid().datagrid('getPager');
+        //pager.pagination({
+        //    onSelectPage: function (pageNumber, pageSize) {
+        //        var title = $('#txtTitle').textbox("getValue");
+        //        var status = $('#sealStatus').combobox("getValue");
+        //        $.ajax({
+        //            url: "/PromotionActivity/GetPromotionActivityListJson",
+        //            type: "post",
+        //            data: {
+        //                page:pageNumber,
+        //                title: title,
+        //                status: status
+        //            },
+        //            success: function (result) {
+        //                $('#tList').datagrid("loadData", JSON.parse(result));
+        //            }
+        //        })
+        //    }
+        //});
+        //--------------------------------------------------------------------
+        $(function() {
+            var width = $(window).width();
+        });
+
+
+    </script>
+    <script src="~/Scripts/Promotion/FormatJson.js?v=20180225"></script>
+}

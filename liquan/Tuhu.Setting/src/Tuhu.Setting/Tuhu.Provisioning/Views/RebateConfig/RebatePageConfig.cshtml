@@ -1,0 +1,390 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "返现页面配置";
+}
+<link rel="stylesheet" href="~/Scripts/artDialog6.0.4/css/ui-dialog.css" />
+<link rel="stylesheet" href="~/Content/iview/iview.css" />
+<style>
+    [v-cloak] {
+        display: none;
+    }
+
+    .ui-dialog {
+        width: auto;
+    }
+</style>
+<div id="div" style="margin-top:20px" v-cloak>
+    <div style="margin-top:20px">
+        <i-button type="success" v-on:click="AddRebatePageConfig" style="margin-left:15px;height:30px;width:90px">新增</i-button>
+        <a href="/RebateConfig/RebateConfig" style="float:right">返回</a>
+    </div>
+    <i-table style="margin-top:20px" width="table.width" :height="600" :loading="table.loading" :data="table.data" :columns="table.columns"></i-table>
+    <div style="margin: 10px;overflow: hidden">
+        <div style="float: right;">
+            <Page :total="page.total" :page-size="page.pageSize" :current="page.current" :page-size-opts="page.sizes" show-elevator show-sizer v-on:on-change="handlePageChange" v-on:on-page-size-change="handlePageSizeChange"></Page>
+        </div>
+    </div>
+    <Modal v-model="modal.visible" :loading="modal.loading" title="返现页面配置" okText="提交" :transfer="false" cancelText="取消" v-on:on-ok="ok" scrollable="true" width="50%">
+        <row>
+            <i-col span="2">
+                <label>背景图片：</label>
+            </i-col>
+            <i-Col span="2" v-show="modal.data.BackgroundImg!=''">
+                <a :href="modal.data.BackgroundImg" target="_blank"><img :src="modal.data.BackgroundImg" style='width:50px;height:50px'></a>
+            </i-Col>
+            <i-Col span="4">
+                <Upload action="/RebateConfig/UploadImage?type=image" :format="['jpg','jpeg','png']" :on-format-error="handleFormatError" :max-size="10000" :on-exceeded-size="handleMaxSize" :on-success="handleSuccess" :show-upload-list="false">
+                    <i-button type="ghost" icon="ios-cloud-upload-outline">Upload files</i-button>
+                </Upload>
+            </i-Col>
+            <i-Col span="2" v-show="modal.data.BackgroundImg!=''">
+                <i-button type="warning" icon="refresh" v-on:click="modal.data.BackgroundImg=''">清除</i-button>
+            </i-Col>
+        </row>
+        <row style="margin-top:20px">
+            <i-col span="2">
+                <label>编辑器：</label>
+            </i-col>
+            <i-col span="16">
+                <a href="http://www.135editor.com/" target="_blank">135编辑器地址</a>
+            </i-col>
+        </row>
+        <row style="margin-top:20px">
+            <i-col span="2">
+                <label>规则描述：</label>
+            </i-col>
+            <i-col span="16">
+                <i-input type="textarea" :rows="4" v-model="modal.data.ActivityRules" placeholder="活动规则描述"></i-input>
+            </i-col>
+        </row>
+        <row style="margin-top:20px">
+            <i-col span="2">
+                <label>返现成功消息：</label>
+            </i-col>
+            <i-col span="16">
+                <i-input v-model="modal.data.RebateSuccessMsg" style="width:70%"></i-input>
+            </i-col>
+        </row>
+        <row style="margin-top:20px">
+            <i-col span="2">
+                <label>红包零钱备注：</label>
+            </i-col>
+            <i-col span="16">
+                <i-input v-model="modal.data.RedBagRemark" style="width:70%"></i-input>
+            </i-col>
+        </row>
+        <row style="margin-top:10px">
+            <i-col span="2">
+                <label>微信号：</label>
+            </i-col>
+            <i-col span="16">
+                <table style="width:100%">
+                    <tr>
+                        <td colspan="3" align="center">
+                            <Upload action="/RebateConfig/UploadImage?type=groupImg" :format="['jpg','jpeg','png']" :on-format-error="handleFormatError" :max-size="10000" :on-exceeded-size="handleMaxSize" :on-success="handleSuccess" :show-upload-list="false">
+                                <i-button type="ghost" icon="ios-cloud-upload-outline">Upload files</i-button>
+                            </Upload>
+                        </td>
+                    </tr>
+                    <tr v-for="(item,index) in modal.data.ImgList">
+                        <td align="center">
+                            <a :href="item.ImgUrl" target="_blank"><img :src="item.ImgUrl" style='width:50px;height:50px'></a>
+                        </td>
+                        <td align="center">
+                            <i-input type="text" v-model="item.Remarks" placeholder="备注"></i-input>
+                        </td>
+                        <td align="center">
+                            <i-button type="warning" icon="refresh" v-on:click="DelMorePicture(index)">删除</i-button>
+                        </td>
+                    </tr>
+                </table>
+            </i-col>
+        </row>
+
+    </Modal>
+</div>
+<script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+<script type="text/javascript" src="~/Content/My97DatePicker/WdatePicker.js"></script>
+<script src="/Scripts/artDialog6.0.4/dist/dialog-min.js"></script>
+<script src="/Scripts/artDialog6.0.4/dist/dialog-plus-min.js"></script>
+<script src="~/Scripts/vue.common.js"></script>
+<script src="~/Scripts/iview/iview.min.js"></script>
+<script>
+    var vue = new Vue({
+        el: "#div",
+        data() {
+            return {
+                table: {
+                    loading: true,
+                    data: [],
+                    width: '1700px',
+                    columns: [
+                        {
+                            title: "#",
+                            width: "100px",
+                            align: "center",
+                            key: "PKID"
+                        },
+                        {
+                            title: "背景图片",
+                            width: "100px",
+                            key: "BackgroundImg",
+                            render: (h, params) => {
+                                return h("a", {
+                                    attrs: {
+                                        href: params.row.BackgroundImg,
+                                        target: "_blank"
+                                    }
+                                }, [h("img", {
+                                    attrs: {
+                                        src: params.row.BackgroundImg,
+                                        width: 50,
+                                        height: 50
+                                    }
+                                })])
+                            }
+                        },
+                        {
+                            title: "活动规则",
+                            width: "400px",
+                            key: "ActivityRules"
+                        },
+                        {
+                            title: "返现成功消息",
+                            width: "100px",
+                            key: "RebateSuccessMsg"
+                        },
+                        {
+                            title: "红包零钱备注",
+                            width: "100px",
+                            key: "RedBagRemark"
+                        },
+                        {
+                            title: "返现专员",
+                            width: "300px",
+                            render: (h, params) => {
+                                var dataArray = [];
+                                if (params.row.ImgList.length > 0) {
+                                    for (var i = 0; i < params.row.ImgList.length;i++) {
+                                        dataArray[i] = h("tr", [
+                                            h(
+                                                "td",
+                                                {
+                                                    style: {
+                                                        width: "400px"
+                                                    }
+                                                },
+                                                [h("a", {
+                                                    attrs: {
+                                                        href: params.row.ImgList[i].ImgUrl,
+                                                        target: "_blank"
+                                                    }
+                                                }, [h("img", {
+                                                    attrs: {
+                                                        src: params.row.ImgList[i].ImgUrl,
+                                                        width: 50,
+                                                        height: 50
+                                                    }
+                                                })])]
+                                            ),
+                                            h(
+                                                "td",
+                                                {
+                                                    style: {
+                                                        width: "400px"
+                                                    }
+                                                },
+                                                params.row.ImgList[i].Remarks
+                                            )
+                                        ]);
+                                    }
+                                }
+                                return h("table", [dataArray]);
+                            }
+                        },
+                        {
+                            title: "创建人",
+                            width: "200px",
+                            key: "CreateUser"
+                        },
+                        {
+                            title: "创建时间",
+                            width: "200px",
+                            key: "CreateTime",
+                            render: (h, params) => {
+                                return h(
+                                    "span",
+                                    this.formatDate(params.row.CreateTime)
+                                );
+                            }
+                        },
+                        {
+                            title: "更新时间",
+                            width: "200px",
+                            key: "UpdateTime",
+                            render: (h, params) => {
+                                return h(
+                                    "span",
+                                    this.formatDate(params.row.UpdateTime)
+                                );
+                            }
+                        }
+                    ],
+                },
+                page: {
+                    total: 10,
+                    current: 1,
+                    pageSize: 10,
+                    sizes: [5, 10, 20, 50]
+                },
+                modal: {
+                    visible: false,
+                    loading: true,
+                    data: {
+                        BackgroundImg: "",
+                        ActivityRules: "",
+                        ImgList: []
+                    }
+                }
+            }
+        },
+        created: function () {
+            var self = this;
+            self.init(1);
+        },
+        methods: {
+            init(pageIndex) {
+                var self = this;
+                self.page.current = pageIndex;
+                self.table.loading = true;
+                self.table.data = [];
+                $.get("SelectRebatePageConfig", {
+                    pageIndex: self.page.current,
+                    pageSize: self.page.pageSize
+                }, function (result) {
+                    self.table.loading = false;
+                    self.table.data = result;
+                    self.page.total = result.length > 0 ? result[0].Total : 0;
+                });
+            },
+            ok() {
+                var self = this;
+                self.modal.loading = true;
+                if (!self.modal.data.BackgroundImg) {
+                    self.$Message.warning("请上传背景图片");
+                } else if (!self.modal.data.ActivityRules) {
+                    self.$Message.warning("请输入活动规则");
+                } else if (!self.modal.data.RebateSuccessMsg) {
+                    self.$Message.warning("请输入返现成功消息");
+                } else if (!self.modal.data.RedBagRemark) {
+                    self.$Message.warning("请输入红包零钱备注");
+                } else if (self.modal.data.ImgList.length <= 0) {
+                    self.$Message.warning("请上传专员微信号图片");
+                } else {
+                    var isError = false;
+                    for (var i = 0; i < self.modal.data.ImgList.length; i++) {
+                        if (self.modal.data.ImgList[i].Remarks == "") {
+                            isError = true;
+                        }
+                    }
+                    if (isError) {
+                        self.$Message.warning("请完善专员微信号图片信息");
+                    } else {
+                        $.post("InsertRebateApplyPageConfig", { data: self.modal.data }, function (result) {
+                            if (result) {
+                                self.$Message.success("操作成功");
+                                self.modal.visible = false;
+                                self.init(self.page.current);
+                            } else {
+                                self.$Message.error("操作失败");
+                            }
+                        })
+                    }
+                }
+                self.$nextTick(() => {
+                    self.modal.loading = true;
+                });
+                self.modal.loading = false;
+            },
+            AddRebatePageConfig() {
+                var self = this;
+                self.modal.visible = true;
+                self.modal.data.BackgroundImg = "";
+                self.modal.data.ActivityRules = "";
+                self.modal.data.ImgList = [];
+            },
+            handlePageChange(pageIndex) {
+                var self = this;
+                self.init(pageIndex);
+            },
+            handlePageSizeChange(pageSize) {
+                var self = this;
+                self.page.pageSize = pageSize;
+                self.init(self.page.current);
+            },
+            handleFormatError(file) {
+                var self = this;
+                self.$Message.warning("请选择 .jpg  or .png  or .jpeg图片");
+            },
+            handleMaxSize(file) {
+                var self = this;
+                self.$Message.warning("请选择不超过100KB的图片");
+            },
+            handleSuccess(res, file) {
+                var self = this;
+                if (res.Status) {
+                    if (res.Type === "image") {
+                        self.modal.data.BackgroundImg = res.ImageUrl;
+                    } else {
+                        self.modal.data.ImgList.push({ "ImgUrl": res.ImageUrl, "Remarks": "" });
+                    }
+                } else {
+                    self.$Message.warning(res.Msg);
+                }
+            },
+            DelMorePicture(id) {
+                var self = this;
+                self.modal.data.ImgList = self.modal.data.ImgList.filter(function (x, index) {
+                    return index != id;
+                });
+            },
+            formatDate(value) {
+                if (value) {
+                    var time = new Date(
+                        parseInt(value.replace("/Date(", "").replace(")/", ""))
+                    );
+                    var year = time.getFullYear();
+                    var day = time.getDate();
+                    var month = time.getMonth() + 1;
+                    var hours = time.getHours();
+                    var minutes = time.getMinutes();
+                    var seconds = time.getSeconds();
+                    var func = function (value, number) {
+                        var str = value.toString();
+                        while (str.length < number) {
+                            str = "0" + str;
+                        }
+                        return str;
+                    };
+                    if (year === 1) {
+                        return "";
+                    } else {
+                        return (
+                            func(year, 4) +
+                            "-" +
+                            func(month, 2) +
+                            "-" +
+                            func(day, 2) +
+                            " " +
+                            func(hours, 2) +
+                            ":" +
+                            func(minutes, 2) +
+                            ":" +
+                            func(seconds, 2)
+                        );
+                    }
+                }
+            }
+        }
+    });
+</script>

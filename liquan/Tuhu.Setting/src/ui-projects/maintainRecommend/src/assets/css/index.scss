@@ -1,0 +1,21 @@
+// @import './btn.scss';
+// @import 'element-ui/lib/theme-chalk/index.css';
+// @import "./mixin.scss";
+
+@import "css/common/_var.scss";
+@import "css/common/_mixin.scss";
+@import "css/common/_iconFont.scss";
+
+@import "css/common/_reset.scss";
+
+@include mrIcon(); // 图标字体
+
+// .text-alert{
+//   &.ths_popup .th_content{
+//     background: transparent;
+//   }
+// }
+// .page-loading {
+//   margin-top: 18%;
+//   position: relative;
+// }

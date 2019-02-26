@@ -1,0 +1,176 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@using Tuhu.Provisioning.Controllers;
+@{
+    Layout = null;
+    ViewBag.Title = "ShowModuleChildList";
+}
+
+@{
+    List<tal_newappsetdata_v2> ListItems = (List<tal_newappsetdata_v2>)ViewBag.ShowModuleChildList;
+
+    if (ListItems != null && ListItems.Count > 0)
+    {
+        <text>
+            <div id="title_div" style="font-size:30px;font-weight:bold;"></div>
+            <input type="hidden" id="areatype_input" value="@(ListItems.FirstOrDefault().areatype)" />
+            <table>
+                <tbody>
+                    <tr style="background-color: #5c87b2; color: #ffffff;">
+                        <td width="6%">Id</td>
+                        <td width="6%">渠道</td>
+                        <td width="6%" style="display:none;">区域</td>
+                        <td width="6%">名称</td>
+                        <td width="6%">大标题</td>                    
+                        <td width="6%">版本</td>
+                        <td width="6%">开始版本</td>
+                        <td width="6%">结束版本</td>
+                        <td width="6%">是否启用</td>
+                        <td width="6%">启用城市</td>
+                        <td width="6%">启用产品</td>                     
+                        <td width="6%">显示顺序</td>
+                        <td width="6%">模块属性</td>
+                        <td width="10%" align="center">管理</td>
+                    </tr>
+                </tbody>
+                <tbody id="DataList">
+        </text>
+        foreach (var item in ListItems)
+        {
+            <tr>
+                <td width="6%" >@item.id</td>
+                <td width="6%" id="@(item.apptype)">@(HomePageConfigController.GetAppTypeListItemToCN(item.apptype))</td>
+                <td width="6%" style="display:none;">@item.areatype</td>
+                <td width="6%">@item.modelname</td>
+                <td width="6%">@item.bigtitle</td>               
+                <td width="6%">@item.version</td>
+                <td width="6%">@item.StartVersion</td>
+                <td width="6%">@item.EndVersion</td>
+                <td width="6%">@(item.showstatic == 1 ? "启用" : "禁用")</td>
+                <td width="6%">@(item.isothercity == true ? "启用" : "禁用")</td>
+                <td width="6%">@(item.isproduct == true ? "启用" : "禁用")</td>              
+                <td width="6%">@item.showorder</td>
+                @if (item.IsReadChild == 2)
+                {
+                    @*<td width="6%">@item.IsReadChild</td>*@
+                    <td width="6%">倒计时</td>
+                }
+                else if (item.IsReadChild == 1)
+                {
+                    <td width="6%">子模块</td>
+                }
+                else if (item.IsReadChild == 3)
+                {
+                    <td width="6%">无</td>
+                }
+                else
+                {
+                    <td width="6%"></td>
+                }
+
+                <td width="15%" align="center">
+                    <input type="button" value="编辑" style="padding:0;margin:3px 0;" onclick="HomePageConfigs.BigModuleChild.AddOrEdit('@item.modelname', @item.parentid, @item.id,0);">
+                    &nbsp;
+                    <input class="adddModule" type="button" value="添加小模块" style="padding:0;margin:3px 0;" onclick="HomePageConfigs.BigModuleChild.AddOrEdit('@item.modelname', @item.id, 0, 3);">
+                    &nbsp;
+                    <input class="showModule" type="button" value="查看小模块" style="padding:0;margin:3px 0;" onclick="HomePageConfigs.ShowModuleChildList(@item.id);">
+
+                    @if (item.isothercity == true)
+                    {
+                        <text>
+                        <br />
+                        <input class="addCity" type="button" value="添加城市" style="padding:0;margin:3px 0;" onclick="HomePageConfigs.BigModuleChild.AddOrEdit('@item.modelname', @item.id, 0,4);">
+                        &nbsp;
+                        <input class="showCity" type="button" value="查看城市" style="padding:0;margin:3px 0;" onclick="HomePageConfigs.ShowModuleChildList(@item.id)">
+                        </text>
+                    }
+                    @if (item.isproduct == true)
+                    {
+                        <text>
+                        <br />
+                        <input class="addProduct" type="button" value="添加产品" style="padding:0;margin:3px 0;" onclick="HomePageConfigs.ProductList.Add(@item.id)">
+                        &nbsp;
+                        <input class="showProduct" type="button" value="查看产品" style="padding:0;margin:3px 0;" onclick="HomePageConfigs.ProductList.Show(@item.id)">
+                        </text>
+                    }
+                </td>
+            </tr>
+        }
+        @:</tbody></table>
+    }
+    else
+    {
+        <table>
+            <tbody>
+                <tr style="background-color: #5c87b2; color: #ffffff;">
+                    <td width="6%">渠道</td>
+                    <td width="6%">区域</td>
+                    <td width="6%">大标题</td>
+                    <td width="6%">小标题</td>
+                    <td width="3%">版本</td>
+                    <td width="6%">是否启用</td>
+                    <td width="6%">启用城市</td>
+                    <td width="6%">启用产品</td>
+                    <td width="6%">显示样式</td>
+                    <td width="6%">显示顺序</td>
+                    <td width="15%" align="center">管理</td>
+                </tr>
+            </tbody>
+            <tbody id="DataList">
+                <tr>
+                    <td colspan="11" align="center"><b>无模块</b></td>
+                </tr>
+            </tbody>
+        </table>
+    }
+}
+
+<script type="text/javascript">
+    var _areatype = parseInt($("#areatype_input").val() || 0);
+    var ShowModuleChildListConfig = {
+        SetTitle: function ()
+        {
+            var _name;
+            switch (_areatype) {
+                case 1:
+                    _name = "大区";
+                    break;
+                case 2:
+                    _name = "楼层";
+                    break;
+                case 3:
+                    _name = "小模块";
+                    break;
+                case 4:
+                    _name = "城市";
+                    break;
+                default:
+            }
+            $("#title_div").html(_name);
+        },
+        TiggerButton: function ()
+        {
+            switch (_areatype) {
+                case 2:
+                    $(".addCity").hide();
+                    $(".showCity").hide();
+                    $(".addProduct").hide();
+                    $(".showProduct").hide();
+                    break;
+                case 3:
+                    $(".adddModule").hide();
+                    $(".showModule").hide();
+                    break;
+                default:
+                    $(".adddModule").hide();
+                    $(".showModule").hide();
+                    $(".addCity").hide();
+                    $(".showCity").hide();
+                    $(".addProduct").hide();
+                    $(".showProduct").hide();
+                    break;
+            }
+        }
+    }
+    ShowModuleChildListConfig.SetTitle();
+    ShowModuleChildListConfig.TiggerButton();
+</script>

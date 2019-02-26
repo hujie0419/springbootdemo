@@ -1,0 +1,262 @@
+﻿@{
+    ViewBag.Title = "配置工具";
+    Layout = null;
+}
+@using ThBiz.Common.Configurations
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.Router.RouterLink>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title </title>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700" rel="stylesheet" type="text/css">
+    <!-- Add local styles, mostly for plugins css file -->
+    <!-- Add jQuery Style direct - used for jQGrid plugin -->
+    <link href="@Url.Content("~/Scripts/plugins/jquery-ui/jquery-ui.css")" rel="stylesheet" type="text/css"/>
+    <link href="~/Scripts/multiple/multiple-select.css" rel="stylesheet" type="text/css"/>
+    <!-- Primary Inspinia style -->
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/font-awesome/css")
+    <style type="text/css">
+        .module {
+            cursor: pointer;
+            float: left;
+            margin-left: 5px;
+            margin-right: 5px;
+            text-align: center;
+            width: 100px;
+        }
+    </style>
+</head>
+<body class="fixed-sidebar">
+<div id="wrapper" class="">
+    <nav class="navbar-default navbar-static-side" role="navigation" style="overflow-y: auto">
+        <div class="sidebar-list">
+            <ul class="nav" id="side-menu">
+                <li class="nav-header" style="padding-left: 50px">
+                    <div class="dropdown profile-element">
+                        <span>
+                            <img alt="image" class="img-circle" src="https://resource.tuhu.cn/Image/UserCenter/hu.png" width="48" height="48"/>
+                        </span>
+                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                            <span class="clear">
+                                <span class="block m-t-xs">
+                                </span> <span class="text-muted text-xs block">@(string.IsNullOrWhiteSpace(User.Identity.Name) ? "管理员" : User.Identity.Name)</span>
+                            </span>
+                        </a>
+
+                    </div>
+                    <div class="logo-element">
+                        IN+
+                    </div>
+                </li>
+                <li role="presentation" class="active">
+                    <a href="/RouterConfig/Index?linkKind=0">配置工具</a>
+                </li>
+                <li role="presentation" class="active">
+                    <a href="/RouterConfig/Index?linkKind=1">App</a>
+                </li>
+                <li role="presentation" class="active">
+                    <a href="/RouterConfig/Index?linkKind=2">小程序</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page wraper -->
+    <div id="page-wrapper" class="gray-bg" style="min-height: 949px;">
+        <!-- Top Navbar -->
+        <div class="row border-bottom">
+            <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
+                <div class="navbar-header">
+                    <a class="navbar-minimalize minimalize-styl-2 btn btn-primary " href="#">
+                        <i class="fa fa-bars"></i>
+                    </a>
+                    <form role="search" class="navbar-form-custom" method="post" action="">
+                        <div class="form-group">
+                        </div>
+                    </form>
+                </div>
+                <ul class="nav navbar-top-links navbar-right">
+                    @if (Request.IsAuthenticated)
+                    {
+                        <li>
+                            <span class="m-r-sm text-muted welcome-message" data-i18n="topnav.welcometext">您好 @Context.User.Identity.Name， 欢迎进入首页配置管理系统，祝您生活愉快！</span>
+                        </li>
+                        <li>
+                            <a href="@YewuDomainConfig.YewuSite/Account/LogOff">
+                                <i class="fa fa-sign-out"></i> 退出
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            <a href="@YewuDomainConfig.YewuSite/Account/LogOn">
+                                <i class="fa fa-sign-out"></i> 登录
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+
+
+        <!-- Main view -->
+        <div class="container-fluid">
+
+            <div class="ibox ibox-content">
+                @if (Model != null)
+                {
+                    foreach (var item in Model)
+                    {
+                        <div class="modal-header">
+                            <h2>
+                                @item.MainLink.Discription
+                            </h2>
+                            <div class="row" style="text-align: right;">
+                                <a href="javascript:void(0)" class="btn btn-info btn-sm " id="btnAdd" data-mid="@item.MainLink.PKID" data-toggle="modal" data-target="#edit">新 增</a>
+                                <a class="btn btn-info btn-sm" href="javascript:void(0)" name="btnLog" data-toggle="modal" data-target="#edit">日志</a>
+                            </div>
+                        </div>
+                        break;
+                    }
+                }
+                <table class="table table-bordered" style="text-align: center;">
+                    <thead>
+                    <tr>
+                        <th style="text-align: center;">ID</th>
+                        <th style="text-align: center;">类型</th>
+                        <th style="text-align: center;">主链接名称</th>
+                        <th style="text-align: center;">主链接内容</th>
+                        <th style="text-align: center;">参数名称</th>
+                        <th style="text-align: center;">参数内容</th>
+                        <!--<th style="text-align: center;">完整链接</th>-->
+                        <th style="text-align: center;">更新时间</th>
+                        <th style="text-align: center;">管理</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @if (Model != null&&Model.ElementAt(0).PKID!=0)
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.PKID</td>
+                                <td>@(item.MainLink.LinkKind == 1 ? "APP" : "") @(item.MainLink.LinkKind == 2 ? "小程序" : "")</td>
+                                <td>@item.MainLink.Discription</td>
+                                <td>@item.MainLink.Content</td>
+                                <td>@item.Parameter.Discription</td>
+                                <td>@item.Parameter.Content</td>
+                                <!--<td>@item.MainLink.Content@item.Parameter.Content</td>-->
+                                <td>@item.UpdateDateTime</td>
+                                <td>
+                                    <a class="btn btn-default btn-sm" href="javascript:void(0)" data-id="@item.PKID" name="btnEdit" data-toggle="modal" data-target="#edit">编 辑</a>
+                                    <a class="btn btn-danger btn-sm" href="javascript:void(0)" name="btnDel" data-id="@item.PKID">删 除</a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    </tbody>
+                </table>
+            </div>
+            <div id="edit" class="modal fade" aria-hidden="true" role="dialog" tabindex="-1">
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="pull-right">
+            </div>
+            <div>
+                <strong>Copyright</strong> 途虎养车 &copy; @DateTime.Now.Year
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- End wrapper-->
+<!-- Section for main scripts render -->
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/bootstrap")
+@Scripts.Render("~/plugins/slimScroll")
+@Scripts.Render("~/bundles/inspinia")
+@*<script src="~/Scripts/jquery-ui.1.10.4.min.js" type="text/javascript"></script>*@
+<script src="~/Scripts/jquery-ui.1.12.1.min.js" type="text/javascript"></script>
+<script src="/Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<script type="text/javascript" src="/Scripts/jquery.validate-1.8.1.min.js"></script>
+<script type="text/javascript" src="~/Scripts/My97DatePicker/WdatePicker.js"></script>
+<script src="~/Scripts/multiple/multiple-select.js" type="text/javascript"></script>
+<!-- Skin config script - only for demo purpose-->
+@*@Scripts.Render("~/bundles/skinConfig")*@
+
+<!-- Handler for local scripts -->
+</body>
+</html>
+<div id="toobal" class="modal fade" aria-hidden="true" role="dialog" tabindex="-1">
+
+</div>
+
+<script type="text/javascript">
+    $(function() {
+        $('#btnAdd').on('click',
+            function () {
+                var mId = $(this).data("mid");
+                var url = "/RouterConfig/EditLink?id=0&mId="+mId;
+                var dialog = $('#edit');
+                dialog.empty();
+                dialog.html(dialog.load(url));
+            });
+
+        $('a[name="btnEdit"]').on('click',
+            function() {
+                var id = $(this).data("id");
+                if (id) {
+                    var url = "/RouterConfig/EditLink?id="+id+"&mId=0";
+                    var dialog = $('#edit');
+                    dialog.empty();
+                    dialog.html(dialog.load(url));
+                }
+            });
+
+        $('a[name="btnDel"]').on('click',
+            function() {
+                var id = $(this).data("id");
+                if (confirm("您确定删除吗？") && id) {
+                    $.ajax({
+                        url: '/RouterConfig/DeleteLink',
+                        type: 'post',
+                        data: { id: id },
+                        dataType: 'json'
+                    }).done(function(result) {
+                        if (result === 1) {
+                            alert("删除成功");
+                            location.reload();
+                        } else {
+                            alert("删除失败");
+                        }
+                    });
+                }
+            });
+        
+        $('a[name="btnLog"]').on('click',
+            function() {
+
+                var url = "/RouterConfig/Logger";
+                location.href = url;
+
+            });
+
+
+    });
+
+
+   
+
+
+</script>

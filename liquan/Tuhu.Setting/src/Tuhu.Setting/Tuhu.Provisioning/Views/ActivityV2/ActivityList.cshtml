@@ -1,0 +1,558 @@
+﻿@{
+    ViewBag.Title = "活动列表";
+}
+@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.ActivityBuild>
+@section head{
+
+    <link href="~/Scripts/jQuery-EasyUI/themes/default/easyui.css" type="text/css" rel="stylesheet" />
+    <link href="~/Scripts/jQuery-EasyUI/themes/icon.css" type="text/css" rel="stylesheet" />
+    <style type="text/css">
+        input[type=file] {
+            width:65px;
+        }
+    </style>
+
+}
+@section scripts{
+   <script type="text/javascript" src="~/Scripts/My97DatePicker/WdatePicker.js"></script>
+}
+
+    <script type="text/javascript" src="~/Scripts/jQuery-EasyUI/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jQuery-EasyUI/locale/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="~/Scripts/layer/layer.js"></script>
+
+    <table id="dg" class="easyui-datagrid" title="活动信息列表" style="width:100%;height:800px"
+           data-options="singleSelect:true,rownumbers:true,idField:'id',pagination:true">
+        <thead>
+            <tr>
+                <th rowspan="2" data-options="field:'id',resizable:false" width="5%">ID</th>
+                <th rowspan="2" data-options="field:'ActivityConfigType',align:'left',resizable:false,formatter:function(cellValue){  if(cellValue == 0) return '综合'; if(cellValue == 1) return '车品';if(cellValue == 2) return '保养'; if(cellValue == 3) return '轮胎'; if(cellValue == 4) return '美容改装'; if(cellValue == 5) return '外部投放活动';    }" width="10%">活动类型</th>
+                <th rowspan="2" data-options="field:'Title',resizable:false" width="15%">标题</th>
+                <th colspan="2">动态页面</th>
+                <th rowspan="2" data-options="field:'EndDate',resizable:false" width="10%">结束时间</th>
+                <th rowspan="2" data-options="field:'CreatetorUser',align:'left',resizable:false" width="10%">创建人</th>
+                <th rowspan="2" data-options="field:'UpdateUser',align:'left',resizable:false" width="10%">更新人</th>
+                <th rowspan="2" data-options="field:'CreateTime',align:'left',resizable:false" width="5%">创建时间</th>
+            </tr>
+            <tr>
+                <th data-options="field:'MUrl',align:'left',resizable:true" width="20%">移动站Url</th>
+                <th data-options="field:'PCUrl',align:'left',resizable:true" width="20%">网站Url/th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+        {
+            foreach (var item in Model)
+            {
+                    <tr>
+                        <td>@item.id</td>
+                        <td>@item.ActivityConfigType</td>
+                        <td>@(item != null?item.Title:"")</td>
+                        <td>
+                            @if (item.ActivityType == 0)
+                            {
+                                <a href="@(System.Configuration.ConfigurationManager.AppSettings["WeiXinDomain"].ToString())/staticpage/activity/list.html?id=@item.id" target="_blank"> @(System.Configuration.ConfigurationManager.AppSettings["WeiXinDomain"].ToString())/staticpage/activity/list.html?id=@item.id </a>
+                            }
+                            else if (item.ActivityType == 3)
+                            {
+                                <a href="@(System.Configuration.ConfigurationManager.AppSettings["WeiXinDomain"].ToString())/Activity/tiresList?id=@item.id" target="_blank">@(System.Configuration.ConfigurationManager.AppSettings["WeiXinDomain"].ToString())/Activity/tiresList?id=@item.id</a>
+
+                                <br/>
+                                <span>H5轮胎列表页</span>
+                            }
+                            else 
+                            {
+                                <a href="@(System.Configuration.ConfigurationManager.AppSettings["WeiXinDomain"].ToString())/Tires/ResultLg?actid=@item.id" target="_blank">@(System.Configuration.ConfigurationManager.AppSettings["WeiXinDomain"].ToString())/Tires/ResultLg?actid=@item.id</a>
+                                <br/>
+                                <span>H5轮毂列表页</span>
+                            }
+
+
+
+                        </td>
+                        <td>
+                            @if (item.ActivityType == 0)
+                            {
+                                <a href="@(System.Configuration.ConfigurationManager.AppSettings["ItemDomain"].ToString())/Activity/act/@(item.id).html" target="_blank">@(System.Configuration.ConfigurationManager.AppSettings["ItemDomain"].ToString())/Activity/act/@(item.id).html</a>
+                            }
+                            else if (item.ActivityType == 3)
+                            {
+                                <a href="@(System.Configuration.ConfigurationManager.AppSettings["WeiXinDomain"].ToString())/Tires?act=tire&type=autoselect&activityid=@item.id">@(System.Configuration.ConfigurationManager.AppSettings["WeiXinDomain"].ToString())/Tires?act=tire&type=autoselect&activityid=@item.id</a>
+                                <br/>
+                                <span>微信轮胎列表页</span>
+                            }
+                            else 
+                            {
+                                <a href="@(System.Configuration.ConfigurationManager.AppSettings["WeiXinDomain"].ToString())/Tires/ResultLg?actid=@item.id">@(System.Configuration.ConfigurationManager.AppSettings["WeiXinDomain"].ToString())/Tires/ResultLg?actid=@item.id</a>
+                                <br />
+                                <span>微信轮毂列表页</span>
+                            }
+                        </td>
+                        <td>
+                            @(item.EndDate != null ? Convert.ToDateTime(item.EndDate.ToString()).ToString("yyyy-MM-dd HH:mm:ss") : "")
+                        </td>
+                        <td>
+                            @item.CreatetorUser
+                        </td>
+                        <td>
+                            @item.UpdateUser
+                        </td>
+                        <td>
+                            @(item.CreateTime != null? Convert.ToDateTime(item.CreateTime.ToString()).ToString("yyyy-MM-dd HH:mm:ss"):"")
+                        </td>
+
+                    </tr>
+            }
+
+        }
+        </tbody>
+    </table>
+    <div id="edit"></div>
+<div id="LookOplog"></div>
+<div id="dgToolbar">
+    &nbsp;
+    <span>ID:</span>
+    <span>
+        <input type="text" id="SelActivityID" name="SelActivityID" style="width:120px; " />
+    </span>
+    &nbsp;&nbsp;
+    <span>活动名称:</span>
+    <input type="text" id="SelActivityName" name="SelActivityName" style="width:200px" />
+
+    <span>活动状态:</span>
+    <span>
+        <select id="selEndDate" name="selEndDate">
+            <option value="-1">请选择</option>
+            <option value="1">进行中</option>
+            <option value="2">已结束</option>
+        </select>
+    </span>
+
+    <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search',plain:true,onClick:function(){ SelectTable()}">查 询</a>
+    <br/>
+    <br/>
+    @*<a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true,onClick:function(){ copyAdd(); $('#edit').dialog('center');}">复制新增</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true,onClick:function(){dgAdd(); $('#edit').dialog('center')}"> 添 加</a>*@
+    <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true,onClick:function(){dgEdit();$('#edit').dialog('center')}">编 辑</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true,onClick:function(){LookOplog();$('#LookOplog').dialog('center')}" >查看日志</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-reload',plain:true,onClick:function(){ReloadCache()}">刷新缓存</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" style="position:absolute; right:0;margin-right:20px" data-options="iconCls:'icon-cancel',plain:true,onClick:function(){dgDel();}">删 除</a>
+</div>
+<input type="hidden" id="hidObjectType" value="ACFV2"/>
+    <script type="text/javascript">
+        function ReloadCache() {
+            var row = $('#dg').datagrid('getSelected');
+            if (row) {
+                $.ajax({
+                    type: 'post',
+                    url: '/ActivityV2/ActivityRefresh',
+                    data: { id: row.id },
+                    success: function (result) {
+                        if (result.status) {
+                            //alert(result.msg);
+                            window.open("@(System.Configuration.ConfigurationManager.AppSettings["WeiXinDomain"].ToString())/Activity/ReloadEntity?id=" + row.id, "_bank");
+                        } else {
+                            alert(result.msg);
+                        }
+                    }
+                });
+
+            }else{
+                $.messager.alert("系统提示","请选择要刷新的活动")
+            }
+        }
+
+
+        function GetQueryString(name) {
+            ///<summary>获取页面参数</summary>
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]); return null;
+        }
+
+        function SaveValidate(){
+            var id=$('#id').val();
+            var EndDate =$('#EndDate').val();
+            if(!EndDate){
+                alert("请输入结束时间");
+                return false;
+            }
+            var StartDT =$('#StartDT').val();
+            if(!StartDT){
+                alert("请输入开始时间");
+                return false;
+            }
+
+            var PersonWheel =$('#PersonWheel').val();
+            if(!PersonWheel){
+                alert("请输入负责人");
+                return false;
+            }else{
+                var reg =/[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@@tuhu.cn/g;
+                if(!reg.test(PersonWheel)) {
+                    alert("请输入正确的负责人,邮箱格式*****@@tuhu.cn");
+                    return false;
+                }
+
+            }
+            if(location.hostname.indexOf(".cn")>0){
+                if(id<1500){
+                    alert("请使用最新配置重新配置活动，最新模板不支持旧活动配置信息");
+                    //return false;
+                    return true;
+                }else{
+                    return true;
+                }
+            }else{
+                return true;
+            }
+        }
+
+        function copyAdd(){
+            var row = $('#dg').datagrid('getSelected');
+            if(row){
+                $('#edit').dialog({
+                    title:'编辑活动信息',
+                    width:1500,
+                    height:700,
+                    top:100,
+                    resizable:true,
+                    left:100,
+                    modal:true,
+                    href:'/ActivityV2/ActivityEdit?id='+row.id+'&copy=1',
+                    buttons:[{
+                        text:'保存',
+                        iconCls:'icon-ok',
+                        handler:function(){
+                            if(!SaveValidate()){
+                                return false;
+                            }
+
+                            var rows =$('#cp').datagrid('getData');
+
+                            if(rows){
+                                var index =layer.load(2,{ shade:0.3 });
+                                $.ajax({
+                                    type:'post',
+                                    url:'/ActivityV2/ActivityEdit',
+                                    dataType:'json',
+                                    data:{
+                                        'id':$('#id').val(),
+                                        'Title':$('#Title').val()||'',
+                                        'BgImageUrl':$('#hidBgImageUrl').val()||'',
+                                        'SBgImageUrl':$('#hidSBgImageUrl').val()||'',
+                                        'BgColor':$('#BgColor').val()||'',
+                                        'Content':JSON.stringify(rows),
+                                        'TireBrand':$('#TireBrand').val(),
+                                        'ActivityType':$('#isTire').val(),
+                                        'EndDate':$('#EndDate').val()||'',
+                                        'DataParames':$('#DataParames').val(),
+                                        'BigActivityHome': $('#hidBigActivity').val()||'' ,//JSON.stringify($('body').data('BAH'))||'',
+                                        'ActivityHome':$('#hidActivityHome').val(),
+                                        'MenuType':$('#rbMenuType').val(),
+                                        'ActivityMenu':$('body').data("ActivityMenu")||'',
+                                        'SelKeyName':$('#txtSelKey').val(),
+                                        'SelKeyImage':$('#hidSelKeyPic').val(),
+                                        'IsShowDate':$('#rbDateTime').val(),
+                                        'ActivityConfigType':$("#ActivityConfigType").val()
+                                    },
+                                    success:function(result){
+                                        if(result){
+                                            $('#edit').dialog('close');
+                                            layer.close(index);
+                                            window.location.reload(true);
+                                        }else{
+                                            alert('添加失败');
+                                        }
+                                    }
+                                });
+                            }
+
+                        }
+                    },{
+                        text:'取消',
+                        iconCls:'icon-cancel',
+                        handler:function(){
+                            $('#edit').dialog('close');
+                        }
+                    }],
+                    onResize:function(width, height){
+                        $('#cp').datagrid({
+                            width:width,
+                            height:height
+                        });
+                    }
+                });
+            }
+        }
+
+        function dgAdd(){
+
+
+
+            $('#edit').dialog({
+                title:'新增活动信息',
+                width:1600,
+                height:700,
+                resizable:true,
+                modal:true,
+                top:100,
+                left:100,
+                href:'/ActivityV2/ActivityEdit',
+                buttons:[{
+                    text:'保存',
+                    iconCls:'icon-ok',
+                    handler:function(){
+                        if(!SaveValidate()){
+                            return false;
+                        }
+                        var rows =$('#cp').datagrid('getData');
+
+                        if(rows){
+                            var index =layer.load(2,{ shade:0.3 });
+                            $.ajax({
+                                type:'post',
+                                url:'/ActivityV2/ActivityEdit',
+                                dataType:'json',
+                                data:{
+                                    'id':$('#id').val(),
+                                    'Title':$('#Title').val()||'',
+                                    'BgImageUrl':$('#hidBgImageUrl').val()||'',
+                                    'SBgImageUrl':$('#hidSBgImageUrl').val()||'',
+                                    'BgColor':$("#BgColor").val()||'',
+                                    'Content':JSON.stringify(rows),
+                                    'TireBrand':$('#TireBrand').val(),
+                                    'ActivityType':$('#isTire').val(),
+                                    'EndDate':$('#EndDate').val()||'',
+                                    'DataParames':$('#DataParames').val(),
+                                    'BigActivityHome': JSON.stringify( $('body').data('BAH'))||'',
+                                    'ActivityHome':$('#hidActivityHome').val(),
+                                    'MenuType':$('#rbMenuType').val(),
+                                    'ActivityMenu':$('body').data("ActivityMenu")||'',
+                                    'SelKeyName':$('#txtSelKey').val(),
+                                    'SelKeyImage':$('#hidSelKeyPic').val(),
+                                    'IsShowDate':$('#rbDateTime').val(),
+                                    'IsTireSize':$('#rbIsTireSize').val(),
+                                    'TireSizeConfig':$('#hidTireSizeConfig').val(),
+                                    'ActivityConfigType':$("#ActivityConfigType").val(),
+                                    "PersonWheel":$("#PersonWheel").val(),
+                                    "StartDT":$("#StartDT").val()||''
+                                },
+                                success:function(result){
+                                    if(result){
+                                        $('#edit').dialog('close');
+                                        layer.close(index);
+                                        window.location.reload(true);
+                                    }else{
+                                        alert('添加失败');
+                                    }
+                                }
+                            });
+                        }
+
+                    }
+                },{
+                    text:'取消',
+                    iconCls:'icon-cancel',
+                    handler:function(){
+                        $('#edit').dialog('close');
+                    }
+                }],
+                onResize:function(width, height){
+                    $('#cp').datagrid({
+                        width:width,
+                        height:height
+                    });
+                }
+            });
+        }
+
+        function dgEdit(){
+            var row = $('#dg').datagrid('getSelected');
+            if(row){
+                $('#edit').dialog({
+                    title:'编辑活动信息',
+                    width:1600,
+                    height:700,
+                    top:100,
+                    resizable:true,
+                    left:100,
+                    modal:true,
+                    href:'/ActivityV2/ActivityEdit?id='+row.id,
+                    buttons:[{
+                        text:'保存',
+                        iconCls:'icon-ok',
+                        handler:function(){
+                            if(!SaveValidate()){
+                                return false;
+                            }
+
+                            var rows =$('#cp').datagrid('getData');
+
+                            if(rows){
+                                var index =layer.load(2,{ shade:0.3 });
+                                $.ajax({
+                                    type:'post',
+                                    url:'/ActivityV2/ActivityEdit',
+                                    dataType:'json',
+                                    data:{
+                                        'id':$('#id').val(),
+                                        'Title':$('#Title').val()||'',
+                                        'BgImageUrl':$('#hidBgImageUrl').val()||'',
+                                        'SBgImageUrl':$('#hidSBgImageUrl').val()||'',
+                                        'BgColor':$('#BgColor').val()||'',
+                                        'Content':JSON.stringify(rows),
+                                        'TireBrand':$('#TireBrand').val(),
+                                        'ActivityType':$('#isTire').val(),
+                                        'EndDate':$('#EndDate').val()||'',
+                                        'DataParames':$('#DataParames').val(),
+                                        'BigActivityHome': $('#hidBigActivity').val()||'' ,//JSON.stringify($('body').data('BAH'))||'',
+                                        'ActivityHome':$('#hidActivityHome').val(),
+                                        'MenuType':$('#rbMenuType').val(),
+                                        'ActivityMenu':$('body').data("ActivityMenu")||'',
+                                        'SelKeyName':$('#txtSelKey').val(),
+                                        'SelKeyImage':$('#hidSelKeyPic').val(),
+                                        'IsShowDate':$('#rbDateTime').val(),
+                                        'IsTireSize':$('#rbIsTireSize').val(),
+                                        'TireSizeConfig':$('#hidTireSizeConfig').val(),
+                                        'ActivityConfigType':$("#ActivityConfigType").val(),
+                                        "PersonWheel":$("#PersonWheel").val(),
+                                        "StartDT":$("#StartDT").val()||''
+                                    },
+                                    success:function(result){
+                                        if(result){
+                                            $('#edit').dialog('close');
+                                            layer.close(index);
+                                            window.location.reload(true);
+                                        }else{
+                                            alert('添加失败');
+                                        }
+                                    }
+                                });
+                            }
+
+                        }
+                    },{
+                        text:'取消',
+                        iconCls:'icon-cancel',
+                        handler:function(){
+                            $('#edit').dialog('close');
+                        }
+                    }],
+                    onResize:function(width, height){
+                        $('#cp').datagrid({
+                            width:width,
+                            height:height
+                        });
+                    }
+                });
+            }
+        }
+
+        function dgDel(){
+            $.messager.confirm('提示', '您确定删除吗?', function(r){
+                if (r){
+                    var row = $('#dg').datagrid('getSelected');
+                    $.ajax({
+                        type:'post',
+                        url:'/ActivityV2/DeleteActivity',
+                        data:{id:row.id},
+                        success:function(data){
+                            window.location.reload(true);
+                        }
+                    });
+                }
+            });
+        }
+
+        function LookOplog() {
+            $("#LookOplog").html("").load('/Logger/list?objectType=ACFV2');
+            $("#LookOplog").dialog({
+                title: "查看日志",
+                width: 850,
+                height: 450,
+                modal: true,
+                resizable: false,
+                buttons: {
+                    "取消": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        }
+
+    var array = [];
+
+    $(function () {
+
+        //设置活动信息列表的功能按钮
+        $('#dg').datagrid({
+            toolbar:"#dgToolbar"
+        });
+
+
+        var pager = $('#dg').datagrid().datagrid('getPager');
+
+        pager.pagination({
+            pageNumber:@ViewBag.pageNumber,
+            pageSize:@ViewBag.pageSize,
+            total:@ViewBag.Total,
+            onSelectPage: function (pageNumber, pageSize) {
+               // $("body").html("").load('/ActivityV2/ActivityList?pageIndex=' + (pageNumber || "") + '&pageSize='+pageSize);
+                // location.href='/ActivityV2/ActivityList?pageIndex=' + (pageNumber || "") + '&pageSize='+pageSize+"&status="+$('#selEndDate').val();
+
+                $.ajax({
+                    url: "/ActivityV2/GetActivityList",
+                    type: "post",
+                    data: {
+                        pageIndex: pageNumber,
+                        pageSize: pageSize,
+                        status: $('#selEndDate').val(),
+                        ActivityName: $('#SelActivityName').val() || '',
+                        SelActivityID: $('#SelActivityID').val() || ''
+                    },
+                    success: function (result) {
+                        var result = JSON.parse(result);
+                        $('#dg').datagrid("loadData", result);
+                        //pager.pagination({
+                        //    pageNumber: pageNumber,
+                        //    pageSize: pageSize
+                        //})
+                    }
+                })
+            }
+
+        });
+
+
+
+
+    });
+
+        function SelectTable(){
+            var name =$('#SelActivityName').val()||'';
+            var id =$('#SelActivityID').val()||'';
+            //alert(id);
+            // $("body").html("").load('/ActivityV2/ActivityList?pageIndex=1&pageSize=50&ActivityName='+name+'&SelActivityID='+id);
+           // location.href='/ActivityV2/ActivityList?pageIndex=1&pageSize=50&ActivityName='+name+'&SelActivityID='+id+"&status="+$('#selEndDate').val();
+            $.ajax({
+                url: "/ActivityV2/GetActivityList",
+                type: "post",
+                data: {
+                    pageIndex: 1,
+                    pageSize: 50,
+                    status: $('#selEndDate').val(),
+                    ActivityName: name,
+                    SelActivityID: id
+                },
+                success: function (result) {
+                    var result = JSON.parse(result);
+                    $('#dg').datagrid("loadData", result);
+                    //pager.pagination({
+                    //    pageNumber: pageNumber,
+                    //    pageSize: pageSize
+                    //})
+                }
+            })
+        }
+    </script>

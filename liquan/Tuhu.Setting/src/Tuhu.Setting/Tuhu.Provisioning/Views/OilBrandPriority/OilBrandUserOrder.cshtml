@@ -1,0 +1,155 @@
+﻿@{
+    ViewBag.Title = "机油品牌推荐优先级配置";
+}
+
+<h2 style="padding:10px 0px;">
+    <span> 机油品牌推荐优先级配置</span>
+</h2>
+<link href="~/Content/iview/iview.css" rel="stylesheet" />
+<link href="~/Content/Public/Public.css" rel="stylesheet" type="text/css" />
+<link href="~/Content/BaoYangActivitySetting/Vue.css" rel="stylesheet" type="text/css" />
+
+<style>
+    fieldset {
+        height: auto;
+        margin: 5px 0px 15px 0px;
+        padding: 15px 20px;
+    }
+
+        fieldset > label {
+            display: inline-block;
+            height: 30px;
+            max-width: 100%;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+</style>
+
+<div style="margin-top:15px;">
+    <a target="_blank" href="/OilBrandPriority/OilBrandPhonePriority">1.指定手机号</a>
+    <a target="_blank" href="/OilBrandPriority/OilBrandRegionPriority">2.指定城市</a>
+    <label>2.5 用户机油购买过的品牌推荐</label>
+    <a target="_blank" href="/Baoyang/BaoYangPriorityVehicleSetting?key=oilnew&partName=机油">3.特殊车型配置</a>
+    <a target="_blank" href="/Baoyang/BaoYangRecommendProductsSetIndex">4.品牌优先级排行</a>
+</div>
+
+<div id="div" v-cloak>
+    <fieldset>
+        <label>手机号:</label>
+        <input v-model.number="phoneNumber" placeholder="-请输入手机号-" style="width: 200px" />
+        <button class="btn btn-primary" v-on:click="Search()">查询</button>
+    </fieldset>
+    <table class="tableContainer">
+        <thead>
+            <tr>
+                <th>UserID</th>
+                <th>手机号</th>
+                <th>VID</th>
+                <th>排量</th>
+                <th>年份</th>
+                <th>车型数据</th>
+                <th>机油PID</th>
+                <th>订单号</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="loading">
+                <td colspan="10"><img src="~/Images/loading.gif" /></td>
+            </tr>
+            <tr v-else-if="SearchResult.length > 0" v-for="(item,index) in SearchResult">
+                <td>{{item.UserId}}</td>
+                <td>{{item.PhoneNumber}}</td>
+                <td>{{item.VehicleID}}</td>
+                <td>{{item.PaiLiang}}</td>
+                <td>{{item.Nian}}</td>
+                <td>{{item.Brand}} -> {{item.Vehicle}} -> {{item.PaiLiang}} -> {{item.Nian}}</td>
+                <td>{{item.Pids | PidJoin}}</td>
+                <td>{{item.OrderId}}</td>
+            </tr>
+            <tr v-else>
+                <td colspan="10">根据筛选条件未能查询到相关结果</td>
+            </tr>
+        </tbody>
+    </table>
+    <Page style="margin:10px;" :total="pager.totalCount" :current.sync="pager.pageIndex" :page-size="pager.pageSize"
+          :page-size-opts="[10, 20, 30, 40, 50]" show-total show-sizer v-on:on-page-size-change="ChangePageSize"></Page>
+</div>
+<script src="~/Scripts/vue.min.js"></script>
+<script src="~/Scripts/iview/iview.js"></script>
+
+<script type="text/javascript">
+    function PidJoin(pids) {
+        if (pids && pids.length > 0) {
+            return pids.join(", ");
+        }
+        else {
+            return "";
+        }
+    };
+    Vue.filter('PidJoin', PidJoin);
+    var vue = new Vue({
+        el: "#div",
+        data: {
+            phoneNumber: "",
+            pager: {
+                pageIndex: 1,
+                pageSize: 20,
+                totalCount: 0
+            },
+            loading: false,
+            SearchResult: []
+        },
+        created: function () {
+            var self = this;
+            self.$Notice.config({
+                top: 150,
+                duration: 0
+            });
+        },
+        watch: {
+            "pager.pageIndex": function () {
+                var self = this;
+                self.Search();
+            },
+            "pager.pageSize": function () {
+                var self = this;
+                self.Search();
+            }
+        },
+        methods: {
+            Search: function () {
+                var self = this;
+                var phoneReg = /^1[0-9]{10}$/;
+                if (!(self.phoneNumber && phoneReg.test(self.phoneNumber))) {
+                    self.$Notice.warning({
+                        title: '手机号格式不正确',
+                        desc: "请输入11位手机号!"
+                    });
+                    return;
+                }
+                self.loading = true;
+                $.post("SelectOilBrandUserOrder", { phoneNumber: self.phoneNumber, pageIndex: self.pager.pageIndex, pageSize: self.pager.pageSize }, function (result) {
+                    if (result.Status) {
+                        self.SearchResult = result.Data;
+                        self.pager.totalCount = result.TotalCount;
+                    }
+                    else {
+                        self.$Notice.error({
+                            title: '查询失败',
+                            desc: (result.Msg || "查询失败"),
+                            duration: 4
+                        });
+                        self.SearchResult = [];
+                        self.pager.totalCount = 0;
+                        self.pager.pageIndex = 1;
+                    }
+                    self.loading = false;
+                });
+            },
+            ChangePageSize: function (pageSize) {
+                var self = this;
+                self.pager.pageSize = pageSize;
+            }
+        }
+    })
+</script>

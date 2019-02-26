@@ -1,0 +1,903 @@
+﻿@using MVCControlsToolkit.Controls
+@using MVCControlsToolkit.Controls.Validation
+@using NPOI.SS.Formula.Functions
+@using ThBiz;
+@using ThBiz.Business
+@using ThBiz.Business.Baishi
+@using ThBiz.Business.EmployeeManagement
+@using ThBiz.DataAccess.Entity;
+@using Tuhu.Component.Framework.Identity;
+@using ThBiz.Common.Configurations;
+@using ThBiz.Common;
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+@{string vdash = "v-";}
+<head>
+    <title>@ViewBag.Title</title>
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, width=device-width,minimal-ui" />
+    <meta name="robots" content="noindex, noarchive, nofollow" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <link href="../../Content/Site.css" rel="stylesheet" type="text/css" />
+    <link href="../../Content/StoreList.css" rel="stylesheet" type="text/css" />
+    <link href="../../Content/MenuStyle.css" rel="stylesheet" type="text/css" />
+    <link href="../../Content/jquery-ui-1.8.9.custom.css" rel="stylesheet" type="text/css" />
+    <link href="../../Content/jquery.treeview.css" rel="stylesheet" type="text/css" />
+    @RenderSection("head", false)
+    @*<link href="../../Content/InputButtonCSS.css" rel="stylesheet" type="text/css" />*@
+    <script src="~/Scripts/jquery-1.7.1.min.js"></script>
+    <script src="~/Scripts/jquery-ui-1.8.9.custom.min.js"></script>
+    <script src="../../Scripts/jquery-ui.min.js" type="text/javascript"></script>
+    <script type='text/javascript' src="../../Scripts/jquery.validate-1.8.1.min.js"></script>
+    <script type='text/javascript' src="../../Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type='text/javascript' src="../../Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script type='text/javascript' src="../../Scripts/globalize.min.js"></script>
+    <script src="/Scripts/jquery.filtrateSelect.js"></script>
+    <script src="/Scripts/jquery.form.js" type="text/javascript"></script>
+    @Html.GlobalizationScript()
+    @Html.JQueryDatePickerGlobalizationScript(null, "~/Scripts/cultures/datepicker/")
+    <script type="text/javascript" src="../../Scripts/jquery.treeview.all-2.4.0.min.js"></script>
+    <script type='text/javascript' src="../../Scripts/MVCControlToolkit.Controls-2.4.0.min.js"></script>
+    <script src="../../Scripts/knockout.all-2.4.0.min.js" type="text/javascript"></script>
+    <script src="../../Scripts/MvcControlToolkit.Utils-2.4.0.min.js" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/PublicFunction.js?v=20150109")" type="text/javascript"></script>
+    <script src="~/Content/cloudjs/cloudjs.js"></script>
+    <script type="text/javascript" src="~/Scripts/My97DatePicker/WdatePicker.js"></script>
+    <meta http-equiv="PRAGMA" content="NO-CACHE" />
+    <style type="text/css">
+        #menucontainer {
+            text-align: left
+        }
+
+            #menucontainer ul {
+                width: 95%;
+            }
+
+                #menucontainer ul.menus li {
+                    margin: 0 auto 10px;
+                    background-color: #e8eef4;
+                }
+
+                    #menucontainer ul.menus li a {
+                        background-color: initial;
+                    }
+
+                #menucontainer ul.children {
+                    width: auto !important
+                }
+
+                    #menucontainer ul.children li {
+                        width: 200px;
+                        margin: 0 !important;
+                    }
+
+                        #menucontainer ul.children li:hover {
+                            background-color: #fff
+                        }
+
+                        #menucontainer ul.children li a {
+                            width: 200px;
+                        }
+
+                #menucontainer ul.menus li a:hover {
+                    background-color: initial
+                }
+
+        .tuhu-btn {
+            line-height: 1.5;
+            display: inline-block;
+            font-weight: 400;
+            text-align: center;
+            touch-action: manipulation;
+            cursor: pointer;
+            background-image: none;
+            border: 1px solid transparent;
+            white-space: nowrap;
+            padding: 2px 16px;
+            font-size: 13px;
+            border-radius: 4px;
+            height: 32px;
+            user-select: none;
+            transition: all .3s cubic-bezier(.645,.045,.355,1);
+            position: relative;
+            color: rgba(13,27,62,.65);
+            background-color: #fff;
+            border-color: #d9d9d9
+        }
+
+            .tuhu-btn:not([disabled]):hover {
+                text-decoration: none
+            }
+
+            .tuhu-btn:not([disabled]):active {
+                outline: 0;
+                transition: none
+            }
+
+            .tuhu-btn.disabled, .tuhu-btn[disabled] {
+                cursor: not-allowed
+            }
+
+                .tuhu-btn.disabled > *, .tuhu-btn[disabled] > * {
+                    pointer-events: none
+                }
+
+        .tuhu-btn-lg {
+            padding: 2px 16px;
+            font-size: 16px;
+            border-radius: 4px;
+            height: 36px
+        }
+
+        .tuhu-btn-sm {
+            padding: 0 7px;
+            font-size: 13px;
+            border-radius: 4px;
+            height: 26px
+        }
+
+        .tuhu-btn:focus, .tuhu-btn:hover {
+            color: #4fb6ff;
+            background-color: #fff;
+            border-color: #4fb6ff
+        }
+
+        .tuhu-btn.active, .tuhu-btn:active {
+            color: #1473cc;
+            background-color: #fff;
+            border-color: #1473cc
+        }
+
+        .tuhu-btn.disabled,
+        .tuhu-btn.disabled.active,
+        .tuhu-btn.disabled:active,
+        .tuhu-btn.disabled:focus,
+        .tuhu-btn.disabled:hover,
+        .tuhu-btn[disabled],
+        .tuhu-btn[disabled].active,
+        .tuhu-btn[disabled]:active,
+        .tuhu-btn[disabled]:focus,
+        .tuhu-btn[disabled]:hover {
+            color: rgba(13,27,62,.45);
+            background-color: #f7f7f7;
+            border-color: #d9d9d9
+        }
+
+        .tuhu-btn.active, .tuhu-btn:active, .tuhu-btn:focus, .tuhu-btn:hover {
+            background: #fff
+        }
+
+        .tuhu-btn > i, .tuhu-btn > span {
+            pointer-events: none
+        }
+
+        .tuhu-btn-primary {
+            color: #fff;
+            background-color: #2395f1;
+            border-color: #2395f1
+        }
+
+            .tuhu-btn-primary:focus, .tuhu-btn-primary:hover {
+                color: #fff;
+                background-color: #4fb6ff;
+                border-color: #4fb6ff
+            }
+
+            .tuhu-btn-primary.active, .tuhu-btn-primary:active {
+                color: #fff;
+                background-color: #1473cc;
+                border-color: #1473cc
+            }
+
+
+        /* loading screen */
+        .ui-loading .ui-loader {
+            display: block;
+        }
+
+        .ui-loader {
+            z-index: 999999;
+            position: fixed;
+            _position: absolute;
+            top: 50%;
+            left: 50%;
+            border: 0;
+        }
+
+        .ui-loader-default {
+            background: none;
+            filter: Alpha(Opacity=18);
+            opacity: .18;
+            width: 46px;
+            height: 46px;
+            margin-left: -23px;
+            margin-top: -23px;
+        }
+
+        .ui-loader-verbose {
+            width: 200px;
+            filter: Alpha(Opacity=88);
+            opacity: .88;
+            box-shadow: 0 1px 1px -1px #fff;
+            height: auto;
+            margin-left: -110px;
+            margin-top: -43px;
+            padding: 10px;
+        }
+
+        .ui-loader-default h2 {
+            font-size: 0;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+        }
+
+        .ui-loader-verbose h2 {
+            font-size: 16px;
+            margin: 0;
+            text-align: center;
+        }
+
+        .ui-loader .ui-icon {
+            background-color: #000;
+            display: block;
+            margin: 0;
+            width: 44px;
+            height: 44px;
+            padding: 1px;
+            -webkit-border-radius: 36px;
+            -moz-border-radius: 36px;
+            border-radius: 36px;
+        }
+
+        .ui-loader-verbose .ui-icon {
+            margin: 0 auto 10px;
+            filter: Alpha(Opacity=75);
+            opacity: .75;
+        }
+
+        .ui-loader-textonly {
+            padding: 15px;
+            margin-left: -115px;
+        }
+
+            .ui-loader-textonly .ui-icon {
+                display: none;
+            }
+
+        .ui-icon-loading {
+            background: url(../../content/images/ajax-loading.gif);
+            background-size: 46px 46px;
+        }
+    </style>
+    <script type="text/javascript">
+        var mouseover_tid = [];
+        var mouseout_tid = [];
+
+        jQuery(document).ready(function () {
+
+            //加载特殊菜单
+            if ($("#specialInput").val() != "") {
+                var speMenuInfos = eval("(" + $("#specialInput").val() + ")");
+                $.each(speMenuInfos, function (i, obj) {
+                    var generallNamedMenus = getGenerallNamedMenusByName(obj.SpecialName);
+
+                    $.each(generallNamedMenus, function (k, menu) {
+                        var subMenu = "<ul class=\"children\" style=\"display:none\">";
+                        var childList = obj.SecondMenus;
+                        $.each(childList, function (l, childmenu) {
+                            if (childmenu.ParamName != "") {
+                                var parameter = "?";
+                                var parameterNames = childmenu.ParamName.split(',');
+                                var initialValues = menu.initialValue.split(',');
+                                if (parameterNames.length < initialValues.length) {
+                                    return;
+                                }
+
+                                for (var n = 0; n < parameterNames.length; n++) {
+                                    if (n > 0) {
+                                        parameter += "&";
+                                    }
+
+                                    parameter += parameterNames[n] + "=" + initialValues[n];
+                                }
+                                subMenu += "<li class=\"cat-item cat-item-41\"><a href=\"" + childmenu.SecondMenuUrl + parameter + "\">" + childmenu.SecondMenuName + "</a></li>";
+                            }
+                            else {
+                                subMenu += "<li class=\"cat-item cat-item-41\"><a href=\"" + childmenu.SecondMenuUrl + "\">" + childmenu.SecondMenuName + "</a></li>";
+                            }
+                        });
+
+                        subMenu += "</ul>";
+                        menu.menuName.after(subMenu);
+                    });
+                });
+            }
+            jQuery('#menus > li').each(function (index) {
+                jQuery(this).hover(
+
+                    function () {
+                        var _self = this;
+                        clearTimeout(mouseout_tid[index]);
+                        mouseover_tid[index] = setTimeout(function () {
+                            jQuery(_self).find('ul').eq(0).slideDown('fast').show();
+                        }, 400);
+                    },
+
+                    function () {
+                        var _self = this;
+                        clearTimeout(mouseover_tid[index]);
+                        mouseout_tid[index] = setTimeout(function () {
+                            jQuery(_self).find('ul').eq(0).slideUp("fast");
+                        }, 400);
+                    }
+                );
+            });
+        });
+
+        //获取特殊菜单
+        function getGenerallNamedMenusByName(generalName) {
+            var TUHUGeneralNameAttribute = "TUHUGeneralName";
+            var generalNamedMenus = new Array();
+            var menus = $('a:[' + TUHUGeneralNameAttribute + ']');
+            menus.each(function () {
+                if ($(this).attr(TUHUGeneralNameAttribute) == generalName) {
+                    var initialValue = $(this).attr('TUHUInitialValue');
+                    if (initialValue == null) {
+                        initialValue = '';
+                    }
+                    // JSON
+                    var generalNamedMenu = { menuName: $(this), initialValue: initialValue };
+                    generalNamedMenus.push(generalNamedMenu);
+                }
+            });
+            return generalNamedMenus;
+        }
+    </script>
+</head>
+<body style="background-color: #5c87b2;">
+    <div class="page">
+        <div id="header">
+            <div id="title">
+                <h1>
+                    途虎业务系统
+                </h1>
+            </div>
+            <div id="logindisplay">
+                @Html.Partial("_LogOnPartial")
+            </div>
+            <div id="menucontainer">
+                <ul id="menus" class="menus">
+                    @{
+                        var apList = new ActionPowerList();
+                        string userno = User.Identity.Name;
+                        if (!string.IsNullOrEmpty(userno))
+                        {
+                            byte issupper = 0;
+                            if (System.Configuration.ConfigurationManager.AppSettings["SupperUsers"].Contains(userno))
+                            {
+                                issupper = 1;
+                            }
+                            apList.ListPower = new ThBiz.Business.Power.PowerManage().GetBusPower(userno, issupper);
+                            //Session["CaPowerList"] = apList.ListPower;
+                        }
+                        if (!string.IsNullOrEmpty(User.Identity.Name))
+                        {
+                            //手动分配订单权限
+                            var AdminUsers = new List<string>() { "renyingqiang@tuhu.cn", "huxiaodong@tuhu.cn", "chenmin@tuhu.cn", "chenwei@tuhu.cn", "jiangyao@tuhu.cn", "zhoukeren@tuhu.cn", "zhuyan@tuhu.cn", "yuancong@tuhu.cn", "wanghuijie@tuhu.cn", "kangyu@tuhu.cn", "brantgu@tuhu.cn", "wangminyou@tuhu.cn", "cuirongqing@tuhu.cn", "yangpeipei@tuhu.cn", "sundengjia@tuhu.cn", "wangtailin@tuhu.cn", "zhoulizhi@tuhu.cn", "baoli@tuhu.cn", "xuliyuan@tuhu.cn", "laiyinxiang@tuhu.cn", "sundengjia@tuhu.cn", "cuirongqing@tuhu.cn", "yanzheng@tuhu.cn", "qiaoyong@tuhu.cn", "zhangliang@tuhu.cn", "zhuhequn@tuhu.cn", "renyutao@tuhu.cn", "anjing@tuhu.cn", "luyang@tuhu.cn", "chenyi@tuhu.cn", "chenyi@tuhu.cn", "wangshuping@tuhu.cn", "wangshuping@tuhu.cn", "zengzhi@tuhu.cn", "pengwei@tuhu.cn", "caixuepu@tuhu.cn", "wanghuaizeng@tuhu.cn" };
+                            var DuizhangUsers = new List<string>() { "dingxuehong@tuhu.cn" };
+
+                            var SHCKAccountingUsers = new List<string>() { "yuanmeifang@tuhu.cn", "luoyuanmei@tuhu.cn", "shenhongmei@tuhu.cn", "zhanglu@tuhu.cn", "xuhuangyan@tuhu.cn", "mashengyang@tuhu.cn", "lijing@tuhu.cn", "xuminghui@tuhu.cn", "zhonglamei@tuhu.cn", "zhuangqianqian@tuhu.cn", "zhangmeng2@tuhu.cn", "baiwenhui@tuhu.cn" };
+                            var HRUsers = new List<string>() { "gaoyang@tuhu.cn", "xujie@tuhu.cn", "brantgu@tuhu.cn" };
+                            var MichelinGroup = new List<string>() { "zhuzhenni@tuhu.cn", "yangpeipei@tuhu.cn", "renyutao@tuhu.cn", "baoli@tuhu.cn", "huxiaodong@tuhu.cn", "zhuhequn@tuhu.cn", "anjing@tuhu.cn", "luyang@tuhu.cn", "chenyi@tuhu.cn", "chenyi@tuhu.cn", "zengzhi@tuhu.cn" };
+                            var ServiceUsers = new List<string>() { "fangyujiao@tuhu.cn", "wanghuijie@tuhu.cn", "chenqiyang@tuhu.cn", "lujialing@tuhu.cn", "zhouzheng@tuhu.cn", "liuxin@tuhu.cn", "zhangzhenhui@tuhu.cn", "zhuwujie@tuhu.cn", "zhonghaibin@tuhu.cn", "yexiaojuan@tuhu.cn", "wupeng@tuhu.cn", "wangyangyan@tuhu.cn", "zhouyu@tuhu.cn", "shangyutong@tuhu.cn", "pangxiaoxia@tuhu.cn", "gaoyue1@tuhu.cn", "daizhen@tuhu.cn" };
+
+                            <li class="current-cat">@Html.ActionLink("首页", "Index", "Home")</li>
+                            @*<li class="current-cat">
+                                    @Html.ActionLink("工作流", "Index", "WorkFlow")
+                                    @if ("dujingwu@tuhu.cn|zenglianhua@tuhu.cn|lutong@tuhu.cn|yangpeipei@tuhu.cn|brantgu@tuhu.cn|cuirongqing@tuhu.cn|zhangchen@tuhu.cn|yuancong@tuhu.cn|xujie@tuhu.cn|wanghuaizeng@tuhu.cn|renyutao@tuhu.cn|".Contains(User.Identity.Name + "|"))
+                                    {
+                                        <ul class="children">
+                                            <li class="cat-item cat-item-41">
+                                                @Html.ActionLink("资产分类", "CategoryManagement", "Assets", null, null)
+                                            </li>
+                                            <li class="cat-item cat-item-41">
+                                                @Html.ActionLink("库存管理", "StockManager", "Assets", null, null)
+                                            </li>
+                                            <li class="cat-item cat-item-41">
+                                                @Html.ActionLink("工作动态", "Workdynamicinfo", "WorkFlow", null, null)
+                                            </li>
+                                            <li class="cat-item cat-item-41">
+                                                @Html.ActionLink("工作流审批", "WorkFlowIndex", "WorkFlow", null, null)
+                                            </li>
+                                        </ul>
+                                    }
+                                </li>*@
+                            <li class="current-cat">
+
+                                @Html.ActionLink("库存查询", "StockLocationSearch", "Quotation")
+                                <ul class="children">
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("地区配置", "RegionConfigure", "Quotation")</li>
+                                    <li class="cat-item cat-item-41">
+                                        @*@Html.ActionLink("产品库存价格查询", "ProductsInformation", "Product")*@
+                                        <a href="@YewuDomainConfig.YewuOrderSite/Product/ProductsInformation">产品库存价格查询</a>
+                                    </li>
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("门店库存", "ShopStockIndex", "Stock")</li>
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("大客户门店库存", "ShopStockManage", "Stock")</li>
+                                    <li class="cat-item cat-item-41"><a href="/Supplies/SelectSuppliesStockReportBySearch?orderNo=1">耗材库存查询</a></li>
+                                    <li class="cat-item cat-item-41"><a href="/Supplies/SelectMonthlySuppliesConsumeTranscations">耗材月消耗量查询</a></li>
+                                </ul>
+                            </li>
+                            if (User.Identity.Name.StartsWith(vdash) && User.Identity.Name == "chenwei@tuhu.cn")
+                            {
+                                <li class="cat-item cat-item-40">
+                                    @Html.ActionLink("货源查询", "Index", "Quotation")
+                                </li>
+                            }
+
+                            //if (Session["Shops"] == null)
+                            //{
+                            //    var locations = new List<WMSUserObject>();
+                            //    var warehouseLocations = new ThBiz.Facade.WarehouseFacade().RetrieveActiveLocations(User.Identity.Name);
+                            //    foreach (var warehouseLocation in warehouseLocations)
+                            //    {
+                            //        var wmsUserObject = new WMSUserObject();
+                            //        wmsUserObject.ShopID = warehouseLocation.LocationId;
+                            //        wmsUserObject.ShopsName = warehouseLocation.Location;
+
+                            //        var shop = ThBiz.Models.Helper.WareHouses.Values.FirstOrDefault(_ => _.PKID == warehouseLocation.LocationId);
+                            //        wmsUserObject.ShopsNo = shop != null ? shop.OrderNo ?? 0 : 0;
+
+                            //        locations.Add(wmsUserObject);
+                            //    }
+                            //    Session["Shops"] = locations;
+                            //}
+
+                            //var shops = (List<WMSUserObject>)Session["Shops"];
+
+                            @*foreach (var shop in shops)
+                                {
+                                    <li class="cat-item cat-item-40">
+                                        <a tuhugeneralname="物流" tuhuinitialvalue="@shop.ShopsNo" href="/">@(shop.ShopsName.Replace("仓库", ""))物流</a>
+                                    </li>
+                                }*@
+
+                            if (SHCKAccountingUsers.Contains(User.Identity.Name))
+                            {
+                                <li class="cat-item cat-item-40">
+                                    @Html.ActionLink("上海仓库出纳", "DayAccount", "Voucher")
+                                </li>
+                            }
+                            @*if (AdminUsers.Contains(User.Identity.Name) || DuizhangUsers.Contains(User.Identity.Name))
+                                {
+                                    <li class="cat-item cat-item-40">
+                                        @Html.ActionLink("门店对帐", "Overdue", "Order")
+                                        <ul class="children">
+
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("门店对帐", "SumReceivable", "Accounting")</li>
+                                        </ul>
+                                    </li>
+                                }*@
+                            <li class="cat-item cat-item-40">
+                                @Html.ActionLink("监控", "ShowAllExceptionMonitor", "Monitor")
+                                <ul class="children">
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("异常订单", "ShowAllExceptionOrderForPurchase", "Monitor")</li>
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("采购更改仓库列表", "ShowAllSwichWarehoursOperationMonitor", "Monitor")</li>
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("物流状态异常订单", "ShowAllExceptionOrderForLogistic", "Monitor")</li>
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("淘宝物流状态异常订单", "ShowAllExceptionOrderForTaoBaoLogistic", "Monitor")</li>
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("需取回但未到店/收货列表", "ShowAllExceptionOrderForQuHuiLogistic", "Monitor")</li>
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("需取回异常列表", "SelectCallBackOrderSkippedException", "Accounting")</li>
+
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("财务状态异常订单", "ShowAllExceptionFinance", "Monitor")</li>
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("异常对账订单", "AbnormalReconciliationOrder", "Monitor")</li>
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("未发出订单", "PurchaseStatusMonitoring", "Monitor")</li>
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("销售订单占用移库单异常", "ShowAllTransferOccupation", "Monitor")</li>
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("到店短信未发出监测", "ShowAllMesOutofOrder", "Monitor")</li>
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("仓库发出未到店订单", "WrongOrderOetails", "Monitor")</li>
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("快递已到店未签收异常订单", "ShowAllReceivedNotSignedList", "Monitor")</li>
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("缓存数据查询", "CacheDataQuery", "Monitor")</li>
+                                    <li class="cat-item cat-item-41">@Html.ActionLink("服务异常监控数据查询", "ShowAllServiceExceptionOrder", "Monitor")</li>
+
+                                    @{var PriceMonitorConfigUser = new string[] { "xuliyuan@tuhu.cn", "wanglidong@tuhu.cn",
+                                                                  "pengwei@tuhu.cn", "quejunhui@tuhu.cn", "tangchuanguo@tuhu.cn", "zoumi@tuhu.cn", "zhuyuxia@tuhu.cn",
+                                                                  "sunli@tuhu.cn", "jiting@tuhu.cn", "huyue@tuhu.cn", "jiangyufei@tuhu.cn", "brantgu@tuhu.cn",
+                                                                  "wangminyou@tuhu.cn", "lixiao@tuhu.cn", "liuchao1@tuhu.cn", "yuanfang@tuhu.cn", "xujian@tuhu.cn", "zhuyan@tuhu.cn",
+                                                                  "chenmin@tuhu.cn", "zhanglingjia@tuhu.cn", "huangting@tuhu.cn", "wangchanjuan@tuhu.cn", "chenling@tuhu.cn" ,
+                                                                  "wuzhehan1@tuhu.cn", "pulongbiao@tuhu.cn","suinan@tuhu.cn", "zhouxianming@tuhu.cn", "zhonghaibin@tuhu.cn",
+                                                                  "yexiaojuan@tuhu.cn","shenyufang@tuhu.cn","zhangjian@tuhu.cn","guxiaowen@tuhu.cn",
+                                                                  "chengyuhong@tuhu.cn","daizhen@tuhu.cn","xuneng@tuhu.cn","zhangliangjie@tuhu.cn",
+                                                                  "huangtongpeng@tuhu.cn", "zhangzhijian@tuhu.cn", "daixiumei@tuhu.cn",
+                                                                  "zhupeiqiong@tuhu.cn", "liuziwei@tuhu.cn", "liqiang1@tuhu.cn","zhangxiaowen@tuhu.cn"};}
+                                    @if (AdminUsers.Contains(User.Identity.Name) || PriceMonitorConfigUser.Contains(User.Identity.Name, StringComparer.CurrentCultureIgnoreCase))
+                                    {
+                                        <li class="cat-item cat-item-41">@Html.ActionLink("第三方店铺产品价格监控配置", "PriceMonitorConfig", "Monitor")</li>
+                                        <li class="cat-item cat-item-41">@Html.ActionLink("价格预警监控报表", "PriceMonitorReport", "Monitor")</li>
+                                    }
+                                    @{var QplMonitorConfigUser = new string[] { "wangdijie@tuhu.cn", "liuchao1@tuhu.cn", "wangminyou@tuhu.cn", "shijun@tuhu.cn" };}
+                                    @if (AdminUsers.Contains(User.Identity.Name) || QplMonitorConfigUser.Contains(User.Identity.Name, StringComparer.CurrentCultureIgnoreCase))
+                                    {
+                                        <li class="cat-item cat-item-41">@Html.ActionLink("汽配龙商品维护", "QPLProductMaintain", "Monitor")</li>
+                                    }
+                                    @*<li class="cat-item cat-item-41">@Html.ActionLink("退货取回任务（自配）", "ReturnToRetrieveTasks", "OrderBack")</li>
+                                        <li class="cat-item cat-item-41">@Html.ActionLink("已分配任务列表", "AssignedTasks", "OrderBack")</li>
+                                        <li class="cat-item cat-item-41">@Html.ActionLink("门店需取回订单列表（快递）", "NeedRetrieveOrderSelf", "OrderBack")</li>
+                                        <li class="cat-item cat-item-41">@Html.ActionLink("PMS监控异常数据", "PmsTaskMonitor", "OrderBack")</li>*@
+                                </ul>
+                            </li>
+                            @*if (AdminUsers.Contains(User.Identity.Name) || MendianUsers.Contains(User.Identity.Name) || ShopAdminUsers.Contains(User.Identity.Name))
+                                {
+                                    <li class="cat-item cat-item-40">
+                                        @Html.ActionLink("门店(旧)", "NewShopIndex", "Shop")
+                                        <ul class="children">
+
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("门店列表", "NewShopIndex", "Shop")</li>
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("门店加盟", "StoreList", "Shop")</li>
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("门店加盟(新版)", "NewShopStoreList", "Shop")</li>
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("未通过审核的门店", "NoPassedShopIndex", "Shop")</li>
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("门店需取回订单", "SelectCallBackOrderSkipped", "Accounting")</li>
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("对账工作日报", "ShopAccounting", "Shop")</li>
+                                            @if (User.Identity.Name == "yinxuerong@tuhu.cn" || User.Identity.Name == "guyueting@tuhu.cn" || User.Identity.Name == "sunxiaoyan@tuhu.cn" || User.Identity.Name == "zongmengmeng@tuhu.cn" || User.Identity.Name == "liyan@tuhu.cn")
+                                            {
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("门店对账人配置", "ConfigShopAccountingPerson", "Shop")</li>
+                                            }
+                                            @if (ThBiz.Common.ShopEnum.StaticUsers.GetBaoSunAdmin(User.Identity.Name))
+                                            {
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("报损订单待处理", "ShopOrderLoss", "Shop")</li>
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("报损订单待确认", "ShopOrderHasLossed", "Shop")</li>
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("2015之前订单批量申请报损", "OldOrderNeedLoss", "Shop")</li>
+                                            }
+                                            @if (ShopAdmin.Contains(User.Identity.Name))
+                                            {
+
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("服务配置", "AddShopCosmetologyServers", "Shop")</li>
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("门店对账人配置", "ConfigShopAccountingPerson", "Shop")</li>
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("添加/编辑总公司", "GetCompany", "ShopCompany")</li>
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("门店Pos机配置", "ShopPosIndex", "Shop")</li>
+                                            }
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("发送门店短信", "ShopsNotifications", "Shop")</li>
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("需退回门店订单监控", "ShopOrderLog", "Shop")</li>
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("需退回门店订单监控（新）", "ShopOrderLogNew", "Shop")</li>
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("未审核手机号", "AbnormalPhones", "Shop")</li>
+                                            @if (ShopShenHe.Contains(User.Identity.Name))
+                                            {
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("门店信息变更提醒", "SendChangeNotification", "Shop")</li>
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("门店审核", "NewShopsExamine", "Shop")</li>
+                                            }
+                                            @if (User.Identity.Name == "baoli@tuhu.cn" || User.Identity.Name == "yangpeipei@tuhu.cn" || User.Identity.Name == "brantgu@tuhu.cn" || User.Identity.Name == "cuirongqing@tuhu.cn")
+                                            {
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("门店审核日志", "ShopExamineLog", "Shop")</li>
+                                            }
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("门店投诉", "Index", "Tousu")</li>
+                                            <li class="cat-item cat-item-41"><a href="../../ShoppingCode.aspx">验证码详情</a></li>
+                                            @if (User.Identity.Name == "brantgu@tuhu.cn" || User.Identity.Name == "baoli@tuhu.cn" || User.Identity.Name == "yuancong@tuhu.cn")
+                                            {
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("简单名更改", "ModifySimpleName", "Shop")</li>
+                                            }
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("正在配送的订单", "ShopOrderNotSigned", "Shop")</li>
+                                            @{
+                                    var shopLogUser = new List<string>()
+                                        {
+                                        "zhoukeren@tuhu.cn", "qiaoyong@tuhu.cn", "zhangliang@tuhu.cn", "yanzheng@tuhu.cn", "yangpeipei@tuhu.cn", "brantgu@tuhu.cn", "wangminyou@tuhu.cn", "anjing@tuhu.cn","luyang@tuhu.cn","chenyi@tuhu.cn","chenyi@tuhu.cn", "wangshuping@tuhu.cn","lihongbing@tuhu.cn", "zengzhi@tuhu.cn", "yuancong@tuhu.cn"
+                                        };
+                                            }
+                                            @if (shopLogUser.Contains(User.Identity.Name))
+                                            {
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("门店修改日志", "GetShopOprLogDetails", "Shop")</li>
+                                            }
+                                            @if (AdminUsers.Contains(User.Identity.Name))
+                                            {
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("门店通知", "ShopNoticeHistory", "Shop")</li>
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("回访质检记录", "VisitInspectionRecord", "Shop")</li>
+                                            }
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("门店投诉申诉", "ShopTousuList", "Shop")</li>
+                                            @{
+                                    var OverdueOrderAdmin = new List<string>() { "zhoukeren@tuhu.cn", "qiaoyong@tuhu.cn", "yanzheng@tuhu.cn", "zhangweikang@tuhu.cn", "gaozhouxian@tuhu.cn" };
+                                            }
+                                            @if (ThreadIdentity.Operator.Name == "yuancong@tuhu.cn" || ThreadIdentity.Operator.Name == "yangpeipei@tuhu.cn")
+                                            {
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("地区管理", "RegionManage", "Shop")</li>
+                                            }
+                                        </ul>
+                                    </li>
+                                }
+                                if (AdminUsers.Contains(User.Identity.Name) || MendianUsers.Contains(User.Identity.Name) || ShopAdminUsers.Contains(User.Identity.Name) || ThBiz.SiteUtility.IsActiveByGroups("线下合作", User.Identity.Name, true) || User.Identity.Name == "dujingwu@tuhu.cn")
+                                {
+                                    var OverdueOrderAdmin = new List<string>() { "zhoukeren@tuhu.cn", "qiaoyong@tuhu.cn", "yanzheng@tuhu.cn", "zhangweikang@tuhu.cn", "gaozhouxian@tuhu.cn" };
+                                    <li class="cat-item cat-item-40">
+                                        @Html.ActionLink("门店管控(旧)", "NewShopIndex", "Shop")
+                                        <ul class="children">
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("退单率统计", "NewShopCancelReport", "Shop")</li>
+                                            @if (AdminUsers.Contains(User.Identity.Name) || ShopShenHe.Contains(User.Identity.Name) || ShopAdminUsers.Contains(User.Identity.Name))
+                                            {
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("美容审核黑名单", "BeautyOrderBlockList", "Shop")</li>
+                                            }
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("未提现美容订单统计", "BeautyOderStatistics", "Shop")</li>
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("申请提现美容订单审核", "BeautyOrderMentionedStatistics", "Shop")</li>
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("申请提现美容订单审核（改版）", "BeautyOrderMentionedRevision", "Shop")</li>
+                                            @if (AdminUsers.Contains(User.Identity.Name) || ShopShenHe.Contains(User.Identity.Name) || ShopAdminUsers.Contains(User.Identity.Name) || CancelReportUser.Contains(User.Identity.Name))
+                                            {
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("退单率统计(改版)", "NewShopCancelReport2", "Shop")</li>
+                                            }
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("快递已到店未签收异常订单", "ShowAllReceivedNotSignedList", "Monitor")</li>
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("拓展业绩统计", "ShopPerformance", "Shop")</li>
+                                            <li class="cat-item cat-item-41"> @Html.ActionLink("已审核的提现订单详情", "HasExaminedOrders", "Accounting")</li>
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("提现流水单银行信息有误", "searchErrorBankInfor", "Accounting")</li>
+                                            @if (ShopShenHe.Contains(User.Identity.Name))
+                                            {
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("手动创建提现", "InsertWithdrawalBillsUpDateOrderInf", "Accounting")</li>
+                                            }
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("门店拜访日报", "ShopsVisitReport", "Shop")</li>
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("门店订单统计", "ShopsOrderCount", "Shop")</li>
+                                            @if (AdminUsers.Contains(ThreadIdentity.Operator.Name))
+                                            {
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("门店服务统计", "ShopsServiceStatistics", "Shop")</li>
+                                            }
+                                            @if (AdminUsers.Contains(ThreadIdentity.Operator.Name) || ThreadIdentity.Operator.Name == "anjing@tuhu.cn" || ThreadIdentity.Operator.Name == "lihongbing@tuhu.cn" || ThreadIdentity.Operator.Name == "huajing@tuhu.cn")
+                                            {
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("订单评论统计", "ShopComment", "Shop")</li>
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("订单时间统计", "GetShopOrderReceived", "Shop")</li>
+                                            }
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("回访质检统计", "VisitInspectionReport", "Shop")</li>
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("逾期订单处理统计", "OverDueOrderHistory", "Shop")</li>
+                                            @{ var SelectOverdueOrderForShopUsers = new List<string> { "tanruoqiong@tuhu.cn", "yinxuerong@tuhu.cn", "zhouwei@tuhu.cn", "zhaojing@tuhu.cn", "yuchangting@tuhu.cn", "zhouwei@tuhu.cn", "shenyuqian@tuhu.cn", "wangzilu@tuhu.cn" };}
+                                            @if (OverdueOrderAdmin.Contains(ThreadIdentity.Operator.Name) || AdminUsers.Contains(ThreadIdentity.Operator.Name) || ThreadIdentity.Operator.Name == "panfeiyang@tuhu.cn" || ThreadIdentity.Operator.Name == "kangni@tuhu.cn" || ThreadIdentity.Operator.Name == "tangxiaoqing@tuhu.cn" || SelectOverdueOrderForShopUsers.Contains(ThreadIdentity.Operator.Name))
+                                            {
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("延期订单/异常订单", "SelectOverdueOrderForShop", "Shop")</li>
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("门店投诉率", "SelectShopTouSu", "Shop")</li>
+                                            }
+                                            @{ var ShopIsActiveUser = new List<string>() { "qiaoyu@tuhu.cn", "suyanlong@tuhu.cn", "leiman@tuhu.cn", "wanghao@tuhu.cn", "gujie@tuhu.cn" };}
+                                            @if (AdminUsers.Contains(ThreadIdentity.Operator.Name) || ShopIsActiveUser.Contains(ThreadIdentity.Operator.Name))
+                                            {
+                                                <li class="cat-item cat-item-41">@Html.ActionLink("门店上架报表", "SelectShopsByShopIsActiveType", "Shop")</li>
+                                            }
+                                            <li class="cat-item cat-item-41">
+                                                @Html.ActionLink("门店需退回订单统计", "SelectShopOrderNeedCallBackStatistics", "Shop")
+                                            </li>
+                                            <li class="cat-item cat-item-41">
+                                                @Html.ActionLink("门店已安装订单统计", "SelectOrderInstalled", "Shop")
+                                            </li>
+                                            <li class="cat-item cat-item-41">
+                                                @Html.ActionLink("门店已退回订单统计", "ForHadSentBackOrder", "Shop")
+                                            </li>
+                                            <li class="cat-item cat-item-41">
+                                                @Html.ActionLink("门店评级数据源(管控)", "ShopLevelSourceAccounting", "Shop")
+                                            </li>
+                                            <li class="cat-item cat-item-41">
+                                                @Html.ActionLink("门店评级数据源(拓展)", "ShopLevelSourceResponse", "Shop")
+                                            </li>
+                                        </ul>
+                                    </li>
+                                }*@
+                            if (User.Identity.Name.StartsWith(vdash))
+                            {
+                                <li class="cat-item cat-item-40">
+                                    @Html.ActionLink("地图", "ShopMapSearch", "Shop")
+                                </li>
+                                @*<li class="cat-item cat-item-41">
+                                        <a href="@YewuDomainConfig.ShopMapSite/Shop/ShopMapSearch">地图</a>
+                                    </li>*@
+                                <li class="cat-item cat-item-41">@Html.ActionLink("轮胎", "TireStockIndex", "Logistic")</li>
+                            }
+                            else
+                            {
+                                <li>
+                                    <a href="javascript:void()">信息</a>
+                                    @*@Html.ActionLink("信息", "About", "Home")*@
+                                    <ul class="children">
+                                        @*<li class="cat-item cat-item-41">@Html.ActionLink("协议安装店", "Index", "Shop")</li>*@
+                                        <li class="cat-item cat-item-41">@Html.ActionLink("协议安装店", "ProtocolShopIndex", "Shop")</li>
+                                        <li class="cat-item cat-item-41">@Html.ActionLink("修改密码", "ChangePassword", "Account")</li>
+                                        <li class="cat-item cat-item-41">@Html.ActionLink("日志", "Index", "Diary")</li>
+                                        @*<li class="cat-item cat-item-41">
+                                                <a href="@YewuDomainConfig.ShopMapSite/Shop/ShopMapSearch">地图1</a>
+                                            </li>*@
+                                        <li class="cat-item cat-item-41">
+                                            <a href="@YewuDomainConfig.ShopMapSite/Shop/ShopMapSearch">地图</a>
+
+                                        </li>
+                                        <li class="cat-item cat-item-41">@Html.ActionLink("轮胎", "TireStockIndex", "Logistic")</li>
+                                        <li class="cat-item cat-item-41">@Html.ActionLink("库存", "StockIndex", "Logistic")</li>
+                                        <li class="cat-item cat-item-41">
+                                            <a href="https://yewu.tuhu.cn/Account/LogOn?ReturnUrl=%2fHR%2fNewSalaryIndex">
+                                                工资
+                                            </a>
+                                        </li>
+
+                                        @if (HRUsers.Contains(User.Identity.Name))
+                                        {
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("员工管理", "SelectHrEmployeeList", "User")</li>
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("部门角色管理", "AddDepartmentAndRoles", "User")</li>
+                                        }
+                                        <li class="cat-item cat-item-41">@Html.ActionLink("任务管理", "TaskManage", "Task")</li>
+                                        <li class="cat-item cat-item-41">@Html.ActionLink("新功能信息", "ShowAllNewFuncations", "NewFuncation")</li>
+
+                                        @if (User.Identity.Name == "brantgu@tuhu.cn" || User.Identity.Name == "yangpeipei@tuhu.cn" || User.Identity.Name == "baoli@tuhu.cn" || User.Identity.Name == "cuirongqing@tuhu.cn" ||
+User.Identity.Name == "yuancong@tuhu.cn" || User.Identity.Name == "zhangchen@tuhu.cn" || User.Identity.Name == "dujingwu@tuhu.cn" || User.Identity.Name == "renyutao@tuhu.cn" || User.Identity.Name == "zhoujisheng@tuhu.cn"
+|| User.Identity.Name == "chenmin@tuhu.cn"
+|| User.Identity.Name == "zhangyijuan@tuhu.cn")
+                                        {
+                                            <li class="cat-item cat-item-41">@Html.ActionLink("数据查询", "ShowAllResult", "Select")</li>
+
+                                        }
+                                    </ul>
+                                </li>
+                            }
+
+                            @*foreach (var shop in shops)
+                                {
+                                    <li class="cat-item cat-item-40">
+                                        <a tuhugeneralname="仓库" tuhuinitialvalue="@shop.ShopsNo" href="/">@(shop.ShopsName.Replace("仓库", ""))库存管理</a>
+                                    </li>
+                                                    }*@
+                            if (AdminUsers.Contains(User.Identity.Name))
+                            {
+                                <li class="cat-item cat-item-40">
+                                    @Html.ActionLink("异常预警", "", "", null, null)
+                                    <ul class="children">
+                                        <li class="cat-item cat-item-41">@Html.ActionLink("快递未揽件异常", "MonitorNotCnvass", "Logistic", new { monitorType = "NotDelivered" })</li>
+                                        <li class="cat-item cat-item-41">@Html.ActionLink("快递未签收异常", "MonitorNotCnvass", "Logistic", new { monitorType = "NotCanvass" })</li>
+                                    </ul>
+                                </li>
+                            }
+                            <li class="cat-item cat-item-40">
+                                <a href="@Url.Action("Campaign", "Sem")">SEM</a>
+                                <ul class="children">
+                                    <li class="cat-item cat-item-40">
+                                        <a href="@Url.Action("AppDownloadList", "Sem")">App下载量统计</a>
+                                    </li>
+                                    <li class="cat-item cat-item-40">
+                                        <a href="@Url.Action("UpLoadDianMianAppVersion", "Shop")">商户APP发布</a>
+                                    </li>
+                                    <li class="cat-item cat-item-40">
+                                        <a href="@Url.Action("Index", "Sem")">新App下载量统计</a>
+                                    </li>
+                                    @if (string.Compare(User.Identity.Name, "zhuyan@tuhu.cn", true) == 0)
+                                    {
+                                        <li class="cat-item cat-item-40">
+                                            <a href="@Url.Action("Cellphone", "Promotion")">给手机号发券</a>
+                                        </li>
+                                    }
+                                    <li class="cat-item cat-item-40">
+                                        <a href="@Url.Action("CreatePromotionTask", "Promotion")">创建优惠券任务</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                    }
+                    @{
+                        string cgstr = "";
+                        if (apList.ListPower != null && apList.ListPower.Count > 0)
+                        {
+                            string keyStr = "search12031136";
+                            var list = apList.ListPower.Where(lp => lp.ParentID == 0 && !lp.LinkName.Contains("NotDisplay")).OrderBy(lp => lp.ORDERBY).ToList();
+                            foreach (ActionPower ap in list)
+                            {
+                                string domain = ModuleDomainConfig.GetDomainByModule(ap.LinkName);
+                                if (string.IsNullOrEmpty(domain))
+                                {
+                                    domain = ModuleDomainConfig.GetDomainByModule("DefaultDomain");
+                                }
+                                if (!string.IsNullOrEmpty(ap.CgKey.ToString().Trim()) && ap.CgKey.ToString().Trim() != "0")
+                                {
+                                    cgstr += "{SpecialName:\"" + ap.LinkName + "\",";
+                                    var sChildList = apList.ListPower.Where(child => child.ParentID == ap.PKID && child.Type.ToLower() == "module" && !string.IsNullOrEmpty(child.Controller) && !child.LinkName.Contains("NotDisplay")).OrderBy(lp => lp.ORDERBY).ToList();
+                                    string tmpstr = "";
+                                    foreach (var scList in sChildList)
+                                    {
+                                        string scDomain = ModuleDomainConfig.GetDomainByModule(scList.LinkName);
+                                        if (string.IsNullOrEmpty(scDomain))
+                                        {
+                                            scDomain = domain;
+                                        }
+                                        tmpstr += "{SecondMenuName:\"" + scList.LinkName + "\",SecondMenuUrl:\"" + scDomain + "/" + scList.Controller + "/" + scList.Action + "\",ParamName:\"" + scList.ParametersName + "\",Domain:\"" + scDomain + "\"},";
+                                    }
+                                    tmpstr = "SecondMenus:[" + tmpstr.TrimEnd(',') + "]";
+                                    cgstr += tmpstr + ",Domian:\"" + domain + "\"},";
+                                    continue;
+                                }
+                                var childList = apList.ListPower.Where(child => child.ParentID == ap.PKID && child.Type.ToLower() == "module" && !string.IsNullOrEmpty(child.Controller) && !child.LinkName.Contains("NotDisplay")).OrderBy(lp => lp.ORDERBY).ToList();
+                                string md5 = "Info=" + ap.PKID.ToString();
+                                string parameters = Tuhu.Component.Framework.EnOrDeHelper.GetMd5(md5 + Tuhu.Component.Framework.EnOrDeHelper.GetMd5(keyStr, System.Text.Encoding.UTF8), System.Text.Encoding.UTF8);
+                                <li class="cat-item cat-item-41">
+                                    @{
+                                        Dictionary<string, string> routeDic = new Dictionary<string, string>();
+                                        routeDic.Add("KEY", parameters);
+                                        if (!string.IsNullOrEmpty(ap.ParametersName))
+                                        {
+                                            string[] splitedKeyList = ap.ParametersName.Split(',');
+                                            string[] splitedValueList = null;
+                                            if (!string.IsNullOrEmpty(ap.ParametersValue))
+                                            {
+                                                splitedValueList = ap.ParametersValue.Split(',');
+                                            }
+
+                                            for (int i = 0; i < splitedKeyList.Length; i++)
+                                            {
+                                                string key = splitedKeyList[i];
+
+                                                if (splitedValueList != null)
+                                                {
+                                                    string value = splitedValueList[i];
+                                                    if (value.ToLower().IndexOf("yyyy") == 0)
+                                                    {
+                                                        value = DateTime.Now.ToString();
+                                                    }
+
+                                                    routeDic.Add(key, value);
+                                                }
+                                            }
+                                        }
+
+                                        string url = UrlUtil.Concate(domain, ap.Controller, ap.Action, routeDic);
+                                        <a href="@url">@ap.LinkName</a>
+                                    }
+                                    <ul class="children">
+                                        @foreach (ActionPower childAp in childList)
+                                        {
+                                            string childDomain = ModuleDomainConfig.GetDomainByModule(childAp.LinkName);
+                                            if (string.IsNullOrEmpty(childDomain))
+                                            {
+                                                childDomain = domain;
+                                            }
+                                            string childMd5 = "Info=" + childAp.PKID.ToString();
+                                            string childParameters = Tuhu.Component.Framework.EnOrDeHelper.GetMd5(childMd5 + Tuhu.Component.Framework.EnOrDeHelper.GetMd5(keyStr, System.Text.Encoding.UTF8), System.Text.Encoding.UTF8);
+                                            <li class="cat-item cat-item-41">
+                                                @{
+                                                    Dictionary<string, string> childRouteDic = new Dictionary<string, string>();
+                                                    childRouteDic.Add("KEY", childParameters);
+                                                    if (!string.IsNullOrEmpty(childAp.ParametersName))
+                                                    {
+                                                        string[] splitedKeyList = childAp.ParametersName.Split(',');
+                                                        string[] splitedValueList = null;
+                                                        if (!string.IsNullOrEmpty(childAp.ParametersValue))
+                                                        {
+                                                            splitedValueList = childAp.ParametersValue.Split(',');
+                                                        }
+
+                                                        for (int i = 0; i < splitedKeyList.Length; i++)
+                                                        {
+                                                            string key = splitedKeyList[i];
+
+                                                            if (splitedValueList != null)
+                                                            {
+                                                                string value = splitedValueList[i];
+                                                                if (value.ToLower().IndexOf("yyyy") == 0)
+                                                                {
+                                                                    value = DateTime.Now.ToString();
+                                                                }
+
+                                                                if (!childRouteDic.ContainsKey(key))
+                                                                {
+                                                                    childRouteDic.Add(key, value);
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+
+                                                    string childUrl = UrlUtil.Concate(childDomain, childAp.Controller, childAp.Action, childRouteDic);
+                                                    <a href="@childUrl">@childAp.LinkName</a>
+                                                }
+                                            </li>
+                                        }
+                                    </ul>
+                                </li>
+                            }
+                            cgstr = "[" + cgstr.TrimEnd(',') + "]";
+                        }
+                    }
+                    <li class="current-cat"><a href="https://bireport.tuhu.cn" target="_blank">BI报表</a></li>
+                </ul>
+                <input type="text" id="specialInput" style="display:none;" value="@cgstr" />
+            </div>
+        </div>
+        <div id="main">
+            @RenderBody()
+            <div id="footer">
+                <p>
+                    所有内容为途虎养车网商业机密信息，切勿泄漏。版权所有 途虎养车网 2011-2015
+                </p>
+            </div>
+        </div>
+    </div>
+    @RenderSection("scripts", false)
+</body>
+</html>

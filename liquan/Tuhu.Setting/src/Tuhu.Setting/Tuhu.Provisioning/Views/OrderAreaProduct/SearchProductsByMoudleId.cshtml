@@ -1,0 +1,65 @@
+﻿@{
+    Layout = "../Shared/_Layout.cshtml";
+}
+
+@using Tuhu.Provisioning.DataAccess.Entity;
+@model IEnumerable<OrderAreaProduct> 
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>获取产品列表</title>
+    <style>
+      
+    </style>
+</head>
+<body>
+    <div>
+        <table>
+            <tr>  
+                <td>
+                    @if (Convert.ToInt32(ViewBag.ModuleId) != 0)
+                    { 
+                        @Html.ActionLink("添加", "Add", new { id = ViewBag.ModuleId })
+                    }
+                </td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <th>Id</th>
+                <th>产品Id</th>
+                <th>显示顺序</th>
+                <th>产品状态</th>
+                <th>产品价格</th>
+                <th>产品数量</th>
+                <th>产品所对应的模块Id</th>
+                <th>产品所对应的活动Id</th>
+                <th>操作</th>
+            </tr>
+            @foreach (OrderAreaProduct product in Model)
+            {
+                <tr>
+                    <td>@product.Id</td>
+                    <td>@product.PId</td>
+                    <td>@product.Position</td>
+                    <td>
+                            @(product.State == 1 ? "启用" : "禁用")
+                    
+                    </td>
+                    <td>@product.PromotionPrice</td>
+                    <td>@product.PromotionNum</td>
+                    <td>@product.OrderAreaId</td>
+                    <td>@product.ActivityId</td>
+                    <td>
+                        @Html.ActionLink("编辑","Edit",new { id = product.Id }) 
+                        
+                    </td>
+
+                </tr>
+            }
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,118 @@
+﻿@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.ServiceTagModel>
+@{
+    ViewBag.Title = "商品服务标签";
+    var nofreeServiceids = "";
+    foreach (var item in Model.Where(m => m.Type == 2))
+    {
+        nofreeServiceids += item.StrServiceIDs + ";";
+    }
+}
+
+<style>
+    table td {
+        padding: 10px;
+        border: solid 1px #cbe3ff;
+    }
+
+    table th {
+        background-color: #cbe3ff;
+        color: #000000;
+        font-size: 16px;
+        height: 20px;
+    }
+
+    a {
+        cursor: pointer;
+    }
+
+    .title > h3 > label {
+        font-weight: normal;
+    }
+
+    input {
+        width: 400px;
+    }
+
+    textarea {
+        width: 600px;
+        height: 2px;
+        resize: none;
+    }
+
+    .bottom {
+        font-size: 30px;
+        margin-top: 40px;
+        text-align: center;
+    }
+
+        .bottom > a {
+            color: black;
+        }
+
+            .bottom > a:hover {
+                text-decoration: none;
+                font-weight: bold;
+            }
+
+            .bottom > a:first-of-type {
+                background-color: aquamarine;
+                padding: 10px 20px;
+                margin-right: 20px;
+            }
+</style>
+
+<div style="clear:both;"></div>
+
+<div style="float:left;" class="title">
+    <h2>
+        <span>商品服务标签</span>
+    </h2>
+</div>
+<div style="float:left;clear:both;">
+    <h1>
+        类别:
+    </h1>
+</div>
+<table style="width:100%;" class="no-free" data-serviceids="@nofreeServiceids">
+    <tr>
+        <th width="20%">类别</th>
+        <th width="20%">服务标签</th>
+        <th width="20%">服务描述</th>
+        <th width="20%">产品标签</th>
+        <th width="20%">产品描述</th>
+    </tr>
+    @foreach (var item in Model.Where(m => m.Type == 2))
+    {
+        <tr class="rule" data-pkid="@item.PKID">
+            <td>@(item.StrDisplayNames.Length > 50 ? item.StrDisplayNames.Substring(0, 50) + "......" : item.StrDisplayNames)</td>
+            <td>@item.ServiceTag</td>
+            <td>@item.ServiceDescribe</td>
+            <td>@item.ProductTag</td>
+            <td>@item.ProductDescribe</td>
+        </tr>
+    }
+</table>
+
+<div style="float:left;clear:both;margin-top:30px;">
+    <h1>
+        PID:
+    </h1>
+</div>
+<table style="width:100%;" class="free">
+    <tr>
+        <th width="50%">PIDs</th>
+        <th width="25%">服务标签</th>
+        <th width="25%">服务描述</th>
+    </tr>
+    @foreach (var item in Model.Where(m => m.Type == 1))
+    {
+        <tr class="rule" data-pkid="@item.PKID">
+            <td>@item.StrServiceIDs</td>
+            <td>@item.ServiceTag</td>
+            <td>@item.ServiceDescribeTID</td>
+        </tr>
+    }
+</table>
+<div class="bottom">
+    <a href="/ServiceTag/ProductServiceTag">编 辑</a>
+</div>

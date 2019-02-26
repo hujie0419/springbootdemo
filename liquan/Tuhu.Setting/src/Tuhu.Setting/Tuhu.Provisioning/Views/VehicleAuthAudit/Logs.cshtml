@@ -1,0 +1,36 @@
+﻿@using System.Linq;
+@using Tuhu.Provisioning
+@using Tuhu.Provisioning.DataAccess.Entity
+@using Tuhu.Service.Vehicle.Request
+@model List<VehicleTypeCertificationAuditLogModel>
+@{
+    Layout = null;
+}
+<table width="100%">
+    <thead>
+        <tr>
+            <th>审核人</th>
+            <th>审核时间</th>
+            <th>操作前</th>
+            <th>操作后</th>
+            <th>原因</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Count>0)
+        {
+            foreach (var response in Model)
+            {
+                <tr>
+                    <td>@(response.Author)</td>
+                    <td>@(response.CreateTime.ToString("yyyy-MM-dd HH:mm:ss"))</td>
+                    <td>
+                        @response.OldValue
+                    </td>
+                    <td>@response.NewValue</td>
+                    <td>@response.Description</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

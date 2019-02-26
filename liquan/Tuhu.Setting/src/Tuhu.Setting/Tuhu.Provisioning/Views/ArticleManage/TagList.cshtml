@@ -1,0 +1,346 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity.Discovery;
+@model List<Category>
+@{
+    ViewBag.Title = "标签管理";
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>标签管理</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="@Url.Action("Index", "Home")">首页</a>
+            </li>
+            <li class="active">
+                <strong>标签列表</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-lg-2">
+    </div>
+</div>
+<div class="wrapper wrapper-content animated fadeInRight ecommerce">
+
+    <div class="ibox-content m-b-sm border-bottom">
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <button type="button" class="btn   btn-primary" data-toggle="modal" id="btnAddTags" data-target="#myModal5">新增标签</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-content">
+
+                    <table class="footable table table-stripped toggle-arrow-tiny" data-page-size="500">
+                        <thead>
+                            <tr>
+                                <th data-hide="phone">标签名称</th>
+                                <th class="text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Count > 0)
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (item.Disable == false)
+                                            {
+                                                <a href="/ArticleManage/ChildTagList?id=@item.Id&type=@ViewBag.Type">@item.Name（@item.ChildrenCategory.Count）</a>
+                                            }
+                                            else if (item.Disable == true)
+                                            {
+                                                @item.Name@("（")@item.ChildrenCategory.Count@("）")
+                                            }
+
+                                        </td>
+                                        <td class="text-right">
+                                            <div class="btn-group" data-pic="@item.Image" data-desc="@item.Describe">
+                                                <button class="btn-white btn btn-xs btnUpdate" data-target="#myModal6" data-toggle="modal" tid="@item.Id" tname="@item.Name">修改</button>
+                                                @if (item.Disable == false)
+                                                {
+                                                    <button class="btn-white btn btn-xs btnDelete" tid="@item.Id">删除</button>
+                                                }
+                                                else if (item.Disable == true)
+                                                {
+                                                    <button class="btn-white btn btn-xs btnRecovery" tid="@item.Id" style="background: #b9b9b9 !important">恢复</button>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                        <tfoot>
+                            @*<tr>
+                                    <td colspan="7">
+                                        <ul class="pagination pull-right"></ul>
+                                    </td>
+                                </tr>*@
+                            <tr>
+                                <td colspan="7">
+                                    <ul class="pagination pull-right"></ul>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal inmodal fade" id="myModal5" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">新增标签</h4>
+                    @*<small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>*@<small class="font-bold"></small>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">标签名称</label>
+                        <div class="col-sm-10"><input type="text" class="form-control" id="txtTagName" placeholder="标签名称2~10个字"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">标签描述</label>
+                        <div class="col-sm-10"><input type="text" class="form-control" id="txtTagDesc" placeholder="标签描述不能为空"></div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label class="col-sm-2 control-label">标签图片</label>
+                        <div class="col-sm-10">
+                            <input id="tagShowImages" name="TagImage" style="width:150px;display:none;" type="hidden" value="">
+                            <input style="width:150px;" type="file" id="morePicture" name="morePicture" onchange="uploadPic('morePicture', HandlerPicResult);">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-10">
+                            <img src="" id="imgTagPic" width="140" height="75" style="display:none" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="btnSave">保存</button>
+                    <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal inmodal fade" id="myModal6" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">修改标签</h4>
+                    @*<small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>*@<small class="font-bold"></small>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">标签名称</label>
+                        <div class="col-sm-10"><input type="text" class="form-control" id="txtTagNameUp" placeholder="标签名称2~10个字"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">标签描述</label>
+                        <div class="col-sm-10"><input type="text" class="form-control" id="txtTagDescUp" placeholder="标签描述不能为空"></div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label class="col-sm-2 control-label">标签图片</label>
+                        <div class="col-sm-10">
+                            <input id="tagShowImagesUp" name="TagImage" style="width:150px;display:none;" type="hidden" value="">
+                            <input style="width:150px;" type="file" id="morePictureUp" name="morePicture" onchange="uploadPic('morePictureUp', HandlerPicResult);">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-10">
+                            <img src="" id="imgTagPicUp" width="140" height="75" style="display:none" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="btnSaveUp">保存</button>
+                    <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" id="_hdTagId" value="" />
+
+@section Styles {
+    @Styles.Render("~/plugins/footableStyles")
+    <style type="text/css">
+        #myModal5 .form-group {
+            height: 40px;
+        }
+
+        #myModal6 .form-group {
+            height: 40px;
+        }
+    </style>
+}
+
+@section Scripts {
+    @Scripts.Render("~/plugins/footable")
+    <script src="~/Scripts/ajaxfileupload.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('.footable').footable();
+
+            $("#btnAddTags").click(function () {
+                $("#txtTagName").val("");
+                $("#txtTagDesc").val("");
+                $("#tagShowImagesUp").val("");
+                $("#imgTagPicUp").hide();
+                $("#imgTagPicUp").attr("src", "");
+            });
+            //保存
+            $("#btnSave").click(function () {
+                var tagName = $("#txtTagName").val();
+                var tagDesc = $("#txtTagDesc").val();
+                var tagImg = $("#tagShowImagesUp").val()
+                if (tagName == "") { alert("标签名称不能为空"); return; }
+                if (tagName.length < 2 || tagName.length > 10) { alert("标签长度在2~10个字之间"); return; }
+                if (tagDesc == "") { alert("标签描述不能为空"); return; }
+                if (tagDesc.length > 100) { alert("标签描述不能超过100个字"); return; }
+                $.ajax({
+                    type: "post",
+                    url: "/ArticleManage/AddTag",
+                    data: { Name: tagName, Describe: tagDesc, Image: tagImg, type: "@ViewBag.Type" },
+                    success: function (result) {
+                        if (result == "ok") {
+                            $("#myModal5 .modal-header").children(".close").click();//关闭
+                            location.reload();
+                        } else {
+                            alert("标签添加失败");
+                        }
+                    }
+                });
+            });
+
+            //点击修改
+            $(".btnUpdate").click(function () {
+                var thisObj = $(this);
+                var tagId = thisObj.attr("tid");
+                var tagName = thisObj.attr("tname");
+                var tagDesc = thisObj.parent().attr("data-desc");
+                var tagPic = thisObj.parent().attr("data-pic");
+                $("#txtTagNameUp").val(tagName);
+                $("#txtTagDescUp").val(tagDesc);
+                if (tagPic != "") {
+                    $("#tagShowImagesUp").val(tagPic);
+                    $("#imgTagPicUp").show();
+                    $("#imgTagPicUp").attr("src", tagPic);
+                } else {
+                    $("#tagShowImagesUp").val("");
+                    $("#imgTagPicUp").hide();
+                    $("#imgTagPicUp").attr("src", "");
+                }
+                $("#_hdTagId").val(tagId);
+            });
+            //修改保存
+            $("#btnSaveUp").click(function () {
+                var tagId = $("#_hdTagId").val();
+                var tagName = $("#txtTagNameUp").val();
+                var tagDesc = $("#txtTagDescUp").val();
+                var tagImg = $("#tagShowImagesUp").val();
+                if (tagName == "") { alert("标签名称不能为空"); return; }
+                if (tagName.length < 2 || tagName.length > 10) { alert("标签长度在2~10个字之间"); return; }
+                if (tagDesc == "") { alert("标签描述不能为空"); return; }
+                if (tagDesc.length > 100) { alert("标签描述不能超过100个字"); return; }
+                $.ajax({
+                    type: "post",
+                    url: "/ArticleManage/UpdateTag",
+                    data: { Id: tagId, Name: tagName, Describe: tagDesc, Image: tagImg, type: "@ViewBag.Type" },
+                    success: function (result) {
+                        if (result == "ok") {
+                            $("#myModal6 .modal-header").children(".close").click();//关闭
+                            location.reload();
+                        } else {
+                            alert("修改添加失败");
+                        }
+                    }
+                });
+
+            });
+            //删除
+            $(".btnDelete").click(function () {
+                var thisObj = $(this);
+                var tagId = thisObj.attr("tid");
+                if (confirm("确定要删除此标签吗？")) {
+                    $.ajax({
+                        type: "post",
+                        url: "/ArticleManage/DeleteTag",
+                        data: { cateId: tagId, type: "@ViewBag.Type" },
+                        success: function (result) {
+                            if (result == "ok") {
+                                location.reload();
+                            } else {
+                                alert("标签删除失败");
+                            }
+                        }
+                    });
+                    //---end
+                }
+            });
+            //恢复
+            $(".btnRecovery").click(function () {
+                var thisObj = $(this);
+                var tagId = thisObj.attr("tid");
+                if (confirm("确定要恢复吗？")) {
+                    $.ajax({
+                        type: "post",
+                        url: "/ArticleManage/RecoveryTag",
+                        data: { cateId: tagId , type: "@ViewBag.Type"},
+                        success: function (result) {
+                            if (result == "ok") {
+                                location.reload();
+                            } else {
+                                alert("标签恢复失败");
+                            }
+                        }
+                    });
+                    //---end
+                }
+            });
+
+        });
+
+        function uploadPic(_fileElementId, _callback) {
+            $.ajaxFileUpload({
+                url: '/ArticleManage/ImageUploadToAli',
+                secureuri: false,
+                fileElementId: _fileElementId || '',
+                dataType: 'json',
+                async: false,
+                success: function (result) {
+                    _callback(result, _fileElementId);
+                }
+            });
+        }
+        function HandlerPicResult(result, elementId) {
+            if (elementId == "morePicture") {
+                $("#imgTagPic").attr("src", result.BImage);
+                $("#imgTagPic").show();
+                $("#tagShowImages").val(result.BImage);
+            } else {
+                $("#imgTagPicUp").attr("src", result.BImage);
+                $("#imgTagPicUp").show();
+                $("#tagShowImagesUp").val(result.BImage);
+            }
+
+        }
+    </script>
+}
+

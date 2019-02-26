@@ -1,0 +1,399 @@
+﻿@model List<Tuhu.Provisioning.DataAccess.Entity.ProductFaqConfigDetailModel>
+    @{
+        ViewBag.Title = "ContentForm";
+        Layout = "~/Views/Shared/_Form.cshtml";
+
+    }
+    <style type="text/css">
+            .isHidden {
+                display: none;
+            }
+
+            .ke-icon-addquote {
+                background-image: url(/Content/kindeditor/themes/default/quote.png) !important;
+                width: 16px;
+                height: 16px;
+            }
+
+            /*.dd-havaSelect {
+            display: block;
+            margin: 5px 0;
+            padding: 5px 10px;
+            color: #333;
+            text-decoration: none;
+            border: 1px solid #e7eaec;
+            background: #a9a9a9;
+            -webkit-border-radius: 3px;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }*/
+    </style>
+    <script type="text/javascript" src="~/Scripts/multiple/multiple-select.js"></script>
+    <script charset="utf-8" src="~/Content/KindEditor/kindeditor.js"></script>
+    <script charset="utf-8" src="~/Content/KindEditor/lang/zh_CN.js"></script>
+    <div style="padding-top:20px;margin-right:20px;" id="formlist">
+        <form id="form1">
+            @{int i = 1;}
+            @foreach (var item in Model)
+            {
+
+                string question = i + "Question";
+                string answer = i + "Answer";
+                string status = i + "Status";
+                string tableId = i + "table";
+                <table class="form" id=@tableId>
+                    <tr>
+                        <th class="formTitle">常见问题 &nbsp;<span value="1" class=" Num badge">@item.Sort</span></th>
+
+                        <th class="formTitle" style="float: left">
+                            <button type="button" class="btn btn-primary moveup">向上移动</button>
+                            <button type="button" class="btn btn-primary movedown">向下移动</button>
+                            <button type="button" class="btn btn-primary del">删除</button>
+                        </th>
+
+                    </tr>
+                    <tr>
+                        <th class="formTitle">问题</th>
+                        <td class="formValue" colspan="3">
+                            <input type="Text" class="form-control" id="@question" name="Question" value="@item.Question">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="formTitle">回答：</th>
+                        <td class="formValue" colspan="3">
+                            <textarea id="@answer" name="Answer" style="width: 700px; height: 300px;">
+                    @item.Answer
+                    </textarea>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th class="formTitle">默认状态</th>
+                        <td class="formValue">
+                            <select class="form-control" id="@status" name="Status">
+                                <option value="0" @(item.Status == 0 ? "selected" : "")>收起</option>
+                                <option value="1" @(item.Status == 1 ? "selected" : "")>展开</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+                i++;
+            }
+            <label class="col-sm-offset-4">
+                <button type="button" class="btn btn-primary " onclick="addFaqConfig()">
+                    新增常见问题
+                    <span class="glyphicon glyphicon-align-left" aria-hidden="true"></span>
+                </button>
+                @*<input type="button" id="addFaq" onclick="addFaqConfig()"/>新增常见问题*@
+            </label>
+        </form>
+    </div>
+    <script type="text/template" id="Template">
+        <table class="form" style="width:760px" id="{{tableid}}">
+            <tr>
+                <th class="formTitle">常见问题 &nbsp;<span class="Num badge" value="{{num}}">{{num}}</span></th>
+
+                <th class="formTitle" style="float: left">
+                    <button type="button" class="btn btn-primary moveup">向上移动</button>
+                    <button type="button" class="btn btn-primary movedown">向下移动</button>
+                    <button type="button" class="btn btn-primary del">删除</button>
+                </th>
+
+            </tr>
+            <tr>
+                <th class="formTitle">问题</th>
+                <td class="formValue" colspan="3">
+                    <input type="Text" class="form-control" name="Question" id="{{Question}}" value="">
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">回答：</th>
+                <td class="formValue" colspan="3">
+                    <textarea name="Answer" id="{{Answer}}" style="width:700px;height:300px;">
+                    </textarea>
+                </td>
+            </tr>
+
+            <tr>
+                <th class="formTitle">默认状态</th>
+                <td class="formValue">
+                    <select class="form-control" id="{{Status}}" name="Status">
+                        <option value="0">收起</option>
+                        <option value="1">展开</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </script>
+    <script type="text/javascript">
+        @*for (var i = 1; i <= @ViewBag.DataList; i++) {
+        var num = i;
+        $(".form").last().append($("#Template").html()
+            .replace(/{{Num}}/ig, num)
+            .replace(/{{Answer}}/ig, num + "Answer")
+            .replace(/{{Question}}/ig, num + "Question")
+            .replace(/{{Status}}/ig, num + "Status")
+        );
+    }*@
+        var flag = true;
+        var editorarry = [];
+        KindEditor.plugin('addquote',
+            function(K) {
+                var editor = this, name = 'addquote';
+                // 点击图标时执行
+                editor.clickToolbar(name,
+                    function() {
+                        //var map = {
+                        //    span: '.font-weight=bold',
+                        //    strong: '*',
+                        //    b: '*'
+                        //};
+                        //if (editor.cmd.commonNode(map)) {
+                        //    editor.cmd.remove(map);
+                        //} else {
+                        //    editor.cmd.wrap('<strong></strong>');
+                        //}
+
+                        //return editor.cmd.select();
+                         if(editor.cmd.sel.anchorNode.parentNode.nodeName == "A") {
+                            $.modalAlert("该电话已经编辑过，如果需要重新编辑，请重新手输电话", "error");
+                        }
+                        else{
+                        var character1 = editor.cmd.sel.anchorNode.wholeText.toString();
+
+                        var character2 = character1.substring(editor.cmd.range.startOffset, editor.cmd.range.endOffset);
+                        if (character2 == "") {
+                            $.modalAlert("请先选中要编辑的电话", "error");
+                        } else {
+                            var part = /^\d+.+\d+$/gi;
+                            if (!character2.match(part)) {
+                                $.modalAlert("请只选中要编辑的电话", "error"); 
+                            }
+                            else {
+                                var part2 = /<a/gi;
+                                if (character2.match(part2)) {
+                                    $.modalAlert("改电话已经编辑过，如果需要重新编辑，请重新手输电话", "error");
+                                }
+                                else{
+                            return editor.cmd.wrap('<a href="tel:' + character2 + '"></a>',
+                                {
+                                    span: '.font-weight=bold',
+                                    strong: '*',
+                                    p: '*'
+                                        });
+                                }
+                            }
+                        }}
+
+                        //editor.wrap('<strong></strong>');
+                        //alert(selva);
+                        //return this.toggle('<strong></strong>', {
+                        //    span: '.font-weight=bold',
+                        //    strong: '*',
+                        //    b: '*'
+                        //});
+                    });
+            });
+
+        KindEditor.lang({ addquote: '编辑电话' });
+        //var editor1, editor2, editor3, editor4, editor5, editor6,
+        var option = {
+            //cssPath: '/kindEditor/plugins/code/prettify.css',
+            uploadJson: '/ArticleManage/ImageUploadToAli?from=article', //处理文件上传
+            fileManagerJson: '/ArticleManage/ImagesUploadMore',
+            resizeType: 1,
+            //filterMode: false,
+            items: ["image", "addquote", "|", "clearhtml", "source", "preview"],
+            pasteType: 1,
+            afterCreate: function() {
+            },
+            afterBlur: function() { this.sync(); }
+        }
+        for (var i = 1; i <= @ViewBag.DataCount; i++) {
+            var id = "#" + i + "Answer";
+            editorarry[i - 1] = KindEditor.create(id, option);
+        }
+
+        function addFaqConfig() {
+            var num = $(".form").length + 1;
+            var nextDom = $("#Template").html()
+                .replace(/{{Num}}/ig, num)
+                .replace(/{{Answer}}/ig, num + "Answer")
+                .replace(/{{Question}}/ig, num + "Question")
+                .replace(/{{Status}}/ig, num + "Status")
+                .replace(/{{tableid}}/ig, num + "table");
+            var preDom = $(".form").last();
+            //nextDom.before(preDom);
+            preDom.after(nextDom);
+            var id = num + "Answer";
+            KindEditor.lang({ addquote: '编辑电话' });
+            editorarry[num - 1] = KindEditor.create("#" + id, option);
+        }
+
+        $(document).on('click',
+            '.moveup',
+            function() {
+                var num = $(this).parent().prev().find("span").html();
+                if (num == 1) {
+                    $(this).css("disabled ", "disabled");
+                    $(this).css("color ", "red");
+                    $.modalMsg("已经是第一个了", "error");
+                    return false;
+                }
+                //var prenum = num - 1;
+                // var predom = $("#" + prenum + "table");
+                // var nextdom = $("#" + num + "table")[0];
+                //// var nextdom = $("#" + num + "table").html();
+                // alert(predom);
+                // alert(nextdom);
+                //     predom.after(nextdom);
+                var presubNum = num - 2;
+                var subNum = num - 1;
+                var prenum = num - 1;
+                var objpre = {
+                    Question: $("#" + prenum + "Question").val(),
+                    Answer: editorarry[presubNum].html(),
+                    Status: $("#" + prenum + "Status").val()
+                };
+                var obj = {
+                    Question: $("#" + num + "Question").val(),
+                    Answer: editorarry[subNum].html(),
+                    Status: $("#" + num + "Status").val()
+                };
+                $("#" + num + "Question").val(objpre.Question);
+
+                editorarry[num - 1].html(objpre.Answer);
+                editorarry[num - 2].html(obj.Answer);
+                $("#" + num + "Status").val(objpre.Status);
+                $("#" + prenum + "Question").val(obj.Question);
+                $("#" + prenum + "Status").val(obj.Status);
+            });
+        $(document).on('click',
+            '.movedown',
+            function() {
+                var num = $(this).parent().prev().find("span").html();
+                if (num == $(".form").length) {
+                    $(this).css("disabled ", "disabled");
+                    $(this).css("color ", "red");
+                    $.modalMsg("已经是最后一个了", "error");
+                    return false;
+                }
+                var nextnum = parseInt(num) + 1;
+                var presubNum = num - 1;
+                var nextobj = {
+                    Question: $("#" + nextnum + "Question").val(),
+                    Answer: editorarry[num].html(),
+                    Status: $("#" + nextnum + "Status").val()
+                };
+                var obj = {
+                    Question: $("#" + num + "Question").val(),
+                    Answer: editorarry[presubNum].html(),
+                    Status: $("#" + num + "Status").val()
+                };
+                //alert(num);
+                //alert("下一个" + nextobj.Answer);
+                //alert("当前" + obj.Answer);
+
+                editorarry[presubNum].html(nextobj.Answer);
+                editorarry[num].html(obj.Answer);
+                $("#" + num + "Question").val(nextobj.Question);
+                $("#" + num + "Status").val(nextobj.Status);
+                $("#" + nextnum + "Question").val(obj.Question);
+                $("#" + nextnum + "Status").val(obj.Status);
+            });
+        $(document).on('click',
+            '.del',
+            function() {
+                var num = $(this).parent().prev().find("span").html();
+                var eqnum = num - 1;
+                alert(eqnum);
+                $(".form").eq(eqnum).remove();
+                $('.Num').each(function(i) {
+                    var n = i + 1;
+                    $(this).html(n);
+                });
+            });
+
+        var HtmlUtil = {
+            /*1.用浏览器内部转换器实现html转码*/
+            htmlEncode: function(html) {
+                //1.首先动态创建一个容器标签元素，如DIV
+                var temp = document.createElement("div");
+                //2.然后将要转换的字符串设置为这个元素的innerText(ie支持)或者textContent(火狐，google支持)
+                (temp.textContent != undefined) ? (temp.textContent = html) : (temp.innerText = html);
+                //3.最后返回这个元素的innerHTML，即得到经过HTML编码转换的字符串了
+                var output = temp.innerHTML;
+                temp = null;
+                return output;
+            },
+            /*2.用浏览器内部转换器实现html解码*/
+            htmlDecode: function(text) {
+                //1.首先动态创建一个容器标签元素，如DIV
+                var temp = document.createElement("div");
+                //2.然后将要转换的字符串设置为这个元素的innerHTML(ie，火狐，google都支持)
+                temp.innerHTML = text;
+                //3.最后返回这个元素的innerText(ie支持)或者textContent(火狐，google支持)，即得到经过HTML解码的字符串了。
+                var output = temp.innerText || temp.textContent;
+                temp = null;
+                return output;
+            }
+        };
+
+        function submitForm(iframe) {
+            var details = [];
+
+            var keyValue = $.request("keyValue");
+            @*if (keyValue == '') {
+                if ("@ViewBag.Pids" == "Long") {
+                    $.modalAlert("不支持一次编辑数据超过5000条，请分批编辑", 'error');
+                    flag = false;
+                } else {
+                    flag = true;
+                    keyValue = "@ViewBag.Pids";
+            }
+        }*@
+            if (flag) {
+                $('.form').each(function() {
+                    var num = $(this).find("span").html() - 1;
+                    if ($(this).find("[name='Question']").val() == "" || editorarry[num].html() == "") {
+                        flag = false;
+                    }
+                });
+                if (flag == false) {
+                    $.modalAlert("问题编辑不允许为空", 'error');
+                } else {
+                    $('.form').each(function() {
+                        //if ($(this).find("[name='Question']").val() == "" || HtmlUtil.htmlEncode(editorarry[num].html())=="") {
+                        //    $.modalAlert("问题编辑不允许为空", 'error');
+                        //    return false;
+                        //}
+                        var num = $(this).find("span").html() - 1;
+                        var answer1 = editorarry[num].html();
+                        //var part1 = /<a\bhref="tel:.*">.*<a\bhref="tel:.*">.*/g;
+                        //if (answer1.match(part1)) {
+                        //    alert("第" + num + "个问题,存在不正确的电话配置，请删掉以后重新手输");
+                        //    flag = false;
+                        //}
+                        var part = /<a\b[^>]+\bhref="tel:([^"]*)"[^>]*>([\s\S]*?)<\/a>/g;
+                        var answer2 = answer1.replace(part, "<a href=" + "tel:" + "$2" + ">" + "$2" + "</a>");
+            var obj = {
+                Question: $(this).find("[name='Question']").val(),
+                Answer: HtmlUtil.htmlEncode(answer2),
+                Sort: $(this).find("span").html(),
+                Status: $(this).find("[name='Status']").val()
+            }
+            details.push(obj);
+                        });
+        $.ajax({
+            url: "/ProductFaqManage/SaveDetails",
+            data: { datas: JSON.stringify(details), pids: keyValue },
+            dataType: "json",
+            method:"post",
+            async: false,
+            success: function (data) {
+                $.modalMsg(data.msg, "success");
+            }
+            });
+          }}
+    };
+    </script>

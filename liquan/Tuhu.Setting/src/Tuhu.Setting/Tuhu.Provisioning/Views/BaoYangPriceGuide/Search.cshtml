@@ -1,0 +1,492 @@
+﻿
+<link href="~/Content/nfine/js/select2/select2.min.css" rel="stylesheet" />
+<div>
+<label>产品名称：</label>
+<input type="text" id="dispalyName"/>
+<label>PID：</label>
+<input type="text" id="pid"/>
+<br />
+<span>一级类目：</span>
+<select class="firstType" onchange="getSecondType(this)">
+    @if (!string.IsNullOrWhiteSpace(ViewBag.Type) && ViewBag.Type.Equals("BaoYang"))
+    {
+        <option value="28656">保养</option>
+    }
+    else
+    {
+        <option value="28349">车品</option>
+        <option value="193649">美容</option>
+    }
+</select>
+&nbsp;
+<span>二级类目：</span>
+<select class="secondType" onchange="getThirdType(this)"></select>
+&nbsp;
+<span>三级类目：</span>
+<select class="thirdType"></select>
+<label>品牌：</label>
+<div style="display:inline-block; width:200px;">
+    <select id="Brand"></select>
+</div>
+<label>库存：</label>
+<select id="StockOut">
+    <option value="0">请选择库存</option>
+    <option value="1">有货</option>
+    <option value="2">无货</option>
+</select>
+<label>状态：</label>
+<select id="Status">
+    <option value="0">请选择上架状态</option>
+    <option value="1" selected="selected">上架</option>
+    <option value="2">下架</option>
+</select>
+    <label>展示状态：</label>
+    <select id="IsShow">
+        <option value="" selected="selected">不限</option>
+        <option value="0">不展示</option>
+        <option value="1">展示</option>
+    </select>
+<p>
+<div class="pcprice_per">
+    <input type="checkbox" value=""/>
+    <span class="name">官网价格</span>
+    <select>
+        <option value="1">高于</option>
+        <option value="-1">低于</option>
+    </select>
+    实际指导价
+    <input type="text" style="width: 40px" value="5"/>%
+</div>
+<p>
+<div style="display: inline-flex;">
+    <div class="TotalStock">
+        <input type="checkbox" value=""/>
+        <span class="name">库存</span>
+        <select>
+            <option value="1">>=</option>
+            <option value="-1"><=</option>
+        </select>
+        <input type="text" style="width: 40px" value=""/>
+    </div>
+    <div class="TurnoverDays">
+        <input type="checkbox" value=""/>
+        <span class="name">周转天数</span>
+        <select>
+            <option value="1">>=</option>
+            <option value="-1"><=</option>
+        </select>
+        <input type="text" style="width: 40px" value=""/>
+    </div>
+</div>
+<p>
+
+<div>
+    <div class="TuhuMaoLiLv" style="float: left;">
+        <input type="checkbox" value=""/>
+        <span class="name">途虎毛利率</span>
+        <select>
+            <option value="1">>=</option>
+            <option value="-1"><=</option>
+        </select>
+        <input type="text" style="width: 40px" value=""/>
+        <span style="font-weight: bolder">%</span>
+    </div>
+    <div class="TuhuMaoLiE" style="margin-left: 10px; float: left;">
+        <input type="checkbox" value=""/>
+        <span class="name">途虎毛利额</span>
+        <select>
+            <option value="1">>=</option>
+            <option value="-1"><=</option>
+        </select>
+        <input type="text" style="width: 40px" value=""/>
+    </div>
+    <div class="QplMaoLiLv" style="margin-left: 10px; float: left;">
+        <input type="checkbox" value=""/>
+        <span class="name">汽配龙毛利率</span>
+        <select>
+            <option value="1">>=</option>
+            <option value="-1"><=</option>
+        </select>
+        <input type="text" style="width: 40px" value=""/>
+        <span style="font-weight: bolder">%</span>
+    </div>
+    <div class="QplMaoLiE" style="margin-left: 10px; float: left;">
+        <input type="checkbox" value=""/>
+        <span class="name">汽配龙毛利额</span>
+        <select>
+            <option value="1">>=</option>
+            <option value="-1"><=</option>
+        </select>
+        <input type="text" style="width: 40px" value=""/>
+    </div>
+    <div class="ShopMaoLiLv" style="margin-left: 10px; float: left;">
+        <input type="checkbox" value=""/>
+        <span class="name">工场店毛利率</span>
+        <select>
+            <option value="1">>=</option>
+            <option value="-1"><=</option>
+        </select>
+        <input type="text" style="width: 40px" value=""/>
+        <span style="font-weight: bolder">%</span>
+    </div>
+    <div class="ShopMaoLiE" style="margin-left: 10px; float: left;">
+        <input type="checkbox" value=""/>
+        <span class="name">工场店毛利额</span>
+        <select>
+            <option value="1">>=</option>
+            <option value="-1"><=</option>
+        </select>
+        <input type="text" style="width: 40px" value=""/>
+    </div>
+</div>
+<br></br>
+
+<label>对比筛选</label>
+<p>
+<div style="display: inline-flex;">
+    <div class="SitePrices" style="width: 152px; height: 199px; border: 1px solid #000000; overflow-y: scroll;">
+        <input type="checkbox" value="Price"/>
+        <span class="name">途虎官网价</span>
+        <br>
+        <input type="checkbox" value="QPLPrice"/>
+        <span class="name">汽配龙</span>
+        <br>
+        <input type="checkbox" value="JDSelfPrice"/>
+        <span class="name">京东自营</span>
+        <br>
+        <input type="checkbox" value="TWLTMPrice"/>
+        <span class="name">特维轮</span>
+        <br>
+        <input type="checkbox" value="QccrlPrice"/>
+        <span class="name">汽车超人零售</span>
+        <br>
+        <input type="checkbox" value="YcwyPrice"/>
+        <span class="name">养车无忧官网</span>
+        <br>
+        <input type="checkbox" value="KzPrice"/>
+        <span class="name">康众官网</span>
+        <br>
+        <input type="checkbox" value="TBPrice"/>
+        <span class="name">途虎淘宝</span>
+        <br>
+        <input type="checkbox" value="TB2Price"/>
+        <span class="name">途虎淘宝2</span>
+        <br>
+        <input type="checkbox" value="TM1Price"/>
+        <span class="name">途虎天猫1</span>
+        <br>
+        <input type="checkbox" value="TM2Price"/>
+        <span class="name">途虎天猫2</span>
+        <br>
+        <input type="checkbox" value="TM3Price"/>
+        <span class="name">途虎天猫3</span>
+        <br>
+        <input type="checkbox" value="TM4Price"/>
+        <span class="name">途虎天猫4</span>
+        <br>
+        <input type="checkbox" value="JDPrice"/>
+        <span class="name">途虎京东</span>
+        <br>
+        <input type="checkbox" value="JDFlagShipPrice"/>
+        <span class="name">途虎京东旗舰店</span>
+        <br>
+    </div>
+    <div style="margin-top: 80px; margin-left: 30px;">
+        <span style="font-weight: bolder">/</span>
+    </div>
+    <div style="width: 152px; height: 199px; border: 1px solid #000000; overflow-y: scroll; margin-left: 20px;">
+        <input type="radio" name="radio_1" value="Price"/>
+        <span class="name">途虎官网价</span>
+        <br>
+        <input type="radio" name="radio_1" value="QPLPrice"/>
+        <span class="name">汽配龙</span>
+        <br>
+        <input type="radio" name="radio_1" value="JDSelfPrice"/>
+        <span class="name">京东自营</span>
+        <br>
+        <input type="radio" name="radio_1" value="TWLTMPrice"/>
+        <span class="name">特维轮</span>
+        <br>
+        <input type="radio" name="radio_1" value="QccrlPrice"/>
+        <span class="name">汽车超人零售</span>
+        <br>
+        <input type="radio" name="radio_1" value="YcwyPrice"/>
+        <span class="name">养车无忧官网</span>
+        <br>
+        <input type="radio" name="radio_1" value="KzPrice"/>
+        <span class="name">康众官网</span>
+        <br>
+        <input type="radio" name="radio_1" value="TBPrice"/>
+        <span class="name">途虎淘宝</span>
+        <br>
+        <input type="radio" name="radio_1" value="TB2Price"/>
+        <span class="name">途虎淘宝2</span>
+        <br>
+        <input type="radio" name="radio_1" value="TM1Price"/>
+        <span class="name">途虎天猫1</span>
+        <br>
+        <input type="radio" name="radio_1" value="TM2Price"/>
+        <span class="name">途虎天猫2</span>
+        <br>
+        <input type="radio" name="radio_1" value="TM3Price"/>
+        <span class="name">途虎天猫3</span>
+        <br>
+        <input type="radio" name="radio_1" value="TM4Price"/>
+        <span class="name">途虎天猫4</span>
+        <br>
+        <input type="radio" name="radio_1" value="JDPrice"/>
+        <span class="name">途虎京东</span>
+        <br>
+        <input type="radio" name="radio_1" value="JDFlagShipPrice"/>
+        <span class="name">途虎京东旗舰店</span>
+        <br>
+    </div>
+    <div style="margin-top: 80px; margin-left: 30px;">
+        <select class="Contrast">
+            <option value="1">>=</option>
+            <option value="-1"><=</option>
+        </select>
+        <input type="text" style="width: 40px" value="" class="Proportion"/>
+    </div>
+</div>
+<form>
+    <input type="button" class="btn-primary" value="查询" id="Search" style="cursor: pointer; margin: 15px 0 30px 0"/>
+</form>
+<div style="width: 100%; height: 1px; border: 1px solid #000000; margin-bottom: 15px;"></div>
+<div class="beforetable">
+    每页显示：
+    <select id="PageSize">
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+    </select>条
+    <span class="data_count"></span>
+    <a href="javascript:void(0)" onclick="exportExcel()">导出</a>
+</div>
+<div class="list"></div>
+</div>
+<script src="~/Content/nfine/js/select2/select2.min.js"></script>
+<script>
+    $(function () {
+        getSecondType($(".firstType").val());
+    });
+
+    function getSecondType(o) {
+        $(".secondType").html("<option value=''>全部</option>");
+        $(".thirdType").html("<option value=''>全部</option>");
+        var parentOid = $(".firstType").val() != "" ? $(".firstType").val() : 0;
+        var oid = $(o).val();
+        $.get("GetProductCategoryByParentOid", { oid: parentOid }, function (response) {
+            if (response.data) {
+                var dt = response.data;
+                $.each(dt, function (k, v) {
+                    $(".secondType").append("<option value='" + k + "'>" + v + "</option>");
+                });
+            }
+        });
+        getCategoryBrand($(".firstType").val(), "", "");
+    }
+
+    function getThirdType(o) {
+        $(".thirdType").html("<option value=''>全部</option>");
+        var parentOid = $(".secondType").val() != "" ? $(".secondType").val() : 0;
+        var oid = $(o).val();
+        $.get("GetProductCategoryByParentOid", { oid: parentOid }, function (response) {
+            if (response.data) {
+                var dt = response.data;
+                $.each(dt, function (k, v) {
+                    $(".thirdType").append("<option value='" + k + "'>" + v + "</option>");
+                });
+            }
+        });
+        getCategoryBrand($(".firstType").val(), $(".secondType").val(), "");
+    }
+
+    $(".thirdType").change(function() {
+        getCategoryBrand($(".firstType").val(), $(".secondType").val(), $(".thirdType").val());
+    });
+
+    function getCategoryBrand(firstType, secondType, thirdType) {
+        $("#Brand").html("<option value=''>请选择品牌</option>");
+        $.get("GetCategoryBrand", { firstType: firstType, secondType: secondType, thirdType: thirdType }, function (response) {
+            if (response.data) {
+                var dt = response.data;
+                $.each(dt, function (k, v) {
+                    $("#Brand").append("<option value='" + v + "'>" + v + "</option>");
+                });
+                $("#Brand").select2();
+            }
+        });
+    }
+
+    var nodata = '<div style="width:100%;display:grid;"><span style="margin-left:auto; margin-right:auto;">暂无数据</span></div>';
+    var LoadList = function(index, pageType) {
+        var PID = $("#pid").val(),
+            FirstType = $(".firstType").val(),
+            SecondType = $(".secondType").val(),
+            ThirdType = $(".thirdType").val(),
+            ProductName = $("#dispalyName").val(),
+            Brand = $("#Brand").val(),
+            StockStatus = $("#StockOut").val(),
+            OnSaleStatus = $("#Status").val(),
+            $radio = $("[name=radio_1]:checked"),
+            SitePrice = $radio.val(),
+            Contrast = $(".Contrast").val(),
+            MaoLiE,
+            MatchMaoLiE = $(".TuhuMaoLiE>select>option:selected").val(),
+            MaoLiLv,
+            MatchMaoLiLv = $(".TuhuMaoLiLv>select>option:selected").val(),
+            PCPricePer,
+            MatchPCPricePer = $(".pcprice_per>select>option:selected").val(),
+            QplMaoLiE,
+            MatchQplMaoLiE = $(".QplMaoLiE>select>option:selected").val(),
+            QplMaoLiLv,
+            MatchQplMaoLiLv = $(".QplMaoLiLv>select>option:selected").val(),
+            ShopMaoLiE,
+            MatchShopMaoLiE = $(".ShopMaoLiE>select>option:selected").val(),
+            ShopMaoLiLv,
+            MatchShopMaoLiLv = $(".ShopMaoLiLv>select>option:selected").val(),
+            Proportion = $(".Proportion").val(),
+            pageSize = $("#PageSize").val(),
+            SitePrices = "",
+            TotalStock,
+            MatchTotalStock = $(".TotalStock>select>option:selected").val(),
+            TurnoverDays,
+            MatchTurnoverDays = $(".TurnoverDays>select>option:selected").val(),
+            IsShow = $("#IsShow").val() === "" ? null : $("#IsShow").val() === "0" ? false : true,
+            PageType = pageType;
+        if ($(".TuhuMaoLiE>input[type=checkbox]").prop("checked")) {
+            MaoLiE = $(".TuhuMaoLiE>input[type=text]").val();
+            if (isNaN(MaoLiE)) {
+                alert("毛利额不合法");
+                return false;
+            }
+            MaoLiE = parseFloat(MaoLiE);
+        }
+        if ($(".TuhuMaoLiLv>input[type=checkbox]").prop("checked")) {
+            MaoLiLv = $(".TuhuMaoLiLv>input[type=text]").val();
+            if (isNaN(MaoLiLv)) {
+                alert("毛利率不合法");
+                return false;
+            }
+            MaoLiLv = parseFloat(MaoLiLv);
+        }
+        if ($(".QplMaoLiE>input[type=checkbox]").prop("checked")) {
+            QplMaoLiE = $(".QplMaoLiE>input[type=text]").val();
+            if (isNaN(QplMaoLiE)) {
+                alert("汽配龙毛利额不合法");
+                return false;
+            }
+            QplMaoLiE = parseFloat(QplMaoLiE);
+        }
+        if ($(".QplMaoLiLv>input[type=checkbox]").prop("checked")) {
+            QplMaoLiLv = $(".QplMaoLiLv>input[type=text]").val();
+            if (isNaN(QplMaoLiLv)) {
+                alert("汽配龙毛利率不合法");
+                return false;
+            }
+            QplMaoLiLv = parseFloat(QplMaoLiLv);
+        }
+        if ($(".ShopMaoLiE>input[type=checkbox]").prop("checked")) {
+            ShopMaoLiE = $(".ShopMaoLiE>input[type=text]").val();
+            if (isNaN(ShopMaoLiE)) {
+                alert("工场店毛利额不合法");
+                return false;
+            }
+            ShopMaoLiE = parseFloat(ShopMaoLiE);
+        }
+        if ($(".ShopMaoLiLv>input[type=checkbox]").prop("checked")) {
+            ShopMaoLiLv = $(".ShopMaoLiLv>input[type=text]").val();
+            if (isNaN(ShopMaoLiLv)) {
+                alert("工场店毛利率不合法");
+                return false;
+            }
+            ShopMaoLiLv = parseFloat(ShopMaoLiLv);
+        }
+        if ($(".TotalStock>input[type=checkbox]").prop("checked")) {
+            TotalStock = $(".TotalStock>input[type=text]").val();
+            if (isNaN(TotalStock)) {
+                alert("库存不合法");
+                return false;
+            }
+            TotalStock = parseInt(TotalStock);
+        }
+        if ($(".TurnoverDays>input[type=checkbox]").prop("checked")) {
+            TurnoverDays = $(".TurnoverDays>input[type=text]").val();
+            if (isNaN(TurnoverDays)) {
+                alert("周转天数不合法");
+                return false;
+            }
+            TurnoverDays = parseInt(TurnoverDays);
+        }
+        if ($(".pcprice_per>input[type=checkbox]").prop("checked")) {
+            PCPricePer = $(".pcprice_per>input[type=text]").val();
+            if (isNaN(PCPricePer)) {
+                alert("官网价格不合法");
+                return false;
+            }
+            PCPricePer = parseFloat(PCPricePer);
+        }
+
+        var sites = $(".SitePrices").find("input[Type='checkbox']");
+        var allsites = [];
+        $.each(sites, function () {
+            if ($(this).attr('checked')) {
+                allsites.push($(this).val());
+            }
+        });
+        SitePrices = allsites.join(",");
+
+        $(".list").html(loading);
+        $.get("PriceProductList", {
+            ProductName: ProductName,
+            PID: PID,
+            FirstType: FirstType,
+            SecondType: SecondType,
+            ThirdType: ThirdType,
+            Brand: Brand,
+            StockStatus: StockStatus,
+            OnSaleStatus: OnSaleStatus,
+            SitePrice: SitePrice,
+            Contrast: Contrast,
+            Proportion: Proportion,
+            MaoLiE: MaoLiE,
+            MatchMaoLiE: MatchMaoLiE,
+            MaoLiLv: MaoLiLv,
+            MatchMaoLiLv: MatchMaoLiLv,
+            PCPricePer: PCPricePer,
+            MatchPCPricePer: MatchPCPricePer,
+            QplMaoLiE: QplMaoLiE,
+            MatchQplMaoLiE: MatchQplMaoLiE,
+            QplMaoLiLv: QplMaoLiLv,
+            MatchQplMaoLiLv: MatchQplMaoLiLv,
+            ShopMaoLiE: ShopMaoLiE,
+            MatchShopMaoLiE: MatchShopMaoLiE,
+            ShopMaoLiLv: ShopMaoLiLv,
+            MatchShopMaoLiLv: MatchShopMaoLiLv,
+            pageSize: pageSize,
+            pageIndex: index,
+            SitePrices: SitePrices,
+            TotalStock: TotalStock,
+            MatchTotalStock: MatchTotalStock,
+            TurnoverDays: TurnoverDays,
+            MatchTurnoverDays: MatchTurnoverDays,
+            IsShow: IsShow,
+            PageType: PageType
+        }, function(data, status) {
+            $(".list").empty();
+            if (status === "success") {
+                $(".loadimg").hide();
+                if (data) {
+                    $(".list").html(data);
+                } else {
+                    $(".list").html(nodata);
+                }
+                $(".data_count").text('共' + ($(".tableContainer").length ? $(".tableContainer").attr("data-count") : 0) + '条数据');
+            } else {
+                $(".list").html(nodata);
+            }
+        });
+    };   
+</script>

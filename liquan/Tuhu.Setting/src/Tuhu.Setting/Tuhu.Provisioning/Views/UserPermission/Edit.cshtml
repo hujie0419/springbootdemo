@@ -1,0 +1,271 @@
+﻿@using Tuhu.Service.Member.Models
+@using Tuhu.Service.Member
+@using Tuhu.Provisioning.Models
+@model Tuhu.Provisioning.DataAccess.Entity.UserPermissionModel
+@{
+    Layout = null;
+    var MemebershipsGrade = ViewBag.MemberGrade as List<MembershipsGradeResponse>;
+}
+<script src="~/Scripts/jquery-2.1.1.min.js"></script>
+<link href="~/Scripts/layui/css/layui.css" rel="stylesheet" />
+<script src="~/Scripts/layui/layui.js"></script>
+
+<div style="width:99%;margin-top:5px;" id="div-right-edit">
+    <input type="hidden" id="hid-Id" value="@Model.Id" />
+    <form class="layui-form" id="UserRightEdit">
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">权益名称</label>
+                <div class="layui-input-inline">
+                    <input name="Name" value="@Model.Name" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">副标题</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="FootTile" autocomplete="off" class="layui-input" value="@Model.FootTile">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">会员等级</label>
+                <div class="layui-input-inline">
+                    <select name="MembershipsGradeId">
+                        @foreach (var mg in MemebershipsGrade)
+                        {
+                            var selected = Model.MembershipsGradeId == mg.PKID ? "selected=\"selected\"" : "";
+                            <option @selected value="@mg.PKID">@mg.GradeName</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">权益类型</label>
+                <div class="layui-input-inline">
+                    <select name="PermissionType" data-value="@Model.PermissionType">
+                        @foreach (var cm in ViewBag.PermissionType as List<DropDownListViewModel>)
+                        {
+                            var selected = Model.PermissionType.ToString() == cm.Id ? "selected=\"selected\"" : "";
+                            <option @selected value="@cm.Id">@cm.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">校验周期</label>
+                <div class="layui-input-inline">
+                    <select name="CheckCycle">
+                        @foreach (var cm in ViewBag.CheckCycle as List<DropDownListViewModel>)
+                        {
+                            var selected = Model.CheckCycle != null && Model.CheckCycle.Equals(cm.Id) ? "selected=\"selected\"" : "";
+                            <option @selected value="@cm.Id">@cm.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">显示顺序</label>
+                <div class="layui-input-inline">
+                    <input name="Position" value="@Model.Position" autocomplete="off" class="layui-input" onkeyup="value=value.replace(/[^\-?\d.]/g,'')">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">说明标题</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="DescriptionTitle" autocomplete="off" class="layui-input" value="@Model.DescriptionTitle">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">是否启用</label>
+                <div class="layui-input-inline">
+                    @if (Model.IsEnable)
+                    {
+                        <input type="checkbox" name="IsEnable" checked="" lay-filter="IsEnable" lay-skin="switch" lay-text="是|否" data-value="true">
+                    }
+                    else
+                    {
+                        <input type="checkbox" name="IsEnable" lay-skin="switch" lay-filter="IsEnable" lay-text="是|否" data-value="false">
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">角标文案</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="PromptTag" autocomplete="off" class="layui-input" value="@Model.PromptTag">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">点击领取</label>
+                <div class="layui-input-inline">
+                    @if (Model.IsClickReceive)
+                    {
+                        <input type="checkbox" name="IsClickReceive" checked="" lay-filter="IsClickReceive" lay-skin="switch" lay-text="是|否" data-value="true">
+                    }
+                    else
+                    {
+                        <input type="checkbox" name="IsClickReceive" lay-skin="switch" lay-filter="IsClickReceive" lay-text="是|否" data-value="false">
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">启用版本</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="EnabledVersion" autocomplete="off" placeholder="5.4.3" class="layui-input" value="@Model.EnabledVersion">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">结束版本</label>
+                <div class="layui-input-inline">
+                    <input name="EndVersion" value="@Model.EndVersion" autocomplete="off" placeholder="9.9.9" class="layui-input">
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">是否跳转</label>
+                <div class="layui-input-inline">
+                    @if (Model.IsLinkUrl)
+                    {
+                        <input type="checkbox" name="IsLinkUrl" checked="" lay-filter="IsLinkUrl" lay-skin="switch" lay-text="是|否" data-value="true">
+                    }
+                    else
+                    {
+                        <input type="checkbox" name="IsLinkUrl" lay-skin="switch" lay-filter="IsLinkUrl" lay-text="是|否" data-value="false">
+                    }
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">是否高亮</label>
+                <div class="layui-input-inline">
+                    @if (Model.IsLight == 1)
+                    {
+                        <input type="checkbox" name="IsLight" checked="" lay-skin="switch" lay-filter="IsLight" lay-text="是|否" data-value="@Model.IsLight">
+                    }
+                    else
+                    {
+                        <input type="checkbox" name="IsLight" lay-skin="switch" lay-text="是|否" lay-filter="IsLight" data-value="@Model.IsLight">
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">按钮文案</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="LightText" style="width:310px" autocomplete="off" class="layui-input" value="@Model.LightText">
+                </div>
+                <div class="layui-form-mid layui-word-aux" style="margin-left:110px">&nbsp;可领取状态</div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">按钮文案</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="DarkText" style="width:310px" autocomplete="off" class="layui-input" value="@Model.DarkText">
+                </div>
+                <div class="layui-form-mid layui-word-aux" style="margin-left:110px">&nbsp;【不可】领取状态</div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">跳转链接</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="LightUrl" style="width:310px" autocomplete="off" class="layui-input" value="@Model.LightUrl">
+                </div>
+                <div class="layui-form-mid layui-word-aux" style="margin-left:110px">&nbsp;可领取状态【整体】跳转链接</div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">跳转链接</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="LightButtonUrl" style="width:310px" autocomplete="off" class="layui-input" value="@Model.LightButtonUrl">
+                </div>
+                <div class="layui-form-mid layui-word-aux" style="margin-left:110px">&nbsp;可领取状态【按钮】跳转链接</div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">安卓链接</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="AndroidUrl" style="width:310px" autocomplete="off" class="layui-input" value="@Model.AndroidUrl">
+                </div>
+                <div class="layui-form-mid layui-word-aux" style="margin-left:110px">&nbsp;Android跳转链接</div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">苹果链接</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="IOSUrl" style="width:310px" autocomplete="off" class="layui-input" value="@Model.IOSUrl">
+                </div>
+                <div class="layui-form-mid layui-word-aux" style="margin-left:110px">&nbsp;IOS跳转链接</div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">权益描述</label>
+                <div class="layui-input-inline" style="width:450px">
+                    <textarea placeholder="请输入描述内容" name="Description" class="layui-textarea" value="@Model.Description">@Model.Description</textarea>
+                </div>
+
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">说明正文</label>
+                <div class="layui-input-inline" style="width:450px">
+                    <textarea placeholder="请输入描述内容" name="DescriptionDetail" class="layui-textarea" value="@Model.DescriptionDetail">@Model.DescriptionDetail</textarea>
+                </div>
+
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">卡片上传</label>
+                <div class="layui-input-inline">
+                    <button type="button" class="layui-btn" id="btn-upload-card-imge">&nbsp;卡片图片上传 &nbsp;</button>
+                </div>
+            </div>
+            <img class="layui-upload-img" name="CardImage" src="@Model.CardImage" style="width:96px;width:96px">
+        </div>
+        <div class="layui-form-item"><hr /></div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">图标上传</label>
+                <div class="layui-input-inline">
+                    <button type="button" class="layui-btn" id="btn-upload-light-imge">&nbsp;点亮图标上传 &nbsp;</button>
+                </div>
+            </div>
+            <img class="layui-upload-img" name="LightImage" src="@Model.LightImage" style="width:96px;width:96px">
+        </div>
+        <div class="layui-form-item"><hr /></div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">图标上传</label>
+                <div class="layui-input-inline">
+                    <button type="button" class="layui-btn" id="btn-upload-Dark-imge">未点亮图标上传</button>
+                </div>
+            </div>
+            <img class="layui-upload-img" name="DarkImage" src="@Model.DarkImage" style="width:96px;width:96px">
+        </div>
+
+    </form>
+</div>
+<script src="~/Scripts/common/setting.base.js?v=1.2"></script>
+<script src="~/Scripts/MembershipsCenter/MembershipsRights.js?v=1.3"></script>
+<script type="text/javascript">
+    $(function () {
+        UserRightsEdit.EditDataInit();
+    });
+</script>

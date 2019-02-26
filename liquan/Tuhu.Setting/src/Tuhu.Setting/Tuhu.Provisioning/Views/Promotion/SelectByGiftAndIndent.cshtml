@@ -1,0 +1,383 @@
+﻿@model DataSet
+@using System.Data
+@using System.Data.SqlClient
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+<style>
+    button, input[type=submit] {
+        cursor: pointer;
+    }
+
+    .resultBox {
+        width: 100%;
+        max-height: 600px;
+        background-color: white;
+        overflow: auto;
+    }
+
+    .resultBox tr > :first-child {
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    .head {
+        margin-top: 20px;
+        float: left;
+        font-size: 22px;
+        font-weight: 900;
+    }
+
+    #operation {
+        background-color;
+    }
+    tr th{
+        text-align:center;
+    }
+    tr td{
+        text-align:center;
+    }
+    .divhide{
+        display:none;
+    }
+
+</style>
+<link href="~/Styles/zTreeStyle.css" type="text/css" rel="stylesheet" />
+<link href="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.css" rel="stylesheet" /><link href="~/Styles/zTreeStyle.css" type="text/css" rel="stylesheet" />
+<link href="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.css" rel="stylesheet" />
+
+<script src="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.js"></script>
+ 
+</head>
+<body>
+    
+<div style="height:80px">
+    <span class="head">按手机查询优惠券情况</span>
+</div>
+@*<textarea name="Phone" style="width: 100%;" rows="6">@ViewBag.Phone</textarea>*@
+<div id="operation">
+    请输入手机号：<input type="text" name="Phone" id="Phone" />&nbsp;<input type="button" id="btn" value="查询" />
+</div>
+<div id="loadgif" style="width:66px;height:66px;position:absolute;top:50%;left:50%;">
+    <img alt="加载中..." src="../Images/Loading/veryhuo.com_gif_59.gif" />
+</div>
+<div><br /></div>
+<div id="mydiv">
+    <div><br /></div>
+    <table id="tb0" width="100%">
+        <tr>
+            <th style="display:none"><input type="text" id="type" value="0" /></th>
+            <th>用户ID</th>
+            <th>设备号</th>
+        </tr>
+    </table>
+        
+    <table id="tb1" width="100%">
+        <tr>
+            <th style="display:none"><input type="text" id="type1" value="1" /></th>
+            <th>优惠券号</th>
+            <th>类型</th>
+            <th>描述</th>
+            <th>状态</th>
+            <th>开始时间</th>
+            <th>结束时间</th>
+            <th>创建时间</th>
+            <th>操作</th>
+        </tr>
+    </table>
+    @*<b><input type="button" id="tb1btnBack" value="上一页" /></b><b><input type="button" id="tb1btnNext" value="下一页" /></b></tr>*@
+    <table id="tb2" width="100%">
+        <tr>
+            <th style="display:none"><input type="text" id="type2" value="2" /></th>
+            <th>优惠券号</th>
+            <th>类型</th>
+            <th>描述</th>
+            <th>状态</th>
+            <th>开始时间</th>
+            <th>结束时间</th>
+            <th>创建时间</th>
+            <th>操作</th>
+        </tr>
+    </table>
+    <table id="tb3" width="100%">
+        <tr>
+            <th style="display:none"><input type="text" id="type3" value="3" /></th>
+            <th width="7%">优惠券号</th>
+            <th width="6%">类型</th>
+            <th width="6%">描述</th>
+            <th width="6%">订单号</th>
+            <th width="10%">订单状态</th>
+            <th width="7%">价格</th>
+            <th width="10%">下单时间</th>
+            <th width="10%">付款状态</th>
+            <th width="6%">付款金额</th>
+            <th width="20%">产品类别</th>
+            <th width="15%">说明</th>
+        </tr>
+    </table>
+</div>
+
+@*<div>
+        @if (Model != null)
+        {
+            foreach (DataTable table in Model.Tables)
+            {
+                <hr />
+                <div class="resultBox">
+                    <table width="100%">
+                        <thead>
+                            <tr>
+                                @foreach (DataColumn col in table.Columns)
+                                {
+                                    <th>@col.ColumnName</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (DataRow row in table.Rows)
+                            {
+                                <tr>
+                                    @*<td>@(++rowIndex)</td>*@
+@*@for (var index = 0; index < table.Columns.Count; index++)
+                                    {
+                                        if (row.IsNull(index))
+                                        {
+                                            <td style="background-color: #ffffe1;">NULL</td>
+                                        }
+                                        else if (table.Columns[index].DataType == typeof(string))
+                                        {
+                                            <td>@MvcHtmlString.Create(System.Text.RegularExpressions.Regex.Replace(Html.Encode(row[index]), "\r?\n", "<br />"))</td>
+                                        }
+                                        else
+                                        {
+                                            <td>@row[index]</td>
+                                        }
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+        }
+    </div>*@
+<div id="ExtendCouponEndTimeDialog" style="display:none;">
+    <input type="hidden" id="promotionPkid" />
+    <input type="hidden" id="promotionUserId" />
+    优惠券结束时间：<input type="text" style="width:150px" id="promotionEndTime" readonly="readonly" />
+</div>
+<div id="ExtendCouponHistoryDialog"></div>
+</body>
+<script type="text/javascript">
+    //?Phone=" + $("#Phone").val() + "&pageIndex=" + pageIndex + "&TabIndex=" + TabIndex
+    var pageIndex = 1;
+    var AllPage1 = 1;
+    var AllPage2 = 1;
+    var AllPage3 = 1;
+    var TabIndex = 0;
+    function  GetPromotionNameByRuleID(RuleID)
+    {
+        switch (RuleID)
+        {
+        case 23: return "保养券";
+        case 25: return "轮胎券";
+        case 27: return "轮胎、保养券";
+        case 30: return "车品券";
+        case 32: return "美容抵用券";
+        case 36: return "内饰清洗券";
+        case 38: return "途虎现金券轮胎专用";
+        case 40: return "途虎现金券保养专用";
+        case 42: return "5分洗车券";
+        case 44: return "一分洗车券";
+        case 46: return "免费洗车券";
+        case 87: return "保养“0”元券";
+        case 90: return "途虎现金券";
+        case 114: return "力魔品牌优惠券";
+        case 117: return "小保养服务费优惠券";
+        case 119: return "蓄电池优惠券";
+        case 130: return "镭射眼品牌抵用券";
+        default: return "";
+        }
+    }
+    function GetPromotionStatus(status) {
+        switch (status) {
+        case 0:
+            return "<span style='color:green'>未使用</span>";
+            case 1: return "<span style='color:red;'>已使用</span>";
+            case 2:
+                case 3:
+                    return "<span style='color:#999'>已作废</span>";
+        default:
+            return "";
+        }
+
+    }
+    $(function () {
+        $("#loadgif").hide();
+        $("#mydiv").addClass("divhide");
+        $("#btn").click(function () {
+            if ($("#Phone").val().trim() == "") {
+                alert("手机号必填");
+                return false;
+            } else {
+                if (!(/^(13|14|15|17|18)[0-9]{9}$/.test($("#Phone").val().trim()))) {
+                    alert("手机号不符合规则，请重新填写！");
+                    return false;
+                }
+            }
+            $("#loadgif").show();
+            $("#mydiv").addClass("divhide");
+            $("#tb2 tr:gt(0)").remove();
+            $("#tb1 tr:gt(0)").remove();
+            $("#tb3 tr:gt(0)").remove();
+            $("#tb0 tr:gt(0)").remove();
+            var _this = this;
+            $(_this).attr("disabled","disabled");
+            $.post("/Promotion/SelectAllByPhoneNumbers?Phone=" + $("#Phone").val(), {}, function (data) {
+                $(_this).removeAttr("disabled");
+                $("#mydiv").removeClass("divhide");
+                var datas = data["ds"];
+                var datas1 = data["ds1"];
+                var datas2 = data["ds2"];
+                var datas3 = data["ds3"];
+                $("#loadgif").hide();
+                var $Selecttr1 = $("<tr><td colspan='7'  style='color:violet'>根据用户ID查</td></tr>");
+                var $Selecttr2 = $("<tr><td colspan='7'  style='color:violet'>根据设备号查</td></tr>");
+                var $Selecttr3 = $("<tr><td colspan='11'  style='color:violet'>已使用优惠券</td></tr>");
+                $("#tb1").append($Selecttr1);
+                $("#tb2").append($Selecttr2);
+                $("#tb3").append($Selecttr3);
+                for (var i = 0; i < datas.length; i++) {
+                    var dataso = datas[i]["Table"]
+                    var $tr = $("<tr></tr>");
+                    $("#tb0").append($tr);
+                    var $tds = $('<td>' + datas[i].AssociateUserID + '</td><td>' + datas[i].Device_Tokens + '</td>');
+                    $tr.append($tds);
+                }
+
+                //table2
+                for (var i = 0; i < datas1.length; i++) {
+                    var dataso1 = datas1[i]["Table"]
+                    var $tr = $("<tr></tr>");
+                    $("#tb1").append($tr);
+                    var Status = GetPromotionStatus(datas1[i].Status);
+                    var SType = GetPromotionNameByRuleID(datas1[i].RuleID);
+                        
+                    var $tds = $('<td>' + datas1[i].Code + '</td><td>' + SType + '</td><td>' + datas1[i].Description + '</td><td>' + Status + '</td><td>' + datas1[i].StartTime + '</td><td>' + datas1[i].EndTime + '</td><td>' + datas1[i].CreateTime + '</td><td data-pkid=' + datas1[i].PKID + ' data-userid="' + datas[0].AssociateUserID + '"><a href=javascript:void(0) rel=endtime>延期</a> | <a href=javascript:void(0) rel=status>作废</a> | <a href=javascript:void(0) rel=log>日志</a></td>');
+                    $tr.append($tds);
+                }
+
+                //var $trpage = $("<tr></tr>");
+                //$("#tb1").append($trpage);
+                //var $tdspage = $('<td><input type="button" id="btnBack" value="上一页" /></td><td><input type="button" id="btnNext" value="下一页" /></td>');
+                //$trpage.append($tdspage);
+
+                //table3
+                for (var i = 0; i < datas2.length; i++) {
+                    var dataso2 = datas2[i]["Table"]
+                    var Status = GetPromotionStatus(datas1[i].Status);
+                    var SType = GetPromotionNameByRuleID(datas2[i].RuleID);
+                       
+                    var $tr = $("<tr></tr>");
+                    $("#tb2").append($tr);
+                    var $tds = $('<td>' + datas2[i].Code + '</td><td>' + SType + '</td><td>' + datas2[i].Description + '</td><td>' + Status + '</td><td>' + datas2[i].StartTime + '</td><td>' + datas2[i].EndTime + '</td><td>' + datas2[i].CreateTime + '</td><td><td data-pkid=' + datas2[i].PKID + ' data-userid="' + datas[0].AssociateUserID + '"><a href=javascript:void(0) rel=endtime>延期</a> | <a href=javascript:void(0) rel=status>作废</a> | <a href=javascript:void(0) rel=log>日志</a></td>');
+                    $tr.append($tds);
+
+                }
+                   
+                //table4
+                for (var i = 0; i < datas3.length; i++) {
+                    var dataso3 = datas3[i]["Table"]
+                    var SType = GetPromotionNameByRuleID(datas3[i].RuleID);
+                    var $tr = $("<tr></tr>");
+                    $("#tb3").append($tr);
+                    var $tds = $('<td>' + datas3[i].Code + '</td><td>' + SType + '</td><td>' + datas3[i].Description + '</td><td>' + datas3[i].OrderNo + '</td><td>' + datas3[i].Status + '</td><td>' + datas3[i].SumMoney + '</td><td>' +datas3[i].OrderDatetime + '</td><td>' + datas3[i].PayStatus + '</td><td>' + datas3[i].SumPaid + '</td><td>' + datas3[i].OrderProducts + '</td><td>' + datas3[i].Remark + '</td>');
+                    $tr.append($tds);
+                }
+                   
+            }, "json");
+                
+        });
+        $("#promotionEndTime").datetimepicker({
+            showTimepicker: false,
+            dateFormat: "yy-mm-dd",
+            monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+        });
+        $("#mydiv").delegate("a[rel=endtime]",
+            "click",
+            function () {
+                var pkid = $(this).parent("td").data("pkid");
+                var userId = $(this).parent("td").data("userid");
+                $("#promotionPkid").val(pkid);
+                $("#promotionUserId").val(userId);
+                $("#ExtendCouponEndTimeDialog").dialog({
+                    title: "延期优惠券时间",
+                    width: 250,
+                    height: 150,
+                    modal: true,
+                    buttons: {
+                        "保存": function () {
+                            var endTime = $("#promotionEndTime").val();
+                            if (endTime == '') alert("请选择优惠券延迟时间");
+                            else {
+                                var pkid = $("#promotionPkid").val();
+                                var userId = $("#promotionUserId").val();
+                                $.post("/promotion/ExtendCouponEndTime",
+                                    { promoCode: pkid, userId: userId, endDate: endTime },
+                                    function (res) {
+                                        if (res.Code === 1) {
+                                            alert("保存成功");
+                                        }
+                                    },
+                                    "json");
+                                $(this).dialog("close"); //当点击取消按钮时，关闭窗口
+                            }
+                            
+                        },
+                        "关闭": function () {
+                            $(this).dialog("close"); //当点击取消按钮时，关闭窗口
+                        }
+                    }
+                });
+            }).delegate("a[rel=status]",
+            "click",
+            function() {
+                var pkid = $(this).parent("td").data("pkid");
+                var userId = $(this).parent("td").data("userid");
+                if (confirm("确定作废这张优惠券？")) {
+                    $.post("/promotion/ExtendCouponStatus",
+                        { promoCode: pkid, userId: userId },
+                        function(res) {
+                            if (res.Code === 1) {
+                                alert("已作废");
+                            }
+                        },
+                        "json");
+                }
+            }).delegate("a[rel=log]",
+            "click",
+            function () {
+                var pkid = $(this).parent("td").data("pkid");
+                $("#ExtendCouponHistoryDialog").load('/Promotion/HistoryActions?objectId=' + pkid + '&objectType=SelectPromotionByPhone');
+                $("#ExtendCouponHistoryDialog").dialog({
+                    title: "操作历史",
+                    width: 600,
+                    height: 680,
+                    modal: true,
+                    buttons: {
+                        "关闭": function () {
+                            $(this).dialog("close"); //当点击取消按钮时，关闭窗口
+                        }
+                    }
+                });
+            });
+    });
+</script>
+<script src="~/Scripts/Promotion/FormatJson.js?v=20180223"></script>
+</html>

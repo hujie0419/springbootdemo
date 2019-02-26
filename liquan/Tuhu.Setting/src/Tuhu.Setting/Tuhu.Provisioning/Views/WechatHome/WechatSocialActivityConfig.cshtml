@@ -1,0 +1,491 @@
+﻿@{
+    ViewBag.Title = "社交立减金活动配置";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+@section link{
+    <style>
+        .tabEdit th {
+            text-align: right;
+        }
+
+        input[readonly],
+        input[disabled],
+        button[disabled],
+        textarea[disabled],
+        select[disabled] {
+            cursor: not-allowed !important;
+        }
+
+        .invalid, .ng-invalid {
+            border: 1px solid red !important;
+        }
+    </style>
+}
+<div ng-app="MainModule" ng-controller="MainCtrl" style="padding: 1em;">
+    <header>
+        <div style="float: right">
+            <button type="button" class="btn btn-primary" ng-click="load(1)"><span class="glyphicon glyphicon-refresh"></span></button> &nbsp;&nbsp;&nbsp;
+            <button type="button" class="btn btn-primary" ng-click="viewLog()">查看日志</button>&nbsp;&nbsp;
+            <button type="button" ng-click="onAdd()" class="btn btn-primary">创建活动</button>
+        </div>
+    </header>
+    <section style="clear: both;margin-top:1em; padding-top: 1em;">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>活动ID</th>
+                    <th>支付商户号</th>
+                    <th>卡券ID</th>
+                    <th>单个礼包社交立减金数量</th>
+                    <th>最少支付金额（分）</th>
+                    <th>活动有效期</th>
+                    <th style="width:120px">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="item in list">
+                    <td ng-bind="::item.ActivityId"></td>
+                    <td ng-bind="::item.MerchantNoName"></td>
+                    <td ng-bind="::item.CardId"></td>
+                    <td ng-bind="::item.GiftNum"></td>
+                    <td ng-bind="::item.MinAmount"></td>
+                    <td ng-bind="'从 '+item.BeginTime+' 到 '+item.EndTime"></td>
+                    <td>
+                        <button type="button" ng-click="onView($index)" class="btn btn-primary">查看</button> &nbsp;
+                        <button type="button" class="btn btn-primary" ng-click="onEdit($index)">复制</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+    <footer style="line-height: 1.8em;font-size:1.2em;">
+        <ul class="pagination" style="display: inline;">
+            <li ng-class="{disabled:pageIndex===1}">
+                <a href="javascript:void(0)" ng-click="loadData(pageIndex-1)" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            <li>
+                <a href="javascript:void(0)" ng-bind="pageIndex">
+                    <span class="sr-only" ng-bind="pageIndex"></span>
+                </a>
+            </li>
+            <li ng-class="{disabled:list.length<pageSize}">
+                <a href="javascript:void(0)" ng-click="loadData(pageIndex+1)" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+        &nbsp;&nbsp;
+        <label for="ddlPageSize">
+            每页活动数
+        </label>&nbsp;
+        <select id="ddlPageSize" ng-model="pageSize" convert-to-number>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+        </select>
+    </footer>
+    <div id="hiddenEditPanel" style="display: none; padding: 1em;">
+        <div>
+            <table class="tabEdit table table-bordered">
+                <tr>
+                    <th>支付商户号</th>
+                    <td>
+                        <select required="required" ng-readonly="!editItem.IsNew" ng-disabled="!editItem.IsNew" ng-model="editItem.MerchantNo">
+                            <option value="">请选择创建代金券的商户号</option>
+                            <option ng-repeat="item in CreateMidList" value="{{item.OriginalId}}">{{item.DisplayName}}</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr ng-show="!editItem.IsNew">
+                    <th>活动ID</th>
+                    <td>
+                        <input ng-readonly="!editItem.IsNew" ng-disabled="!editItem.IsNew" ng-model="editItem.ActivityId" type="text" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>卡券ID</th>
+                    <td>
+                        <input ng-readonly="!editItem.IsNew" ng-disabled="!editItem.IsNew" required="required" ng-model="editItem.CardId" type="text" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>活动封面背景颜色</th>
+                    <td>
+                        <span style="width: 50px; height: 20px; display: inline-block;background-color:{{getColorFromDic(editItem.ActivityBgColor)}}"></span>
+                        <select required="required" ng-readonly="!editItem.IsNew" ng-disabled="!editItem.IsNew" ng-model="editItem.ActivityBgColor" ng-change="onColorSelected()">
+                            <option value="">请选择颜色</option>
+                            <option style="width: 100px; height: 20px;background-color:{{item.value}}" ng-repeat="item in colorDic" ng-value="item.key">{{item.key}}</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>最少支付金额，单位是分</th>
+                    <td>
+                        <input ng-readonly="!editItem.IsNew" ng-disabled="!editItem.IsNew" required="required" string-to-number type="number" min="1" ng-model="editItem.MinAmount" /> 分
+                    </td>
+                </tr>
+                <tr>
+                    <th>活动有效期</th>
+                    <td>
+                        <div>
+                            开始时间 <input ng-readonly="!editItem.IsNew" ng-disabled="!editItem.IsNew" ng-model="editItem.BeginTime" id="beginTime" class="beginTime" type="text" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss',minDate:'%y-%M-%d %H:%m:%s'})" /> --
+                            结束时间 <input ng-readonly="!editItem.IsNew" ng-disabled="!editItem.IsNew" ng-model="editItem.EndTime" class="endTime" type="text" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss',minDate:'#F{$dp.$D(\'beginTime\',{d:0})}'})" /> <br />
+                            <small style="line-height:1.2em;font-size:0.8em;" ng-show="editItem.IsNew">(活动结束时间应比卡券结束时间早至少两个小时，卡券结束为空时以开始时间加上固定天数计算)</small>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>用户点击链接后可静默添加到列表的小程序</th>
+                    <td>
+                        <select required="required" ng-readonly="!editItem.IsNew" ng-disabled="!editItem.IsNew" ng-model="editItem.ActivityWxAppId">
+                            <option value="">请选择小程序</option>
+                            <option ng-repeat="item in wxAppList" ng-value="item.AppId">{{item.DisplayName}}</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>每个用户活动期间最大领取次数(最大为50)</th>
+                    <td>
+                        <input required="required" ng-readonly="!editItem.IsNew" ng-disabled="!editItem.IsNew" type="number" min="1" ng-model="editItem.MaxParticTimesAct" max="50" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>每个用户活动期间单日最大领取次数(最大为50)</th>
+                    <td>
+                        <input required="required" ng-readonly="!editItem.IsNew" ng-disabled="!editItem.IsNew" type="number" min="1" max="50" ng-model="editItem.MaxParticTimesOneDay" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>单个礼包社交立减金数量（3-15个）</th>
+                    <td>
+                        <input required="required" ng-readonly="!editItem.IsNew" ng-disabled="!editItem.IsNew" type="number" min="3" max="15" ng-model="editItem.GiftNum" />
+                    </td>
+                </tr>
+                <tr>
+                    <th>用户范围</th>
+                    <td>
+                        <label><input ng-readonly="!editItem.IsNew" ng-disabled="!editItem.IsNew" convert-to-number type="radio" value="0" ng-model="editItem.UserScope" name="userScope" />所有用户</label>
+                        &nbsp;&nbsp;
+                        <label><input ng-readonly="!editItem.IsNew" ng-disabled="!editItem.IsNew" convert-to-number type="radio" value="1" ng-model="editItem.UserScope" name="userScope" />仅新用户</label>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+@section script{
+    <script src="~/Scripts/layer/layer.js"></script>
+    <script src="https://cdn.bootcss.com/angular.js/1.6.9/angular.min.js"></script>
+    <script src="~/Scripts/My97DatePicker/WdatePicker.js"></script>
+    <script type="text/javascript">
+        angular.module('MainModule', [])
+            .directive('stringToNumber',
+                function() {
+                    return {
+                        require: 'ngModel',
+                        link: function(scope, element, attrs, ngModel) {
+                            ngModel.$parsers.push(function(value) {
+                                return '' + value;
+                            });
+                            ngModel.$formatters.push(function(value) {
+                                return parseInt(value);
+                            });
+                        }
+                    };
+            })
+            .directive('convertToNumber', function() {
+                return {
+                    require: 'ngModel',
+                    link: function(scope, element, attrs, ngModel) {
+                        ngModel.$parsers.push(function(val) {
+                            return parseInt(val, 10);
+                        });
+                        ngModel.$formatters.push(function(val) {
+                            return '' + val;
+                        });
+                    }
+                };
+            })
+            .controller("MainCtrl",
+                [
+                    "$scope", "$http", function($scope, $http) {
+                        $scope.loading = 0;
+                        $scope.pageIndex = 1;
+                        $scope.pageSize = 20;
+
+                        $scope.editItem = {};
+                        $scope.colorDic = [
+                            { "key": "Color010", "value": "#63b359" },
+                            { "key": "Color020", "value": "#2c9f67" },
+                            { "key": "Color030", "value": "#509fc9" },
+                            { "key": "Color040", "value": "#5885cf" },
+                            { "key": "Color050", "value": "#9062c0" },
+                            { "key": "Color060", "value": "#d09a45" },
+                            { "key": "Color070", "value": "#e4b138" },
+                            { "key": "Color080", "value": "#ee903c" },
+                            { "key": "Color081", "value": "#f08500" },
+                            { "key": "Color082", "value": "#a9d92d" },
+                            { "key": "Color090", "value": "#dd6549" },
+                            { "key": "Color100", "value": "#cc463d" },
+                            { "key": "Color101", "value": "#cf3e36" },
+                            { "key": "Color102", "value": "#5E6671" }
+                        ];
+                        $scope.list = [];
+                        //创建商户
+                        $scope.CreateMidList = [];
+                        // onInit
+                        this.$onInit = function() {
+                            $scope.loading = layer.load();
+                            $http.get("/WechatHome/GetSocialWxAppList")
+                                .then(function(response) {
+                                    if (response.data) {
+                                        $scope.wxAppList = response.data;
+                                    }
+                                });
+                            $http.get("/WechatHome/AddCreateMidList")
+                                .then(function (response) {
+                                    if (response.data) {
+                                        $scope.CreateMidList = response.data;
+                                    }
+                                });
+                            $scope.load(1);
+                        };
+
+                        $scope.load = function(pIndex) {
+                            if (!pIndex) {
+                                pIndex = 1;
+                            }
+                            if (pIndex <= 0) {
+                                layer.msg("已经是第一页了");
+                                return;
+                            }
+                            if ($scope.list.length < $scope.pageSize && pIndex > $scope.pageIndex) {
+                                layer.msg("已经是最后一页了~");
+                                return;
+                            }
+                            $http.get("/WechatHome/WechatSocialActivityConfigList?pageIndex=" +
+                                    pIndex +
+                                    "&pageSize=" +
+                                    $scope.pageSize)
+                                .then(function(response) {
+                                    layer.close($scope.loading);
+                                    if (response.status === 200) {
+                                        if (response.data) {
+                                            $scope.pageIndex = pIndex;
+                                            $scope.list = response.data;
+                                        } else {
+                                            layer.msg("没有更多数据了");
+                                        }
+                                    } else {
+                                        layer.alert("服务器出错");
+                                    }
+                                });
+                        };
+
+                        $scope.onAdd = function (item) {
+                            if (item) {
+                                $scope.editItem = item;
+                            } else {
+                                $scope.editItem = {};
+                            }
+
+                            $scope.editItem.IsNew = true;
+                            layer.open({
+                                type: 1,
+                                title: "创建活动",
+                                area: ["720px", "500px"],
+                                content: $("#hiddenEditPanel"),
+                                btn: ["保存", "取消"],
+                                yes: function (lIndex) {
+                                    $scope.editItem.BeginTime = $(".beginTime").eq(0).val();
+                                    $scope.editItem.EndTime = $(".endTime").eq(0).val();
+
+                                    var isValid = $scope.onValidate();
+                                    if (!isValid) {
+                                        return;
+                                    }
+
+                                    layer.close(lIndex);
+                                    $scope.onSave();
+                                },
+                                cancel: function () {
+                                }
+                            });
+                        };
+
+                        $scope.onView = function(index) {
+                            $scope.editItem = $scope.list[index];
+                            layer.open({
+                                type: 1,
+                                title: "活动信息",
+                                area: ["720px", "500px"],
+                                content: $("#hiddenEditPanel")
+                            });
+                        }
+
+                        $scope.onEdit = function(index) {
+                            $scope.editItem = angular.copy($scope.list[index]);
+                            $scope.editItem.IsNew = true;
+                            layer.open({
+                                type: 1,
+                                title: "创建活动",
+                                area: ["720px", "500px"],
+                                content: $("#hiddenEditPanel"),
+                                btn: ["保存", "取消"],
+                                yes: function(lIndex) {
+                                    $scope.editItem.BeginTime = $(".beginTime").eq(0).val();
+                                    $scope.editItem.EndTime = $(".endTime").eq(0).val();
+
+                                    var isValid = $scope.onValidate();
+                                    if (!isValid) {
+                                        return;
+                                    }
+
+                                    layer.close(lIndex);
+                                    $scope.onSave();
+                                },
+                                cancel: function() {
+                                }
+                            });
+                        }
+
+                        $scope.viewLog = function() {
+                            layer.open({
+                                type: 2,
+                                title:"操作日志",
+                                area:["800px","600px"],
+                                content: '/CommonConfigLog/ListLoger?objectType=WechatSocialActivityConfig',
+                                btn: ["确定"],
+                                btn1: function(index) {
+                                    layer.close(index);
+                                }
+                            });
+                        }
+
+                        $scope.getColorFromDic = function(colorKey) {
+                            if (colorKey) {
+                                for (var i = 0; i < $scope.colorDic.length; i++) {
+                                    if ($scope.colorDic[i].key === colorKey) {
+                                        return $scope.colorDic[i].value;
+                                    }
+                                }
+                            }
+                            return "#fff";
+                        }
+                        // validate input parameters
+                        $scope.onValidate = function() {
+                            if (!$scope.editItem.CardId) {
+                                layer.alert("卡券ID不能为空", {title:"参数填写错误"});
+                                return false;
+                            }
+                            if (!$scope.editItem.ActivityWxAppId) {
+                                layer.alert("请选择微信小程序", { title: "参数填写错误" });
+                                return false;
+                            }
+                            if (!$scope.editItem.BeginTime) {
+                                layer.alert("请选择活动开始时间", { title: "参数填写错误" });
+                                return false;
+                            }
+                            if (!$scope.editItem.BeginTime) {
+                                layer.alert("请选择活动结束时间", { title: "参数填写错误" });
+                                return false;
+                            }
+                            if (!$scope.editItem.MinAmount) {
+                                layer.alert("最少支付金额不能为空", { title: "参数填写错误" });
+                                return false;
+                            } else {
+                                if (parseInt($scope.editItem.MinAmount) != $scope.editItem.MinAmount) {
+                                    layer.alert("最少支付金额只能为整数", { title: "参数填写错误" });
+                                    return false;
+                                } else {
+                                    if ($scope.editItem.MinAmount <= 0) {
+                                        layer.alert("最少支付金额必须大于0", { title: "参数填写错误" });
+                                        return false;
+                                    }
+                                }
+                            }
+                            if (!$scope.editItem.MaxParticTimesAct) {
+                                layer.alert("每个用户活动期间最大领取次数不能为空", { title: "参数填写错误" });
+                                return false;
+                            } else {
+                                if (parseInt($scope.editItem.MaxParticTimesAct) != $scope.editItem.MaxParticTimesAct) {
+                                    layer.alert("每个用户活动期间最大领取次数只能为整数", { title: "参数填写错误" });
+                                    return false;
+                                } else {
+                                    if ($scope.editItem.MaxParticTimesAct > 50 || $scope.editItem.MaxParticTimesAct <= 0) {
+                                        layer.alert("每个用户活动期间最大领取次数需要在1~50之间（包含1和50）", { title: "参数填写错误" });
+                                        return false;
+                                    }
+                                }
+                            }
+                            if (!$scope.editItem.MaxParticTimesOneDay) {
+                                layer.alert("每个用户活动期间单日最大领取次数不能为空", { title: "参数填写错误" });
+                                return false;
+                            } else {
+                                if (parseInt($scope.editItem.MaxParticTimesOneDay) != $scope.editItem.MaxParticTimesOneDay) {
+                                    layer.alert("每个用户活动期间单日最大领取次数只能为整数", { title: "参数填写错误" });
+                                    return false;
+                                } else {
+                                    if ($scope.editItem.MaxParticTimesOneDay > 50 || $scope.editItem.MaxParticTimesOneDay <= 0) {
+                                        layer.alert("每个用户活动期间单日最大领取次数需要在1~50之间（包含1和50）", { title: "参数填写错误" });
+                                        return false;
+                                    }
+                                }
+                            }
+                            if (!$scope.editItem.GiftNum) {
+                                layer.alert("单个礼包社交立减金数量不能为空", { title: "参数填写错误" });
+                                return false;
+                            } else {
+                                if (parseInt($scope.editItem.GiftNum) != $scope.editItem.GiftNum) {
+                                    layer.alert("单个礼包社交立减金数量只能为整数", { title: "参数填写错误" });
+                                    return false;
+                                } else {
+                                    if ($scope.editItem.GiftNum > 15 || $scope.editItem.GiftNum < 3) {
+                                        layer.alert("单个礼包社交立减金数量需要在3~15之间（包含3和15）", { title: "参数填写错误" });
+                                        return false;
+                                    }
+                                }
+                            }
+                            if ($scope.editItem.UserScope === undefined) {
+                                layer.alert("请选择用户范围", { title: "参数填写错误" });
+                                return false;
+                            }
+                            return true;
+                        };
+                        $scope.onSave = function() {
+                            $scope.loading = layer.load();
+                            $http.post('@Url.Action("SaveWechatSocialActivityConfig")',
+                                $.param($scope.editItem),
+                                {
+                                    headers: {
+                                        'content-type': 'application/x-www-form-urlencoded'
+                                    }
+                                }).then(function(response) {
+                                layer.close($scope.loading);
+                                if (response.status === 200) {
+                                    if (!response.data) {
+                                        layer.alert("保存成功",
+                                            function() {
+                                                location.reload();
+                                            });
+                                    } else {
+                                        layer.alert(response.data, { title: "错误" }, function (index) {
+                                            layer.close(index);
+                                            $scope.onAdd($scope.editItem);
+                                        });
+                                    }
+                                } else {
+                                    layer.alert("服务器出错", { title: "错误" }, function (index) {
+                                        layer.close(index);
+                                        $scope.onAdd($scope.editItem);
+                                    });
+                                }
+                            });
+                        };
+                    }
+                ]);
+    </script>
+
+}

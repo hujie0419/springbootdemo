@@ -1,0 +1,135 @@
+﻿<head>
+    <meta charset="utf-8">
+    <title>iview example</title>
+    <link href="~/Content/iview/iview.css" rel="stylesheet" />
+    <script src="~/Scripts/vue.min.js"></script>
+    <script src="~/Scripts/iview/iview.min.js"></script>
+</head>
+<body>
+    <h2>已售年卡列表</h2>
+        <div id="app" v-cloak>
+            <div>
+                <i-input v-model="searchOrderId" placeholder="请输入订单号码" style="width: 200px"></i-input>
+                <i-input v-model="searchMobile" placeholder="请输入用户手机号" style="width: 200px"></i-input>
+                <i-button type="primary" icon="ios-search" v-on:click="searchPage">查询</i-button>
+            </div>
+            <br />
+            <i-table :data="UserBeautyYearCardList" :columns="tableColumns" :loading="tableLoading">
+            </i-table>
+            <div>
+                <div>
+                    <Page :total="totalCount" :current="currentPage" :page-size="pageSize" show-total v-on:on-change="changePage"></Page>
+                </div>
+            </div>
+        </div>
+</body>
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data() {
+            return {
+                UserBeautyYearCardList: [],
+                tableColumns: [
+                    {
+                        title: 'ID',
+                        key: 'PKID'
+                    },
+                    {
+                        title: '订单号',
+                        key: 'OrderId'
+                    },
+                    {
+                        title: '渠道',
+                        key: 'CardType',
+                        render: (h, p) => {
+                            if (p.row.CardType == 1) {
+                                return "线下";
+                            }
+                            else {
+                                return "线上";
+                            }
+                        }
+                    },
+                    {
+                        title: '总价',
+                        key: 'CardPrice'
+                    },
+                    {
+                        title: '用户姓名',
+                        key: 'UserName',
+                    },
+                    {
+                        title: '手机号',
+                        key: 'Mobile',
+
+                    },
+                    {
+                        title: '有效期',
+                        key: 'EffictiveTime'
+                    },
+                    {
+                        title: '剩余次数',
+                        key: 'RemainTime'
+                    },
+                    {
+                        title: '操作',
+                        key: 'action',
+                        width: 260,
+                        align: 'center',
+                        render: (h, params) => {
+                            return h('div', [
+                                h('Button', {
+                                    props: {
+                                        type: 'primary',
+                                        size: 'small'
+                                    },
+                                    style: {
+                                        marginRight: '5px'
+                                    },
+                                    on: {
+                                        click: () => {
+                                            window.location.href = '/BeautyYearCardConfig/BeautyYearCardDetail?cardId=' + params.row.PKID;
+                                        }
+                                    }
+                                }, '查看')                             
+                            ]);
+                        }
+                    }
+                ],
+                searchOrderId:"",
+                searchMobile:"",
+                currentPage: 1,
+                pageSize: 20,
+                totalCount: 0,
+                tableLoading:false
+            }
+        },
+        mounted: function () {
+            this.GetUserBeautyYearCards();
+        },
+        methods: {
+            GetUserBeautyYearCards() {
+                var self = this;
+                var pageIndex = self.currentPage;
+                var pagesize = self.pageSize;
+                var mobile = self.searchMobile;
+                var orderId = self.searchOrderId;
+                self.tableLoading = true;
+                $.get("/BeautyYearCardConfig/GetUserBeautyYearCards", 
+                { mobile: mobile, orderId: orderId, pageIndex: pageIndex, pageSize: pagesize },
+                    function (data) {
+                        self.UserBeautyYearCardList = data.data;
+                        self.totalCount = data.totalCount;
+                        self.tableLoading = false;
+                    });
+            },
+            changePage(page) {
+                this.currentPage = page;
+                this.UserBeautyYearCardList = this.GetUserBeautyYearCards();
+            },
+            searchPage() {
+                this.UserBeautyYearCardList = this.GetUserBeautyYearCards();
+            }              
+        }
+    })
+</script>

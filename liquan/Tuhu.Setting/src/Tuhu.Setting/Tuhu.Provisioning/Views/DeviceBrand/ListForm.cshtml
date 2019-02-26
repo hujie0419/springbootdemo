@@ -1,0 +1,161 @@
+﻿@{
+    ViewBag.Title = "ListForm";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<style>
+    .tdWidth { width: 50%; }
+    .NotAllowEdit { background-color: #EEEEEE !important; }
+    .AllowEdit { background-color: #FFFFFF !important; }
+    .validError { border: red; }
+</style>
+
+<form id="form1">
+    <div style="padding-top:20px;margin-right:20px; overflow-y: auto;">
+        <table class="form" role="form" id="table">
+            <tr>
+                <th class="formTitle"><span style="color: red">*</span>厂 商:</th>
+                <td class="formValue ">
+                    <select class=" tdWidth form-control required" id="BrandID" name="BrandID">
+                        @{
+                            List<Tuple<int, string>> brandList = ViewBag.BrandList as List<Tuple<int, string>>;
+                            if (brandList != null && brandList.Any())
+                            {
+                                var first = true;
+                                foreach (var item in brandList)
+                                {
+                                    if (first)
+                                    {
+                                        <option value="@item.Item1" selected="selected">@item.Item2</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@item.Item1">@item.Item2</option>
+                                    }
+                                    first = false;
+                                }
+                            }
+                        }
+                    </select>
+                    <input type="hidden" id="DeviceBrand" name="DeviceBrand">
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle"><span style="color: red">*</span>机 型:</th>
+                <td class="formValue">
+                    <input type="hidden" id="TypeID" name="TypeID" />
+                    <input type="text" class=" tdWidth form-control required" maxlength="30" id="DeviceType" name="DeviceType" placeholder="请输入机型" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle"><span style="color: red">*</span>设备号:</th>
+                <td class="formValue">
+                    <input type="hidden" name="ModelId">
+                    <input type="text" class="form-control tdWidth required" name="ModelName" placeholder="请输入设备号">
+                    <a class="fc-more" style="margin-left: 55%; margin-top: -15px; position: absolute" herf="#" onclick="initMore(this)">添加更多机型</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+</form>
+<script type="text/template" id="P_PID_TableTemplate">
+    <tr>
+        <td><input type="text" style="width:200px;" value="{{Index}}" /></td>
+        <td><input type="button" value="删除" onclick="CreateManage.Del_GiftProducts(this);" /></td>
+    </tr>
+</script>
+<link rel="stylesheet" href="~/Scripts/multiple/multiple-select.css" type="text/css" />
+<script type="text/javascript" src="~/Scripts/multiple/multiple-select.js"></script>
+<script type="text/javascript">
+    var keyValue = $.request("keyValue");
+
+    function initControl() {
+        if (!!keyValue) {
+            $.ajax({
+                url: "/DeviceBrand/GetListFormJson",
+                data: { keyValue: keyValue },
+                dataType: "json",
+                async: false,
+                success: function (data) {
+                    $("#form1").formSerialize(data);
+                    if (data.ModelID || data.DeviceModel) {
+                        $("input[name='ModelId']:eq(0)").val(data.ModelID);
+                        $("input[name='ModelName']:eq(0)").val(data.DeviceModel);
+                    }
+                }
+            });
+        }
+    }
+
+    function initMore(obj) {
+        $(obj).remove();
+        var trtd = '<tr>' +
+            '<th class="formTitle"></th>' +
+            '<td class="formValue">' +
+            '<input type="hidden" name="ModelId">' +
+            '<input type="text" class="form-control tdWidth required"  name="ModelName"  placeholder="请输入设备号">' +
+            '</td> ' +
+            '</tr>';
+
+        $("#table>tbody").append(trtd);
+
+        var more = '<a  class="fc-more" style="margin-left: 55%; margin-top: -15px;position: absolute" herf="#" onclick="initMore(this)">添加更多机型</a>';
+
+        $("#table tr:last .formValue").append(more);
+    }
+
+
+    function submitForm(iframe) {
+        if (!$('#form1').formValid()) {
+            return false;
+        }
+
+        var formData = $("#form1").formSerialize();
+        var formArray = $("#form1").serializeArray();
+
+        if (formArray) {
+            var items = [];
+            for (var i = 0; i < formArray.length; i++) {
+                var item = formArray[i];
+                if (item.name === "ModelId") {
+                    var tmpItem = { "ModelId": formArray[i].value, "ModelName": formArray[i + 1].value.trim() }
+                    items.push(tmpItem);
+                }
+            }
+            formData.Models = items;
+        }
+
+        $.submitForm({
+            url: "/DeviceBrand/SubmitForm?keyValue=" + keyValue,
+            param: { data: formData, keyValue: 0 },
+            success: function (res) {
+                top.$("#loadingPage").css("display", "none");
+                iframe.$("#gridList").trigger("reloadGrid");
+
+                if (res.title) {
+                    iframe.$("#NF-addClick").text(res.title);
+                }
+            }
+        });
+    }
+
+    $(function () {
+        initControl();
+
+        $("#BrandID").change(function () {
+            $("#DeviceBrand").val($("#BrandID option:selected").text());
+            $("#DeviceBrand").text($("#BrandID option:selected").text());
+        });
+
+        $("#DeviceBrand").val($("#BrandID option:selected").text());
+        $("#DeviceBrand").text($("#BrandID option:selected").text());
+
+        if (!!keyValue) {
+            $("#BrandID").attr("disable", "disabled");
+            $("#BrandID").addClass("NotAllowEdit").removeClass("AllowEdit");
+        }
+        else {
+            $("#BrandID").attr("disable", false);
+            $("#BrandID").addClass("AllowEdit").removeClass("NotAllowEdit");
+        }
+    });
+</script>

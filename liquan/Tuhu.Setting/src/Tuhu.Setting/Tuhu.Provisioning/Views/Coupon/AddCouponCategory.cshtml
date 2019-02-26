@@ -1,0 +1,196 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.CouponCategory
+
+@{
+    Layout = null;
+    List<SelectListItem> PlatformList = new List<SelectListItem>();
+    PlatformList.Add(new SelectListItem { Value = "app", Text = "APP" });
+    PlatformList.Add(new SelectListItem { Value = "mobile", Text = "移动站" });
+    PlatformList.Add(new SelectListItem { Value = "all", Text = "全部" });
+}
+<style>
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: #0088cc;
+        border: solid 1px #0088cc;
+    }
+</style>
+<script src="../../Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {
+        $("form").submit(function () {
+            if ($("#Name").val() == "" || $("#EnID").val() == "") {
+                alert('名称、英文标识不能为空');
+                return false;
+            }
+            var reg = /^[0-9]*$/;
+            if (!reg.test($("#ValidDays").val())) {
+                alert('有效天数须为正整数');
+                return false;
+            }
+            if (!reg.test($("#Percentage").val())) {
+                alert('概率须为正整数');
+                return false;
+            }
+        });
+
+    });
+
+    function UplaodImg(inputid, imgid, imgviewid) {
+        $.ajaxFileUpload({
+            url: '/Article/AddArticleImg2',
+            secureuri: false,
+            fileElementId: inputid,
+            dataType: 'json',
+            data: {},
+            type: "post",
+            success: function (result) {
+                if (result.BImage != "" && result.SImage != "") {
+                    $("#" + imgviewid).attr("src", result.BImage);
+                    $("#" + imgviewid).show();
+                    $("#" + imgid).val(result.BImage);
+                } else {
+                    alert("上传失败！");
+                }
+            }
+        });
+    }
+</script>
+@using (Html.BeginForm(new { @enctype = "multipart/form-data" }))
+{
+    @Html.ValidationSummary(true)
+    @Html.HiddenFor(m => m.PKID)
+    @Html.HiddenFor(m => m.Picture)
+    @Html.HiddenFor(m => m.BackImage)
+    @Html.HiddenFor(m => m.Percentage)
+    @Html.HiddenFor(m => m.ContentImage)
+    @Html.HiddenFor(m => m.BackgroundImage)
+    @Html.HiddenFor(m => m.SpinImage)
+
+    <table style="background:#ffffff;font-size:12px;width:100%;">
+        <tr>
+            <td align="right">分类名称：</td>
+            <td>@Html.TextBoxFor(model => model.Name, new { @style = "width:150px" })</td>
+            <td align="right">URL：</td>
+            <td>@Html.TextBoxFor(model => model.AppLink, new { @style = "width:150px" })</td>
+        </tr>
+        <tr>
+            <td align="right">英文标识：</td>
+            <td>@Html.TextBoxFor(model => model.EnID, new { @style = "width:150px" })</td>
+            <td align="right">IOS处理值：</td>
+            <td>@Html.TextBoxFor(model => model.IOSDisposeValue, new { @style = "width:150px" })</td>
+        </tr>
+        <tr>
+            <td align="right">描述：</td>
+            <td>@Html.TextBoxFor(model => model.Remark, new { @style = "width:150px" })</td>
+            <td align="right">Android处理值：</td>
+            <td>@Html.TextBoxFor(model => model.AndroidDisposeValue, new { @style = "width:150px" })</td>
+        </tr>
+        <tr>
+            <td align="right">分享标题：</td>
+            <td>@Html.TextBoxFor(model => model.Title, new { @style = "width:150px" })</td>
+            <td align="right">IOS特殊通讯值：</td>
+            <td>@Html.TextBoxFor(model => model.IOSCommunicationValue, new { @style = "width:150px" })</td>
+        </tr>
+        <tr>
+            <td align="right">分享文字：</td>
+            <td>@Html.TextBoxFor(model => model.Text, new { @style = "width:150px" })</td>
+            <td align="right">Android特殊通讯值：</td>
+            <td>@Html.TextBoxFor(model => model.AndroidCommunicationValue, new { @style = "width:150px" })</td>
+        </tr>
+        <tr>
+            <td align="right">分享内容：</td>
+            <td>@Html.TextBoxFor(model => model.Description, new { @style = "width:150px" })</td>
+            <td align="right">领券描述状态：</td>
+            <td>
+                @Html.RadioButtonFor(m => m.CouponDescriptionStatus, true) 启用
+                @Html.RadioButtonFor(m => m.CouponDescriptionStatus, false) 停用
+            </td>
+        </tr>
+        <tr>
+            <td align="right">有效天数：</td>
+            <td>@Html.TextBoxFor(model => model.ValidDays, new { @style = "width:150px" })</td>
+            <td align="right" rowspan="2">领券描述：</td>
+            <td rowspan="2">@Html.TextAreaFor(model => model.GetCouponDescription, new { @style = "width:150px" })</td>
+        </tr>
+        <tr>
+            <td align="right">状态：</td>
+            <td>
+                @Html.RadioButtonFor(m => m.IsActive, 1) 启用
+                @Html.RadioButtonFor(m => m.IsActive, 0) 停用
+            </td>
+        </tr>
+        <tr>
+            <td align="right">类别：</td>
+            <td>@Html.DropDownListFor(m => m.RuleID, ViewBag.CouponTypeList as IEnumerable<SelectListItem>, new { @class = "txt" })</td>
+            <td align="right" rowspan="3">“去逛逛”文案：</td>
+            <td rowspan="3">@Html.TextAreaFor(model => model.RoamingDescription, new { @style = "width:150px" })</td>
+        </tr>
+        <tr>
+            <td align="right">平台类型：</td>
+
+            <td>
+                @Html.DropDownListFor(m => m.Platform, PlatformList as IEnumerable<SelectListItem>, new { @class = "txt" })
+            </td>
+
+        </tr>
+        <tr>
+            <td align="right">展示图片：</td>
+            <td>
+                <form method="post" action="" enctype="multipart/form-data">
+                    <input style="width:150px;" type="file" id="upPicture" name="Picture" onchange="UplaodImg('upPicture', 'Picture', 'vwPicture')" />
+                </form><br />
+                <img height="100" width="100" src="@Model.Picture" id="vwPicture" />
+            </td>
+        </tr>
+        <tr>
+            <td align="right">背景图片：</td>
+            <td>
+                <form method="post" action="" enctype="multipart/form-data">
+                    <input style="width:150px;" type="file" id="upBackImage" name="BackImage" onchange="UplaodImg('upBackImage', 'BackImage', 'vwBackImage')" />
+                </form><br />
+                <img height="100" width="100" src="@Model.BackImage" id="vwBackImage" />
+            </td>
+            <td align="right">内容面：</td>
+            <td>
+                <form method="post" action="" enctype="multipart/form-data">
+                    <input style="width:150px;" type="file" id="upContentImage" name="ContentImage" onchange="UplaodImg('upContentImage', 'ContentImage', 'vwContentImage')" />
+                </form><br />
+                <img height="100" width="100" src="@Model.ContentImage" id="vwContentImage" />
+            </td>
+        </tr>
+        <tr>
+            <td align="right">背面：</td>
+            <td>
+                <form method="post" action="" enctype="multipart/form-data">
+                    <input style="width:150px;" type="file" id="upBackgroundImage" name="BackgroundImage" onchange="UplaodImg('upBackgroundImage', 'BackgroundImage', 'vwBackgroundImage')" />
+                </form><br />
+                <img height="100" width="100" src="@Model.BackgroundImage" id="vwBackgroundImage" />
+            </td>
+            <td align="right">翻转面：</td>
+            <td>
+                <form method="post" action="" enctype="multipart/form-data">
+                    <input style="width:150px;" type="file" id="upSpinImage" name="SpinImage" onchange="UplaodImg('upSpinImage', 'SpinImage', 'vwSpinImage')" />
+                </form><br />
+                <img height="100" width="100" src="@Model.SpinImage" id="vwSpinImage" />
+            </td>
+        </tr>
+
+        <tr>
+            <td align="right"></td>
+            <td>
+                <input type="submit" value="保存" />
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="button" value="取消并返回" onclick="CloseWindows()" />
+            </td>
+        </tr>
+    </table>
+}
+
+<script>
+    function CloseWindows() {
+        //onclick="location = 'CouponCategory'"
+        $("#AddItem").dialog('close');
+    }
+</script>

@@ -1,0 +1,168 @@
+﻿@{
+    ViewBag.Title = "第三方优惠券配置";
+}
+@using Tuhu.Provisioning
+@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.ThirdPartyCouponConfigModel>
+<h2>第三方优惠券配置</h2>
+
+<style>
+
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    textarea {
+        width: 100px;
+        height: 100px;
+    }
+
+    p {
+        text-align: left;
+        display: inline-block;
+    }
+
+    table th {
+        text-align: center;
+        color: white;
+        padding: 6px 5px;
+        /*text-align: left;*/
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+
+
+    .tip {
+        color: red;
+        font-size: 14px;
+        font-weight: bolder;
+    }
+
+    .button {
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+    /*td {
+        width: 250px;
+    }*/
+    /*td div {
+        margin-bottom: 10px;
+    }*/
+</style>
+<input type="button" class="button" onclick="editConfig(0,true)" value="添加" />
+<div>
+    <table>
+        <thead>
+            <tr>
+                <th>
+                    <p>第三方优惠券来源渠道</p>
+                </th>
+                <th><p> 优惠券批次</p></th>
+                <th><p> 优惠券批次描述</p></th>
+                <th> <p>途虎优惠券领取规则</p></th>
+                <th><p> 途虎优惠券名称</p></th>
+                <th> <p>途虎优惠券描述</p></th>
+                <th> <p>途虎优惠券优惠券金额</p></th>
+                <th> <p>途虎优惠券使用最低金额</p></th>
+                <th><p> 优惠券有效期(自领取后有效天数)</p></th>
+                <th>操作</th>
+                <th><p>操作历史</p></th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.ThirdPartyChannel</td>
+                    <td>@item.ThirdPartyCouponPatch</td>
+                    <td>@item.PatchDescription</td>
+                    <td>@item.CouponGetRuleId</td>
+                    <td>@item.CouponName</td>
+                    <td>@item.CouponDescription</td>
+                    <td>@item.CouponDiscount</td>
+                    <td>@item.CouponMinMoney</td>
+                    <td>@item.CouponEffectDuration</td>
+                    <td>
+                        <a href="javascript:void(0)" onclick="editConfig(@item.PKID,false)">编 辑</a><br />
+                        <a href="javascript:void(0)" onclick="deleteConfig(@item.PKID)">删 除</a>
+                    </td>
+                    <td>
+                        <a href="javascript:void(0)" onclick="viewLog(@item.PKID)">查看操作历史</a>
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+@*<div id="edit" class="modal fade" aria-hidden="true" role="dialog" tabindex="-1">
+
+    </div>*@
+<div id="editConfig"></div>
+<div>
+    @Html.Pager(Model.Pager, pageNum => Url.RouteUrl(new { pageNum }))
+</div>
+<input type="button" name="name" class="mybutton" onclick="ClickSave()" style="display:none;" value="" />
+<script>
+    function deleteConfig(id) {
+        var r = confirm("您确定删除吗?");
+        if (r) {
+            $.ajax({
+                url: '/ThirdPartyCouponConfig/ThirdPartyCouponConfigDel',
+                type: 'post',
+                data: { id: id }
+            }).done(function (result) {
+                if (result.Status === 0) {
+                    location.reload();
+                } else {
+                    alert("删除失败");
+                }
+            }).fail(function () {
+                alert("删除失败");
+            });
+        }
+    }
+
+    function editConfig(id,isAdd) {
+        $("#editConfig").load('/ThirdPartyCouponConfig/ThirdPartyCouponEdit?id=' + id);
+        $("#editConfig").dialog({
+            title: isAdd ? "新增" : "修改",
+            width: 700,
+            height: 400,
+            modal: true,
+            buttons: {
+                "保存": function () {
+                    $(".mybutton").click();
+                },
+                "关闭": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    }
+    //function editConfig(id, isAdd) {
+    //    window.open('/ThirdPartyCouponConfig/ThirdPartyCouponEdit?id=' + id);
+    //}
+    function viewLog(id) {
+        $("#editConfig").load('/ThirdPartyCouponConfig/ViewThirdPartyCouponConfigLog?pkid='+id);
+        $("#editConfig").dialog({
+            title: "操作历史",
+            width: 600,
+            height: 680,
+            modal: true,
+            buttons: {
+                "关闭": function () {
+                    $(this).dialog("close"); 
+                }
+            }
+        });
+    }
+</script>

@@ -1,0 +1,79 @@
+﻿
+@{
+    ViewBag.Title = "ListLoger";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+
+<div class="topPanel">
+    <div class="search">
+        <table>
+            <tr>
+                <td>
+                    <div class="input-group">
+                        <input id="txtSDateTime" name="txtSDateTime" type="text" class="form-control input-wdatepicker" placeholder="开始时间" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})" />
+                    </div>
+                </td>
+                <td>
+                    ----
+                </td>
+                <td>
+                    <div class="input-group">
+                        <input id="txtEDateTime" name="txtEDateTime" type="text" class="form-control input-wdatepicker" placeholder="结束时间" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})" />
+                        <span class="input-group-btn">
+                            <button id="btn_search" type="button" class="btn  btn-primary"><i class="fa fa-search"></i></button>
+                        </span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+
+</div>
+<div class="gridPanel">
+    <table id="gridList"></table>
+</div>
+<script src="~/Content/nfine/js/datepicker/WdatePicker.js"></script>
+<script type="text/javascript">
+
+    function gridList() {
+        var $gridList = $('#gridList');
+        $gridList.dataGrid({
+            height: $(window).height() - 88,
+            url: '/Logger/GetListLoger?objectType=' + $.request("objectType"),
+            colModel: [
+                { label: "PKID", name: "PKID", width: 120, align: "center", hidden: true },
+                { label: "操作人", name: "Author", width: 260, align: 'left' },
+
+                { label: "时间", name: "ChangeDatetime", width: 200, align: "left" },
+                { label: "操 作", name: "Operation", width: 500, align: "left" }
+
+
+            ],
+            viewrecords: true,
+            ondblClickRow: function (rowid, iRow, iCol, e) {
+              //  console.log(rowid, e);
+                var pkid = $("#gridList").jqGridRowValue().PKID;
+                var title = $("#gridList").jqGridRowValue().Operation;
+                if (pkid) {
+                    window.open(location.origin + "/Activity/ActivityUnity/Logger?id="+pkid+"&title="+encodeURI( title), "_bank");
+                }
+            }
+        });
+
+        $("#btn_search").click(function () {
+            $gridList.jqGrid('setGridParam', {
+                postData: {
+                    objectType: $.request("objectType"),
+                    startDT: $('#txtSDateTime').val(),
+                    endDT: $('#txtEDateTime').val()
+                },
+            }).trigger('reloadGrid');
+        });
+    }
+
+    $(function () {
+        gridList();
+    })
+</script>
+

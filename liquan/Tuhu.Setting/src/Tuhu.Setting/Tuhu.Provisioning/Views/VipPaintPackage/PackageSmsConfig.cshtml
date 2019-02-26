@@ -1,0 +1,156 @@
+﻿@{
+    ViewBag.Title = "短信配置";
+}
+
+<link href="~/Content/iview/iview.css" rel="stylesheet" />
+<link href="~/css/beautyPackage.css" rel="stylesheet" type="text/css" />
+
+<div id="div" v-cloak>
+    <h2>
+        <a href="/VipPaintPackage/PackageConfig">喷漆套餐配置</a>
+        <a href="/VipPaintPackage/PromotionOperation" style="margin-left:30px">给用户塞券</a>
+        <a href="/VipPaintPackage/PromotionRecord" style="margin-left:30px">塞券记录</a>
+        <label style="margin-left:30px">短信配置</label>
+    </h2>
+    <div style="margin-top:30px">
+        <i-select v-model="searchData.vipUserId" filterable v-on:on-change="GetVipPaintPackages" style="width:10%;" placeholder="请选择大客户">
+            <i-option value="00000000-0000-0000-0000-000000000000">-请选择大客户-</i-option>
+            <i-option v-for="vipUser in vipUsers" :value="vipUser.VipUserId" :key="vipUser.VipUserId">{{vipUser.VipUserName}}</i-option>
+        </i-select>
+        <i-select v-model="searchData.packageId" style="width:10%;" filterable placeholder="请选择套餐">
+            <i-option value="">-请选择套餐-</i-option>
+            <i-option v-for="package in packages" :value="package.PackageId" :key="package.PackageId">{{package.PackageName}}</i-option>
+        </i-select>
+        <i-button type="primary" v-on:click="Search(1)">查询</i-button>
+    </div>
+    <table class="tableContainer" style="margin-top:30px">
+        <thead>
+            <tr>
+                <th>大客户</th>
+                <th>套餐</th>
+                <th>是否发送短信</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tr v-if="!searchResult || searchResult.length<=0">
+            <td colspan="4">无数据</td>
+        </tr>
+        <tr v-if="loading">
+            <td colspan="4"><img src="/Images/loading.gif" /></td>
+        </tr>
+        <tr v-for="item in searchResult">
+            <td>{{item.VipUserName}}</td>
+            <td>{{item.PackageName}}</td>
+            <td v-if="item.IsSendSms==true"><span style="color:green;font-weight:bolder">发送</span></td>
+            <td v-else-if="item.IsSendSms==false"><span style="color:red;font-weight:bolder">不发送</span></td>
+            <td v-if="item.IsSendSms==false"><i-button type="primary" v-on:click="UpdateSendSmsStatus(item)">发送</i-button></td>
+            <td v-else-if="item.IsSendSms==true"><i-button v-on:click="UpdateSendSmsStatus(item)">不发送</i-button></td>
+        </tr>
+    </table>
+    <Page style="margin:10px;" :total="pager.totalCount" :current.sync="pager.pageIndex" :page-size="pager.pageSize" show-total></Page>
+</div>
+
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/iview/iview.min.js"></script>
+    <script type="text/javascript">
+        var vue = new Vue({
+            el: "#div",
+            data: {
+                searchData: {
+                    vipUserId: "",
+                    packageId: "",
+
+                },
+                pager: {
+                    pageIndex: 1,
+                    pageSize: 20,
+                    totalCount: 0
+                },
+                vipUsers: [],
+                packages: [],
+                loading: false,
+                searchResult: [],
+            },
+            watch: {
+                "pager.pageIndex": function () {
+                    var self = this;
+                    self.Search(self.pager.pageIndex);
+                }
+            },
+            created: function () {
+                var self = this;
+                self.GetAllPaintPackageUser();
+                self.Search(1);
+                self.$Message.config({
+                    top: 150,
+                    duration: 5,
+                    closable: true
+                });
+            },
+            methods: {
+                //查询短信配置
+                Search: function (pageIndex) {
+                    var self = this;
+                    self.pager.pageIndex = pageIndex;
+                    self.loading = true;
+                    $.post("SelectPackageSmsConfig", {
+                        vipUserId: self.searchData.vipUserId || "00000000-0000-0000-0000-000000000000",
+                        packageId: self.searchData.packageId || 0,
+                        pageIndex: self.pager.pageIndex,
+                        pageSize: self.pager.pageSize
+                    }, function (result) {
+                        if (result && result.Status) {
+                            self.searchResult = result.Data;
+                            self.pager.totalCount = result.TotalCount;
+                        } else {
+                            self.searchResult = [];
+                            self.$Message.error("查询失败");
+                        }
+                        self.loading = false;
+                    });
+                },
+                //获取所有配置了套餐的喷漆大客户
+                GetAllPaintPackageUser: function () {
+                    var self = this;
+                    $.post("GetAllPaintPackageUser", function (result) {
+                        if (result && result.Status) {
+                            self.vipUsers = result.Data;
+                        } else {
+                            self.vipUsers = [];
+                        }
+                    });
+                },
+                //获取大客户下的喷漆套餐
+                GetVipPaintPackages: function () {
+                    var self = this;
+                    $.post("GetVipPaintPackages", { vipUserId: self.searchData.vipUserId }, function (result) {
+                        if (result && result.Status) {
+                            self.packages = result.Data;
+                        }
+                        else {
+                            self.packages = [];
+                        }
+                    })
+                },
+                //更新短信配置
+                UpdateSendSmsStatus: function (value) {
+                    var self = this;
+                    var isSendSms = !value.IsSendSms;
+                    var model = JSON.parse(JSON.stringify(value));
+                    model.IsSendSms = isSendSms;
+                    if (confirm("是否确认操作")) {
+                        $.post("UpdOrInsPackageSmsPackage", { model }, function (result) {
+                            if (result && result.Status) {
+                                self.$Message.success("更改短信配置成功");
+                                setTimeout(function () { self.Search(self.pager.pageIndex) }, 2000);
+                            } else {
+                                self.$Message.error("更改短信配置失败");
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,31 @@
+﻿@{
+    Layout = null;
+}
+<div>
+    <input type="button" value="保存" onclick="CreateManage.ConfirmBrandCheckeds(@ViewBag.Type);" />
+    <input type="button" value="取消" onclick="CreateManage.CancelBrandCheckeds();" />
+</div>
+<ul id="Tree_B_Brands_Page" style="width:160px;border:2px solid #808080;background-color:#ccc;float:left;" class="ztree"></ul>
+<div style="width:550px;float:right;margin:0 0 0 30px;">
+    <table style="border-collapse:collapse;">
+        <tr>
+            <td style="border:1px solid #e8eef4;">
+                <label><input onclick="CreateManage.CP_Brand_Checked(this);" type="checkbox">品牌</label>
+            </td>
+            <td style="border:1px solid #e8eef4;" id="Tree_B_Brands_Page_table_td">
+                @{
+                    foreach (var item in (List<Tuhu.Provisioning.DataAccess.Entity.FilterConditionModel>)ViewBag.CP_BrandList)
+                    {
+                        <label style="display:inline-block;width:150px;margin:2px 0;">
+                            <input data-id="CP_Brand_Checked" value="@item.Name.Replace(":True", "")" @(item.Name.Contains(":True") ? "checked=checked" : "") type="checkbox">@item.Name.Replace(":True", "")
+                        </label>
+                    }
+                }
+            </td>
+        </tr>
+    </table>
+</div>
+<div style="clear:both;"></div>
+<script type="text/javascript">
+    _BrandsListControlCategorysJson = @Html.Raw(ViewBag.BrandsListControlCategorys ?? "[]");
+</script>

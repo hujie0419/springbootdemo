@@ -1,0 +1,30 @@
+﻿.cloudjs_icon { background-image: url(../commonimg/icons_new.png); }
+.cloudjs_btn { -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px; padding: 3px 7px; display: inline-block; font-family: Microsoft Yahei; font-size: 12px; white-space: nowrap; cursor: pointer; zoom: 1; *width: 40px; *height: 24px; *line-height: 1; border: 1px solid #258cd6; color: #ffffff; background-color: #199fff; }
+a.cloudjs_btn { text-decoration: none; }
+.cloudjs_btn_white { -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px; padding: 3px 7px; display: inline-block; font-family: Microsoft Yahei; font-size: 12px; white-space: nowrap; cursor: pointer; zoom: 1; *width: 40px; *height: 24px; *line-height: 1; border: 1px solid #999999; color: #000000; background-color: #ffffff; }
+.cloudjs_icon:hover { opacity: 0.8; filter: alpha(opacity=80); }
+.cloudjs_btn:hover { opacity: 0.8; filter: alpha(opacity=80); }
+.cloudjs_btn_white:hover { border-color: #666666; }
+.cloudjs_btn_white_disable,
+.cloudjs_btn_white:disabled { color: #aaaaaa; border-color: #cfcfcf; cursor: default; }
+.cloudjs_btn_disable,
+.cloudjs_btn_disable:hover,
+.cloudjs_btn:disabled { color: #aaaaaa; border-color: #cfcfcf; cursor: default; background: #ffffff; }
+.border { border: 1px solid #c6c6c6; box-shadow: inset 1px 2px 1px #f0f0f0; }
+.cloudjs_input { height: 25px; line-height: 25px; padding: 0; text-indent: 5px; outline: none; border: 1px solid #c6c6c6; box-shadow: inset 1px 2px 1px #f0f0f0; }
+.cloudjs_input:focus { border: solid 1px #aaa; }
+.combo_container { display: inline-block; position: relative; border: 1px solid #C6C6C6; box-shadow: inset 1px 2px 1px #F0F0F0; }
+.combo_container .combo_text { border: 0; outline: 0; height: 25px; line-height: 25px; padding: 0 5px; box-shadow: inset 1px 2px 1px #F0F0F0; }
+.combo_container .combo_arrow { display: inline-block; width: 16px; height: 22px; text-align: center; background-image: none; }
+.combo_container .combo_arrow span { display: inline-block; width: 0; height: 0; margin-top: 3px; border: 5px solid #878787; background: none; border-color: #878787 transparent transparent; vertical-align: middle; }
+.combo_container .combo_panel { display: none; position: absolute; border: 1px solid #C6C6C6; background: #ffffff; overflow: auto; }
+.combo_container .combo_panel .combo_item { cursor: default; padding: 0 5px; line-height: 25px; }
+.combo_container .combo_item input[type="checkbox"] { margin-right: 3px; }
+.combo_container .combo_head { padding: 5px 3px; background: #FFFFFF; border-bottom: 1px solid #C3C3C3; }
+.combo_container .combo_close_btn { background-repeat: no-repeat; cursor: pointer; display: block; height: 20px; width: 20px; float: right; background-position: -110px 2px; }
+.combo_container .combo_panel .combo_item_selected { background-color: #199fff; color: #ffffff; }
+.combo_container .combo_panel .combo_item_hover { background: #d9efff; color: #000000; }
+.combo_container .combo_panel .combo_item_disabled,
+.combo_disabled { color: #aaaaaa; background-color: #eeeeee; border-color: #cccccc; cursor: not-allowed; box-shadow: 0px 0px 0px #dddddd; }
+.combo_disabled .combo_text { cursor: not-allowed; background: #ffffff; color: #999999; }
+.combo_disabled .combo_arrow span { border-top-color: #CCCCCC; }

@@ -1,0 +1,82 @@
+﻿@{
+    ViewBag.Title = "BatteryEditBaoYangRecommendProducts";
+    Layout = null;
+}
+
+<div>
+    @Html.Partial("PartialCPBrand")
+</div>
+<input type="hidden" value="" id="result" />
+<script>
+    var projectObect;
+    $.ajax({
+        type: "get",
+        url: "/Baoyang/BaoYangRecommendByProjectName?parameters=" + "xdc",
+        success: function (data) {
+            debugger;
+            projectObect = data;//把加载出来的数据给全局变量
+            if (data.length != 0) {
+                $("#FirstCP_Brand").find("option[dataTxt=" + data[0].FirstPriority + "]'").prop("selected", true);
+                $("#SecondCP_Brand").find("option[dataTxt=" + data[0].SecondPriority + "]'").prop("selected", true);
+                $("#ThirdCP_Brand").find("option[dataTxt=" + data[0].ThirdPriority + "]'").prop("selected", true);
+            }
+        }
+    });
+
+    $("#FirstCP_Brand,#SecondCP_Brand,#ThirdCP_Brand").change(function () {
+        debugger;
+        var ChangeText = $(this).children('option:selected').text();//获取改变后的项
+        var id = $(this).attr("id")//获取当前的，选项卡的id，此id就是PropertyType
+        var firstSelect, SecondSelect, ThirdSelect;
+        if (id == "FirstCP_Brand") {
+            firstSelect = ChangeText;
+        }
+        if (id == "SecondCP_Brand") {
+            SecondSelect = ChangeText;
+        }
+        if (id == "ThirdCP_Brand") {
+            ThirdSelect = ChangeText;
+        }
+        if (projectObect != null && projectObect.length > 0) {
+            if (ChangeText != "无") {
+                if (firstSelect)
+                    projectObect[0].FirstPriority = ChangeText;
+                if (SecondSelect)
+                    projectObect[0].SecondPriority = ChangeText;
+                if (ThirdSelect)
+                    projectObect[0].ThirdPriority = ChangeText;
+            }
+            else {
+                if (firstSelect == "无") {
+                    projectObect[0].FirstPriority = null;
+                }
+                if (SecondSelect == "无") {
+                    projectObect[0].SecondPriority = null;
+                }
+                if (ThirdSelect == "无") {
+                    projectObect[0].ThirdPriority = null;
+                }
+            }
+        }
+        else {
+            var projectItem = {};
+            projectItem.PartName = "蓄电池";
+            projectItem.PriorityField = "Brand";
+            projectItem.PropertyType = "Battery";
+            if (firstSelect)
+                projectItem.FirstPriority = firstSelect;
+            else
+                projectItem.FirstPriority = null;
+            if (SecondSelect)
+                projectItem.SecondPriority = SecondSelect;
+            else
+                projectItem.SecondPriority = null;
+            if (ThirdSelect)
+                projectItem.ThirdPriority = ThirdSelect;
+            else
+                projectItem.ThirdPriority = null;
+            projectObect.push(projectItem);
+        }
+        $("#result").val(JSON.stringify(projectObect));
+    });
+</script>

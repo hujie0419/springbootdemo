@@ -1,0 +1,71 @@
+﻿
+@using Tuhu.Provisioning.DataAccess.Entity
+@model Tuhu.Component.Common.Models.ListModel<tbl_app_Versions>
+
+    @{
+        ViewBag.Title = "HistoryVersion";
+        Layout = null;
+    }
+
+    <form action="upload" method="post">
+        <table cellspacing="0" rules="all" border="1" style="border-collapse: collapse; width: 100%">
+            <tr>
+                <td align="center"><strong>版本编号</strong></td>
+                <td align="center"><strong>版本标识</strong></td>
+                <td align="center"><strong>强制更新</strong></td>
+                <td align="center"><strong>创建时间</strong></td>
+                <td align="center"><strong>上次更新时间</strong></td>
+                <td align="center"><strong>下载地址</strong></td>
+                <td align="center" width="80"><strong>下载数量</strong></td>
+                <td align="center"><strong>更新内容</strong></td>
+                <td align="center" width="70"><strong>修改</strong></td>
+            </tr>
+            @foreach (tbl_app_Versions v in Model)
+            {
+                <tr>
+                    <td align="center">@v.Version_Number</td>
+                    <td align="center">@v.VersionCode</td>
+                    @if (v.MustUpdate == 1)
+                    {
+                        <td align="center">
+                            是
+                        </td>
+                    }
+                    else
+                    {
+                        <td align="center">
+                            否
+                        </td>
+                    }
+                    <td align="center">@v.CreateTime</td>
+                    <td align="center">@v.LastUpdateTime</td>
+                    <td align="center">@v.Download</td>
+                    <td align="center">@v.Download_Number</td>
+                    <td align="left">@v.UpdateConnent</td>
+                    <td align="center"><a href="/App/Update?PKID=@v.PKID">修改</a></td>
+                </tr>
+            }
+        </table>
+        <div class="page_count">
+            @*上一页*@
+            @if (Model.Pager.CurrentPage < 2)
+            {
+                <a class="pp" href="#"></a>
+            }
+            else
+            {
+                <a class="ppa" href="@Url.Action("HistoryVersion", new { PageIndex = Model.Pager.CurrentPage - 1 })">上一页</a>
+            }
+            @*下一页*@
+            @if (Model.Pager.CurrentPage >= Model.Pager.TotalPage)
+            {
+                <a class="np" href="#"></a>
+            }
+            else
+            {
+                <a class="npa" href="@Url.Action("HistoryVersion", new { PageIndex = Model.Pager.CurrentPage + 1 })">下一页</a>
+            }
+
+
+        </div>
+    </form>

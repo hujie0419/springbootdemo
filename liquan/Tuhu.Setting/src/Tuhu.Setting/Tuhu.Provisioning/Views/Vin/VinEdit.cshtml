@@ -1,0 +1,168 @@
+﻿@using System.Diagnostics;
+@using Tuhu.Provisioning.Business;
+
+@{
+    ViewBag.Title = "Vin码录入";
+    Layout = "../Shared/_Layout.cshtml";
+    var AirlinesList = ViewBag.CouponCategory as IList<Tuhu.Provisioning.DataAccess.Entity.Airlines>;
+    IAirlinesManager manager = new AirlinesManager();
+}
+<link type="text/css" href="http://hive.gitcafe.io/mr/css/toastr.css" rel="stylesheet" />
+<link rel="stylesheet" href="//res.tuhu.cn/yewu/css/vinedit.css" />
+<link rel="stylesheet" href="@{if (Debugger.IsAttached){<text>/Scripts/controls/controls.css</text>}else{<text>//res.tuhu.cn/controls/controls.css</text>}}" />
+
+<script type="text/javascript" src="http://hive.gitcafe.io/mr/js/toastr.js"></script>
+<script src="http://hive.gitcafe.io/joy/js/Common.js"></script>
+<script src="http://hive.gitcafe.io/joy/js/joy.js"></script>
+<script src="http://hive.gitcafe.io/joy/js/joy.dom.js"></script>
+<script src="@{if (Debugger.IsAttached){<text>/Scripts/controls/common.js</text>}else{<text>//res.tuhu.cn/controls/common.js</text>}}"></script>
+<script src="@{if (Debugger.IsAttached){<text>/Scripts/controls/formeditor.js</text>}else{<text>//res.tuhu.cn/controls/formeditor.js</text>}}"></script>
+<script src="@{if (Debugger.IsAttached){<text>/Scripts/controls/grid.js</text>}else{<text>//res.tuhu.cn/controls/grid.js</text>}}"></script>
+    
+@*<script type="text/javascript" src="/Scripts/KindEditor/kindeditor.js"></script>*@
+<style>
+    .workspace table.workspace{
+        display:block;
+    }
+    .workspace table{
+        border:solid 0px blue;
+    }
+</style>
+<script>
+    function view() {
+        $.ajax({ url: '/vin/vinview', data: { page: 1 } }).done(function (data) {
+            var r = JSON.parse(data);
+            var s = decode(r.Object);
+            var rows = JSON.parse(s);
+            var tb = grid(rows, {
+                columns: {
+                    rownum: { style: { display: 'none' } }
+                    , id: { style: { display: 'none' } }
+                    , aid: { style: { display: 'none' } }
+                    , ruid: { style: { display: 'none' } }
+                    , rphone: { innerHTML: '手机号' }
+                    , vin: { innerHTML: 'Vin码' }
+                    , src: { innerHTML: '渠道' }
+                    , status: { innerHTML: '状态' }
+                    , deviceid: { innerHTML: '设备标识' }
+                    , createtime: { innerHTML: '创建时间' }
+                    , $added: function (tr, row) {
+                        var tda = document.createElement('td');
+                        tda.className = 'col';
+                        tr.appendChild(tda);
+                    }
+                },
+                rows: {
+                    rownum: { style: { display: 'none' } }
+                    , id: { style: { display: 'none' } }
+                    , aid: { style: { display: 'none' } }
+                    , ruid: { style: { display: 'none' } }
+                    , $added: function (tr, row) {
+                        var tdu = gridoption(row, {
+                            url: '/vin/vinupdate?id=[id]&phone=[rphone]&vin=[vin]'
+                            , replacer: { id: true, rphone: true, vin: true }
+                            , txt: '更改'
+                            , tag: 'span'
+                            , behavior: gridOptionFormBehavior
+                            , callback: view
+                            , roweditor: {
+                                url: '/vin/vinupdate?id=[id]&phone=[rphone]&vin=[vin]'
+                                , title:'Vin码编辑'
+                                , fields: {
+                                    rownum: { style: { display: 'none' } }
+                                    , id: { style: { display: 'none' } }
+                                    , aid: { style: { display: 'none' } }
+                                    , ruid: { style: { display: 'none' } }
+                                    , src: { style: { display: 'none' } }
+                                    , status: { style: { display: 'none' } }
+                                    , deviceid: { style: { display: 'none' } }
+                                    , createtime: { style: { display: 'none' } }
+                                    , rphone: { childNodes: [{ innerHTML: '手机号：' }] }
+                                    , vin: { childNodes: [{ innerHTML: 'Vin码：' }] }
+                                }
+                                , replacer: { id: true, rphone: true, vin: true }
+                                , save: function (upurl, o) {
+                                    $.ajax({ url: upurl }).done(function (d) {
+                                        var r = JSON.parse(d);
+                                        if (r.IsSuccess) {
+                                            toastr.info('操作成功');
+                                        } else {
+                                            toastr.error('操作失败: ' + r.Msg);
+                                        }
+                                        view();
+                                    });;
+                                }, cancel: function () {
+                                    overlay({ hide: true });
+                                }
+                            }
+                        });
+                        tr.appendChild(tdu);
+                        var tdr = gridoption(row, {
+                            url: '/vin/vinremove?id=[id]'
+                            , replacer: { id: true }
+                            , txt: '删除'
+                            , tag: 'span'
+                            , behavior: gridOptionAjaxBehavior
+                            , callback: view
+                        });
+
+                        var tdo = document.createElement('td');
+                        tdo.appendChild(tdu);
+                        tdo.appendChild(tdr);
+                        tr.appendChild(tdo);
+                    }
+                }
+            });
+            $('#gridarea')[0].innerHTML = '';
+            $('#gridarea')[0].appendChild(tb);
+        });
+    }
+    $(function () {
+        view();
+        $('#badds').click(function () {
+            var phone = $('#tphone').val();
+            var vin = $('#tvin').val();
+            $.ajax({ url: '/vin/vinadd', data: { phone: phone, vin: vin } }).done(function (data) {
+                var r = JSON.parse(data);
+                if (!r.IsSuccess) {
+                    alert(r.Msg);
+                } else {
+                    toastr.info('操作成功');
+                }
+                view();
+            });
+        });
+
+        //选择区域单机事件
+        //$("#sellectAreas").click(function () {
+        //    $("#AddItem").load('/vin/VinSelectArea' , function () {
+        //       // KindEditor.create('#Content', kdsimple);
+        //    });
+        //});
+
+        $("#sellectAreas").click(function () {
+            $("#AddItem").load('/vin/VinSelectArea');
+            $("#AddItem").dialog({
+                title: "添加/禁用/启用区域",
+                width: 350,
+                height: 500,
+                modal: true
+            });
+        });
+    });
+</script>
+<div style="clear:both;"></div>
+<div class="workspace">
+    <div class="title">Vin码录入</div>
+    <div>
+        <span>手机号：</span><input id="tphone" value="13550000000" />
+        <span>Vin码：</span><input id="tvin" value="vin12345678901234" />
+        <input id="badds" type="button" value="   添加   " />
+        <input id="sellectAreas" type="button" value=" 添加/禁用/启用区域 " />
+    </div>
+    <br />
+    <div id="gridarea">
+
+    </div>
+</div>
+<div id="AddItem" style="display: none"></div>

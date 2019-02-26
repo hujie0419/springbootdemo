@@ -1,0 +1,143 @@
+﻿<head>
+    <meta charset="utf-8">
+    <title>iview example</title>
+    <link href="~/Content/iview/iview.css" rel="stylesheet" />
+    <script src="~/Scripts/vue.min.js"></script>
+    <script src="~/Scripts/iview/iview.min.js"></script>
+</head>
+<body>
+    <h2>年卡详情</h2>
+    <div id="app" v-cloak>
+        <i-table :data="OrderInfoList" :loading="tableLoading" :columns="OrderInfoColumns">
+        </i-table>
+        <i-table :data="YearCardProductList" :loading="tableLoading" :columns="YearCardProductColumns">
+        </i-table>
+        <i-table border ref="selection" v-on:on-selection-change="selectionChange"  :loading="tableLoading" :data="YearCardDetailList" :columns="YearCardDetailColumns">
+        </i-table>
+        <i-button type="primary" style="float:right" v-on:click="InvalidateServiceCodes">作废</i-button>
+        <i-button type="primary" style="float:right;margin-right:10px" v-on:click="JumpLogPage">查看所有操作记录</i-button>
+    </div>
+</body>
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data() {
+            return {
+                OrderInfoList: [],
+                OrderInfoColumns: [
+                    {
+                        title: '订单Id',
+                        key: 'OrderId'
+                    },
+                    {
+                        title: '创建时间',
+                        key: 'OrderTime'
+                    }
+                ],
+                YearCardProductList: [],
+                YearCardProductColumns: [
+                    {
+                        title: '产品服务PID',
+                        key: 'Pid'
+                    },
+                    {
+                        title: '数量',
+                        key: 'Num'
+                    },
+                    {
+                        title: '使用周期',
+                        key: 'UseCycle'
+                    }
+                ],
+                YearCardDetailList: [],
+                YearCardDetailColumns: [
+                    {
+                        type: 'selection',
+                        width: 60,
+                        align: 'center'
+                    },
+                    {
+                        title: '年卡服务码',
+                        key: 'Code'
+                    },
+                    {
+                        title: '状态',
+                        key: 'Status'
+                    }
+                ],
+                CardId: getQueryString("cardId"),
+                ChoosedCodes: [],
+                tableLoading:false
+            }
+        },
+        created: function () {
+            this.GetYearCardDetails();
+        },
+
+        methods: {
+            GetYearCardDetails() {
+                var self = this;
+                self.tableLoading = true;
+                $.get("/BeautyYearCardConfig/GetUserBeautyYearCardDetails",
+                    { cardId: self.CardId },
+                    function (data) {
+                        self.OrderInfoList = new Array(data.OrderInfo);
+                        self.YearCardProductList = new Array(data.Product);
+                        self.YearCardDetailList = data.YearCards;
+                        self.tableLoading = false;
+                    });
+            },
+            selectionChange(items) {
+                var array = new Array();
+                for (var it in items) {
+                    array.push(items[it].Code);
+                }
+                this.ChoosedCodes = array;
+            },
+            InvalidateServiceCodes() {
+                var self = this;
+                if (self.ChoosedCodes && self.ChoosedCodes.length > 0) {
+                    const content = '<p>确定作废?</p>';
+                    this.$Modal.confirm({
+                        title: '请确认',
+                        content: content,
+                        loading:true,
+                        onOk: () => {
+                            $.post("/BeautyYearCardConfig/InvalidateServiceCodes", { serviceCodes: self.ChoosedCodes, cardId: self.CardId }, function (result) {
+                                if (result.isSuccess) {                                 
+                                    setTimeout(function () {
+                                        self.$Modal.remove();
+                                        self.$Message.info('作废成功');
+                                        location.reload();
+                                    }, 3000)
+                                } else {
+                                    self.$Modal.remove();
+                                    self.$Message.info('作废失败');
+                                }
+                            });
+                        },
+                        onCancel: () => {
+                           
+                        }
+                    });                 
+                } else {
+                    const content = '<p>请选择选项</p>';
+                    this.$Modal.warning({
+                        title: "警示",
+                        content: content
+                    });
+                }            
+            },
+            JumpLogPage() {
+                window.location.href = '/BeautyYearCardConfig/BeautyYearCardOperateLog?cardId=' + this.CardId;
+            }
+        }
+    })
+
+    function getQueryString(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+        var r = window.location.search.substr(1).match(reg);
+        if (r != null) return unescape(r[2]);
+        return null;
+    }
+</script>

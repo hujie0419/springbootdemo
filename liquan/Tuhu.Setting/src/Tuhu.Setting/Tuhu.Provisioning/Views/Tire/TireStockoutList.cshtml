@@ -1,0 +1,49 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity.Tire;
+@using Tuhu.Provisioning;
+@model Tuhu.Component.Common.Models.ListModel<StockoutStatusModel>
+    @{
+        Layout = null;
+        var selectModel = ViewBag.Select as StockoutStatusRequest;
+    }
+    @if (Model.Source.Any())
+    {
+        <table class="table" data-count="@Model.Pager.TotalItem" width="100%">
+            <tr>
+                <th>省</th>
+                <th>市</th>
+                <th>规格</th>
+                <th>PID</th>
+                <th>系统标缺状态</th>
+                <th>人工标缺状态</th>
+            </tr>
+            @foreach (var item in Model.Source)
+            {
+
+                <tr>
+                    <td>@ViewBag.Address.Split(';')[0]</td>
+                    <td>@ViewBag.Address.Split(';')[1]</td>
+                    <td>@item.TireSize</td>
+                    <td><a target="_blank" href="https://item.tuhu.cn/Products/@(item.PID.Replace("|","/")).html">@item.PID</a></td>
+                    <td>@item.Status</td>
+                    <td>@(item.Stockout?"缺货":"有货")</td>
+                </tr>
+            }
+
+        </table>
+        @Html.Pager(Model.Pager, true, id => Url.Action("StockoutList", new
+   {
+       Address=ViewBag.Address,
+       CityId = selectModel.CityId,
+       PID = selectModel.PID,
+       Status = selectModel.Status,
+       TireSize = selectModel.TireSize,
+       pageSize = Model.Pager.PageSize,
+       pageIndex = id
+   }))
+    }
+
+    <script>
+    $("[name=selectAll]").change(function () {
+        $("[name=selectSingle]").prop("checked", $(this).prop("checked"));
+    })
+    </script>

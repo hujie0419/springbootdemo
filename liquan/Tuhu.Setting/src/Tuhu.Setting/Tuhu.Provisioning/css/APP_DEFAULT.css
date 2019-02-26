@@ -1,0 +1,110 @@
+﻿@charset "utf-8";
+/* CSS Document */
+body{margin:0;padding:0;font-family: "微软雅黑";}
+.top{position:relative;width:100%; min-width:990px;height:80px;background:#e5e5e5;}
+.top_content{width:990px;height:80px;margin:0 auto;}
+.top_link{position:absolute;right:100px;top:0;width:200px;height:80px;}
+.top_link a{display:block;float:left;width:100px;height:80px;box-sizing:border-box;border-bottom:5px solid #e5e5e5;padding-top:50px; text-align:center;text-decoration:none;color:#666;font: 14px "Microsoft YaHei UI";}
+.top_link a.selected{border-bottom:5px solid #bb1918;color:#bb1918;}
+
+.banner{width:100%;height:350px;background:url(/images/banner_bg.jpg);text-align:center;}
+.banner a{display:block;width:100%;min-width:990px;height:350px;border:0; background:url(/images/banner.jpg) no-repeat; background-position:top center;}
+
+.content{width:990px;margin:0 auto;}
+
+/*index*/
+.App-top{  width:100%; background-color:#fff;}
+.App_content{ width:80%; margin:0 auto;position:relative;height:120px;}
+.App-logo{ background:url(/Images/App-logo.jpg) no-repeat; background-size: contain;width: 150px; margin:0; height:46px; position:absolute; top:56px; text-indent:-999em;}
+.app_top_link{ position:absolute; right:0; top:50px; line-height:55px;width: 20%;}
+.app_top_link a{display:block; float:left; width: 100%; height:55px; line-height:55px; box-sizing:border-box;text-align:center;text-decoration:none;color:#000; font-size:20px;}
+.app_top_link a.selected{border-bottom:2px solid #d81029; color:#bb1918;}
+.App_bunner{  background:url(/Images/app-bunner.png) no-repeat center top;width:100%;height: 575px;}
+.app-ios{  margin:0 auto; position:relative; height:575px; overflow:hidden;width: 972px;}
+.android,.ios{position: absolute;top: 320px;font-size: 24px;left: 230px;width: 228px;height: 60px;background: #fff;line-height: 60px;text-align: center;border: 0;cursor: pointer;border-radius: 50px;background-color: #ec373c;color: white;}
+.ios{ top:393px;}
+.app_xiazai,.app_fugai{ position:absolute; color:#fff; left:39px;}
+.app_fugai{ top:232px; font-size:22px;}
+.app_xiazai{ top:192px; font-size:24px;}
+
+.app-con{ height:auto;padding: 50px 0 50px 0; margin:0 auto; overflow:hidden;width: 980px;}
+.app-line{ background:url(/Images/app-line.jpg) repeat-x; width:100%; height:4px;}
+.app-bottom{ height:200px; width:100%; margin:0 auto; background-color:#3c3c3c;}
+.app-con img{ float:left;}
+.con-cc{float:left; width:465px; margin-left:57px;}
+.con-cc-t{height:55px; line-height:55px; color:#e85154; font-size:32px; border-bottom:3px solid #e85154; position:relative; width:443px; margin-left:20px; margin-top:160px;}
+.con-ico{background:url(/Images/con_yu.jpg) no-repeat; width:26px; height:26px; position:absolute; right:0; bottom:-11px; }
+.con-cc ul,.con-cc2 ul{ margin:0;}
+.con-cc ul{ margin: 10px 0 0 20px;}
+.con-cc2 ul{ margin: 10px 0 0 80px;}
+.con-cc ul, .con-cc ul li, .con-cc2 ul, .con-cc2 ul li{ list-style-type: disc;}
+.con-cc li,.con-cc2 li{ color:#6c6c6c; font-size:20px; line-height:37px;}
+.con-cc2{ float:left; height:497px; width:358px;}
+.con-ico2{background:url(/Images/con_yu.jpg) no-repeat; width:26px; height:26px; position:absolute; left:0; bottom:-11px; }
+
+.Android_bunner{ background:url(/Images/android_bunner.jpg) no-repeat center top;width:100%; height:575px;}
+.android2{ position:absolute; top:320px; left:190px; width:228px; height:60px; background:url(/Images/input_1.jpg) no-repeat; border:0; cursor:pointer;}
+.new-weixin{ width: 159px;height: 159px;background: url(/Images/new-weixin.png) no-repeat center;position: absolute;bottom: 113px;left: 10px;}
+.APP_CON{ background: #F9F9F9;width: 100%;}
+@media screen and (min-width: 500px) and (max-width: 1024px) {
+	.android,.ios{ top:168px;font-size: 14px; left: 37%;width: 13%;height: 12%;line-height: 12%;border-radius: 50px;}
+    .ios{ top:210px;}
+    .new-weixin{ width: 9%; height:159px; background-size: contain; bottom:113px; left:10px;}
+    .App_bunner{ width:100%; height:307px;background-size: 100% 100%;}
+    .app-ios{ width: 90%;height:307px;}
+    #footSection .bottom_showicon >div {width: 130px !important;}
+    .container_24{ width: 100%!important;}
+    #footSection #help-info .fore1, #footSection #help-info .fore2, #footSection #help-info .fore3, #footSection #help-info .fore4 {width: 140px!important;}
+    .app-con:last-child{ padding-left: 50px;}
+    .app_xiazai, .app_fugai{ font-size:14px; left:24%;}
+    .app_xiazai{top:103px;}
+    .app_fugai{ top:123px;}
+}
+
+
+@media screen and (max-width: 490px) {
+	.android,.ios{ top: 82px;font-size: 0.7rem;left: 30%;width: 70px;height: 19px;line-height: 17px;border-radius: 8px;}
+    .ios{ top:105px;}
+    .new-weixin{ width: 9%; height:159px; background-size: contain; bottom:113px; left:10px;}
+    .App_bunner{ width:100%; height:307px;background-size: contain;}
+    .app-ios{ width: 90%;height:152px;}
+    .App-logo{width: 100px;top: 20px;left: 7%;}
+    .app_top_link {top: 0;}
+    .app_top_link a{font-size: 18px;height: 50px;line-height: 60px;}
+    .App_bunner{background:url(/Images/app-bunnertel.jpg) no-repeat center top;background-size: 100% 100%;width:100%;height: 152px;}
+    .App_content {height: 60px;}
+    .app-con{padding: 20px 0 20px 0;width: 100%;}
+    .app-con img{ width: 120px;}
+    .app-con:first-child img,.app-con:last-child img{ margin-left: 17px!important;}
+    .con-cc-t span:first-child{ font-size: 16px!important;}
+    .con-cc {width: 155px;margin-left: 7px;}
+    .con-cc-t {height: 45px;line-height: 55px;font-size: 12px;border-bottom: 2px solid #e85154;width: 135px;margin-left: 20px;margin-top: 10px;}
+    .con-ico,.con-ico2 {right: -7px;bottom: -13px;-webkit-transform: scale(0.5);transform: scale(0.5);}
+    .con-cc li, .con-cc2 li {font-size: 12px;line-height: 28px;}
+    .con-cc2 {height: 165px;width: 165px;}
+    .con-cc2 .con-cc-t{ margin-left: 10px;margin-top: 25px;width: 135px!important;}
+    .con-cc2 .con-cc-t span:first-child{padding-right: 10px;font-size: 16px!important;}
+    .con-ico2{ left: -10px;bottom: -13px;}
+    .app-con img:nth-child(2){ width: 175px;margin-left: -32px!important;}
+    .con-cc2 ul {margin: 10px 0 0 20px;}
+    .con-cc:last-child{margin-top: -25px;}
+    #footSection{ display: none;}
+}
+
+@media screen and (min-width: 380px) and (max-width: 420px) {
+	.app-con:first-child img,.app-con:last-child img{ margin-left: 10%!important;}
+    .con-cc2 {margin-left: 7%;}
+    .App_bunner{background-size: 100% 100%;height: 197px;}
+    .app-ios{height: 197px;}
+    .android, .ios{ top: 110px;left:30%;}
+    .ios{ top: 135px;}
+}
+
+@media screen and (min-width: 325px) and (max-width: 375px) {
+    .app-con:first-child img,.app-con:last-child img{ margin-left: 10%!important;}
+    .App_bunner{background-size: 100% 100%;height: 179px;}
+    .con-cc2 {margin-left: 7%;}
+    .app-ios{height: 179px;}
+    .android, .ios{ top: 100px;left: 30%;}
+    .ios{ top: 125px;}
+}

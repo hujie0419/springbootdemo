@@ -1,0 +1,288 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@model Tuple<IEnumerable<TireSizeModel>>
+@{
+    ViewBag.Title = "可立即安装轮胎配置";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+@section head{
+    <link href="~/Content/sweetalert/sweetalert.css" rel="stylesheet" />
+    <link href="~/Scripts/multiple/multiple-select.css" rel="stylesheet" />
+    <style>
+        .title {
+            float: left;
+        }
+
+        .content {
+            clear: both;
+        }
+
+        .condition .name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .condition label {
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .condition > div {
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        .data_count {
+            color: #0026ff;
+        }
+
+        #EditSingle div {
+            float: left;
+            margin-right: 50px;
+            width: 188px;
+        }
+
+        #EditMany div {
+            float: left;
+            margin-right: 50px;
+            width: 188px;
+        }
+
+        span {
+            word-break: break-all;
+        }
+
+        #add .title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .tit.error {
+            color: red;
+        }
+
+
+        #add {
+            width: 721px;
+            padding: 0 20px 10px;
+            box-shadow: 0 0 0 10px rgba(3, 3, 3, 0.2);
+            background-color: #fff;
+            /*overflow: hidden;*/
+            height: 500px;
+            overflow-y: auto;
+        }
+
+            #add .close {
+                position: relative;
+                float: right;
+                width: 20px;
+                height: 16px;
+                background: url(https://resource.tuhu.cn/Css/images/icon_modal.png) 0 -220px;
+                margin-top: 14px;
+                cursor: pointer;
+                z-index: 111;
+            }
+
+            #add .SelectCar {
+                float: left;
+                width: 610px;
+                margin: 9px 0 0 10px;
+                font-size: 16px;
+                font-weight: bold;
+                color: #333;
+            }
+
+        .mybtn {
+            width: 100px;
+            height: 30px;
+        }
+    </style>
+}
+<div class="title">
+    <h2>可立即安装轮胎配置</h2>
+</div>
+
+<div class="content">
+    <div class="condition">
+        <div>
+            <span class="name">地区：</span>
+            <div class="region" style="margin-left: 48px;MARGIN-TOP: -20PX;">
+                <button class="btnAddCity">增加地区</button>
+            </div>
+        </div>
+        <div>
+            <span class="name">轮胎规格：</span>
+            @Html.DropDownList("Tire_Width", Model.Item1.Select(T => T.Width).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "胎面宽")<b>/</b>
+            @Html.DropDownList("Tire_AspectRatio", Model.Item1.Select(T => T.AspectRatio).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "扁平比")<b>R</b>
+            @Html.DropDownList("Tire_Rim", Model.Item1.Select(T => T.Rim).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "直径")
+        </div>
+        <div>
+            <span class="name">PID：</span>
+            <input type="text" name="PID" value="" />
+        </div>
+        <div>
+            <span class="name">启用状态：</span>
+            <select class="status">
+                <option value="">全部</option>
+                <option value="1">启用</option>
+                <option value="0">禁用</option>
+            </select>
+        </div>
+
+        <div>
+            <button onclick="TuhuTire.Logic.InstallNow.LoadList(1)" class="button_select" style="width: 400px;height: 30px;display: block;MARGIN-TOP: 12px;">查询</button>
+        </div>
+    </div>
+    <div>
+        每页显示：
+        <select class="PageSize">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>条
+        <span class="data_count"></span>
+        <button onclick="TuhuTire.Logic.InstallNow.ShowAddDialog()">添加</button>
+        <button onclick="TuhuTire.Logic.InstallNow.BitchOn()">批量启用</button>
+        <button onclick="TuhuTire.Logic.InstallNow.BitchOff()">批量禁用</button>
+    </div>
+    <img class="loadimg" src="~/Scripts/layer/skin/default/loading-2.gif" style="margin:5% 50%;display:none;" />
+    <div class="list">
+    </div>
+
+</div>
+
+<div id="add" style="display:none;">
+    <div style="height:45px;border-bottom: 2px solid #d12a3e;">
+        <div class="SelectCar" style="width:500px;margin-top:16px;">添加</div>
+        <div class="close"></div>
+    </div>
+    <div style="margin-top:18px;">
+        <span class="title">地区：</span>
+        <div style="margin-left:49px;margin-bottom:30px;">
+            <button class="btnAddCity mybtn">新增城市</button>
+        </div>
+    </div>
+    <div>
+        <span class="title">PID：</span>
+        <div class="pids" style="margin-left:49px;">
+            <button class="addPid mybtn">增加PID</button>
+        </div>
+    </div>
+    <div style="position: absolute;right: 5px;bottom: 5px;">
+        <button class="save mybtn">保存</button>&nbsp;&nbsp;&nbsp;&nbsp;<button class="closeBtn mybtn">取消</button>
+    </div>
+</div>
+@section scripts{
+    <script src="~/Content/sweetalert/sweetalert.js"></script>
+    <script src="~/Scripts/multiple/multiple-select.js"></script>
+    <script src="~/Scripts/Tire.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            TuhuTire.Logic.InstallNow.LoadList(1);
+            $(".list").on("click", ".pager>a", function (event) {
+                event.preventDefault();
+                var url = $(this).attr("href");
+                if (url) {
+                    $.post(url, function (html, status) {
+                        if (status === "success") {
+                            $(".list").html(html);
+                        }
+                    });
+                }
+            })
+        });
+        $('.btnAddCity').on('click', function () {
+            var html = '<div style="margin-bottom:10px;">';
+            html += ' <label>省/市:</label>';
+            html += ' <select  name="Province"  onchange="GetCityChildOption(this)">';
+            html += ' </select>';
+            html += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+            html += ' <label >市/区:</label>';
+            html += '<select  name="City"></select>';
+            html += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+            html += '<a href="#" onclick="$(this).parent().remove()" >删除城市</a>';
+            html += '</div>';
+            $(this).before(html);
+            GetCityJsonOption();
+        });
+
+        $('.addPid').on('click', function () {
+            var html = '<div style="margin-bottom:10px;"><input type="text" name="name"  value="" onkeyup="TuhuTire.Logic.InstallNow.CheckPid(this)" onblur="TuhuTire.Logic.InstallNow.CheckPid(this)" style="margin-right: 21px;" /><select style="margin-right: 21px;"><option value="1">启用</option><option value="0">禁用</option></select><a href="#" onclick="$(this).parent().remove()"  style="margin-right: 21px;">删除</a><span class="tit"></span></div>';
+            $(this).before(html);
+        });
+
+        function GetCityJsonOption() {
+
+            var provinces = $('select[name="Province"]');
+            provinces.each(function (e) {
+                var parentID = $(this).val();
+                var self = $(this);
+                if (!parentID) {
+                    parentID = 0;
+                    $.ajax({
+                        type: "POST",
+                        url: "/HomePageConfig/GetCity",
+                        async: false,
+                        data: "parentID=" + parentID,
+                        success: function (msg) {
+                            var ResultHtml = ""
+                            var TemplateHtml = '<option value="{value}">{text}</option>';
+                            var obj = eval(msg);
+                            $(obj).each(function (i) {
+                                ResultHtml += TemplateHtml.replace("{value}", obj[i].Value).replace("{text}", obj[i].Text);
+                            });
+                            $(self).empty();
+                            $(self).append('<option value="">请选择</option>');
+                            $(self).append(ResultHtml);
+
+                        }
+                    });
+                }
+            });
+
+
+        }
+        function GetCityChildOption(self) {
+            var parentID = $(self).val();
+            if (parentID) {
+                $.ajax({
+                    type: "POST",
+                    url: "/HomePageConfig/GetCity",
+                    async: false,
+                    data: "parentID=" + parentID,
+                    success: function (msg) {
+                        var ResultHtml = '<option value="">请选择</option>';
+                        var TemplateHtml = '<option class="checkbox" value="{value}">{text}</option>';
+                        var obj = eval(msg);
+                        $(obj).each(function (i) {
+                            ResultHtml += TemplateHtml.replace("{value}", obj[i].Value).replace("{text}", obj[i].Text);
+                        });
+                        var child = $(self).parent().find('select[name="City"]');
+                        child.empty();
+                        child.append(ResultHtml);
+                        child.multipleSelect({
+                            width: '200px',
+                            selectAll: true
+                        });
+                    }
+                });
+            }
+        }
+
+        function GetCityByParent(cityValue, parent) {
+            var temp = [];
+            for (var i = 0; i < cityValue.length; i++) {
+                var p = (cityValue[i].ParentID == 0 ? cityValue[i].FKRegionPKID : cityValue[i].ParentID);
+                if (parent == p) {
+                    temp.push(cityValue[i].FKRegionPKID);
+                }
+            }
+            return temp;
+        }
+    </script>
+}

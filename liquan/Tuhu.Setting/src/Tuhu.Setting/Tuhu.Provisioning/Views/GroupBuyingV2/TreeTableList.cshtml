@@ -1,0 +1,116 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@using Tuhu.Provisioning.Controllers;
+@{
+    Layout = null;
+    ViewBag.Title = "TreeTableList";
+}
+<link href="~/Scripts/TableTree/pa_ui.css" rel="stylesheet" />
+<style type="text/css">    
+.accounttable{width:95%;border:solid 1px #dfb598}
+.accounttable thead{font-weight:bold;text-align:center;}
+.accounttable thead td{background-color:#fdeee5;}
+.accounttable tr{height:30px;line-height:30px;}
+.accounttable tr td{padding:3px;text-align:center;}
+.accounttable .hasDatepicker{width:50px;}
+.accounttable tr td {text-align: left; padding-left: 15px;}
+ #table1 tr td {border-bottom:solid 1px #fdeee5;}
+</style>
+<div id="typeTitle" style="font-size:20px;font-weight:bold;"></div>
+<table id="table1" class="accounttable" border="0" cellSpacing="0" cellPadding="0" pa_ui_name="table" pa_ui_hover="true" pa_ui_tree="true" pa_ui_tree_column="0" pa_ui_tree_expand="0">
+    <thead>
+        <tr>
+            <td>分类名称</td>
+            <td>是否显示</td>
+            <td>类目图片</td>
+            <td>排序</td>
+            <td>操作</td>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            List<OperationCategoryModel> ListItems = (List<OperationCategoryModel>)ViewBag.TreeTableList;
+            if (ListItems != null && ListItems.Count > 0)
+            {
+                <input type="hidden" id="ctype" value="@(ListItems[0].Type)" />
+                foreach (var item in ListItems)
+                {
+                   <tr id="@item.Id"  @(item.ParentId == 0 ? "" : "pa_ui_parent=" + item.ParentId ) >
+                       <td>@item.DisplayName</td>
+                       <td>@(item.IsShow == 1 ? "是" : "否")</td>
+                       <td>
+                           <img height="50" width="50" src="@item.Icon" />
+                       </td>
+                       <td>
+                           @item.Sort
+                       </td>
+                       <td>
+                           @{
+                               if (item.ParentId == 0)
+                               {
+                                   <a href="javascript:void(0)" onclick="TreeTableList.Edit('添加子类目', 0, @item.Id, @item.Type);">添加子级</a>
+                               }
+                               <a href="javascript:void(0)" onclick="TreeTableList.Edit('编辑类目',@item.Id,0,@item.Type);">编辑</a>
+                               <a href="javascript:void(0)" onclick="if(confirm('删除操作不可逆，确认删除?')){ TreeTableList.Del(@item.Id);}">删除</a>
+                               if (item.ParentId != 0){
+                                   <a href="javascript:void(0)" onclick="TreeTableList.UnionProudct(this,'@item.DisplayName',@item.Id,@item.Type);">@(item.Type == 0 ? "关联类目" : "关联产品")</a>
+                               }
+                            }
+                       </td>
+                   </tr>
+                }
+            }
+            else
+            {
+              <tr>
+                  <td style="text-align:center;" colspan="6">暂无数据</td>
+              </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<script src="~/Scripts/TableTree/jquery-1.7.2.min.js"></script>
+<script src="~/Scripts/TableTree/jquery-ui-1.7.1.js"></script>
+<script src="~/Scripts/TableTree/pa_ui.js"></script>
+<script src="~/Scripts/TableTree/pa_ui_misc.js"></script>
+<script src="~/Scripts/TableTree/pa_ui_date.js"></script>
+<script type="text/javascript">
+    var TreeTableList = {
+        getType:$("#ctype").val(),
+        setTitle:function(){
+            $("#typeTitle").text({0:"前台类目",1:"专题类目"}[TreeTableList.getType] || '');
+        },
+        Edit: function (t,n,p,e) {
+            window.parent.OperationCategoryConfigs.AddOrEdit(t, n, p, e);
+        },
+        Del: function (n) 
+        {
+            if(n > 0)
+            {
+                $.ajax({
+                    type: "POST",
+                    url: "/GroupBuyingV2/DeleteCategory",
+                    data: {"id": n},
+                    success: function (result) 
+                    {
+                        var resultMsg = result == 1 ? "删除成功！" : "删除失败，不可删除带有子级分类的类目！";
+                        if(result == 1){
+                            alert(resultMsg);
+                            window.parent.OperationCategoryConfigs.LoadTreeTable(TreeTableList.getType);
+                        }
+                        else{
+                            alert(resultMsg);
+                        }
+                    }
+                });
+            }
+            else{
+                alert("操作异常");
+            }
+        },
+        UnionProudct: function (t, d, n, e) {
+            window.parent.OperationCategoryConfigs.AddOrEditProduct($(t).text()+ " - " + d,n,e);
+        }
+    }
+    //TreeTableList.setTitle();
+</script>

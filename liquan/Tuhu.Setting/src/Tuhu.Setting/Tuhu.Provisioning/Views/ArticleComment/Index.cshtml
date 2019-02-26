@@ -1,0 +1,615 @@
+﻿@{
+    ViewBag.Title = "文章评论管理";
+    Layout = "../Shared/_Layout.cshtml";
+}
+<style type="text/css">
+	.Checked { background-color: #71d6f3; }
+    .button1 {
+        border-radius: 5px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        font-family: "Microsoft Yahei";
+        outline: none;
+        cursor: pointer;
+        background: #0088cc;
+        border-color: #0088cc;
+    }
+</style>
+
+<div>
+    <h2 style="text-align:left;">
+        <a id="navigation-home" href="javascript:void(0);" >返回首页</a>
+        <span>评论管理中心</span>
+    </h2>
+</div>
+<div>
+	<form id="searchForm">
+        <fieldset>
+            <legend>搜索</legend>
+                评论类型:
+                <select name="Category">
+                    <option selected="selected" value="">所有</option>
+                    <option value="0">文章评论</option>
+                    <option value="1">专题问题</option>
+                    <option value="2">专题说说</option>
+                    <option value="3">全局问题</option>
+                    <option value="10">晒图评论</option>
+                </select>
+                审核状态:
+                <select name="AuditStatus">
+                    <option value="">所有</option>
+                    <option value="1">审核不通过</option>
+                    <option value="2">审核通过</option>
+                    <option value="0">待审核</option>
+                </select>
+                文章标题:
+                <input type="text" name="Title" value="" />
+                评论内容:
+                <input type="text" name="CommentContent" value="">
+                手机号:
+                <input type="text" name="PhoneNum" value="" />
+                评论时间:
+                <input type="datetime" id="CommentTime" name="CommentTime" value="" />
+                <button id="btnSearch">搜索</button>
+                <input type="button" value="查看日志" onclick="LookLog()" />
+        </fieldset>
+	</form>
+    <fieldset>
+        <legend>功能操作</legend>
+            @*<button id="btnDelete">删除</button>
+            <button id="btnPass">通过</button>
+            <button id="btnUnPass">不通过</button>*@
+            <button id="btnSort">置顶</button>
+            <button id="btnUnSort">取消置顶</button>
+    </fieldset>
+</div>
+<div>
+	<table style="width:100%">
+		<tr>
+			<th>
+				<input type="checkbox" id="SelectAll" value="" />选择
+			</th>
+            <th>类型</th>
+            <th>评论人</th>
+            <th>手机号</th>
+            <th>置顶</th>
+			<th>评论标题</th>
+			@*<th>文章类目</th>*@			
+			<th width="15%">评论内容</th>
+            <th>图片</th>
+			<th>时间</th>
+			<th>审核时间</th>
+            <th>回复</th>
+            <th>操作日志</th>
+			<th>管理</th>           
+		</tr>
+		<tbody id="commentTbody"></tbody>
+	</table>
+</div>
+
+<div id="AddReply" style="display:none;">
+    <table align="center">
+        <tr>
+            <input type="hidden" id="ReplyPKID" />
+            <input type="hidden" id="ReplyID" />
+            <td>手机号:</td>
+            <td>
+                <input type="text" id="ReplyPhone" />
+                <span style="color:red;">请输入11位有效手机号码</span>
+            </td>
+        </tr>
+        <tr>
+            <td>回答:</td>
+            <td>
+                <textarea cols="60" rows="5" id="ReplyContent"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td>感谢数:</td>
+            <td>
+                <input type="text" id="ReplyPraise" />
+                <span style="color:red;">请输入数字</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" align="right">
+                <a class="button1" href="javascript:void(0);" onclick="ReplyManage.Save(0);">确认</a>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<script type="text/soda" id="tmpl_comment">
+	<tr data-id="{{ID}}" data-pkid="{{PKID}}">
+		<td>
+            <input type="checkbox" class="sCheck" />
+        </td>
+        <td>{{Type}}</td>
+        <td>{{UserName}}</td>
+        <td>{{PhoneNum}}</td>
+        <td>{{Sort}}</td>
+		<td>{{Title}}</td>
+		@*<td>{{Category}}</td>*@	
+		<td>{{CommentContent}}</td>
+        <td>{{CommentImage}}</td>
+		<td>{{CommentTime}}</td>
+		<td>{{AuditTime}}</td>
+        <td>{{ParentID}}</td>
+        <td><a href="javascript:void(0)" onclick="LookArticleLog(this)">查看操作记录</a></td>
+		<td>{{AuditStatus}}</td>        
+	</tr>
+</script>
+
+<script>
+	$(function ()
+	{
+		$("#CommentTime").datepicker({ dateFormat: 'yy-mm-dd' })
+		var $tmpl_comment = $("#tmpl_comment"),
+			tmplCommentStr = $tmpl_comment.html(),
+			$commentTbody = $("#commentTbody"),
+			$btnDelete = $('#btnDelete'),
+			$btnPass = $('#btnPass');
+		//html字符串替换
+		function rptm(tmplhtml, obj)
+		{
+			for (var key in obj)
+			{
+				if (obj.hasOwnProperty(key))
+				{
+				    if (obj[key] != null && obj[key] != "null") {
+				        tmplhtml = tmplhtml.replace(new RegExp("\{\{" + key + "\}\}"), obj[key]);
+				    } else {
+				        tmplhtml = tmplhtml.replace(new RegExp("\{\{" + key + "\}\}"), "");
+				    }
+					
+				}
+			}
+			return tmplhtml;
+		};
+		//文章类目
+		function transCategory(key)
+		{
+			return { 1: '汽车百科', 2: '驾驶技巧', 3: '保养秘诀', 4: '必备车品' }[key] || '';
+		};
+		//审核状态
+		function transAuditStatus(key,userid,type)
+		{
+		    userid = userid || "";
+			return {
+			    0: '待审核<button class="shDelete" type="'+type+'" status="待审核">删除</button>&nbsp;<button class="shPass" data-userid = "' + userid + '" type="'+type+'">通过</button>&nbsp;<button data-userid = "' + userid + '" class="shBlacklist">加入黑名单</button>',       //待审核
+			    1: '不通过<button class="shDelete" type="' + type + '" status="不通过">删除</button>&nbsp;<button class="shPass" data-userid = "' + userid + '" type="' + type + '">通过</button>&nbsp;<button data-userid = "' + userid + '" class="shBlacklist">加入黑名单</button>',       //审核不通过
+			    2: '已通过<button class="shDelete" type="' + type + '" status="已通过">删除</button>&nbsp;<button class="shUnPass" data-userid = "' + userid + '" type="' + type + '">不通过</button>&nbsp;<button data-userid = "' + userid + '" class="shBlacklist">加入黑名单</button>'    //审核通过
+			}[key] || key;
+		};
+	    //评论类型
+		function commentType(type,ptype,parentid,topid) {
+		    //return {
+		    //    0: "<span data-type='0' style='color:red;font-weight:bold;'>评论</span>",
+		    //    1: "<span data-type='1' style='color:red;font-weight:bold;'>专题问题</span>",
+		    //    2: "<span data-type='2' style='color:red;font-weight:bold;'>说说</span>",
+		    //    3: "<span data-type='3' style='color:red;font-weight:bold;'>全局问题评论</span>"
+		    //}[type] || type;
+
+		    type = type || 0,
+            ptype = ptype || 0,
+            topid = topid || 0,
+		    parentid = parentid || 0;
+
+		    console.log("commentType => " + [type, ptype, parentid, topid].join(','));
+
+		    if (ptype == 0) {
+		        if(parentid > 0)
+		            return "<span style='color:red;font-weight:bold;'>文章评论回复</span>"
+		        else
+		            return "<span style='color:red;font-weight:bold;'>文章评论</span>"
+		    }
+		    else if (ptype == 1 || (ptype == 2 && (parentid > 0 || topid > 0))) {
+		        if (parentid == 0 && topid == 0)
+		            return "<span style='color:red;font-weight:bold;'>专题问题</span>"
+		        else if (parentid > 0 && topid == 0)
+		            return "<span style='color:red;font-weight:bold;'>专题问题评论</span>"
+		        else if (parentid > 0 && topid > 0)
+		            return "<span style='color:red;font-weight:bold;'>专题问题评论回复</span>"
+		        else
+		            return "<span style='color:red;font-weight:bold;'>专题-未知</span>"
+		    }
+		    else if (ptype == 2 && parentid == 0 && topid == 0) {
+		        return "<span style='color:red;font-weight:bold;'>专题说说</span>"
+		    }
+		    else if (ptype == 3) {
+		        if (parentid > 0 && topid == 0)
+		            return "<span style='color:red;font-weight:bold;'>全局问题评论</span>"
+		        else if (parentid > 0 && topid > 0)
+		            return "<span style='color:red;font-weight:bold;'>全局问题评论回复</span>"
+		        else
+		            return "<span style='color:red;font-weight:bold;'>全局-未知</span>"
+		    }
+		    else if (ptype == 10) {
+		        return "<span style='color:red;font-weight:bold;'>晒图评论</span>"
+		    }
+		    else {
+		        return "<span style='color:red;font-weight:bold;'>未知</span>"
+		    }
+		};
+		//根据过滤条件筛选/加载评论
+		function loadComments(index)
+		{
+			var $form = $("#searchForm");
+			var $Category = $form.find("[name=Category]");
+			var $AuditStatus = $form.find("[name=AuditStatus]");
+			var data = { Index: index };
+			$form.serializeArray().forEach(function (o)
+			{
+				data[o.name] = o.value;
+			});
+			data.Category = $Category.find("option:selected").val();	
+			data.AuditStatus = $AuditStatus.find("option:selected").val();
+			$commentTbody.find(".loadmorecomment").remove();
+			$.post("/ArticleComment/", data, function (result)
+			{
+				if (result && result.ArticleCommentList.length)
+				{
+					var html = result.ArticleCommentList.map(function (comment)
+					{
+					    var a_type = comment.Type;
+					    //comment.Category = transCategory(comment.Category);
+					    comment.Type = commentType(comment.Type, comment.PType, comment.ParentID, comment.TopID);
+					    comment.Sort = comment.Sort == 0 ? "否" : "<span style='color:red;'>是</span>";
+					    comment.AuditStatus = transAuditStatus(comment.AuditStatus, comment.UserID, a_type);
+					    comment.ParentID = (comment.Type == 3 && ((comment.ParentID || 0) == 0)) ? "<button class='shReply' onclick='ReplyManage.AddReply(" + comment.ID + "," + comment.PKID + ")' >回复</button>" : "不可回复";
+					    comment.CommentImage = (comment.CommentImage || "").length > 0 ? "<img width=\"120\" height=\"120\" src='" + comment.CommentImage + "'/>" : "";
+					    return rptm(tmplCommentStr, comment);
+					}).join('');
+					$commentTbody.append(html);
+					if (result.ArticleCommentList.length < 20)
+					{
+						$commentTbody.append('<tr class="nomorecomment"><td colspan="6" align="center" >没有更多数据</td></tr>')
+					}
+					else
+					{
+						$commentTbody.append('<tr class="loadmorecomment"><td colspan="12" align="center" > <a href="javascript:loadComments(' + (++index) + ');">加载更多数据</a></td></tr>')
+					}
+				}
+				else
+				{
+					$commentTbody.empty().append('<tr class="nocomment"><td colspan="12" align="center" >没有数据</td></tr>')
+				}
+			});
+		};
+		//根据PKID加载评论
+		function loadCommentsByPKID(PKID,Type)
+		{
+		    $.post("/ArticleComment/GetByPKID", { PKID: PKID, Type: Type }, function (result)
+			{
+				if (result && result.ArticleCommentList.length)
+				{
+					var html = result.ArticleCommentList.map(function (comment)
+					{
+					    var a_type = comment.Type;
+					    //comment.Category = transCategory(comment.Category);
+					    comment.Type = commentType(comment.Type, comment.PType, comment.ParentID, comment.TopID);
+					    comment.Sort = comment.Sort == 0 ? "否" : "<span style='color:red;'>是</span>";
+					    comment.AuditStatus = transAuditStatus(comment.AuditStatus, comment.UserID, a_type);
+					    comment.ParentID = (comment.Type == 3 && ((comment.ParentID || 0) == 0)) ? "<button class='shReply' onclick='ReplyManage.AddReply(" + comment.ID + "," + comment.PKID + ")' >回复</button>" : "不可回复";
+					    comment.CommentImage = (comment.CommentImage || "").length > 0 ? "<img width=\"120\" height=\"120\" src='" + comment.CommentImage + "'/>" : "";
+						return rptm(tmplCommentStr, comment);
+					}).join('');
+					$commentTbody.append(html);
+					if (result.ArticleCommentList.length < 20)
+					{
+						$commentTbody.append('<tr class="nomorecomment"><td colspan="12" align="center" >没有数据评论了</td></tr>')
+					}
+				}
+				else
+				{
+					$commentTbody.empty().append('<tr class="nocomment"><td colspan="12" align="center" >没有数据</td></tr>')
+				}
+			});
+		};
+        //url参数解析
+		var urlParams = (function ()
+		{
+			var search = window.location.search,
+				params = {};
+			search = search.substring(1, search.length);
+			search.split('&').forEach(function (sp)
+			{
+				var kvp = sp.split('=');
+				if (kvp.length > 0)
+				{
+					params[kvp[0]] = kvp.length > 1 ? kvp[1] : '';
+				}
+			});
+			return params;
+		})();
+        //根据ID搜索，否则默认搜索第一页内容
+		if (urlParams.ID) {
+		    if (urlParams.Type)
+		        loadCommentsByPKID(urlParams.ID, urlParams.Type);
+		    else
+		        loadCommentsByPKID(urlParams.ID);
+		}
+		else {
+		    loadComments(1);
+		}
+
+		window.loadComments = loadComments;
+
+		$("#btnSearch").on("click", function ()
+		{
+			$commentTbody.empty();
+			loadComments(1);
+			return false;
+		});
+
+		$("#SelectAll").on("change", function ()
+		{
+			var isChecked = this.checked;
+			console.log(isChecked);
+			$commentTbody.find("input.sCheck").attr("checked", isChecked).trigger('change');
+		});
+
+		//获取已选择的IDs和TRs
+		function getSeletedParams()
+		{
+			var selected = $commentTbody.find("input.sCheck:checked");
+			var ids = [];
+			var trs = selected.parents("tr");
+			trs.each(function ()
+			{
+				ids.push($(this).attr('data-id'))
+			});
+			return {
+				ids: ids,
+				trs: trs
+			}
+		};
+		function error() { alert("错误") };
+		var _callback = {
+			passSuccess: function (trs,userid,type)
+			{
+			    trs.find('td:last').html(transAuditStatus(2, userid,type));
+			},
+			unPassSuccess: function (trs, userid, type)
+			{
+			    trs.find('td:last').html(transAuditStatus(1, userid,type));
+			},
+			deleteSuccess: function (trs)
+			{
+				trs.fadeOut(function ()
+				{
+					$(this).remove()
+				});
+			}
+		};
+
+		$commentTbody.on('change', "input.sCheck", function ()
+		{
+		    var isChecked = this.checked, tr = $(this).parents('tr');
+		    isChecked ? tr.addClass('Checked') : tr.removeClass('Checked');
+		}).on('click', '.shDelete', function ()
+		{
+		    if (confirm("确定要删除此评论吗?")) {
+		        var tr = $(this).parents('tr'),
+                     id = tr.attr('data-id'),
+                     pkid = tr.attr('data-pkid');
+		        var type = $(this).attr("type");
+		        var status = $(this).attr("status");
+		        $.post('/ArticleComment/Delete', { IDs: JSON.stringify([id]), Status: status, Type: type, PKIDs: JSON.stringify([pkid]) }, function (result) {
+		            result ? _callback.deleteSuccess(tr) : error();
+		        }).error(error);
+		    }
+		}).on('click', '.shUnPass', function ()
+		{
+		    var tr = $(this).parents('tr'),
+				id = tr.attr('data-id'),
+                 pkid = tr.attr('data-pkid');
+		    var userid = $(this).attr("data-userid");
+		    var type = $(this).attr("type");
+		    $.post('/ArticleComment/UnPass', { IDs: JSON.stringify([id]), UserID: userid, Type: type, PKIDs: JSON.stringify([pkid]) }, function (result)
+		    {
+		        result ? _callback.unPassSuccess(tr, userid,type) : error();
+		    }).error(error);
+		}).on('click', '.shPass', function ()
+		{
+		    var tr = $(this).parents('tr'),
+				id = tr.attr('data-id'),
+		        pkid = tr.attr('data-pkid');
+		    var userid = $(this).attr("data-userid");
+		    var type = $(this).attr("type");
+		    $.post('/ArticleComment/Pass', { IDs: JSON.stringify([id]), UserID: userid, Type: type, PKIDs: JSON.stringify([pkid]) }, function (result)
+		    {
+		        result ? _callback.passSuccess(tr, userid,type) : error();
+		    }).error(error);
+		}).on('click', '.shBlacklist', function () {
+		    var _userid = $(this).attr("data-userid");
+		    var _pkid = $(this).parents('tr').attr('data-id');
+		    console.log(_userid);
+
+		    var ajaxParams = {
+		        type: "POST",
+		        url: "/BlackListConfig/AddBlackList",
+		        data: { "userId": _userid },
+		        success: function (data) {
+		            if (data == 1) {
+		                alert("添加成功！");
+		            }
+		            else {
+		                alert("添加失败，或当前用户已经添加过！");
+		            }
+		        }
+		    };
+		    var ajaxAddLog = {
+		        type: "POST",
+		        url: "/Article/AddOperateLog",
+		        data: { "PKID": _pkid, "userId": _userid, "objectType": "ArtC" },
+		        success: function (data) { }
+		    };
+		    $.ajax(ajaxParams);
+		    $.ajax(ajaxAddLog);
+		});
+
+		$('#btnDelete').on('click', function ()
+		{
+			var params = getSeletedParams();
+			var ids = params.ids;
+			$.post('/ArticleComment/Delete', { IDs: JSON.stringify(ids) }, function (result)
+			{
+				result ? _callback.deleteSuccess(params.trs) : error();
+			}).error(error);
+		});
+		$('#btnPass').on('click', function ()
+		{
+			var params = getSeletedParams();
+			var ids = params.ids;
+			console.log(ids);
+			$.post('/ArticleComment/Pass', { IDs: JSON.stringify(ids) }, function (result)
+			{
+				result ? _callback.passSuccess(params.trs) : error();
+			}).error(error);
+		});
+		$('#btnUnPass').on('click', function ()
+		{
+			var params = getSeletedParams();
+			var ids = params.ids;
+			console.log(ids);
+			$.post('/ArticleComment/UnPass', { IDs: JSON.stringify(ids) }, function (result)
+			{
+				result ? _callback.unPassSuccess(params.trs) : error();
+			}).error(error);
+		});
+		$('#btnSort').on('click', function () {
+		    var params = getSeletedParams();
+		    var ids = params.ids;
+		    console.log(ids);
+		    $.post('/ArticleComment/UpdateSortBatch', { IDs: JSON.stringify(ids), sort: 1 }, function (result) {
+		        if (result)
+		            alert("操作成功");
+		        else
+		            alert("操作失败");
+		    }).error(error);
+		});
+	    $('#btnUnSort').on('click', function () {
+	        var params = getSeletedParams();
+	        var ids = params.ids;
+	        console.log(ids);
+	        $.post('/ArticleComment/UpdateSortBatch', { IDs: JSON.stringify(ids), sort: 0 }, function (result) {
+	            if (result)
+	                alert("操作成功");
+	            else
+	                alert("操作失败");
+	        }).error(error);
+	    });
+	});
+
+	var ReplyManage = {
+	    AddReply: function (id, pkid) {
+	        this.Clear();
+	        $("#ReplyID").val(id);
+	        $("#ReplyPKID").val(pkid);
+	        $("#AddReply").dialog({
+	            title: "回答",
+	            width: 500,
+	            height: 300,
+	            modal: true
+	        });
+	    },
+	    Clear: function () {
+	        $("#ReplyID").val("");
+	        $("#ReplyPKID").val("");
+	        $("#ReplyPhone").val("");
+	        $("#ReplyContent").val("");
+	        $("#ReplyPraise").val("");
+	    },
+	    Save: function (_replyType) {
+	        var _ReplyPhone = $("#ReplyPhone").val(),
+                _ReplyContent = $("#ReplyContent").val(),
+                _ReplyPraise = $("#ReplyPraise").val(),
+                _ReplyPKID = $("#ReplyPKID").val(),
+                _ReplyID = $("#ReplyID").val();
+
+	        if (isNaN(_ReplyPraise) == false && this.IsMobile(_ReplyPhone)) {
+	            $.ajax({
+	                type: "POST",
+	                timeout: 10000,
+	                url: "/Article/SaveReply",
+	                data: {
+	                    "replyPhone": _ReplyPhone,
+	                    "replyContent": _ReplyContent,
+	                    "replyPraise": _ReplyPraise,
+	                    "replyPKID": _ReplyPKID,
+	                    "replyID": _ReplyID,
+	                    "replyType": _replyType
+	                },
+	                success: function (result) {
+	                    if (result == 1) {
+	                        $("#AddReply").dialog("close");
+	                        alert("操作成功!");
+	                    }
+	                    else if (result == -1) {
+	                        alert("手机号用户不存在!");
+	                    }
+	                    else {
+	                        alert("操作失败!");
+	                    }
+	                }
+	            });
+	        }
+	        else {
+	            alert("输入信息有误!");
+	        }
+	    },
+	    IsMobile: function (val) {
+	        ///<summary>验证是否为手机号</summary>
+	        if (val.match(/^[1][3|5|7|8]{1}[0-9]{9}$/) != null) {
+	            return true;
+	        }
+	        else {
+	            return false;
+	        }
+	    }
+	}
+
+	function LookLog() {
+	    $("#LookOplog").html("").load('/Logger/list?objectType=ArtC');
+	    $("#LookOplog").dialog({
+	        title: "查看日志",
+	        width: 850,
+	        height: 450,
+	      //  href:'/Logger/list?objectType=ArticleComment',
+	        modal: true,
+	        resizable: false,
+	        buttons: {
+	            "取消": function () {
+	                $(this).dialog("close");
+	            }
+	        }
+	    });
+	}
+	function LookArticleLog(obj) {
+	    var _pkid = $(obj).parents('tr').attr('data-id');
+	    $("#LookOplog").html("").load('/Article/LogList?objectType=ArtC&objectID=' + _pkid);
+	    $("#LookOplog").dialog({
+	        title: "查看日志",
+	        width: 850,
+	        height: 450,
+	        //  href:'/Logger/list?objectType=ArticleComment',
+	        modal: true,
+	        resizable: false,
+	        buttons: {
+	            "取消": function () {
+	                $(this).dialog("close");
+	            }
+	        }
+	    });
+	}
+
+	(function NavigationManage() {
+	    document.getElementById("navigation-home").setAttribute("href", "http://" + window.location.host);
+	})();
+
+</script>
+<div id="LookOplog" style="display:none;"></div>
+<input type="hidden" value="ArtC" id="hidObjectType" />

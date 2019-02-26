@@ -1,0 +1,198 @@
+﻿@{
+    Layout = null;
+}
+
+@model Tuhu.Provisioning.DataAccess.Entity.SE_HomePageModuleContentConfig
+
+
+<div class="modal-dialog" style="width:900px;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                &times;
+            </button>
+            <h4 class="modal-title">
+                编辑模块内容
+            </h4>
+        </div>
+        <div class="modal-body">
+            <form id="form1" class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">名称:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title" />
+                    </div>
+                    <label class="col-sm-2 control-label">渠道:</label>
+                    <div class="col-sm-4">
+                        <select id="DeviceType" name="DeviceType">
+                            <option value="0" @(Model.DeviceType == 0?"selected=\"selected\"":"") >全部</option>
+                            <option value="1" @(Model.DeviceType == 1?"selected=\"selected\"":"")>Android</option>
+                            <option value="2" @(Model.DeviceType == 2?"selected=\"selected\"":"")>IOS</option>
+                            <option value="3" @(Model.DeviceType == 3?"selected=\"selected\"":"")>移动站</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">按钮图片:</label>
+                    <div class="col-sm-4">
+                        <img width="30" height="30" style="display:inline;" id="imgButton" @(string.IsNullOrWhiteSpace(Model.ButtonImageUrl) == false ? "src=" + Model.ButtonImageUrl : "") />
+                        <input type="file" id="uploadButtonImg" name="uploadButtonImg" style="display:inline;width:120px;" onchange="UploadBgImg(this, 'imgButton', 'ButtonImageUrl')" />
+                        <input type="hidden" id="ButtonImageUrl" name="ButtonImageUrl" value="@Model.ButtonImageUrl" />
+                    </div>
+                    <label class="col-sm-2 control-label">Banner图片：</label>
+                    <div class="col-sm-4">
+                        <img width="30" height="30" style="display:inline;" id="imgBanner" @(string.IsNullOrWhiteSpace(Model.BannerImageUrl) == false ? "src=" + Model.BannerImageUrl : "") />
+                        <input type="file" id="upBannerImg" name="upBannerImg" style="display:inline;width:120px;" onchange="UploadBgImg(this, 'imgBanner', 'BannerImageUrl')" />
+                        <input type="hidden" id="BannerImageUrl" name="BannerImageUrl" value="@Model.BannerImageUrl" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">链接:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="LinkUrl" name="LinkUrl" value="@Model.LinkUrl" />
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">没有编码链接:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="NoLinkUrl" name="NoLinkUrl" value="@(Model.LinkUrl)" readonly="readonly" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">统计：</label>
+                    <div class="col-sm-4">
+                        <input type="text" id="UriCount" name="UriCount" class="form-control" value="@Model.UriCount" />
+                    </div>
+                    <label class="col-sm-2 control-label">优先级:</label>
+                    <div class="col-sm-4">
+                        <input type="text" id="PriorityLevel" name="PriorityLevel" value="@Model.PriorityLevel" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">状态：</label>
+                    <div class="col-sm-10">
+                        <input type="radio" name="IsEnabled" value="true" @(Model.IsEnabled == true ? "checked=\"checked\"" : "") /><span>启用</span>
+                        <input type="radio" name="IsEnabled" value="false" @(Model.IsEnabled == false ? "checked=\"checked\"" : "") /><span>禁用</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">开始时间:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" name="StartDateTime" id="StartDateTime" value="@(string.Format("{0:yyyy-MM-dd HH:mm:ss}",Model.StartDateTime))" />
+                    </div>
+                    <label class="col-sm-2 control-label">结束时间:</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control Wdate" onclick="WdatePicker({ dateFmt :'yyyy-MM-dd HH:mm:ss'})" name="EndDateTime" id="EndDateTime" value="@(string.Format("{0:yyyy-MM-dd HH:mm:ss}",Model.EndDateTime))" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">开始版本：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="StartVersion" name="StartVersion" value="@Model.StartVersion" />
+                    </div>
+                    <label class="col-sm-2 control-label">结束版本：</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="EndVersion" name="EndVersion" value="@Model.EndVersion" />
+                    </div>
+                </div>
+
+                <input type="hidden" id="ID" name="ID" value="@Model.ID" />
+                <input type="hidden" id="postion" name="postion" value="@ViewBag.Postion" />
+                <input type="hidden" id="ParentPriortylevel" name="ParentPriortylevel" value="@ViewBag.ParentPriortylevel" />
+            </form>
+        </div>
+        <div class="modal-footer">
+            <a href="javascript:void(0)" class="btn btn-danger btn-sm " id="btnToobal" onclick="Toolbar()" style="width: 80px;" data-toggle="modal" data-target="#toobal">小工具</a>
+
+            <button type="button" id="btnSave" name="btnSave" class="btn btn-primary">
+                保 存
+            </button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                取 消
+            </button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        $('#Title').on('change', function () {
+            $('#UriCount').val($('#ParentPriortylevel').val() + "_" + $('#PriorityLevel').val() + "_" + $(this).val());
+        });
+
+        $('#btnSave').on('click', function () {
+            var postion = JSON.parse( $('#postion').val());
+            var data = {};
+            data.ID = $('#ID').val();
+            data.StartVersion = $('#StartVersion').val();
+            data.EndVersion = $('#EndVersion').val();
+            data.Title = $('#Title').val();
+            data.DeviceType = $('#DeviceType').val();
+            data.PriorityLevel = $('#PriorityLevel').val();
+            data.ButtonImageUrl = $('#ButtonImageUrl').val();
+            data.BannerImageUrl = $('#BannerImageUrl').val();
+            data.LinkUrl = $('#LinkUrl').val();
+            data.UriCount = $('#UriCount').val();
+            data.IsEnabled = $('input[name="IsEnabled"]:checked').val();
+            data.StartDateTime = $('#StartDateTime').val();
+            data.EndDateTime = $('#EndDateTime').val();
+            data.FKHomePageModuleID = $('#hiddenModuleID').val();
+            data.FKHomePageModuleHelperID = $('#hiddenModuleHelperID').val();
+            data.Width = postion.Width;
+            data.Height = postion.Height;
+            data.UpperLeftX = postion.UpperLeftX;
+            data.UpperLeftY = postion.UpperLeftY;
+            data.LowerRightX = postion.LowerRightX;
+            data.LowerRightY = postion.LowerRightY;
+            $(this).attr("disabled", "disabled");
+            $.ajax({
+                url: '/HomePageConfigV2/HomePageModuleContentSave',
+                data: data,
+                type: 'post',
+                dataType: 'json'
+            }).done(function (result) {
+                if (result >0) {
+                    alert("保存成功");
+                    if (data.ID <= 0) {
+                        $('#ID').val(result);
+                        data.ID = result;
+                    }
+                   
+                    var index = tr.find('td').first().html();
+                   
+                    var html = '';
+                    html += "<td>" + index + "</td>";
+                    html += "<td> " + data.Title + "</td><td>" + $('#DeviceType').find("option:selected").text() + "</td><td>" + data.StartVersion + "</td><td>" + data.EndVersion + "</td><td>" + (data.IsEnabled == "true" ? "启用" : "禁用" )+ "</td><td>" + data.LinkUrl + "</td><td>" + data.PriorityLevel + "</td><td></td>";
+                    html += '<td>' + '<a href="javascript:void(0)" class="btn btn-default btn-sm" data-toggle="modal" name="btnEdit" data-id="'+data.ID+'" data-target="#edit" data-postion=' + JSON.stringify(data) + ' >编 辑</a>';
+                    html += '<a href="javascript:void(0)" class="btn btn-default btn-sm" name="btnDel" data-id="'+data.ID+'"   >删 除</a> </td>';
+                    html += '';
+                    tr.empty();
+                    tr.append(html);
+                    $('#edit').modal("hide");
+                    BindEditorDelete();
+                    tr = null;
+                   // location.reload();
+                } else {
+                    alert("保存失败");
+                }
+
+            }).fail(function () {
+
+            });
+
+
+
+        });
+
+        if ($('#NoLinkUrl').val()) {
+            $('#NoLinkUrl').val(decodeURIComponent($('#NoLinkUrl').val()));
+        }
+    });
+</script>

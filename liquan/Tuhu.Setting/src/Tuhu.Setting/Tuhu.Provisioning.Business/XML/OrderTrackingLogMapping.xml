@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Mapping Name="订单跟踪状态-描述配置">
+  <Exp Key="Order0New" Description="您提交了订单，请等待系统确认。" />
+  <Exp Key="Order0NewConfirm" Description="系统确认了您的订单信息，正在为您备货。" />
+  <Exp Key="Order1Purchased" Description="您的订单正在准备打包。" />
+  <Exp Key="Order1Booked" Description="您的订单已经通过系统审核，正在为您备货中。" />
+  <Exp Key="Order1Booking" Description="您买的商品太火爆，我们为您从其他仓库加紧调货，请耐心等待。" />
+  <Exp Key="Order7Canceled" Description="很遗憾未能为您提供服务，期待您再次光临途虎。" />
+  <Exp Key="Delivery2Sent" Description="您的订单已经发货。" />
+  <Exp Key="Delivery3ReceivedToShop" Description="您的订单已到门店。" />
+  <Exp Key="Delivery3.5Signed" Description="您的订单门店已签收。" />
+  <Exp Key="Delivery3Received" Description="您的订单已签收，感谢您选择途虎购物，欢迎您再次光临！" />
+  <Exp Key="Install2Installed" Description="感谢您选择途虎，欢迎您再次光临！" />
+  <Exp Key="Delivery2Prepared" Description="您的订单已经打包完成，等待发货。" />
+
+</Mapping>

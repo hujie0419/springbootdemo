@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>$title$</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <style>
+      
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        img {
+            border: 0;
+            display: block;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .content img {
+            float: left;
+            width: 50%;
+        }
+
+        .content .img3 {
+            float: left;
+            width: 33.33%;
+        }
+    
+    </style>
+    <script src="http://resource.tuhu.cn/Scripts/Activity/jquery-1.10.2.js"></script>
+    <script src="http://resource.tuhu.cn/Js/WebViewJavascriptBridge.js"></script>
+</head>
+<body>
+    $content$
+
+    <script>
+        var userAgentInfo = navigator.userAgent;
+        function connectWebViewJavascriptBridge(callback) {
+            if (window.WebViewJavascriptBridge) {
+                callback(WebViewJavascriptBridge)
+            } else {
+                document.addEventListener(
+                    'WebViewJavascriptBridgeReady'
+                    , function () {
+                        callback(WebViewJavascriptBridge)
+                    },
+                    false
+                );
+            }
+        }
+        connectWebViewJavascriptBridge(function (bridge) {
+            bridge.init(function (message, responseCallback) {
+                var data = {
+                    'Javascript Responds': 'Wee!'
+                };
+                responseCallback(data);
+            });
+            bridge.registerHandler("functionInJs", function (data, responseCallback) {
+                var responseData = "Javascript Says Right back aka!";
+                responseCallback(responseData);
+            });
+        })
+
+        $("a").click(function () {
+            if ($(this).attr("href") != "javascript:void(0);") {
+                return;
+            }
+            if ($(this).attr("pid") == undefined) {
+                return false;
+            } else {
+                var Parameters = {
+                    "ProductID": $(this).attr("pid"),
+                    "VariantID": $(this).attr("vid"),
+                    "ChePingTyPe": "4",
+                    "FunctionID": $(this).attr("androidtype"),
+                    "activityId": $(this).attr("activityid")
+                };
+
+                var Parameters_ios = {
+                    "ProductID": $(this).attr("pid"),
+                    "VariantID": $(this).attr("vid"),
+                    "activityId": $(this).attr("activityid")
+                };
+
+                var Parameters_ios_chepin = {
+                    "productID": $(this).attr("pid"),
+                    "VariantID": $(this).attr("vid"),
+                    "activityId": $(this).attr("activityid")
+                };
+
+                if (userAgentInfo.indexOf("Android") >= 0) {
+                    window.WebViewJavascriptBridge.callHandler('toActityBridge',
+                        encodeURIComponent(encodeURIComponent(JSON.stringify(Parameters))));
+                }
+                else {
+                    if ($(this).attr("iostype") == "#testapp#customSegue#TNGoodsListDetailViewController#") {
+                        location.href = $(this).attr("iostype") + encodeURIComponent(JSON.stringify(Parameters_ios_chepin));
+                    }
+                    else {
+                        location.href = $(this).attr("iostype") + encodeURIComponent(JSON.stringify(Parameters_ios));
+                    }
+
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,572 @@
+﻿@{
+    ViewBag.Title = "微信小程序配置";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+@section link{
+    <style>
+        .tableWxApp th {
+            width: 100px;
+        }
+
+        input[readonly],
+        input[disabled],
+        button[disabled],
+        textarea[disabled],
+        select[disabled] {
+            cursor: not-allowed;
+        }
+
+        #divEdit img {
+            max-width: 300px;
+            max-height: 300px;
+            display: inline-block;
+            margin: 0.4em;
+        }
+
+        #divEdit input[type='text'], #divEdit input[type='url'], #divEdit textarea {
+            width: 320px;
+            height: 2.4em;
+            border: 1px solid #ccc;
+            line-height: 2.6em;
+            border-radius: 4px;
+        }
+
+        .invalid, .ng-invalid {
+            border: 1px solid red !important;
+        }
+    </style>
+}
+<div ng-app="wxAppConfigModule" style="padding:1em;">
+    <div ng-controller="WxAppConfigList">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>小程序</th>
+                    <th>用户动作</th>
+                    <th>消息类型</th>
+                    <th>状态</th>
+                    <th>创建人</th>
+                    <th>创建时间</th>
+                    <th>更新人</th>
+                    <th>更新时间</th>
+                    <th>
+                        <button class="btn btn-warning" ng-click="onEdit('')">新增</button>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="item in WxAppConfigList">
+                    <td ng-bind="getWxAppName(item.OriginId)"></td>
+                    <td ng-bind="getEventName(item.EventType)"></td>
+                    <td ng-bind="getMsgTypeName(item.MsgType)"></td>
+                    <td ng-bind="item.IsActive?'启用':'禁用'"></td>
+                    <td ng-bind="item.CreateBy"></td>
+                    <td ng-bind="item.CreateDateTime"></td>
+                    <td ng-bind="item.UpdateBy"></td>
+                    <td ng-bind="item.LastUpdateDateTime"></td>
+                    <td>
+                        <button type="button" ng-click="onEdit(item.PKID, item.OriginId)" class="btn btn-primary">编辑</button>&nbsp;
+                        <button type="button" ng-click="onDelete(item.PKID)" class="btn btn-danger">删除</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="line-height: 1.8em;font-size:1.2em;" ng-show="!(WxAppConfigList.length<50 && pageIndex==1)">
+            <ul class="pagination" style="display: inline;">
+                <li ng-class="{disabled:pageIndex===1}">
+                    <a href="javascript:void(0)" ng-click="loadData(pageIndex-1)" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="javascript:void(0)" ng-bind="pageIndex">
+                        <span class="sr-only" ng-bind="pageIndex"></span>
+                    </a>
+                </li>
+                <li ng-class="{disabled:WxAppConfigList.length<50}">
+                    <a href="javascript:void(0)" ng-click="loadData(pageIndex+1)" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div ng-controller="wxCtrl" id="divEdit" style="display:none">
+        <div class="topPanel" style="margin-left:2em;border:none">
+            <div class="search">
+                <table>
+                    <tr>
+                        <th class="formTitle">选择小程序</th>
+                        <td class="formValue" style="padding-left:10px;">
+                            <div class="input-group">
+                                <select ng-model="curWxAppId" id="WeChatAppAccounts" name="WeChatAppAccounts" ng-disabled="config.PKID > 0" class="form-control" style="width: 200px;" ng-change="onAppChange()">
+                                    <option value="">请选择小程序</option>
+                                    <option ng-repeat="item in WxApps" value="{{item.OriginalId}}">{{item.name}}</option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div style="padding-left: 2em;padding-top: 1em;max-width: 90%">
+            <form name="form1" style="border: none !important;">
+                <table class="tableWxApp table table-bordered">
+                    <tr>
+                        <th>用户动作</th>
+                        <td colspan="6">
+                            <label><input type="radio" value="user_enter_tempsession" ng-model="config.EventType" checked="checked" /> 用户通过客服消息按钮进入会话</label> &nbsp;
+                            <label><input type="radio" value="user_message" ng-model="config.EventType" /> 用户发送消息</label>
+                            <label>
+                                <input type="text" ng-model="config.UserData" ng-show="config.EventType === 'user_message'" placeholder="用户输入消息" />
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>消息类型</th>
+                        <td colspan="6">
+                            <label ng-repeat="item in msgTypes">
+                                <input type="radio" ng-value="item.type" name="msgType" ng-model="config.MsgType" />{{item.value}} &nbsp;&nbsp;
+                            </label>
+                        </td>
+                    </tr>
+                    <tr ng-show="config.MsgType === 'text'">
+                        <th>
+                            文本内容
+                        </th>
+                        <td colspan="6">
+                            <input type="text" id="textMsg" ng-model="textMsg.content" required="required" />
+                        </td>
+                    </tr>
+                    <tr ng-show="config.MsgType === 'image'">
+                        <th>图片</th>
+                        <td>
+                            <img ng-src="{{imageMsg.media_id}}" ng-show="imageMsg.media_id !== ''" /> &nbsp;
+                            <button type="button" class="btnUploadImage" data-type="1">上传图片</button>
+                        </td>
+                    </tr>
+                    <tr ng-show="config.MsgType === 'link'">
+                        <th>标题</th>
+                        <td>
+                            <input type="text" ng-model="linkMsg.title" id="linkTitle" required="required" />
+                        </td>
+                    </tr>
+                    <tr ng-show="config.MsgType === 'link'">
+                        <th>描述</th>
+                        <td>
+                            <textarea ng-model="linkMsg.description" id="linkDescription" required="required"></textarea>
+                        </td>
+                    </tr>
+                    <tr ng-show="config.MsgType === 'link'">
+                        <th>跳转链接</th>
+                        <td>
+                            <input type="url" ng-model="linkMsg.url" id="linkUrl" required="required" />
+                        </td>
+                    </tr>
+                    <tr ng-show="config.MsgType === 'link'">
+                        <th>图片</th>
+                        <td>
+                            <img ng-src="{{linkMsg.thumb_url}}" ng-show="linkMsg.thumb_url !== ''" /> &nbsp;
+                            <button type="button" class="btnUploadImage" data-type="2">上传图片</button>
+                        </td>
+                    </tr>
+                    <tr ng-show="config.MsgType === 'miniprogrampage'">
+                        <th>标题</th>
+                        <td>
+                            <input type="text" required="required" ng-model="miniprogrampageMsg.title" />
+                        </td>
+                    </tr>
+                    <tr ng-show="config.MsgType === 'miniprogrampage'">
+                        <th>页面路径</th>
+                        <td>
+                            <input type="text" required="required" ng-model="miniprogrampageMsg.pagepath" />
+                        </td>
+                    </tr>
+                    <tr ng-show="config.MsgType === 'miniprogrampage'">
+                        <th>图片</th>
+                        <td>
+                            <img ng-src="{{miniprogrampageMsg.thumb_media_id }}" ng-show="miniprogrampageMsg.thumb_media_id  !== ''" /> &nbsp;
+                            <button type="button" class="btnUploadImage" data-type="3">上传图片</button>
+                            <span>（建议大小为520*416）</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>状态</th>
+                        <td>
+                            <input type="radio" value="true" name="isActive" ng-model="config.IsActive" ng-checked="config.IsActive === true" />启用 &nbsp;
+                            <input type="radio" value="false" name="isActive" ng-model="config.IsActive" ng-checked="config.IsActive === false" />禁用
+                        </td>
+                    </tr>
+                </table>
+
+                <input type="file" style="visibility:hidden" accept="image/*" name="file" id="file" />
+            </form>
+        </div>
+    </div>
+</div>
+
+@section script{
+    <script src="~/Scripts/layer/layer.js"></script>
+    <script src="https://cdn.bootcss.com/angular.js/1.6.9/angular.min.js"></script>
+    <script src="~/Scripts/ajaxfileupload.js"></script>
+    <script type="text/javascript">
+
+        angular.module('wxAppConfigModule', [])
+            .run(function ($rootScope, $http) {
+                $rootScope.WxApps = [];
+                $rootScope.loadingIndex = layer.load(2);
+                $http.get('/WechatHome/GetWeChatOfficialAccounts?type=1')
+                    .then(function (response) {
+                        if (response.data) {
+                            $rootScope.WxApps = response.data;
+                        }
+                    });
+            })
+            .controller('WxAppConfigList',
+                [
+                    "$scope", "$rootScope", "$http", function ($scope, $rootScope, $http) {
+                        $scope.pageIndex = 1;
+                        $scope.WxAppConfigList = [];
+                        //
+                        this.$onInit = function () {
+                            $scope.loadData(1);
+                        };
+                        // loadData
+                        $scope.loadData = function (pIndex) {
+                            if(pIndex<=0){
+                                layer.msg("已经是第一页了");
+                                return;
+                            }
+                            if($scope.WxAppConfigList.length < 50 && pIndex > $scope.pageIndex){
+                                layer.msg('已经是最后一页了');
+                                return;
+                            }
+                            $http.get('/WechatHome/WxAppConfigList?pageIndex='+pIndex)
+                                .then(function (response) {
+                                    if (response.data) {
+                                        $scope.pageIndex = pIndex;
+                                        $scope.WxAppConfigList = response.data;
+                                        layer.close($rootScope.loadingIndex);
+                                    }
+                                });
+                        };
+                        // getWxAppName
+                        $scope.getWxAppName = function (originId) {
+                            for (var i = 0; i < $rootScope.WxApps.length; i++) {
+                                if ($rootScope.WxApps[i].OriginalId === originId) {
+                                    return $rootScope.WxApps[i].name;
+                                }
+                            }
+                            return originId;
+                        };
+                        // getEventName
+                        $scope.getEventName = function (eventType) {
+                            switch (eventType) {
+                                case "user_enter_tempsession":
+                                    return "用户通过客服消息按钮进入会话";
+                                case "user_message":
+                                    return "用户发送消息";
+                                default:
+                                    return eventType;
+                            }
+                        };
+                        // getMsgTypeName
+                        $scope.getMsgTypeName = function (msgType) {
+                            switch (msgType) {
+                                case "text":
+                                    return "文本消息";
+                                case "image":
+                                    return "图片消息";
+                                case "link":
+                                    return "图文链接";
+                                case "miniprogrampage":
+                                    return "小程序卡片";
+                                default:
+                                    return msgType;
+                            }
+                        };
+                        //
+                        $scope.onEdit = function (id, originId) {
+                            var scope = angular.element(document.querySelector("#divEdit")).scope();
+
+                            $("#WeChatAppAccounts").val(originId);
+                            scope.onAppChange(id);
+
+                            layer.open({
+                                type: 1,
+                                content: $("#divEdit"),
+                                title: '编辑配置',
+                                btn: ["确定", "取消"],
+                                area: ["500px", "600px"],
+                                yes: function (index) {
+                                    var result = scope.onSave();
+                                    if (result > 0) {
+                                        layer.close(index);
+                                    }
+                                },
+                                cancel: function () {
+
+                                }
+                            });
+                        };
+                        //
+                        $scope.onDelete = function (id) {
+                            layer.confirm('确定要删除吗？',
+                                { title: "警告" },
+                                function () {
+                                    $.post("/WechatHome/DeleteWxAppConfig",
+                                        {
+                                            pkid: id
+                                        }, function (response) {
+                                            if (!response.data) {
+                                                layer.alert('删除成功',
+                                                    function () {
+                                                        location.reload();
+                                                    });
+                                            } else {
+                                                layer.alert(response.data);
+                                            }
+                                        });
+                                });
+                        };
+                    }
+                ])
+            .controller('wxCtrl',
+                [
+                    "$scope", "$rootScope", "$http", function ($scope, $rootScope, $http) {
+                        $scope.emptyConfig = function () {
+                            $scope.config = {
+                                "PKID": -1,
+                                "OriginId": null,
+                                "EventType": null,
+                                "MsgType": null,
+                                "ResponseJson": "",
+                                "UserData": null,
+                                "CreateBy": null,
+                                "UpdateBy": null,
+                                "IsActive": false
+                            };
+                            $scope.textMsg = { content: "" };
+                            $scope.imageMsg = { media_id: "" };
+                            $scope.linkMsg = { title: "", description: "", url: "", thumb_url: "" };
+                            $scope.miniprogrampageMsg = { title: "", pagepath: "", thumb_media_id: "" };
+                        };
+                        $scope.config = {
+                            "PKID": -1,
+                            "OriginId": null,
+                            "EventType": "user_message",
+                            "MsgType": "text",
+                            "ResponseJson": "",
+                            "UserData": null,
+                            "CreateBy": null,
+                            "UpdateBy": null,
+                            "IsActive": false
+                        };
+
+                        $scope.curWxAppId = '';
+
+                        $scope.textMsg = { content: "" };
+                        $scope.imageMsg = { media_id: "" }
+                        $scope.linkMsg = { title: "", description: "", url: "", thumb_url: "" };
+                        $scope.miniprogrampageMsg = { title: "", pagepath: "", thumb_media_id: "" };
+
+                        $scope.msgTypes = [
+                            {
+                                "type": "text",
+                                "value": "文本消息"
+                            },
+                            {
+                                "type": "image",
+                                "value": "图片消息"
+                            },
+                            {
+                                "type": "link",
+                                "value": "图文链接"
+                            },
+                            {
+                                "type": "miniprogrampage",
+                                "value": "小程序卡片"
+                            }
+                        ];
+
+                        //onAppChange
+                        $scope.onAppChange = function (id) {
+                            //清空数据
+                            $scope.emptyConfig();
+                            if (!id || id <= 0) {
+                                return;
+                            }
+
+                            $http.get('/WechatHome/WxAppConfigDetails/' + id)
+                                .then(function (response) {
+                                    if (response.data) {
+                                        $scope.config = response.data;
+                                        if (response.data.MsgType) {
+                                            switch (response.data.MsgType) {
+                                                case 'text':
+                                                    $scope.textMsg =
+                                                        angular.fromJson(response.data.ResponseJson);
+                                                    break;
+                                                case "image":
+                                                    $scope.imageMsg =
+                                                        angular.fromJson(response.data.ResponseJson);
+                                                    break;
+                                                case 'link':
+                                                    $scope.linkMsg =
+                                                        angular.fromJson(response.data.ResponseJson);
+                                                    break;
+                                                case "miniprogrampage":
+                                                    $scope.miniprogrampageMsg =
+                                                        angular.fromJson(response.data.ResponseJson);
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                });
+                        };
+
+                        //save
+                        $scope.onSave = function () {
+                            var isValid = false;
+                            $scope.config.OriginId = $("#WeChatAppAccounts").val();
+                            if (!$scope.config.OriginId) {
+                                layer.alert("请选择小程序");
+                                return;
+                            }
+                            if($scope.config.EventType === 'user_message'){
+                                if (!$scope.config.UserData) {
+                                    layer.alert("用户输入不能为空！");
+                                    return;
+                                }
+                            }else{
+                                $scope.config.UserData = null;
+                            }
+                            switch ($scope.config.MsgType) {
+                                case "text":
+                                    if (!$scope.textMsg.content) {
+                                        layer.alert("文本内容不能为空");
+                                        return;
+                                    }
+                                    $scope.config.ResponseJson = angular.toJson($scope.textMsg);
+                                    isValid = true;
+                                    break;
+
+                                case "image":
+                                    if (!$scope.imageMsg.media_id) {
+                                        layer.alert("请上传图片");
+                                        return;
+                                    }
+                                    $scope.config.ResponseJson = angular.toJson($scope.imageMsg);
+                                    isValid = true;
+                                    break;
+
+                                case "link":
+                                    if (!$scope.linkMsg.title) {
+                                        layer.alert("标题不能为空");
+                                        return;
+                                    }
+                                    if (!$scope.linkMsg.description) {
+                                        layer.alert("描述不能为空");
+                                        return;
+                                    }
+                                    if (!$scope.linkMsg.url) {
+                                        layer.alert("跳转链接不能为空");
+                                        return;
+                                    }
+                                    if (!$scope.linkMsg.thumb_url) {
+                                        layer.alert("请上传图片");
+                                        return;
+                                    }
+
+                                    $scope.config.ResponseJson = angular.toJson($scope.linkMsg);
+                                    isValid = true;
+                                    break;
+
+                                case "miniprogrampage":
+                                    if (!$scope.miniprogrampageMsg.title) {
+                                        layer.alert("标题不能为空");
+                                        return;
+                                    }
+                                    if (!$scope.miniprogrampageMsg.pagepath) {
+                                        layer.alert("页面路径不能为空");
+                                        return;
+                                    }
+                                    if (!$scope.miniprogrampageMsg.thumb_media_id) {
+                                        layer.alert("请上传图片");
+                                        return;
+                                    }
+                                    $scope.config.ResponseJson = angular.toJson($scope.miniprogrampageMsg);
+                                    isValid = true;
+                                    break;
+                            }
+                            //验证请求参数
+                            if (isValid) {
+                                $http.post('/WechatHome/SaveWxAppConfig', { "configJson": angular.toJson($scope.config) })
+                                    .then(function (response) {
+                                        if (response.status === 200 && !response.data) {
+                                            layer.alert('保存成功',
+                                                function () {
+                                                    location.reload();
+                                                });
+                                        } else {
+                                            layer.alert('创建失败！' + response.data);
+                                        }
+                                    });
+                                return 1;
+                            }
+                            return 0;
+                        };
+                    }
+                ]);
+
+        $(".btnUploadImage").click(function () {
+            $("#file").attr("data-type", $(this).attr("data-type"));
+            $("#file").click();
+        });
+        $("#file").change(function () {
+            upload();
+        });
+
+        function upload() {
+            if (!$("#file").val()) {
+                return;
+            }
+            $.ajaxFileUpload(
+                {
+                    url: '/UserTaskSetting/UploadTaskImage', //需要链接到服务器地址//
+                    secureuri: false,
+                    fileElementId: 'file', //文件选择框的id属性
+                    dataType: 'text', //服务器返回的格式，可以是json
+                    async: false,
+                    success: function (data, status) {                        
+                        if (data == -1)
+                            layer.alert("仅支持jpg, gif, png, jpeg格式");
+                        else if (data == -2 || data == -99)
+                            layer.alert("上传失败");
+                        else if (data == -3)
+                            layer.alert("图片限制100kb以内");
+                        else {
+                            var scope = angular.element(document.querySelector("#divEdit")).scope();
+                            switch ($("#file").attr("data-type")) {
+                                case "1":
+                                    scope.imageMsg.media_id = data;
+                                    break;
+                                case "2":
+                                    scope.linkMsg.thumb_url = data;
+                                    break;
+                                case "3":
+                                    scope.miniprogrampageMsg.thumb_media_id = data;
+                                    break;
+                            }
+                            scope.$apply();
+                        }
+                    }
+                });
+            // rebind
+            $("#file").change(function () {
+                $("#file").val('');
+                upload();
+            });
+        }
+    </script>
+}

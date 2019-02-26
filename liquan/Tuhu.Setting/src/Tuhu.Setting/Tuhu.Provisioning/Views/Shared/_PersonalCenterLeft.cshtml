@@ -1,0 +1,271 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    body {
+        font-family: 'Microsoft YaHei';
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    /*table {
+        width: 100%;
+    }*/
+
+        table th {
+            color: white;
+            padding: 6px 5px;
+            text-align: left;
+            background-color: cornflowerblue;
+            border: solid 1px cornflowerblue;
+        }
+</style>
+
+<link href="~/Scripts/zTree/css/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+<div style="word-break:keep-all;white-space:nowrap;/*overflow:hidden;text-overflow:ellipsis;*/">
+    <div style="margin-top:20px;width:300px;display:inline-block;vertical-align: top;">
+        <fieldset>
+            <ul class="ztree">
+                <li class="level0" hidefocus="true">
+                    <span class="button level0 switch roots_open firstA"></span>
+                    <a class="level0 firstA" title="首页">
+                        <span class="button ico_open"></span>
+                        <span class="node_name">首页</span>
+                    </a>
+                    <ul class="level0 line">
+                        <li>
+                            <a class="level2" href="/PersonalCenterFunctionConfig/Index">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">个人中心功能配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/PersonalCenterConfig/Index">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">各功能的banner配置</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="level0" hidefocus="true">
+                    <span class="button level0 switch roots_open firstA"></span>
+                    <a class="level0 firstA">
+                        <span class="button ico_open"></span>
+                        <span class="node_name">积分中心</span>
+                    </a>
+                    <ul class="level0 line">
+                        <li>
+                            <a class="level2" href="/PointsRulesConfig/Index">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">积分规则文案配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/PointsTransactionDescriptionConfig/Index">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">积分交易记录描述配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/PointsCenterConfig/Index">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">积分任务配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/ExchangeCenterConfig/Index">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">积分兑换配置</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="level0" hidefocus="true">
+                    <span class="button level0 switch roots_open firstA"></span>
+                    <a class="level0 firstA">
+                        <span class="button ico_open"></span>
+                        <span class="node_name">会员中心</span>
+                    </a>
+                    <ul class="level0 line">
+                        <li>
+                            <a class="level2" href="/UserPermission/Grade">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">会员等级导入</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/UserPermission/Index">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">会员特权配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/UserLivingRights/Index">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">生活权益配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/UserPromotionCode/Index">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">权益奖励配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/UserPermission/SaleProductList">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">会员商品商城配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/UserPermission/Freight">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">会员运费折扣配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/UserPermission/PromotionList">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">会员升级奖励配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/UserPermission/TaskList">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">会员升级任务配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/RulesDictionaryConfig/Index?type=3">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">会员升级规则</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                @*<li class="level0" hidefocus="true">
+                    <span class="button level0 switch roots_open firstA"></span>
+                    <a class="level0 firstA">
+                        <span class="button ico_open"></span>
+                        <span class="node_name">分享赚钱</span>
+                    </a>
+                    <ul class="level0 line">
+                        <li>
+                            <a class="level2" href="/ShareActivityRulesConfig/Index">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">分享赚钱活动规则配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/ShareActivityProductConfig/Index">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">分享赚钱活动商品配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/ShareMakeMoney/List">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">分享赚钱活动配置(新)</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>*@
+
+                <li class="level0" hidefocus="true">
+                    <span class="button level0 switch roots_open firstA"></span>
+                    <a class="level0 firstA">
+                        <span class="button ico_open"></span>
+                        <span class="node_name">VIP权限</span>
+                    </a>
+                    <ul class="level0 line">
+                        <li>
+                            <a class="level2" href="/VIPAuthorizationRuleConfig/Index">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">VIP权限规则配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/VIPAuthorizationExchangeCodeConfig/Index">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">VIP权限兑换码生成</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/RulesDictionaryConfig/Index?type=1">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">VIP规则配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/RulesDictionaryConfig/Index?type=2">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">VIP兑换码规则配置</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="level0" hidefocus="true">
+                    <span class="button level0 switch roots_open firstA"></span>
+                    <a class="level0 firstA">
+                        <span class="button ico_open"></span>
+                        <span class="node_name">晒单分享</span>
+                    </a>
+                    <ul class="level0 line">
+                        <li>
+                            <a class="level2" href="/ShareOrderConfig/Index">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">晒单分享朋友圈配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/ShareOrderConfig/PushMessage">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">晒单评论审核通过消息和推送配置</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="level2" href="/RecommendGetGiftConfig/Index">
+                                <span class="button ico_docu"></span>
+                                <span class="node_name">推荐有礼配置</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+            </ul>
+
+        </fieldset>
+    </div>
+    <div style="margin-top:20px;width:70%;display:inline-block;">
+        <fieldset>
+            <div>
+                @RenderBody()
+            </div>
+        </fieldset>
+    </div>
+</div>
+<script>
+    $(".firstA").on("click", function () {
+        $(this).parents("li").find("ul").toggle();
+        if ($(this).parents("li").find("ul").css("display") == "none") {
+            $(this).removeClass("roots_open")
+            $(this).addClass("roots_close")
+        } else {
+            $(this).removeClass("roots_close")
+            $(this).addClass("roots_open")
+        }
+    })
+</script>

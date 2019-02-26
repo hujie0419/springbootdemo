@@ -1,0 +1,128 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+    @*<script src="~/Scripts/jquery-1.7.1.min.js"></script>*@
+    <script type="text/javascript">
+        $(function () {
+            $(document).ready(function () {
+                $("#ExChangeStartTime").datepicker({
+                    controlType: 'select',
+                    dateFormat: "yy.mm.dd"
+                });
+                $("#ExChangeEndTime").datepicker({
+                    controlType: 'select',
+                    dateFormat: "yy.mm.dd"
+                });
+            });
+        });
+
+        function BeforeSubmit() {
+            if ($("#CodeChannel").val() == "") {
+                alert("请填写发放渠道！");
+                return false;
+            }
+            if ($("#ExChangeStartTime").val() == "") {
+                alert("请填写开始生效时间！");
+                return false;
+            }
+            if ($("#ExChangeEndTime").val() == "") {
+                alert("请填写结束生效时间！");
+                return false;
+            }
+            if ($("#IsActive").val() == "Null") {
+                alert("请选择是否生效！");
+                return false;
+            }
+            if ($("#OnlyForNewUser").val() == "Null") {
+                alert("请选择是否仅限未下单用户使用！");
+                return false;
+            }
+            if ($("#Name").val() == "") {
+                alert("请填写礼包名称！");
+                return false;
+            }
+            $("#CodeChannel").val().replace(/^(\s|\xA0)+|(\s|\xA0)+$/g, '');
+            ;
+            $("#Name").val().replace(/^(\s|\xA0)+|(\s|\xA0)+$/g, '');
+            var dateAStr = $("#ExChangeStartTime").val();
+
+            var arrA = dateAStr.split(".");
+
+            var dateA = new Date(arrA[0], arrA[1], arrA[2]);
+
+            var dateAT = dateA.getTime();
+
+            var dateBStr = $("#ExChangeEndTime").val();
+
+            var arrB = dateBStr.split(".");
+
+            var dateB = new Date(arrB[0], arrB[1], arrB[2]);
+
+            var dateBT = dateB.getTime();
+
+            if (dateAT >= dateBT) {
+                alert("开始生效时间不能大于等于结束生效时间！");
+                return false;
+            }
+            var rest = {
+                Name: $("#Name").val(),
+                CodeChannel: $("#CodeChannel").val(),
+                ExChangeStartTime: $("#ExChangeStartTime").val(),
+                ExChangeEndTime: $("#ExChangeEndTime").val(),
+                IsActive: $("#IsActive").val(),
+                LimitNum: $("#LimitNum").val(),
+                OnlyForNewUser: $("#OnlyForNewUser").val()
+            };
+            $.ajax({
+                url: "/Promotion/DoAddGiftBag?rest=" + JSON.stringify(rest),
+                type: "post",
+                success: function (data) {
+                    if (data == "ok") {
+                        $("#div_Window2").dialog("close");
+                        history.go(0);
+                    }
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <table id="tb">
+        <tr>
+            <td><span class="spRemind">*</span>礼包名称：<input type="text" id="Name" /></td>
+            <td><span class="spRemind">*</span>发放渠道：<input type="text" id="CodeChannel" /></td>
+            <td><span class="spRemind"></span>每人限领数量：<input type="text" id="LimitNum" /></td>
+        </tr>
+        <tr>
+            <td><span class="spRemind">*</span>礼包兑换码开始生效时间：<input type="text" id="ExChangeStartTime" readonly="readonly" /></td>
+            <td><span class="spRemind">*</span>礼包兑换码结束生效时间：<input type="text" id="ExChangeEndTime" readonly="readonly" /></td>
+        </tr>
+        <tr>
+            <td>
+                <span class="spRemind">*</span>是否有效：<input type="text" style="display:none" id="ISAid" />
+                <select id="IsActive">
+                    <option value="Null">请选择</option>
+                    <option value="True">是</option>
+                    <option value="False">否</option>
+                </select>
+            </td>
+            <td>
+                <span class="spRemind">*</span>是否仅未下单用户使用：<input type="text" style="display:none" id="ISAid" />
+                <select id="OnlyForNewUser">
+                    <option value="Null">请选择</option>
+                    <option value="True">是</option>
+                    <option value="False">否</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+    <div><input type="button" id="EditSubmit" style="display:none;" onclick="return BeforeSubmit();" /></div>
+</body>
+</html>

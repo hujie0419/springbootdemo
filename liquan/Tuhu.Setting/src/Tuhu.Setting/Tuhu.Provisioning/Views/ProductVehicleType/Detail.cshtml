@@ -1,0 +1,98 @@
+﻿@{
+    ViewBag.Title = "通用信息";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model Tuhu.Provisioning.DataAccess.Entity.ProductInfo
+<link href="~/Content/ProductVehicleType/css/detail.css" type="text/css" rel="stylesheet" />
+<link href="~/Content/ProductVehicleType/css/bootstrap.v3.css" type="text/css" rel="stylesheet" />
+@*<link href="~/Content/ProductVehicleType/css/bootstrap.min.css" type="text/css" rel="stylesheet" />*@
+
+<div class="container" style="margin-bottom: 200px">
+    <div class="row">
+        <div class="span3"></div>
+        <div class="span9" style="float:right;text-align:center;margin-top:20px;"><h4>@Model.DisplayName / @Model.ProductCode</h4></div>
+    </div>
+    <div class="row">
+        <div class="span3" style="float:left;">
+            <ul class="nav nav-pills nav-stacked" style="margin-top:20px">
+                <li class="active"><a href="/ProductVehicleType/Detail/@Model.PID">产品通用信息</a></li>
+                <li><a href="/ProductVehicleType/Edit/@Model.PID">编辑产品车型数据</a></li>
+                <li><a href="/ProductVehicleType/FileInportExport/@Model.PID">导入导出车型数据</a></li>
+                <li><a href="/ProductVehicleType/Copy/@Model.PID">批量复制车型配置</a></li>
+                <li><a href="/ProductVehicleType/ProductLog/@Model.PID">查看产品操作日志</a></li>
+            </ul>
+        </div>
+        <div class="span8" style="float:right">
+            @*这部分加载分布视图*@
+            <input type="hidden" value="@Model.PID" id="hiddenPid"/>
+            <form class="form-horizontal" role="form" style="margin-top:20px">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">DisplayName</label>
+                    <label class="col-sm-3 control-label">显示名称：</label>
+                    <label class="col-sm-6 control-label" style="text-align:left">@Model.DisplayName</label>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">ProductCode</label>
+                    <label class="col-sm-3 control-label">产品代码：</label>
+                    <label class="col-sm-6 control-label" style="text-align:left">@Model.ProductCode</label>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">List_Price</label>
+                    <label class="col-sm-3 control-label">产品价格：</label>
+                    <label class="col-sm-6 control-label" style="text-align:left">@Model.ListPrice</label>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Brand</label>
+                    <label class="col-sm-3 control-label">品牌：</label>
+                    <label class="col-sm-6 control-label" style="text-align:left">@Model.Brand</label>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Marketing_Price</label>
+                    <label class="col-sm-3 control-label">市场价：</label>
+                    <label class="col-sm-6 control-label" style="text-align:left">@Model.MarketingPrice</label>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Advertising Slogan</label>
+                    <label class="col-sm-3 control-label">广告语：</label>
+                    <label class="col-sm-6 control-label" style="text-align:left">@Model.CP_ShuXing5</label>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">CP_Remark</label><input type="hidden" value="@Model.CP_Remark" id="hiddenRemark" />
+                    <label class="col-sm-3 control-label">是否需要车型：</label>
+                    <div class="col-sm-6">
+                        @Html.DropDownList("select1", ViewBag.Items as IEnumerable<SelectListItem>,new { @class= "form-control",@style= "margin-left:0px;width:180px" })
+                    </div>
+                </div>
+                <div class="form-group" >
+                    <label class="col-sm-3 control-label">VehicleLevel</label><input type="hidden" value="@Model.VehicleLevel" id="hiddenRemark" />
+                    <label class="col-sm-3 control-label">实际适配车型级数：</label>
+                    <div class="col-sm-6">
+                        @Html.DropDownList("select2", ViewBag.Items2 as IEnumerable<SelectListItem>, new { @class = "form-control", @style = "margin-left:0px;width:180px" , @onchange = "onChange(this.options[this.selectedIndex].value);" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" style="margin-left: -20px;">Automatic_Adaptation</label>
+                    <label class="col-sm-3 control-label" style="margin-left: 20px;">自动适配新增车型：</label>
+                    <div class="col-sm-6">
+                        @Html.CheckBox("IsAuto",(bool) ViewBag.IsAutomatic, new { @style = "margin-top:10px;" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-4 col-sm-10">
+                        
+                    </div>
+                </div>
+            </form>
+            <div class="form-group">
+                <div class="col-sm-offset-4 col-sm-10">
+                    <button type="submit" class="btn btn-default">重置</button>
+                    <button class="btn btn-success" style="margin-left:80px" id="btnSave">保存</button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+</div>
+
+<script src="~/Content/ProductVehicleType/js/detail.js" type="text/javascript"></script>

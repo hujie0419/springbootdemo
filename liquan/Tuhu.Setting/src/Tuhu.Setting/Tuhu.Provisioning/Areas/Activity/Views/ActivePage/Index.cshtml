@@ -1,0 +1,235 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<link href="~/Scripts/plugins/jquery-ui/jquery-ui.css" rel="stylesheet" />
+<div class="topPanel">
+    <div class="toolbar">
+        <div class="btn-group">
+            <a id="NF-add" authorize="yes" class="btn btn-primary dropdown-text" onclick="btn_add()"><i class="fa fa-plus"></i>新增会场</a>
+            <a id="setBackgroundColor" authorize="yes" class="btn btn-primary dropdown-text" onclick="setBackgroundColor()"><i class="fa fa-plus"></i>设置背景色</a>
+        </div>
+        <div class="operate">
+            <ul class="nav nav-pills">
+                <li class="first">已选中<span>1</span>项</li>
+                <li><a id="NF-edit" authorize="yes" onclick="btn_edit()"><i class="fa fa-pencil-square-o"></i>修改会场</a></li>
+                <li><a id="NF-delete" authorize="yes" onclick="btn_delete()"><i class="fa fa-trash-o"></i>删除会场</a></li>
+                <li class="split"></li>
+                <li><a id="NF-Details" authorize="yes" onclick="btn_details()"><i class="fa fa-search-plus"></i>查看分会场明细</a></li>
+            </ul>
+            <a href="javascript:;" class="close"></a>
+        </div>
+    </div>
+</div>
+<div class="gridPanel">
+    <table id="gridList"></table>
+</div>
+
+<div id="BackgroundColorDiv" style="display:none">
+
+    <div class="">
+        背景色: <input type="text" id="BackgroundColor" name="BackgroundColor" />
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    var keyValue = $.request("keyValue");
+
+    function gridList() {
+        var $gridList = $("#gridList");
+        $gridList.dataGrid({
+            title: "会场信息",
+            url: "/Activity/ActivePage/GetGridJson?keyValue=" + keyValue,
+            height: $(window).height() - 128,
+            colModel: [
+                { label: "主键", name: "PKID", hidden: true, key: true },
+                { label: "活动主键", name: "FKActiveID", hidden: true, align: "center" },
+                //{ label: "会场名称", name: "BigHomeName", width: 160 },
+                {
+                    label: "图 标", name: "HidBigHomePic", width: 60, align: "center",
+                    formatter: function (cellValue) {
+                        if (cellValue)
+                            return `<img src="` + cellValue + `" width="30" height="30" /> `;
+                        else
+                            return "";
+                    }
+                },
+                {
+                    label: "是否是主会场", name: "IsHome", width: 100, formatter: function (cellValue) {
+                        return cellValue == true ? "<i class=\"fa fa-toggle-on\"></i>" : "<i class=\"fa fa-toggle-off\"></i>";
+                    }
+                },
+                {
+                    label: "H5链接", name: "BigHomeUrl", width: 120,
+                    formatter: function (cellValue) {
+                        cellValue = cellValue == null ? "" : cellValue;
+                        return decodeURIComponent(cellValue);
+                    }
+                },
+                //{
+                //    label: "官网图标", name: "HidBigHomePicWww", width: 60,align:"center",
+                //    formatter: function (cellValue) {
+                //        if (cellValue)
+                //            return `<img src="`+cellValue+`" width="30" height="30" /> `;
+                //        else
+                //            return "";
+                //    }
+                //},
+                {
+                    label: "官网链接", name: "BigHomeUrlWww", width: 120,
+                    formatter: function (cellValue) {
+                        cellValue = cellValue == null ? "" : cellValue;
+                        return decodeURIComponent(cellValue);
+                    }
+                },
+                //{
+                //    label: "小程序图标", name: "HidBigHomePicWxApp", width: 60, align: "center",
+                //    formatter: function (cellValue) {
+                //        if (cellValue)
+                //            return `<img src="` + cellValue + `" width="30" height="30" /> `;
+                //        else
+                //            return "";
+                //    }
+                //},
+                {
+                    label: "小程序链接", name: "BigHomeUrlWxApp", width: 120,
+                    formatter: function (cellValue) {
+                        cellValue = cellValue == null ? "" : cellValue;
+                        return decodeURIComponent(cellValue);
+                    }
+                },
+                { label: "排 序", name: "Sort", width: 40 },
+                {
+                    label: "创建时间", name: "CreateDateTime", width: 120,
+                    formatter: "date", formatoptions: { srcformat: 'Y-m-d H:i:s', newformat: 'Y-m-d H:i:s' }
+                }
+            ]
+        });
+    }
+
+    function btn_add() {
+        $.modalOpen({
+            id: "ActivePageForm",
+            title: "会场信息配置",
+            url: "/Activity/ActivePage/Form?keyValue=&fkActivityID=" + keyValue,
+            width: "460px",
+            height: "380px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].submitForm();
+            }
+        })
+    }
+
+    function btn_edit() {
+        var PKID = $("#gridList").jqGridRowValue().PKID;
+        if (PKID) {
+            $.modalOpen({
+                id: "ActivePageForm",
+                title: "会场信息配置",
+                url: "/Activity/ActivePage/Form?keyValue=" + PKID + "&fkActivityID=" + keyValue,
+                width: "460px",
+                height: "380px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].submitForm();
+                }
+            })
+        }
+    }
+
+    function btn_delete() {
+        var PKID = $("#gridList").jqGridRowValue().PKID;
+
+        if (PKID) {
+            $.deleteForm({
+                url: "/Activity/ActivePage/Delete",
+                param: { keyValue: PKID },
+                success: function () {
+                    $("#gridList").resetSelection();
+                    $("#gridList").trigger("reloadGrid");
+                }
+            });
+        }
+    }
+
+
+
+    function btn_details() {
+        var PKID = $("#gridList").jqGridRowValue().PKID;
+        if (PKID) {
+            $.modalOpen({
+                id: "ActivePageDeatil",
+                title: "会场明细配置",
+                url: "/Activity/ActivePage/ActivePageDeatil?keyValue=" + PKID,
+                width: "14000px",
+                height: "490px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].submitForm();
+                }
+            })
+        }
+    }
+
+    function setBackgroundColor() {
+
+        $.get('/Activity/ActivePage/GetBackgroundColor?keyValue=' + keyValue).then(function (data) {
+            $("#BackgroundColor").val(data);
+            var dialog = $("#BackgroundColorDiv");
+            dialog.dialog({
+                resizable: false,
+                height: 140,
+                title: "设置背景色",
+                //modal: true,
+                buttons: {
+                    "保存": function () {
+                        var color = $("#BackgroundColor").val();
+                        console.log(color);
+                        var pattern = /^#[0-9a-fA-F]{6}$/
+                        //var obj = eval("document.all['" + object + "'].value");
+                        if (color.match(pattern) == null) {
+                            alert("请输入正确的颜色值");
+                            return;
+                        }
+                        $.post('/Activity/ActivePage/SetBackgroundColor', {
+                            keyValue: keyValue,
+                            color: color
+                        }).then(function (data) {
+                            console.log(data);
+                            if (data == "1") {
+                                alert("保存成功");
+                                dialog.dialog("close");
+                            }
+                            else {
+                                alert(data);
+                            }
+                        });
+
+                    },
+                    "取消": function () {
+                        dialog.dialog("close");
+                    }
+                }
+            });
+            $(".ui-dialog-titlebar-close").remove();
+            setTimeout(function () {
+                $(".ui-dialog-titlebar-close").remove();
+            }, 200);
+        })
+
+        //$.modalOpen({
+        //    id: "BackgroundColorDiv",
+        //    width: "14000px",
+        //    height: "490px",
+        //    title: "设置背景色",
+        //    url: "/Activity/ActivePage/GetBackgroundColor?keyValue=" + keyValue,
+        //    callBack: function () {
+        //        $("#BackgroundColor").val(data);
+        //    }
+        //})
+    }
+
+    $(function () {
+        gridList();
+    });
+</script>

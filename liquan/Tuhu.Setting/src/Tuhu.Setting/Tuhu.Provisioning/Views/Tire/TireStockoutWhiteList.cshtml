@@ -1,0 +1,66 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity.Tire;
+@using Tuhu.Provisioning;
+@model Tuhu.Component.Common.Models.ListModel<StockoutStatusWhiteModel>
+    @{
+        Layout = null;
+    }
+    @if (Model.Source.Any())
+    {
+        <table class="table" data-count="@Model.Pager.TotalItem" width="100%">
+            <tr>
+                <th>省</th>
+                <th>市</th>
+                <th>PID</th>
+                <th>产品名称</th>
+                <th>规格</th>
+                <th>上下架</th>
+                <th>isShow</th>
+                <th>系统标缺状态(全仓)</th>
+                <th>区域标缺状态</th>
+                <th>人工标缺状态</th>
+                <th>白名单状态</th>
+                @*<th>操作</th>*@
+                <th>操作日志</th>
+            </tr>
+            @foreach (var item in Model.Source)
+            {
+                <tr>
+                    <td>@(ViewBag.Address==null?"上海市":ViewBag.Address.Split(';')[0])</td>
+                    <td>@(ViewBag.Address == null ? "上海市" : ViewBag.Address.Split(';')[1])</td>
+                    <td><a target="_blank" href="https://item.tuhu.cn/Products/@(item.PID.Replace("|","/")).html">@item.PID</a></td>
+                    <td>@item.DisplayName</td>
+                    <td>@item.TireSize</td>
+                    <td>@(item.OnSale ? "上架" : "下架")</td>
+                    <td>@(item.IsShow ? "显示" : "不显示")</td>
+                    <td>@item.SystemStuckout</td>
+                    <td>@item.RegionalStockout</td>
+                    <td>@(item.Stuckout ? "缺货" : "有货")</td>
+                    <td>@(item.Status ? "启用" : "禁止")</td>
+                    @*<td>@if (item.Status)
+                    {<a href="jsvascripts:void(0)" onclick="TuhuTire.Logic.TireStockoutWhite.Delete('@item.PID')">删除</a>}</td>*@
+                    @*<td><a href="javascript:void(0)" onclick="TireFunc.Status_Opr('@item.PID','@(item.Status?1:0)')">编辑</a></td>*@
+                    <td><a href="/Tire/StockoutWhiteOprLog?pid=@item.PID">查看</a></td>
+                </tr>
+            }
+        </table>
+        @Html.Pager(Model.Pager, true, id => Url.Action("TireStockoutWhiteList", new
+   {
+       PID = ViewBag.Request.PID,
+       Status=ViewBag.Request.Status,
+       OnSale=ViewBag.Request.OnSale,
+       SystemStuckout=ViewBag.Request.SystemStuckout,
+       Stuckout=ViewBag.Request.Stuckout,
+       TireSize= ViewBag.Request.TireSize,
+       DisplayName=ViewBag.Request.DisplayName,
+       CityId=ViewBag.Request.CityId,
+       pageSize = Model.Pager.PageSize,
+       pageIndex = id
+   }))
+    }
+
+    <script>
+        $("[name=selectAll]").change(function () {
+            $("[name=selectSingle]").prop("checked", $(this).prop("checked"));
+        })
+    </script>
+

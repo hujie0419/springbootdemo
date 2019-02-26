@@ -1,0 +1,368 @@
+﻿@{
+    ViewBag.Title = ViewBag.ModuleName;
+}
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.SE_HomePageModuleContentConfig>
+
+    <div class="ibox ibox-content">
+        <div class="row" style="text-align:right;margin-bottom:5px;">
+            @if (!ViewBag.isHide)
+            {
+                <a href="javascript:void(0)" class="btn btn-warning btn-small " id="btnPuzzle" name="btnPuzzle" style="width: 150px;">拼 图</a>
+            }
+            <a href="javascript:void(0)" class="btn btn-danger btn-small " id="btnAdd" style="width: 150px;" data-toggle="modal" data-target="#edit">新 增</a>
+        </div>
+        <table class="table table-bordered" style="text-align:center;">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>名称</th>
+                    <th>设备类型</th>
+                    @*<th>链接</th>*@
+                    <th>状态</th>
+                    <th>按钮图片</th>
+                    <th>Banner图片</th>
+                   @if (ViewBag.isHide || (!ViewBag.isHide && !ViewBag.isHideData))
+                   {
+                        <th>开始时间</th>
+                        <th>结束时间</th>
+                    }
+                    <th>排 序</th>
+                    <th>管 理</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null)
+            {
+                foreach (var item in Model)
+                {
+                        <tr>
+                            <td>@item.ID</td>
+                            <td>@item.Title</td>
+                            <td>@(item.DeviceType == 1 ? "Android" : (item.DeviceType == 2 ? "IOS" : "移动站"))</td>
+                            @*<td>@item.LinkUrl</td>*@
+                            <td>@(item.IsEnabled == true ? "启用" : "禁用")</td>
+                            <td>
+                                @{
+                                    if (string.IsNullOrWhiteSpace(item.ButtonImageUrl) == false)
+                                    {
+                                        <img src="@item.ButtonImageUrl" width="30" height="30" />
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @{
+                                    if (string.IsNullOrWhiteSpace(item.BannerImageUrl) == false)
+                                    {
+                                        if (item.BannerImageUrl.Contains("http://") == true || item.BannerImageUrl.Contains("https://") == true)
+                                        {
+                                            <img src="@item.BannerImageUrl" width="30" height="30" />
+                                        }
+                                        else
+                                        {
+                                            @item.BannerImageUrl
+                                        }
+
+                                    }
+                                }
+
+                            </td>
+                            @if (ViewBag.isHide||(!ViewBag.isHide && !ViewBag.isHideData))
+                            {
+                                <td>@(string.Format("{0:yyyy-MM-dd HH:mm:ss}", item.StartDateTime))</td>
+                                <td>@(string.Format("{0:yyyy-MM-dd HH:mm:ss}", item.EndDateTime))</td>
+                            }
+                            <td>@item.PriorityLevel</td>
+                            <td>
+                                <a href="javascript:void(0)" class="btn btn-default btn-sm" name="btnEdit" data-toggle="modal" data-target="#edit" data-id="@item.ID">编 辑</a>
+                                <a href="javascript:void(0)" class="btn btn-default btn-sm" name="btnDelete" data-id="@item.ID">删 除</a>
+                            </td>
+                        </tr>
+                                        }
+                                    }
+            </tbody>
+        </table>
+    </div>
+    <input type="hidden" id="hiddenModuleID" name="hiddenModuleID" value="@ViewBag.moduleID" />
+    <input type="hidden" id="hiddenModuleHelperID" name="hiddenModuleHelperID" value="@ViewBag.moduleHelperID" />
+    <div id="edit" class="modal fade" aria-hidden="true" role="dialog" tabindex="-1">
+
+    </div>
+    @section scripts{
+        <script type="text/javascript" src="~/Scripts/layer/layer.js"></script>
+        <script type="text/javascript">
+            $('#btnAdd').on('click', function () {
+                var moduleID = $('#hiddenModuleID').val();
+                var moduleHelperID = $('#hiddenModuleHelperID').val();
+                var url = "/HomePageConfigV2/HomePageModuleContent?id=0&moduleID=" + $('#hiddenModuleID').val() + "&moduleHelperID=" + $('#hiddenModuleHelperID').val();
+                // dialogOpen("新增首页", url, "edit");
+                var dialog = $('#edit');
+                dialog.empty();
+                dialog.html(dialog.load(url));
+            });
+
+            $('a[name="btnEdit"]').on('click', function () {
+                var id = $(this).data("id");
+                if (id) {
+                    var url = "/HomePageConfigV2/HomePageModuleContent?id=" + id + "&moduleID=" + $('#hiddenModuleID').val() + "&moduleHelperID=" + $('#hiddenModuleHelperID').val();
+                    // dialogOpen("新增首页", url, "edit");
+                    var dialog = $('#edit');
+                    dialog.empty();
+                    dialog.html(dialog.load(url));
+                }
+            });
+
+            $('a[name="btnDelete"]').on('click', function () {
+                var id = $(this).data("id")
+                if (confirm("您确定删除吗?")) {
+                    $.ajax({
+                        url: '/HomePageConfigV2/DeleteHomePageModuleContent',
+                        type: 'post',
+                        data: { id: id },
+                        dataType: 'json'
+                    }).done(function (result) {
+                        if (result == 1) {
+                            location.reload();
+                        } else {
+                            alert("删除失败");
+                        }
+                    });
+                }
+            });
+
+            ///showImg：上传时Image显示的标签ID
+            //showUrl:真正显示的
+            function UploadBgImg(obj, showImg, showUrl) {
+
+                var pobj = $(obj);
+                var fileSize = pobj[0].files[0].size / 1024 * 1.0;
+                if (fileSize > 1024) {
+                    alert("不能上传大于1024KB的图片");
+                    return false;
+                }
+                var rd = Math.ceil(Math.random() * 9999) + 1;
+                var fileElId = $(obj).attr("id");
+                console.log(fileElId);
+                $.ajaxFileUpload({
+                    url: '/Article/ImageUploadToAli?rd=' + rd,
+                    secureuri: false,
+                    fileElementId: fileElId,
+                    dataType: 'json',
+                    async: false,
+                    success: function (result) {
+                        if (result.BImage != "" && result.SImage != "") {
+                            $("#" + showImg).attr("src", result.SImage).show();
+                            $("#" + showUrl).val(result.BImage);
+                        } else {
+                            alert("上传失败！");
+                        }
+                    },
+                    error: function (data, status, e)//服务器响应失败处理函数
+                    {
+                        alert(e);
+                    }
+                });
+            }
+
+            function isValidateImage(url) {
+                return true;
+                var modeleType = $('#ModuleType').val();
+                var pattern = $('#Pattern').val();
+                var priorityLevel = $('#PriorityLevel').val();
+                if (modeleType == 30) {
+                    //  var url = $('#ButtonImageUrl').val();
+                    if (!url)
+                        return false;
+                    var s = url.match(/[w|h]\d+/g);
+                    if (s.length != 2) {
+                        alert("图片上传链接不正确" + url);
+                        return false;
+                    }
+
+                    var array = [];
+                    array.push(s[0].substring(1, s[0].length));
+                    array.push(s[1].substring(1, s[1].length));
+                    var width = array[0];
+                    var height = array[1];
+                    if (pattern == 1) {
+                        return true;
+                    }
+                    if (pattern == 2) {
+                        return true;
+                    }
+
+                    if (pattern == 3) {
+                        return true;
+                    }
+
+                    if (pattern == 4) {
+                        if (priorityLevel == 1) {
+                            if (width == 432 && height == 576)
+                                return true;
+                            else if (width == 384 && height == 512)
+                                return true;
+                            else
+                                return false;
+                        } else if (priorityLevel == 2) {
+                            if (width == 648 && height == 288)
+                                return true;
+                            else if (width == 576 && height == height == 256)
+                                return true;
+                            else
+                                return false;
+                        } else {
+                            if (width == 324 && height == 288)
+                                return true;
+                            else if (width == 288 && height == 256)
+                                return true;
+                            else
+                                return false;
+                        }
+                    }
+
+                    if (pattern == 5) {
+                        if (priorityLevel == 1) {
+                            if (width == 432 && height == 576)
+                                return true;
+                            else if (width == 378 && height == 512)
+                                return true;
+                            else
+                                return false;
+                        } else {
+                            if (width == 648 && height == 288)
+                                return true;
+                            else if (width == 576 && height == 256)
+                                return true;
+                            else
+                                return false;
+                        }
+                    }
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+
+            ///showImg：上传时Image显示的标签ID
+            //showUrl:真正显示的
+            function UploadBgImg1(obj, showImg, showUrl) {
+
+                var pobj = $(obj);
+                var fileSize = pobj[0].files[0].size / 1024 * 1.0;
+                if (fileSize > 1024) {
+                    alert("不能上传大于1024KB的图片");
+                    return false;
+                }
+                var rd = Math.ceil(Math.random() * 9999) + 1;
+                var fileElId = $(obj).attr("id");
+                console.log(fileElId);
+                $.ajaxFileUpload({
+                    url: '/Article/ImageUploadToAli?rd=' + rd,
+                    secureuri: false,
+                    fileElementId: fileElId,
+                    dataType: 'json',
+                    async: false,
+                    success: function (result) {
+                        if (result.BImage != "" && result.SImage != "") {
+                            if (!isValidateImage(result.BImage)) {
+                                alert("上传的图片小大不符合")
+                                return;
+                            }
+
+                            $("#" + showImg).attr("src", result.SImage).show();
+                            $("#" + showUrl).val(result.BImage);
+                        } else {
+                            alert("上传失败！");
+                        }
+                    },
+                    error: function (data, status, e)//服务器响应失败处理函数
+                    {
+                        alert(e);
+                    }
+                });
+            }
+            var isSave = true;
+
+            $('#btnPuzzle').on('click', function () {
+                layer.open({
+                    id: "puzzle",
+                    type: 2,
+                    title: '选择拼图方式',
+                    shadeClose: true,
+                    shade: 0.8,
+                    area: ['66%', '55%'],
+                    content: '/HomePageConfigV2/SelectPuzzle?moduleID=' + $('#hiddenModuleID').val() + '&moduleHelperID=' + $('#hiddenModuleHelperID').val(),//iframe的url
+                    btn: ['保 存', '取 消'],
+                    yes: function (index, layero) {
+                        // debugger;
+                        var iframe = top.frames[0].document;
+                        var result = $('#hidData', iframe).val();
+                        result = JSON.parse(result);
+                        var cbitem = $('input[name="cbitem"]:checked', iframe);
+                        var array = [];
+                        var type = 0;
+                        for (var item in result) {
+                            cbitem.each(function () {
+                                var value = $(this).val();
+                                if (item == value) {
+                                    var start = result[item]["StartDateTime"];
+                                    var end = result[item]["EndDateTime"];
+                                    for (var it in result[item]) {
+                                        if (it == "Type") {
+                                            type = result[item][it]
+                                            continue;
+                                        }
+                                        if (it == "StartDateTime" || it == "EndDateTime") {
+
+                                            continue;
+                                        }
+
+
+                                        var temp = result[item][it];
+                                        var entity = {};
+                                        entity.FKID = temp.ID;
+                                        entity.PriorityLevel = temp.PriorityLevel;
+                                        entity.GroupID = value;
+                                        entity.FKModuleID = $('#hiddenModuleID').val();
+                                        entity.FKModuleHelperID = $('#hiddenModuleHelperID').val();
+                                        entity.ImageUrl = temp.ImgUrl;
+                                        entity.StartDateTime = start;
+                                        entity.EndDateTime = end;
+                                        array.push(entity);
+
+                                    }
+                                }
+                            })
+                        }
+                        if (array.length > 0 && isSave) {
+                            isSave = false;
+                            var msgIndex = layer.msg("图片组装中....", { time: 5000 });
+                            $.ajax({
+                                url: '/HomePageConfigV2/SavePuzzle',
+                                type: 'post',
+                                data: {
+                                    entities: array,
+                                    type: type
+                                }
+                            }).done(function (res) {
+                                isSave = true;
+                                layer.close(msgIndex);
+                                res = JSON.parse(res);
+                                if (res.Code == 1) {
+                                    alert("保存成功");
+                                    layer.close(index);
+                                }
+                            }).done(function () {
+                                isSave = true;
+                                layer.close(msgIndex);
+                            });
+                        } else {
+                            alert("请选择要保存的拼图");
+                        }
+                        console.log(array);
+                    },
+                    cancel: function () {
+                    }
+                });
+            });
+        </script>
+    }

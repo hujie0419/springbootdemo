@@ -1,0 +1,474 @@
+﻿@{
+    ViewBag.Title = "服务码搜索";
+}
+@section head{
+    <link href="~/css/beautyPackage.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="~/Content/iview/iview.css" />
+    @*<link href="~/Scripts/kkpager/kkpager_blue.css" rel="stylesheet" />*@
+}
+<style>
+    .dialog > table {
+        width: 100%;
+    }
+
+        .dialog > table > tbody > tr > th {
+            width: 80px;
+            white-space: nowrap;
+        }
+
+        .dialog > table > tbody > tr > td {
+            text-align: left;
+        }
+
+            .dialog > table > tbody > tr > td > input {
+                margin-left: 8px;
+            }
+
+            .dialog > table > tbody > tr > td > .date-picker {
+                width: 30%;
+                margin-left: 8px;
+            }
+
+    .dialogBtn {
+        margin-right: 10px;
+        display: inline-block;
+        padding: 6px 12px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        float: right;
+    }
+</style>
+<div id="div" v-cloak>
+    <Tabs type="card" v-model="searchData.tabValue" style="margin-top:20px">
+        <Tab-Pane label="美容服务码" name="BeautyCode"></Tab-Pane>
+        <Tab-Pane label="通用服务码" name="GeneralServiceCode"></Tab-Pane>
+        <Tab-Pane label="通用兑换码" name="GeneralRedemtionCode"></Tab-Pane>
+    </Tabs>
+    <h2>
+        <i-input type="text" style="width:200px" v-model="searchData.mobile" placeholder="请输入手机号" ></i-input>
+        <i-input type="text" style="width:200px" v-model="searchData.serviceCode" placeholder="请输入服务码" ></i-input>
+        <i-button type="success" v-on:click="load(1)" >查询</i-button>
+    </h2>
+    <table class="tableContainer" style="margin-top:20px" v-if="searchData.tabValue=='GeneralServiceCode'||searchData.tabValue=='GeneralRedemtionCode'">
+        <thead>
+            <tr>
+                <th>序号</th>
+                <th>手机号</th>
+                <th>服务码</th>
+                <th>兑换码</th>
+                <th>状态</th>
+                <th>合作用户</th>
+                <th>核销时间</th>
+                <th>订单号</th>
+                <th>有效期</th>
+                <th>大客户结算价</th>
+                <th>结算方式</th>
+                <th>佣金比</th>
+                <th>产品PID</th>
+                <th>适配车型</th>
+                <th>包ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="loading">
+                <td colspan="15"><img src="~/Images/loading.gif" /></td>
+            </tr>
+            <tr v-else-if="ServiceCodeList.length > 0" v-for="(item,index) in ServiceCodeList">
+                <td>{{++index}}</td>
+                <td>{{item.Phone}}</td>
+                <td>{{item.ServiceCode}}</td>
+                <td>{{item.RedemptionCode}}</td>
+                <td>
+                    <template v-if="item.Status==='Created'">
+                        已创建
+                    </template>
+                    <template v-else-if="item.Status==='SmsSent'">
+                        已发码
+                    </template>
+                    <template v-else-if="item.Status==='Verified'">
+                        已核销
+                    </template>
+                    <template v-else-if="item.Status==='Cancelled'">
+                        已取消
+                    </template>
+                    <template v-else-if="item.Status==='Overdued'">
+                        已过期
+                    </template>
+                    <template v-else-if="item.Status==='Reverted'">
+                        已回滚
+                    </template>
+                </td>
+                <td>{{item.CooperateName}}</td>
+                <td>{{item.VerifyTime | formatDate}}</td>
+                <td>{{item.TuhuOrderId}}</td>
+                <td><label name="startTime">{{item.StartTime | formatDate}}</label>~<label name="endTime">{{item.EndTime | formatDate}}</label></td>
+                <td>{{item.SettlementPrice}}</td>
+                <td>{{item.SettlementMethod|formatSettlementMethod}}</td>
+                <td>{{item.ShopCommission}}</td>
+                <td>{{item.PID}}</td>
+                <td>{{item.AdapterVehicle|formatAdapterVehicle}}</td>
+                <td>
+                    {{item.PackageId}}
+                </td>
+            </tr>
+            <tr v-else>
+                <td colspan="15">没有结果</td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="tableContainer" style="margin-top:20px" v-if="searchData.tabValue=='BeautyCode'">
+        <thead>
+            <tr>
+                <th>序号</th>
+                <th>手机号</th>
+                <th>服务码</th>
+                <th>兑换码</th>
+                <th>状态</th>
+                <th>大客户</th>
+                <th>核销时间</th>
+                <th>核销门店</th>
+                <th>订单号</th>
+                <th>有效期</th>
+                <th>大客户结算价</th>
+                <th>门店佣金比</th>
+                <th>产品PID</th>
+                <th>适配车型</th>
+                <th>类型</th>
+                <th>批次</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="loading">
+                <td colspan="17"><img src="~/Images/loading.gif" /></td>
+            </tr>
+            <tr v-else-if="ServiceCodeList.length > 0" v-for="(item,index) in ServiceCodeList">
+                <td>{{++index}}</td>
+                <td>{{item.Mobile}}</td>
+                <td>{{item.ServiceCode}}</td>
+                <td>{{item.PackageCode}}</td>
+                <td>
+                    <template v-if="item.Status==='Created'">
+                        已创建
+                    </template>
+                    <template v-else-if="item.Status==='SmsSent'">
+                        已发码
+                    </template>
+                    <template v-else-if="item.Status==='Verified'">
+                        已核销
+                    </template>
+                    <template v-else-if="item.Status==='Cancelled'">
+                        已取消
+                    </template>
+                    <template v-else-if="item.Status==='Overdued'">
+                        已过期
+                    </template>
+                    <template v-else-if="item.Status==='Reverted'">
+                        已回滚
+                    </template>
+                </td>
+                <td>{{item.VipCompanyName}}</td>
+                <td>{{item.VerifyTime | formatDate}}</td>
+                <td>{{item.VerifyShop||'/'}}</td>
+                <td><a v-on:click="OrderNoTransfer(item.OrderNoLink)">{{item.OrderNo||'/'}}</a></td>
+                <td><label name="startTime">{{item.StartTime | formatDate}}</label>~<label name="endTime">{{item.EndTime | formatDate}}</label></td>
+                <td>{{item.VipSettleMentPrice}}</td>
+                <td>{{item.ShopCommission}}</td>
+                <td>{{item.PID}}</td>
+                <td>{{item.RestrictVehicle}}</td>
+                <td>
+                    <template v-if="item.Type==='ServiceCode'">
+                        服务码
+                    </template>
+                    <template v-else-if="item.Type==='ImportUser'">
+                        手机塞码
+                    </template>
+                    <template v-else-if="item.Type==='Bank'">
+                        银行活动发码
+                    </template>
+                </td>
+                <td>
+                    {{item.BatchCode}}
+                </td>
+                <td>
+                    <button v-if="item.Status==='Created'" class="btn btn-primary" v-on:click="OpenEditDialog(item)">编辑</button>
+                    <button v-else-if="item.Status==='SmsSent'" class="btn btn-primary" v-on:click="OpenEditDialog(item)">编辑</button>
+                </td>
+            </tr>
+            <tr v-else>
+                <td colspan="17">没有结果</td>
+            </tr>
+        </tbody>
+    </table>
+    @*<div id="kkpager" colspan="12"></div>*@
+    <div>
+        <div class="content">
+            <modal v-if="editDialog.show" v-on:close="editDialog.show=false">
+                <h3 slot="header">编辑</h3>
+                <div slot="body" class="dialog">
+                    <table>
+                        <tr>
+                            <th>手机号:</th>
+                            <td>
+                                <input type="text" v-model="ServiceCodeDetail.Mobile" disabled="disabled" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>服务码</th>
+                            <td>
+                                <input type="text" v-model="ServiceCodeDetail.ServiceCode" disabled="disabled" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>服务码开始时间：</th>
+                            <td>
+                                <datepicker type="date" name="startTime" v-model="ServiceCodeDetail.StartTime"></datepicker>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>服务码结束时间:</th>
+                            <td>
+                                <datepicker type="date" name="endTime" v-model="ServiceCodeDetail.EndTime"></datepicker>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div slot="footer">
+                    <button class="dialogBtn" v-on:click="closeEditDialog()">取消</button>
+                    <button class="dialogBtn" v-on:click="Edit()">确认</button>
+                </div>
+            </modal>
+        </div>
+    </div>
+</div>
+<script type="text/x-template" id="modal-template">
+    <transition name="modal">
+        <div class="modal-mask">
+            <div class="modal-wrapper">
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <slot name="header"></slot>
+                    </div>
+                    <div class="modal-body">
+                        <slot name="body"></slot>
+                    </div>
+                    <div class="modal-footer">
+                        <slot name="footer">
+                            <button class="modal-default-button" v-on:click="">OK</button>
+                        </slot>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</script>
+@section scripts{
+
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/dateJs/vue-date.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/iview/iview.min.js"></script>
+    @*<script src="~/Scripts/kkpager/kkpager.min.js"></script>*@
+    <script type="text/javascript">
+        function formatDate(value) {
+            if (value) {
+                return eval('new ' + eval(value).source).Format('yyyy-MM-dd');
+            }
+        }
+        function formatAdapterVehicle(value) {
+            var result = "";
+            switch (value) {
+                case 1:
+                    result = "五座轿车";
+                    break;
+                case 2:
+                    result = "SUV/MPV";
+                    break;
+                case 3:
+                    result = "SUV";
+                    break;
+                case 4:
+                    result = "MPV";
+                    break;
+                case 5:
+                    result = "七座轿车";
+                    break;
+                case 6:
+                    result = "全部车型";
+                    break;
+            }
+            return result;
+        }
+        function formatSettlementMethod(value) {
+            var result = value;
+            switch (value) {
+                case "BatchPreSettled":
+                    result += "|大买断";
+                    break;
+                case "SinglePreSettled":
+                    result += "|小买断";
+                    break;
+                case "ByPeriod":
+                    result += "|据实";
+                    break;
+                case "PreSettled":
+                    result += "|买断";
+                    break;
+                default:
+                    break;
+            }
+            return result;
+        }
+        Vue.filter('formatSettlementMethod', formatSettlementMethod);
+        Vue.filter('formatAdapterVehicle', formatAdapterVehicle);
+        Vue.filter('formatDate', formatDate);
+        Vue.component('modal', {
+            template: '#modal-template'
+        });
+        var vue = new Vue({
+            el: "#div",
+            data: {
+                searchData: {
+                    serviceCode: "",
+                    mobile: "",
+                    tabValue:"BeautyCode"
+                },
+                loading: false,
+                ServiceCodeDetail: {
+                    PackageDetailCodeId: "",
+                    Mobile: "",
+                    ServiceCode: "",
+                    Status: "",
+                    VipCompanyName: "",
+                    VerifyTime: "",
+                    VerifyShop: "",
+                    OrderNoLink: "",
+                    OrderNo: "",
+                    StartTime: "",
+                    EndTime: "",
+                    VipSettleMentPrice: "",
+                    ShopCommission: "",
+                    PID: "",
+                    RestrictVehicle: ""
+                },
+                ServiceCodeList: [],
+                editDialog: {
+                    show: false
+                },
+                pager: {
+                    totalPage: 0,
+                    totalCount: 0,
+                    pageIndex: 1,
+                    pageSize: 2000
+                }
+            },
+            created: function () {
+            },
+            components: { datepicker },
+            watch: {
+                "pager.pageIndex": function () {
+                    var self = this;
+                    self.load(self.pager.pageIndex);
+                },
+                "searchData.tabValue": function () {
+                    var self = this;
+                    self.ServiceCodeList = [];
+                    self.pager.totalCount = 0;
+                    self.pager.totalPage = 0;
+                },
+            },
+            methods: {
+                load: function (pageIndex) {
+                    var self = this;
+                    self.pager.pageIndex = pageIndex;
+                    if (self.searchData.serviceCode || self.searchData.mobile) {
+                        self.loading = true;
+                        if (self.searchData.serviceCode && self.searchData.serviceCode.indexOf("FW") !== 0) {
+                            self.searchData.serviceCode = "FW" + self.searchData.serviceCode;
+                        }
+                        $.get("SearchServiceCode", {
+                            serviceCode: self.searchData.serviceCode,
+                            mobile: self.searchData.mobile,
+                            pageIndex: self.pager.pageIndex,
+                            pageSize: self.pager.pageSize,
+                            tabValue: self.searchData.tabValue
+                        }, function (result) {
+                            if (result.Status) {
+                                self.ServiceCodeList = result.Data;
+                            }
+                            else {
+                                self.ServiceCodeList = [];
+                            }
+                            self.loading = false;
+                            //kkpager.generPageHtml({
+                            //    pno: self.pager.pageIndex,
+                            //    mode: 'click',
+                            //    total: self.pager.totalPage,
+                            //    totalRecords: self.pager.totalCount,
+                            //    click: function (n) {
+                            //        self.pager.pageIndex = n;
+                            //    },
+                            //    getHref: function (n) {
+                            //        return 'javascript:void(0);';
+                            //    }
+                            //}, true);
+                        })
+                    } else {
+                        self.ServiceCodeList = [];
+                        alert("请输入");
+                    }
+                },
+                OpenEditDialog: function (item) {
+                    var self = this;
+                    self.editDialog.show = true;
+                    var startTime = formatDate(item.StartTime);
+                    var endTime = formatDate(item.EndTime);
+                    self.ServiceCodeDetail.PackageDetailCodeId = item.PackageDetailCodeId;
+                    self.ServiceCodeDetail.Mobile = item.Mobile;
+                    self.ServiceCodeDetail.ServiceCode = item.ServiceCode;
+                    self.ServiceCodeDetail.Status = item.Status;
+                    self.ServiceCodeDetail.StartTime = startTime;
+                    self.ServiceCodeDetail.EndTime = endTime;
+                },
+                closeEditDialog: function () {
+                    this.editDialog.show = false;
+                },
+                Edit: function () {
+                    var self = this;
+                    var model = self.ServiceCodeDetail;
+                    if (!confirm("是否确认更新服务码相关信息?")) {
+                        return;
+                    }
+                    //if (model.PackageDetailCodeId < 1 || !model.ServiceCode) {
+                    //    return;
+                    //}
+                    if (!(model.Status == "Created" || model.Status == "SmsSent")) {
+                        alert("服务码" + model.ServiceCode + "不允许修改，请确认服务码状态");
+                        return;
+                    }
+                    if (!(model.StartTime && model.EndTime)) {
+                        alert("请选择服务码起止时间");
+                        return;
+                    }
+                    if (model.StartTime > model.EndTime) {
+                        alert("服务码开始时间不能大于结束时间");
+                        return;
+                    }
+                    $.post("UpdateBeautyServicePackageDetailCodes", { model: model }, function (data) {
+                        if (data && data.Status) {
+                            alert("更新成功");
+                            self.closeEditDialog();
+                            self.load(self.pager.pageIndex);
+                        }
+                        else {
+                            alert("更新失败!" + data.Msg);
+                        }
+                    });
+                },
+                OrderNoTransfer: function (url) {
+                    window.location.href = url;
+                }
+            }
+        })
+    </script>
+}

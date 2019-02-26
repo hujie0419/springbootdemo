@@ -1,0 +1,180 @@
+﻿@using Tuhu.Service.Member.Models
+@{
+    ViewBag.Title = "积分兑换配置";
+    Layout = "~/Views/Shared/_PersonalCenterLeft.cshtml";
+}
+
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    textarea {
+        width: 100px;
+        height: 100px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+</style>
+
+<div style="text-align:center;"><h2>积分兑换配置后台</h2></div>
+<div class="toolar">
+
+    <select style="width:120px; height:25px;" id="SelPostionCode">
+        <option value="">配置位置</option>
+        @foreach (var pd in ViewBag.PostionData as Dictionary<string, string>)
+        {
+            <option value="@pd.Key">@pd.Value</option>
+        }
+    </select>
+    <select style="width:120px; height:25px;" id="SelUserRank">
+        <option value="">会员等级</option>
+        @foreach (var grade in ViewBag.MemberGrade as List<MembershipsGradeResponse>)
+        {
+            <option value="@grade.GradeCode">@grade.GradeName</option>
+        }
+    </select>
+    <select style="width:65px; height:25px;" id="SelStatus">
+        <option value="">状态</option>
+        <option value="true">启用</option>
+        <option value="false">禁用</option>
+    </select>
+    <input style="width:200px;height:20px;" placeholder="优惠券名称" id="txtCouponName" name="txtCouponName" />
+    <a href="javascript:void(0)" class="btn" onclick="ExchangeCenterConfig.Search()">搜索</a>
+    <a href="javascript:void(0)" class="btn" onclick="ExchangeCenterConfig.Update(0)">添加</a>
+    <a href="javascript:void(0)" class="btn" onclick="ExchangeCenterConfig.RefreshCache()">刷新缓存</a>
+</div>
+
+<div class="listdata" style="overflow-x:auto;"></div>
+<div id="AddItem"></div>
+<div id="OperatorLog" ></div>
+<input type="hidden" id="hid-page-index" value="1" />
+<script>
+
+    $(function () {
+        var leftWidth = $('fieldset').width();
+        var WindowWidth = $('#main').width();
+        var listWidth = WindowWidth - leftWidth - 100;
+        $('div.listdata').css('width', listWidth);
+
+        ExchangeCenterConfig.Search();
+        $(".listdata").on("click", ".pager>a", function (event) {
+            event.preventDefault();
+            debugger;
+            $("#hid-page-index").val($(this).data('page'));
+            ExchangeCenterConfig.Search($(this).data('page'));
+        });
+    })
+
+    var ExchangeCenterConfig = {
+        "Search": function (pageIndex) {
+            if (!pageIndex) {
+                pageIndex = 1;
+            }
+            var searchData = ExchangeCenterConfig.GetData();
+            searchData.PageIndex = pageIndex;
+            $.ajax({
+                type: "POST",
+                url: "/ExchangeCenterConfig/List",
+                data: searchData,
+                success: function (result) {
+                    $(".listdata").html(result);
+                },
+                error: function (result) {
+                    alert("数据加载失败!")
+                }
+            });
+        },
+        GetData: function () {
+            var model = {};
+            model.PostionCode = $('#SelPostionCode').val();
+            model.UserRank = $('#SelUserRank').val();
+            model.Status = $('#SelStatus').val();
+            model.CouponName = $('#txtCouponName').val();
+            return model;
+        },
+        "RefreshCache": function () {
+            $.ajax({
+                type: "POST",
+                url: "/ExchangeCenterConfig/RefreshCache",
+                success: function (result) {
+                    alert("刷新成功");
+                },
+                error: function (result) {
+                    alert("失败!")
+                }
+            });
+        },
+        "Update": function (id, type) {
+            var title = id > 0 ? "新增" : "编辑";
+            title += "积分兑换配置";
+            if (type && type == 'copy') {
+                title = '复制积分兑换配置';
+            }
+            else {
+                type = '';
+            }
+            $("#AddItem").load('/ExchangeCenterConfig/Edit?id=' + id + '&type=' + type);
+            $("#AddItem").dialog({
+                title: title,
+                width: 750,
+                height: 720,
+                modal: true
+            });
+        },
+        CloseUpdate: function () {
+            $("#AddItem").dialog('close');
+        },
+        "Copy": function (id) {
+            ExchangeCenterConfig.Update(id, 'copy');
+        },
+        "Delete": function (id) {
+            if (window.confirm("您确定要删除吗？")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/ExchangeCenterConfig/Delete",
+                    data: { "id": id },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/ExchangeCenterConfig/Index";
+                        }
+                        else {
+                            alert("删除失败！");
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        },
+        //获取操作日志
+        GetOperatorLog: function (id) {
+            $("#OperatorLog").load("/ExchangeCenterConfig/OperatorHisitoryLog?Id=" + id);
+            $("#OperatorLog").dialog({
+                title: "操作记录",
+                width: 750,
+                height: 500,
+                modal: true,
+            });
+        }
+    }
+</script>  

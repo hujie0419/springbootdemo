@@ -1,0 +1,41 @@
+﻿@model Tuhu.Provisioning.Models.GiftStockModel
+@{
+    ViewBag.Title = "GiftStockIndex";
+    Layout = "../Shared/_Layout.cshtml";
+}
+<link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+<form id="searchArguments" method="post"  class="form-inline" action="/SE_GiftManageConfig/GiftStockIndex">
+    <p>
+        @*Find by Title: @Html.TextBox("pid", Model.Pid, new { @class = "form-inline", @Style = "display:inline" })*@
+            <div class="form-group">
+                <input type="text" class="form-control"  name="pid" value="@Model.Pid" placeholder="赠品pid">
+            </div>
+            <button type="submit" class="btn btn-success">搜索</button>
+
+</p>
+</form>
+<table class="table">
+    <tr>
+        <th>PID</th>
+
+        <th>售出数量</th>
+
+        <th>库存</th>
+
+    </tr>
+
+    <tr>
+        <td>
+            @Model.Pid
+        </td>
+        <td>
+            @Model.SaleCount
+        </td>
+        <td>
+            @Model.Stock
+        </td>
+    </tr>
+    
+</table>
+
+

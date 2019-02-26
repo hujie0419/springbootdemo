@@ -1,0 +1,45 @@
+﻿
+@{
+    ViewBag.Title = "配置入口页";
+    ViewBag.PageTitle = "配置入口页";
+    Layout = "../Shared/_LayoutIndexPage.cshtml";
+}
+@using HomeController = Tuhu.Provisioning.Controllers.HomeController;
+@using IndexModuleItem = Tuhu.Provisioning.DataAccess.Entity.IndexModuleItem;
+<style>
+    ol.item li {
+        display: inline-block;
+        list-style: none;
+        background-color: #5c87b2;
+        margin-top: 10px;
+        width: 100%;
+        height: 50px;
+        padding-left: 50px;
+        line-height: 50px;
+        font-size: 20px;
+        font-family: 黑体;
+        font-weight: bold;
+        color: #fff;
+    }
+</style>
+<ol class='item'>
+    @{
+        List<IndexModuleItem> itemList = HomeController.GetAvailableIndexEntryByMoudleId(User.Identity.Name, ViewBag.moduleId);
+        foreach (var item in itemList)
+        {
+            var url = item.LinkUrl;
+            <li>
+                <div onclick="Jurl('@url')" >
+                    @item.EntryName
+                </div>
+            </li>
+        }
+    }
+   
+</ol>
+
+<script>
+    function Jurl(url) {
+        window.location.href = url;
+    }
+</script>

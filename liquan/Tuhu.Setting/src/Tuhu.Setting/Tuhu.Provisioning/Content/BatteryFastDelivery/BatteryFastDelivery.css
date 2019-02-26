@@ -1,0 +1,107 @@
+﻿.btn-add {
+    font-weight: bold;
+    width: 80px;
+    background-color: cadetblue;
+}
+
+.disable {
+    background: #ccc;
+}
+
+fieldset {
+    padding: initial;
+    margin: auto;
+    height: auto;
+}
+
+fieldset {
+    margin: 0px 0px 15px 0px;
+    padding: 15px 20px;
+}
+
+    fieldset > input {
+        line-height: 1.42857143;
+        width: 150px;
+        height: 30px;
+    }
+
+    fieldset > select {
+        line-height: 1.42857143;
+        width: 200px;
+        height: 30px;
+        padding: 2px 2px 2px 5px;
+        color: #555;
+        background-color: #fff;
+        background-image: none;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+        -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+        -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    }
+
+    fieldset > label {
+        display: inline-block;
+        height: 30px;
+        max-width: 100%;
+        font-weight: bold;
+        margin-left: 10px;
+    }
+
+
+.dialog > table > tbody > tr > td > input {
+    float: left;
+    margin-left: 20px;
+}
+
+.dialog > table > tbody > tr > td > select {
+    float: left;
+    margin-left: 20px;
+    width: 200px;
+}
+
+.dialog > table > tbody > tr > td > textarea {
+    float: left;
+    margin-left: 20px;
+}
+
+.dialog > table > tbody > tr > td > a {
+    color: #08c;
+}
+
+.dialog > table > tbody > tr > td > label {
+    float: left;
+    margin-left: 20px;
+}
+
+    .dialog > table > tbody > tr > td > label > input {
+        margin-left: 20px;
+    }
+
+    .dialog > table > tbody > tr > td > label > span {
+        margin-left: 20px;
+        float: left;
+    }
+
+.operation {
+    color: blue;
+    cursor: pointer;
+    margin-left: 6px;
+    margin-right: 6px;
+}
+
+
+span.operation:hover {
+    text-decoration: underline;
+}
+
+.display {
+    margin-left: 6px;
+    margin-right: 6px;
+}
+
+table > tbody > tr:hover {
+    background-color: #CCC !important;
+}

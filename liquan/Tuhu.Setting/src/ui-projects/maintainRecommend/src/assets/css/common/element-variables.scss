@@ -1,0 +1,49 @@
+/* 改变主题色变量 */
+$--color-primary: #DF3348;
+/* 改变 icon 字体路径变量，必需 */
+$--font-path: '~element-ui/lib/theme-chalk/fonts';
+
+.el-dialog{
+  .el-dialog__body{
+    padding-top: 10px;
+  }
+  &::after{
+    content: "";
+    width: calc(100% + 20px);
+    height: calc(100% + 20px);
+    top: -10px;
+    left: -10px;
+    display: inline-block;
+    background-color: rgba(0, 0, 0, 0.3);
+    position: absolute;
+    z-index: -1;
+  }
+}
+
+.el-select .el-input{
+  width: 180px !important;
+}
+.mySelect{
+  min-width: 180px;
+}
+.el-switch{
+  .el-switch__core{
+    height: 30px;
+    border:1px solid rgba(0,0,0,0.1) !important;
+    &:after{
+      width: 24px;
+      height: 24px;
+      border:1px solid rgba(0,0,0,0.1);
+      box-shadow:0px 3px 3px 0px rgba(0,0,0,0.05),0px 2px 2px 0px rgba(0,0,0,0.1),0px 3px 1px 0px rgba(0,0,0,0.05);
+      border-radius:8px;
+    }
+  } 
+  &.is-checked .el-switch__core::after{
+    margin-left: -26px !important;
+  }
+}
+.el-message-box{
+  max-width: 100%;
+}
+
+@import "~element-ui/packages/theme-chalk/src/index";

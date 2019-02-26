@@ -1,0 +1,842 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.AdColumnModel
+@{
+    ViewBag.Title = "广告配置";
+    var MainModel = Model;
+    var position = MainModel != null && MainModel.Advertises != null && MainModel.Advertises.Any() ? MainModel.Advertises.OrderByDescending(ad => ad.Position).FirstOrDefault().Position : 0;
+    var defaultproduct = Model.Products == null ? null : Model.Products.Where(i => i.AdvertiseID == 0);
+    var products = Model.Products == null ? null : Model.Products.Where(i=>i.AdvertiseID!=0).GroupBy(p => p.AdvertiseID).ToDictionary(d => d.Key, d => d);
+}
+@section head{
+    <link href="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.css" rel="stylesheet" />
+    <style>
+        .mainContent {
+            width: 1500px;
+        }
+
+            .mainContent table {
+                width: 80%;
+            }
+
+                .mainContent table th {
+                    height: 25px;
+                }
+
+                    .mainContent table th .addbutton {
+                        display: inline-block;
+                        width: 50px;
+                        height: 23px;
+                        line-height: 23px;
+                        background-color: #4990E2;
+                        text-align: center;
+                        color: #fff;
+                    }
+
+                        .mainContent table th .addbutton:hover {
+                            cursor: pointer;
+                        }
+
+                .mainContent table tr {
+                    text-align: center;
+                }
+
+        .save {
+            background-color: #EBEBEB;
+            color: black;
+            border: 1px solid #EBEBEB;
+            width: 50px;
+            height: 23px;
+            line-height: 23px;
+            text-align: center;
+            margin-left: 50px;
+        }
+
+            .save:hover {
+                cursor: pointer;
+            }
+
+        #Display ul {
+            list-style-type: none;
+        }
+
+            #Display ul li {
+                height: 25px;
+                line-height: 25px;
+                padding: 10px;
+            }
+
+                #Display ul li.imgli {
+                    height: 55px;
+                }
+
+                #Display ul li .imgshow {
+                    width: 220px;
+                    height: 50px;
+                    line-height: 50px;
+                    text-align: center;
+                    background-color: #d9d9d9;
+                    position: relative;
+                    display: inline-block;
+                    vertical-align: middle;
+                }
+
+                    #Display ul li .imgshow:hover {
+                        cursor: pointer;
+                    }
+
+                    #Display ul li .imgshow img {
+                        left: 0;
+                        width: 220px;
+                        height: 50px;
+                        position: absolute;
+                    }
+
+                #Display ul li input {
+                    width: 220px;
+                    height: 25px;
+                    line-height: 25px;
+                }
+
+                    #Display ul li input[type=radio] {
+                        width: 30px;
+                        height: 14px;
+                        line-height: 14px;
+                        vertical-align: sub;
+                    }
+
+                #Display ul li .bitian {
+                    color: red;
+                    display: none;
+                }
+
+                #Display ul li input#startDate, #Display ul li input#endDate {
+                    width: 150px;
+                }
+
+                #Display ul li input.state {
+                    width: 40px;
+                    height: 16px;
+                    vertical-align: sub;
+                }
+
+        .updatebutton, .deletebutton, .historybutton {
+            height: 23px;
+            line-height: 23px;
+            color: blue;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+
+            .updatebutton:hover, .deletebutton:hover, .historybutton:hover {
+                text-decoration: underline;
+            }
+
+        .updateCouchbase {
+            position: absolute;
+            left: 500px;
+            top: 10px;
+            font-size: 14px;
+            color: #D12A3E;
+        }
+
+            .updateCouchbase .updatecachebutton {
+                border: 1px solid #ddd;
+                padding: 3px 10px;
+                color: #4d7aff;
+            }
+
+                .updateCouchbase .updatecachebutton:hover {
+                    cursor: pointer;
+                    color: #D12A3E;
+                }
+
+        .bgcolorspan {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            vertical-align: text-top;
+            border: 1px solid;
+            margin-right: 5px;
+        }
+
+       .realdel, .productdel {
+            display: inline-block;
+            text-align: center;
+            width: 40px;
+            height: 25px;
+            line-height: 25px;
+            background-color: #4d7aff;
+            color: #fff;
+            cursor:pointer;
+        }
+
+        .addproduct {
+            display: inline-block;
+            text-align: center;
+            width: 80px;
+            height: 25px;
+            line-height: 25px;
+            background-color: #4d7aff;
+            color: #fff;
+            cursor:pointer;
+        }
+        .pro {
+            background-color:rgb(231, 231, 128);
+        }
+    </style>
+}
+
+<h2>广告配置 <a href="WebSiteHomeIndex">返回首页</a></h2> <div class="updateCouchbase"> 配置完成后请及时更新缓存 <span class="updatecachebutton">更新缓存</span></div>
+<div class="mainContent">
+    <table>
+        <tbody>
+            <tr>
+                <th colspan="10">@MainModel.ID <span class="addbutton" data-type="@(ViewBag.haveflag?"advertise":"adcolunm")" data-action="add" data-remark="@Model.Remark">新增</span></th>
+            </tr>
+            <tr>
+                <td>广告位性质</td>
+                <td>标题</td>
+                <td>状态</td>
+                <td>序号</td>
+                <td>图片</td>
+                <td>链接</td>
+                <td>背景颜色</td>
+                <td>活动时间</td>
+                <td>操作</td>
+                <td>操作历史</td>
+            </tr>
+            @if (ViewBag.haveflag)
+            {
+                <tr>
+                    <td>默认广告</td>
+                    <td>@MainModel.ADCName</td>
+                    <td></td>
+                    <td></td>
+                    <td>@MainModel.DefaultImage</td>
+                    <td>@MainModel.DefaultUrl</td>
+                    <td><span class="bgcolorspan" style="background:@MainModel.DefaultbgColor"></span>@MainModel.DefaultbgColor</td>
+                    <td></td>
+                    <td><span class="updatebutton" data-action="update" data-type="adcolunm">修改</span></td>
+                    <td><span class="historybutton" onclick="HistoryRecord('@(MainModel.ID+"|")','WSHomeAD')">查看历史</span></td>
+                </tr>
+                if (String.Compare(Model.Remark, "product", true) == 0)
+                {
+                    if (defaultproduct != null && defaultproduct.Count() > 0)
+                    {
+                        <tr  class="pro">
+                            <td>产品PID</td>
+                            <td>产品序号</td>
+                            <td>产品名</td>
+                            <td>产品途虎价</td>
+                            <td>产品市场价</td>
+                            @*<td>操作</td>*@
+                        </tr>
+                        foreach (var p in defaultproduct)
+                        {
+                            <tr class="productdisplay pro">
+                                <td>
+                                    <input name="PID" type="hidden" value="@p.PID" />@p.PID
+                                </td>
+                                <td>
+                                    <input name="Position" type="hidden" value="@p.Position" />@p.Position
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                @*<td><span class="realdel" data-AdColumnID="@MainModel.ID" data-AdvertiseID="0">删除</span></td>*@
+                            </tr>
+                        }
+                    }
+                }
+                if (MainModel.Advertises != null)
+                {
+                    foreach (var ad in MainModel.Advertises.OrderBy(a => a.Position))
+                    {
+
+                        <tr>
+                            <td>普通广告</td>
+                            <td><input type="hidden" name="PKID" value="@ad.PKID" /><input type="hidden" name="AdName" value="@ad.AdName" /> @ad.AdName </td>
+                            <td><input type="hidden" name="State" value="@ad.State" />@ad.State</td>
+                            <td><input type="hidden" name="Position" value="@ad.Position" />@ad.Position</td>
+                            <td><input type="hidden" name="Image" value="@ad.Image" />@ad.Image</td>
+                            <td><input type="hidden" name="Url" value="@ad.Url" />@ad.Url</td>
+                            <td><span class="bgcolorspan" style="background:@ad.bgColor"></span><input type="hidden" name="bgColor" value="@ad.bgColor" />@ad.bgColor</td>
+                            <td><input type="hidden" name="BeginDateTime" value="@ad.BeginDateTime.ToString("yyyy-MM-dd HH:mm")" />@ad.BeginDateTime.ToString("yyyy-MM-dd HH:mm") 至 <input type="hidden" name="EndDateTime" value="@ad.EndDateTime.ToString("yyyy-MM-dd HH:mm")" />@ad.EndDateTime.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td><span class="updatebutton" data-action="update" data-type="advertise">修改</span><span class="deletebutton" data-adcolumnid="@ad.AdColumnID" data-pkid="@ad.PKID">删除</span></td>
+                            <td><span class="historybutton" onclick="HistoryRecord('@(ad.AdColumnID+"|"+ad.PKID)','WSHomeAD')">查看历史</span></td>
+                        </tr>
+                        if (String.Compare(Model.Remark, "product", true) == 0)
+                        {
+                            if (products != null && products.Count() > 0 && products.Where(item => item.Key == ad.PKID) != null && products.Where(item => item.Key == ad.PKID).Count() > 0)
+                            {
+                                <tr class="pro">
+                                    <td>产品PID</td>
+                                    <td>产品序号</td>
+                                    <td>产品名</td>
+                                    <td>产品途虎价</td>
+                                    <td>产品市场价</td>
+                                    @*<td>操作</td>*@
+                                </tr>
+                                foreach (var p in products.Where(item => item.Key == ad.PKID).FirstOrDefault().Value)
+                                {
+                                    <tr class="productdisplay pro">
+                                        <td>
+                                            <input name="PID" type="hidden" value="@p.PID" />@p.PID
+                                        </td>
+                                        <td>
+                                            <input name="Position" type="hidden" value="@p.Position" />@p.Position
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        @*<td><span class="realdel" data-AdColumnID="@MainModel.ID" data-AdvertiseID="@ad.PKID">删除</span></td>*@
+                                    </tr>
+                                }
+                            }
+                            
+                        }
+                    }
+                }
+            }
+        </tbody>
+
+    </table>
+
+</div>
+<div id="Display"></div>
+
+@section scripts{
+    <script src="~/Scripts/ajaxfileupload.js"></script>
+    <script src="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.js"></script>
+    <script>
+        //更新缓存
+        $(".updatecachebutton").click(function ()
+        {
+            if (confirm("是否更新缓存？"))
+            {
+                $.post("/WebSiteHomeAd/UpdateHomePageAdvertise", {}, function (data)
+                {
+                    if (data)
+                        alert("更新成功！");
+                    else
+                        alert("更新失败！");
+                });
+            }
+
+        });
+        //产品删除
+        $(".realdel").click(function()
+        {
+            if (confirm("是否删除此产品？"))
+            {
+                var self=$(this);
+                var AdColumnID=$(this).attr("data-AdColumnID");
+                var AdvertiseID=$(this).attr("data-AdvertiseID");
+                $.post("/WebSiteHomeAd/DeleteProducts", {adcolumnID:AdColumnID,advertiseID:AdvertiseID}, function (data)
+                {
+                    if (data)
+                    {
+                        self.parent().parent().remove();
+                        alert("删除成功！");
+                    }
+                    else
+                        alert("删除失败！");
+                });
+            }
+        });
+
+        //当读取产品ID时将显示它的名称 价格
+        $(".productdisplay").each(function ()
+        {
+            var self = $(this);
+            var _NewPID = self.find("input[name=PID]").val();
+            var _ParentTr = self.find("input[name=PID]").parent();
+            if (_NewPID != "")
+            {
+                $.ajax({
+                    type: "post",
+                    url: '/Advertise/GetProductNamebyPID',
+                    data: { "PID": _NewPID, "Cate": 1 },
+                    success: function (result)
+                    {
+                        if (result != "")
+                        {
+                            _ParentTr.next().next().text(result);
+                            $.ajax({ url: '/sale/pinfo', data: { pnum: _NewPID } }).done(function (data)
+                            {
+                                console.log(data);
+                                var r = JSON.parse(data);
+                                if (!r.error)
+                                {
+                                    var d = r[0];
+                                    _ParentTr.next().next().next().text(parseInt(d.cy_list_price));
+                                    _ParentTr.next().next().next().next().text(parseInt(d.cy_marketing_price));
+                                }
+                            });
+                        }
+                        else
+                        {
+                            _ParentTr.next().next().text("无此产品");
+                            _ParentTr.next().next().next().text("");
+                            _ParentTr.next().next().next().next().text("");
+                        }
+                    }
+                });
+            }
+        });
+
+
+        //删除单个产品
+        $("body").on("click", ".productdel", function ()
+        {
+            var tbody = $(this).parent().parent().parent();
+            $(this).parent().parent().remove();
+        });
+        //新增产品
+        $("body").on("click",".addproduct",function ()
+        {
+            var tbody = $(this).parent().parent().parent();
+            var content = '<tr class="productdisplay"><td><input name="PID" type="text"style="width:160px;"class="ChangeProductName" /><span class="bitian">必填</span></td><td><input name="Position" type="text"  style="width:40px;" /><span class="bitian">必填</span></td><td></td><td></td><td></td><td><span class="productdel">删除</span></td></tr>';
+            $(this).parent().parent().before(content);
+
+        });
+        var satisfied=true;
+        var temp="";
+        var positiontip="此序号已存在，请修改!";
+        var producttip="此产品已存在，请修改!";
+        $("body").on("input", ".ChangeProductName", function ()
+        {
+            var _ParentTr = $(this).parent();
+            var _NewPID = $(this).val();
+            var productexist=false;
+            var text=_ParentTr.next().next().text().trim();
+
+            _ParentTr.parent().siblings(".productdisplay").find("input[name=PID]").each(function()
+            {
+                text=text.replace(producttip,"");
+                var flag=text.indexOf("请修改")>0||text.indexOf("无此产品")>=0;
+                if($(this).val()==_NewPID)
+                {
+                    productexist=true;
+                    flag=true;
+                    _ParentTr.next().next().text(text.length>0?(text+producttip):producttip);
+                }
+                if(flag)
+                    _ParentTr.next().next().css("color","red");
+                else
+                    _ParentTr.next().next().css("color","#222222");
+                if(_ParentTr.next().next().text().indexOf(producttip)>=0)
+                    return false;
+
+            });
+            if (_NewPID != ""&&!productexist)
+            {
+                $.ajax({
+                    type: "post",
+                    url: '/Advertise/GetProductNamebyPID',
+                    data: { "PID": _NewPID, "Cate": 1 },
+                    success: function (result)
+                    {
+                        if (result != "")
+                        {
+                            if(text.indexOf(positiontip)>=0)
+                                _ParentTr.next().next().text(result+positiontip).css("color","red");
+                            else
+                                _ParentTr.next().next().text(result).css("color","#222222");
+                            $.ajax({ url: '/sale/pinfo', data: { pnum: _NewPID } }).done(function (data)
+                            {
+                                console.log(data);
+                                var r = JSON.parse(data);
+                                if (!r.error)
+                                {
+                                    var d = r[0];
+                                    _ParentTr.next().next().next().next().text(parseInt(d.cy_list_price));
+                                    _ParentTr.next().next().next().text(parseInt(d.cy_marketing_price));
+                                }
+                            });
+                        }
+                        else
+                        {
+                            _ParentTr.next().next().text(text.indexOf(positiontip)>=0?("无此产品"+positiontip):"无此产品").css("color","red");
+                            _ParentTr.next().next().next().next().text("");
+                            _ParentTr.next().next().next().text("");
+                        }
+                    }
+                });
+            }
+        });
+        $("body").on("keyup", ".ChangeProductName", function (){
+            $(this).trigger("input");
+        });
+        $("body").on("keyup", "input[name=Position]", function (){
+            $(this).trigger("input");
+        });
+        $("body").on("input", "input[name=Position]", function ()
+        {
+            var _ParentTr = $(this).parent();
+            var _NewPosition = $(this).val();
+            _ParentTr.parent().siblings(".productdisplay").find("input[name=Position]").each(function()
+            {
+                var text=_ParentTr.next().text().trim().replace(positiontip,"");
+                var flag=text.indexOf("请修改")>0||text.indexOf("无此产品")>=0;
+                if($(this).val()==_NewPosition)
+                {
+                    flag=true;
+                    if(text.length>0)
+                    {
+                        _ParentTr.next().text(text+positiontip);
+                    }
+                    else
+                        _ParentTr.next().text(positiontip);
+
+                }
+                else
+                    _ParentTr.next().text(text);
+                if(flag)
+                    _ParentTr.next().css("color","red");
+                else
+                    _ParentTr.next().css("color","#222222");
+                if( _ParentTr.next().text().indexOf(positiontip)>=0)
+                    return false;
+            });
+        });
+
+        $.fn.popConfig = function (opts)
+        {
+            var action = this.attr("data-action");
+            var parent=this.parent().parent();
+            var type=this.attr("data-type");
+            var remark="@(MainModel.Remark)";
+            var data = {
+                ID: "@MainModel.ID",
+                ADCName: "@MainModel.ADCName",
+                Remark: "@MainModel.Remark",
+                DefaultImage:"@MainModel.DefaultImage",
+                DefaultUrl:"@MainModel.DefaultUrl",
+                DefaultbgColor:"@MainModel.DefaultbgColor",
+                Advertises:[]
+            };
+            if(type=="advertise"){
+                if(action=="add")
+                {
+                    data.Advertises=null;
+                    data.Products=null;
+                }
+                else
+                {
+                    data.Advertises.push({ AdColumnID:"@MainModel.ID" ,
+                        AdName:parent.find("input[name=AdName]").val() ,
+                        PKID:parent.find("input[name=PKID]").val() ,
+                        Position:parent.find("input[name=Position]").val() ,
+                        BeginDateTime:parent.find("input[name=BeginDateTime]").val() ,
+                        EndDateTime:parent.find("input[name=EndDateTime]").val(),
+                        Image:parent.find("input[name=Image]").val() ,
+                        Url:parent.find("input[name=Url]").val() ,
+                        State:parent.find("input[name=State]").val(),
+                        bgColor:parent.find("input[name=bgColor]").val()
+                    });
+                }
+            }
+            var model =encodeURIComponent(JSON.stringify(data));
+            var defaults = {
+                remark: "@(MainModel.Remark)",
+                type: type,
+                model: model,
+                act: action,
+                position: 1,
+                description:"@(ViewBag.description)"
+            };
+            $.extend(defaults, opts);
+            this.on("click",function()
+            {
+                $("#Display").html(null);
+                $("#Display").load('/WebSiteHomeAd/WSHomeAdConfigPop', { remark: defaults.remark, type: defaults.type, act: defaults.act, model: defaults.model, description: defaults.description},
+					function ()
+                    {
+                        console.log("弹窗为什么没内容？？？");
+                        console.log($("#Display").html());
+					    var self=$(this);
+					    $("#startDate").datetimepicker({
+					        timeFormat: "HH:mm",
+					        dateFormat: "yy-mm-dd",
+					        monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+					    });
+
+					    $("#endDate").datetimepicker({
+					        timeFormat: "HH:mm",
+					        dateFormat: "yy-mm-dd",
+					        monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+					    });
+
+					    if(remark=="product")
+					    {
+					        self.parent().css({"width":"1000px","left":"250px"});
+					    }
+
+
+					    //当读取产品ID时将显示它的名称 价格
+					    setTimeout(function()
+					    {
+					       self.find(".productdisplay").each(function ()
+					        {
+					            var s = $(this);
+					            var _NewPID = s.find("input[name=PID]").val();
+					            var _ParentTr = s.find("input[name=PID]").parent();
+					            if (_NewPID != "")
+					            {
+					                $.ajax({
+					                    type: "post",
+					                    url: '/Advertise/GetProductNamebyPID',
+					                    data: { "PID": _NewPID, "Cate": 1 },
+					                    success: function (result)
+					                    {
+					                        if (result != "")
+					                        {
+					                            _ParentTr.next().next().text(result);
+					                            $.ajax({ url: '/sale/pinfo', data: { pnum: _NewPID } }).done(function (data)
+					                            {
+					                                console.log(data);
+					                                var r = JSON.parse(data);
+					                                if (!r.error)
+					                                {
+					                                    var d = r[0];
+					                                    _ParentTr.next().next().next().next().text(parseInt(d.cy_list_price));
+					                                    _ParentTr.next().next().next().text(parseInt(d.cy_marketing_price));
+					                                }
+					                            });
+					                        }
+					                        else
+					                        {
+					                            _ParentTr.next().next().text("无此产品");
+					                            _ParentTr.next().next().next().next().text("");
+					                            _ParentTr.next().next().next().text("");
+					                        }
+					                    }
+					                });
+					            }
+					        });
+					    },1000);
+
+
+					    //上传图片
+					    $(".imgshow").on("change","#image",function()
+					    {
+					        var s=$(this).siblings("img");
+					        if ($(this).val().split('.')[1].toUpperCase() != "JPG" && $(this).val().split('.')[1].toUpperCase() != "JPEG" && $(this).val().split('.')[1].toUpperCase() != "GIF" && $(this).val().split('.')[1].toUpperCase() != "PNG" && $(this).val().split('.')[1].toUpperCase() != "BMP")
+					        {
+					            alert("图片大小不能超过20M，格式支持jpg、jpeg、gif、png、bmp ");
+					            return;
+					        }
+					        $.ajaxFileUpload(
+							{
+							    url: '/WebSiteHomeAd/ImageUploadToAli',
+							    secureuri: false,
+							    fileElementId: 'image',
+							    async: false,
+							    dataType: 'text',
+							    data:{filepath:"/Home/Image/"},
+							    success: function (src)
+							    {
+							        if(src!=null)
+							        {
+							            s.attr("src","http://img.tuhu.cn"+ src);
+							            s.parent().prev().val(src);
+							        }
+							    }
+							});
+					    });
+					    self.find(".imgshow img").click(function()
+					    {
+					        $(this).siblings("#image").click();
+					    });
+
+					    //保存信息
+					    $(".save").on("click", function ()
+					    {
+					        satisfied=true;
+					        $(".bitian").hide();
+					        var save=$(this);
+					        save.css("pointer-events","none");
+					        var flag=true;
+					        var startDateTime= self.find("input[id=startDate]").val(),
+                                endDateTime=self.find("input[id=endDate]").val();
+					        if (startDateTime == "" || endDateTime == "")
+					        {
+					            alert("活动时段不能为空");
+					            save.css("pointer-events","all");
+					            return;
+					        }
+					        if (new Date(startDateTime) >= new Date(endDateTime))
+					        {
+					            alert("活动开始时间必须小于结束时间");
+					            save.css("pointer-events","all");
+					            return;
+					        }
+
+					        var urlflag=true;
+					        var shuziflag=true;
+					        self.find("input[type!=file]").each(function()
+					        {
+					            var s=$(this);
+					            if(s.prop("name")=="bgColor"||s.prop("name")=="DefaultbgColor")
+					            {
+					                //if(("@MainModel.ID".toLocaleLowerCase()=="home_top"||"@MainModel.ID".toLocaleLowerCase()=="home_banner") && s.val().length<=0)
+					                if("@MainModel.ID".toLocaleLowerCase()=="home_banner" && s.val().length<=0)
+					                {
+					                    flag=false;
+					                    s.siblings(".bitian").show();
+					                }
+					            }
+					            else if(s.val().length<=0)
+					            {
+					                flag=false;
+					                s.siblings(".bitian").show();
+					            }
+
+					            if((s.prop("name")=="DefaultUrl"||s.prop("name")=="Url")&&((s.val().toLocaleLowerCase().indexOf("http://")<0&&s.val().toLocaleLowerCase().indexOf("https://")<0)||(s.val().toLocaleLowerCase().indexOf("img.tuhu.cn")>=0)))
+					                urlflag=false;
+					            if((s.prop("name")=="Position")&&!/^\d+$/.test(s.val()))
+					                shuziflag=false;
+
+					        });
+					        if(!urlflag)
+					        {
+					            flag=false;
+					            alert("链接请以http（https）://开头,不可包含img.tuhu.cn(请修改为image.tuhu.cn)");
+					        }
+                            else if(!shuziflag)
+					        {
+					            flag=false;
+					            alert("顺序必须以数字填写！");
+					        }
+
+					        if(flag==false)
+					        {
+					            save.css("pointer-events","all");
+					            return;
+					        }
+					        var type = $(this).attr("data-type");
+					        var action = $(this).attr("data-action");
+					        var p=self.find("input[name=PKID]").val()||"";
+					        if (type == "adcolunm")
+					            data = {
+					                ID: self.find("input[name=ID]").val(),
+					                ADCName: self.find("input[name=ADCName]").val(),
+					                Remark: "@(MainModel.Remark)",
+					                DefaultImage: self.find("input[name=DefaultImage]").val(),
+					                DefaultUrl: self.find("input[name=DefaultUrl]").val(),
+					                DefaultbgColor: self.find("input[name=DefaultbgColor]").val()
+					            };
+					        else
+					            data = {
+					                AdColumnID: self.find("input[name=AdColumnID]").val(),
+					                AdName: self.find("input[name=AdName]").val(),
+					                PKID: self.find("input[name=PKID]").val(),
+					                BeginDateTime:startDateTime,
+					                EndDateTime:endDateTime,
+					                Position: self.find("input[name=Position]").eq(0).val(),
+					                Image: self.find("input[name=Image]").val(),
+					                Url: self.find("input[name=Url]").val(),
+					                bgColor: self.find("input[name=bgColor]").val(),
+					                State: self.find("input[name=state]:checked").val()
+					            };
+					        Products=[];
+					        self.find(".productdisplay").each(function()
+					        {
+					            var pid=$(this).find("input[name=PID]").val().trim();
+					            var position=parseInt($(this).find("input[name=Position]").val());
+					            var pname=$(this).find("td").eq(2).text();
+					            var pmarketprice=$(this).find("td").eq(3).text();
+					            var pprice=parseInt($(this).find("td").eq(4).text());
+					            if(pid.length>0&&pname.length>0&&pname!=positiontip &&pname!="无此产品"&&pname!=producttip&&pprice>0)//&&pmarketprice!="NaN"
+					                Products.push({PID:pid,Position:position,AdColumnID:self.find("input[name=ID]").val()||self.find("input[name=AdColumnID]").val()});
+					            else
+					                satisfied=false;
+					        });
+					        if(satisfied)
+					        {
+					            $.post("/WebSiteHomeAd/SubmitWSHomeAdConfig", { type: type, model: JSON.stringify(data), act: action,products:JSON.stringify(Products) }, function (data)
+					            {
+					                save.css("pointer-events","all");
+					                if(data>0)
+					                {
+					                    alert("操作成功！");
+					                    $.get("/WebSiteActivity/InsertHistoryAction", { ActiveID: 0, ObjectType: "WSHomeAD", AfterValue: "@MainModel.ID"+"|"+p, Operation: action }, function (data) { });
+					                    window.location.href="/WebSiteHomeAd/WebSiteHomeIndex";
+					                }
+					                else
+					                {
+					                    if(data==-3||data==-5||data==-4||data==-1)
+					                        alert("活动时间有重叠或者活动开始时间不能大于结束时间，请重新设置！");
+					                    else if(data==-2)
+					                        alert("此广告已存在，只能进行更新或删除，不能增加，请重新设置Position!");
+					                    else if(data==-99)
+					                        alert("三个广告为的默认产品不允许重复请核实后重新配置");
+					                    else if(data==-98)
+					                        alert("不允许保存数量为0个产品");
+					                }
+					            });
+					        }
+					    });
+					});
+                            $("#Display").dialog({
+                                title: "@(MainModel.ID)广告配置",
+                                width: 600,
+                                height: 600,
+                                modal: true,
+                                buttons: {
+                                    "关闭": function () {
+                                        $(this).dialog("close"); //当点击取消按钮时，关闭窗口
+                                    }
+                                }
+                            });
+
+            });
+        }
+        //历史记录展示
+        function HistoryRecord(activeID,type)
+        {
+            $("#Display").load('/WebSiteActivity/HistoryActions?activeID=' + activeID + '&type=' + type);
+            $("#Display").dialog({
+                title: "操作历史",
+                width: 600,
+                height: 680,
+                modal: true,
+                buttons: {
+                    "关闭": function ()
+                    {
+                        $(this).dialog("close"); //当点击取消按钮时，关闭窗口
+                    }
+                }
+            });
+        }
+
+        $(".mainContent table th .addbutton").popConfig({position:@(position+1)});
+        $(".mainContent table td .updatebutton").each(function()
+        {
+            $(this).popConfig({position:@(position+1)});
+        });
+
+        //删除信息
+        $(".deletebutton").on("click",function()
+        {
+            var del=$(this);
+            del.css("pointer-events","none");
+            if(confirm("是否确认要删除此条记录？"))
+            {
+                $.post("/WebSiteHomeAd/DeleteAdvertise",{PKID:del.attr("data-pkid")},function(data)
+                {
+                    del.css("pointer-events","all");
+                    if(data>0)
+                    {
+                        alert("删除成功！");
+                        $.get("/WebSiteActivity/InsertHistoryAction", { ActiveID: 0, ObjectType: "WSHomeAD", AfterValue:del.attr("data-adcolumnid")+"|"+del.attr("data-pkid"), Operation: "删除" }, function () { });
+                        window.location.reload();
+                    }
+                });
+            }
+            else
+                del.css("pointer-events","all");
+        });
+    </script>
+}

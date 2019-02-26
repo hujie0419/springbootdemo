@@ -1,0 +1,50 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity.Tire;
+@using Tuhu.Provisioning;
+@using Tuhu.Component.Common.Models;
+@model ListModel<TirePatternConfig>
+@{
+    Layout = null;
+    var query = ViewBag.query as TirePatternConfigQuery;
+}
+<table id="TbTirePatternConfig" style="background: #ffffff; font-size: 12px; width: 100%; text-align: center" border="1" class="table">
+    <tr>
+        <td style="text-align: center">品牌</td>
+        <td style="text-align: center">花纹</td>
+        <td style="text-align: center">英文展示名</td>
+        <td style="text-align: center">中文展示名</td>
+        <td style="text-align: center">操作</td>
+        <td style="text-align: center">操作历史</td>
+    </tr>
+    @if (Model.Source.Any())
+    {
+        foreach (var item in Model.Source)
+        {
+            <tr>
+                <td style="text-align: center">@((item.CP_Brand == null) ? "" : item.CP_Brand)</td>
+                <td style="text-align: center">@((item.Tire_Pattern == null) ? "" : item.Tire_Pattern)</td>
+                <td style="text-align: center">@((item.Pattern_EN == null) ? "" : item.Pattern_EN)</td>
+                <td style="text-align: center">@((item.Pattern_CN == null) ? "" : item.Pattern_CN)</td>
+                <td><button class="btn btn-primary btn-small" data-brand="@item.Tire_Pattern" onclick="TirePatternConfigEdit(this)">编辑</button></td>
+                <td><button class="btn btn-primary btn-small" onclick="TirePatternChangeHistory('@item.Tire_Pattern')">查看</button></td>
+            </tr>
+        }
+    }
+</table>
+
+@Html.Pager(Model.Pager, true, id => Url.Action("TirePatternConfigList", new
+{
+    PatternCriterion = query.PatternCriterion,
+    BrandCriterion = query.BrandCriterion,
+    PageIndex = id,
+    PageDataQuantity = query.PageDataQuantity
+}))
+
+<script>
+    $(document).ready(function () {
+        $("#DataCountInfo").text("共 @query.TotalCount 条数据");
+    });
+    function GetPageIndex() {
+        return @query.PageIndex;
+    }
+</script>
+

@@ -1,0 +1,220 @@
+﻿@{
+    ViewBag.Title = "小保养套餐品牌优先级配置";
+
+}
+
+<h2>小保养套餐品牌优先级配置</h2>
+<style>
+    body {
+        font-family: "Microsoft Yahei";
+    }
+
+    textarea {
+        width: 100px;
+        height: 100px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: cornflowerblue;
+        border: solid 1px cornflowerblue;
+    }
+</style>
+<div>
+    <table>
+        <tbody>
+            <tr>
+                <td>品牌：</td>
+                <td>
+                    <select id="brand" onchange="BaoYangPackageBrandPriorityConfig.BrandChange(this.value)"></select>
+                </td>
+                <td>车系：</td>
+                <td>
+                    <select id="vehicleSeries"></select>
+                </td>
+                <td>
+                    价格区间：
+                </td>
+                <td>
+                    <input id="startPrice" style="width:100px;" type="number" />
+                </td>
+                <td>万-</td>
+                <td>
+                    <input id="endPrice" style="width:100px;" type="number" />
+                </td>
+                <td><input type="checkbox" id="isConfig" /><span>只显示已配置车型</span></td>
+
+                <td><input type="button" style="margin-top:0" class="btn" onclick="BaoYangPackageBrandPriorityConfig.SearchList()" value="查询" /></td>
+                <td><input type="button" style="margin-top:0" class="btn" onclick="BaoYangPackageBrandPriorityConfig.Update('','','')" value="批量编辑" /></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="listdata"></div>
+
+<script>
+    function BatchToggleCheckoutBox() {
+        $('#table1 >tbody> tr').each(function () {
+            var columns = $(this).children();
+            var currentCheck = columns.eq(0).find("input[type=checkbox]");
+            if (currentCheck.is(':checked')) {
+                currentCheck.attr("checked", false);
+            } else {
+                currentCheck.attr("checked", true);
+            }
+        });
+    }
+
+    $("#brand,#vehicleSeries").filtrateSelect({ height: 200 });
+    $(function () {
+
+        $.get("GetVehicleBrands", function (data) {
+            if (data.status === "success") {
+                var html = "<option value=''>-选择品牌-</option>";
+                $(data.data).each(function (index) {
+                    html += "<option value='" + data.data[index] + "'>" + data.data[index] + "</option>";
+                });
+                $("#brand").empty();
+                $("#brand").append(html);
+                BaoYangPackageBrandPriorityConfig.BrandChange($("#brand").val());
+            } else {
+                var html = "<option value=''>无数据</option>";
+                $("#brand").empty();
+                $("#brand").append(html);
+                BaoYangPackageBrandPriorityConfig.BrandChange("");
+            }
+        });
+
+        setTimeout(function () {
+            $(".listdata").load("/BaoYangPackageBrandPriorityConfig/list");
+        }, 1000)
+
+        $(".listdata").on("click", ".pager>a", function (event) {
+            event.preventDefault();
+            debugger;
+            var data = "";
+            if ($('#isConfig').is(':checked')) {
+                data = "isConfig";
+            }
+            $.ajax({
+                type: "POST",
+                url: this.href,
+                data: {
+                    "brand": $("#brand").val(),
+                    "vehicle": $("#vehicleSeries").val(),
+                    "data": data,
+                    "startPrice": $("#startPrice").val(),
+                    "endPrice": $("#endPrice").val()
+                },
+                success: function (result) {
+                    $(".listdata").html(result);
+                },
+                error: function (result) {
+                    alert("失败!")
+                }
+            });
+        });
+    })
+
+    var BaoYangPackageBrandPriorityConfig = {
+        "BrandChange": function (brand) {
+            $.get("GetVehicleSeries", { brand: encodeURIComponent(brand) }, function (data) {
+                if (data.status === "success") {
+                    var html = "<option value=''>-选择车系-</option>";
+                    for (var item in data.data) {
+                        if (data.data.hasOwnProperty(item)) {
+                            html += "<option value='" + item + "'>" + data.data[item] + "</option>";
+                        }
+                    }
+                    $("#vehicleSeries").empty();
+                    $("#vehicleSeries").append(html);
+                } else {
+                    var html = "";
+                    if (brand == "") {
+                        html = "<option value=''>-选择车系-</option>";
+                    } else {
+                        html = "<option value=''>无数据</option>";
+                    }
+                    $("#vehicleSeries").empty();
+                    $("#vehicleSeries").append(html);
+                }
+            });
+        },
+        "SearchList": function () {
+            var data = "";
+            if ($('#isConfig').is(':checked')) {
+                data = "isConfig";
+            }
+            $.ajax({
+                type: "POST",
+                url: "/BaoYangPackageBrandPriorityConfig/List",
+                data: {
+                    "brand": $("#brand").val(),
+                    "vehicle": $("#vehicleSeries").val(),
+                    "data": data,
+                    "startPrice": $("#startPrice").val(),
+                    "endPrice": $("#endPrice").val()
+                },
+                success: function (result) {
+                    $(".listdata").html(result);
+                },
+                error: function (result) {
+                    alert("失败!")
+                }
+            });
+        },
+        "Add": function () {
+            $("#AddItem").load('/BaoYangPackageBrandPriorityConfig/Edit?id=0');
+            $("#AddItem").dialog({
+                title: "添加",
+                width: 500,
+                height: 500,
+                modal: true
+            });
+        },
+        "Update": function (id, edit, VehicleID) {
+            $("#AddItem").load('/BaoYangPackageBrandPriorityConfig/Edit?id=' + id + "&edit=" + edit + "&VehicleID=" + VehicleID);
+            $("#AddItem").dialog({
+                title: "修改",
+                width: 500,
+                height: 500,
+                modal: true
+            });
+        },
+        "Delete": function (id) {
+            if (window.confirm("您确定要删除吗？")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/BaoYangPackageBrandPriorityConfig/Delete",
+                    data: { "id": id },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result) {
+                            window.location.href = "/BaoYangPackageBrandPriorityConfig/Index";
+                        }
+                        else {
+                            alert("删除失败！");
+                        }
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        }
+    }
+</script>

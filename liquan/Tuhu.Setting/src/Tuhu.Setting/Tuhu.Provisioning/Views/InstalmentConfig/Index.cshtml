@@ -1,0 +1,441 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@using Tuhu.Service.Product.Enum
+@{
+        
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    @functions{
+    string selectname(InstallmentType type)
+    {
+        switch (type)
+        {
+            case InstallmentType.Tuhu:
+                return "途虎";
+            case InstallmentType.User:
+                return "用户";
+            default:
+                return "";
+        }
+    }
+    List<SelectListItem> converttoselect(string value, bool withall = true)
+    {
+        var list = new List<SelectListItem>();
+        if (withall)
+        {
+            list.Add(new SelectListItem()
+            {
+                Text = "全部",
+                Value = "",
+                Selected = value == ""
+            });
+        }
+        list.AddRange(Enum.GetValues(typeof(InstallmentType)).Cast<InstallmentType>().Select(v => new SelectListItem
+        {
+            Text = selectname(v),
+            Value = ((int)v).ToString(),
+            Selected = v.ToString() == value
+        }));
+        return list;
+    }
+
+}
+@section head{
+    <link href="~/Content/sweetalert/sweetalert.css" rel="stylesheet"/>
+    <style>
+        .title {
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+        .title h4 { padding: 0px; }
+        .nav {
+            width: 100%;
+            display: flex;
+            justify-content: space-between
+                             align-items:center;
+        }
+        .nav a {
+            display: block;
+            height: 40px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid #ccc;
+            background-color: #eee;
+            line-height: 30px;
+            color: #333;
+            text-decoration: none;
+
+        }
+        .nav a:hover { 
+            background-color: #fff;
+            text-decoration: none;
+        }
+        .nav a.active {
+            background-color: #ccc;
+            color: #fff;
+            text-decoration: none;
+        }
+        .content {
+            clear: both;
+            margin-top: 20px;
+            padding-top: 20px;
+        }
+
+        .condition .name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .condition label {
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .condition > div {
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+        }
+        .float-left {
+            float: left;
+        }
+        .float-right {
+            float: right;
+        }
+        .filter > div { padding: 5px 0px; }
+        .upload {
+            width: 330px;
+            height: 200px;
+            border: 1px dashed #ccc;
+            line-height: 30px;
+            text-align: center;
+        }
+        .data_count {
+            color: #0026ff;
+        }
+
+        #EditSingle div {
+            float: left;
+            margin-right: 50px;
+            width: 188px;
+        }
+
+        #EditMany div {
+            float: left;
+            margin-right: 50px;
+            width: 188px;
+        }
+
+        span {
+            word-break: break-all;
+        }
+
+        #add .title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .tit.error {
+            color: red;
+        }
+
+
+        #add {
+            width: 721px;
+            padding: 0 20px 10px;
+            box-shadow: 0 0 0 10px rgba(3, 3, 3, 0.2);
+            background-color: #fff;
+            /*overflow: hidden;*/
+            height: 500px;
+            overflow-y: auto;
+        }
+
+        #add .close {
+            position: relative;
+            float: right;
+            width: 20px;
+            height: 16px;
+            background: url(https://resource.tuhu.cn/Css/images/icon_modal.png) 0 -220px;
+            margin-top: 14px;
+            cursor: pointer;
+            z-index: 111;
+        }
+
+        #add .SelectCar {
+            float: left;
+            width: 610px;
+            margin: 9px 0 0 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .mybtn {
+            width: 100px;
+            height: 30px;
+        }
+    </style>
+}
+<div class="title">
+    <h4>分期购配置</h4>
+</div>
+<div class="content">
+    <div class="condition">
+        <div>
+            <span class="name">品牌：</span>
+            <label><input type="checkbox" name="Brand" checked value="" />不限</label>
+            @foreach (var item in Model.Item1)
+            {
+                <label title="@item"><input type="checkbox" name="Brand" value="@item" />@item.Split('/')[0]</label>
+            }
+        </div>
+            @switch ((string)ViewBag.CategoryName)
+            {
+                case "Tires":
+                    <div class="patternList">
+                        <span class="name">轮胎花纹：</span>
+                        <label><input type="checkbox" name="Pattern" checked value="" />不限</label>
+                    </div>
+                    <div>
+                        <span class="name">轮胎规格：</span>
+                        @{ 
+                            IEnumerable<TireSizeModel> tireList = Model.Item2 as IEnumerable<TireSizeModel>;
+                            @Html.DropDownList("Tire_Width", tireList.Select(T => T.Width).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "胎面宽")<b>/</b>
+                            @Html.DropDownList("Tire_AspectRatio", tireList.Select(T => T.AspectRatio).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "扁平比")<b>R</b>
+                            @Html.DropDownList("Tire_Rim", tireList.Select(T => T.Rim).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "直径")
+                        }
+                        <ul class="tireSizeList" style="margin-left: 44px;"></ul>
+                    </div>
+                    break;
+                case "hub":
+                    <div>
+                        <span class="name">尺寸：</span>
+                        @{ 
+                            IEnumerable<TireSizeModel> hubList = Model.Item2 as IEnumerable<TireSizeModel>;
+                   
+                            @Html.DropDownList("Tire_Rim", hubList.Select(T => T.Rim).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "直径")
+                        }
+                        <ul class="tireSizeList" style="margin-left: 44px;"></ul>
+                    </div>
+                    break;
+                case "AutoProduct":
+                break;
+            }
+        <div class="float-left filter">
+
+        <div>
+            <span class="name">详情页分期：</span>
+            <select class="installment">
+                <option value="">不限</option>
+                <option value="1">开启</option>
+                <option value="0">关闭</option>
+            </select>
+        </div>
+
+        <div>
+            <span class="name">三期：</span>
+            <select class="threeconfig">
+                <option value="">全部</option>
+                <option value="0">途虎承担</option>
+                <option value="1">用户承担</option>
+            </select>
+        </div>
+        <div>
+            <span class="name">六期：</span>
+            <select class="sixconfig">
+                <option value="">全部</option>
+                <option value="0">途虎承担</option>
+                <option value="1">用户承担</option>
+            </select>
+        </div>
+        <div>
+            <span class="name">十二期：</span>
+            <select class="twelveconfig">
+                <option value="">全部</option>
+                <option value="0">途虎承担</option>
+                <option value="1">用户承担</option>
+            </select>
+        </div>
+        <div>
+            <span class="name">是否上架：</span>
+            <select class="onsale">
+                <option value="">全部</option>
+                <option value="1">上架</option>
+                <option value="0">下架</option>
+            </select>
+        </div>
+        <div>
+            <span class="name">PID：</span>
+            <input type="text" name="PID" id="PID" value="" />
+        </div>
+        <div>
+            <span class="name">产品名称：</span>
+            <input type="text" name="ProductName" id="ProductName" value="" />
+        </div>
+            <div>
+                <button onclick="TuhuTire.Logic.InstallmentConfig.LoadList(1,'@ViewBag.CategoryName')" class="button_select" style="width: 400px;height: 30px;display: block;MARGIN-TOP: 12px;">查询</button>
+            </div>
+        </div>
+        <div class="row upload float-right" id="upload">
+            <div><span class="float-left" style="margin:10px 0px 0px 10px">批量上传</span><a href="~/Content/Export/分期购批量导入模板.xlsx" class="float-right" style="margin:10px 10px 0px 0px">下载模板</a><div class="clear"></div></div>
+            <form id="uploadform" class="col-md-8" method="post">
+                <label for="exampleInputFile">选择Excel文件上传:</label>
+                <input type="file" id="ExcelFile" name="file">
+                <div><button id="uploadbtn" type="button" onclick="UploadFile()" class="btn btn-default">提交</button>
+                </div>
+            </form>
+            <p></p>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div>
+        每页显示：
+        <select class="PageSize" onchange="TuhuTire.Logic.InstallmentConfig.LoadList(1,'@ViewBag.CategoryName');">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="10000">10000</option>
+        </select>条
+        <span class="data_count"></span>
+        <button onclick="TuhuTire.Logic.InstallmentConfig.BitchEdit('@ViewBag.CategoryName')">批量编辑</button>
+    </div>
+    <img class="loadimg" src="~/Scripts/layer/skin/default/loading-2.gif" style="margin:5% 50%;display:none;" />
+    <div class="list">
+    </div>
+
+</div>
+
+<div id="editdiv" style="display:none">
+    <div class="form-group">
+        @Html.Hidden("EditPid")
+        <b>PID：</b>
+        <ul></ul>
+    </div>
+    <div class="form-group">
+        <b>详情页分期:</b>
+        <select class="form-control" id="EditIsInstallmentOpen" onchange="EditIsInstallmentOpenChange()">
+            <option value="1">开启</option>
+            <option value="0">关闭</option>
+        </select>
+        <p></p>
+    </div>
+    <div id="EditPeriods" style="display:none">
+        <div class="form-group">
+            <b>    3期:</b>
+            @Html.DropDownList("EditThreePeriods", converttoselect("", false), new { @class = "form-group" })
+            <p></p>
+        </div>
+        <div class="form-group">
+            <b> 6期:</b>
+            @Html.DropDownList("EditSixPeriods", converttoselect("", false), new { @class = "form-group" })
+            <p></p>
+        </div>
+        <div class="form-group">
+            <b>     12期:</b>
+            @Html.DropDownList("EditTwelvePeriods", converttoselect("", false), new { @class = "form-group" })
+            <p></p>
+        </div>
+    </div>
+</div>
+
+
+
+@section scripts{
+    <script src="~/Content/sweetalert/sweetalert.js"></script>
+    <script src="~/Scripts/Tire.js?v=20170920">
+    </script>
+    <script type="text/javascript">
+        function UploadFile() {
+            var file = $("#ExcelFile")[0].files[0];
+            if (!file) {
+                alert("未选择Excel文件");
+                return;
+            }
+            var formData = new FormData($("#uploadform")[0]);
+
+            formData.append("file", file);
+            //$.post("/VideoUpload/UploadVideo", formData, function (result) {
+            //    console.log(result);
+            //});
+            $("#uploadbtn").attr('disabled', 'disabled');
+            $.ajax({
+                type: "POST",
+                url: '/InstalmentConfig/BatchSaveByExcel',
+                enctype: 'multipart/form-data',
+                data: formData,
+                processData: false,
+                contentType: false,
+                //xhr: function () {
+                //    var xhr = $.ajaxSettings.xhr();
+                //    if (onprogress && xhr.upload) {
+                //        xhr.upload.addEventListener("progress", onprogress, false);
+                //    }
+                //    return xhr;
+                //},
+            }).then(function (result) {
+                console.log(result);
+                $("#uploadbtn").removeAttr("disabled");
+                if (result.code == "1") {
+                    alert(result.msg);
+                    location.reload();
+                } else {
+                    alert(result.msg);
+                }
+            });
+        }
+
+
+        function EditIsInstallmentOpenChange() {
+            var s = $("#EditIsInstallmentOpen").val();
+            if (s == "1") {
+                $("#EditPeriods").show();
+            } else {
+                $("#EditPeriods").hide();
+            }
+        }
+        $(function () {
+            TuhuTire.Logic.InstallmentConfig.LoadList(1,'@ViewBag.CategoryName');
+            $(".list").on("click", ".pager>a", function (event) {
+                event.preventDefault();
+                var url = $(this).attr("href");
+                if (url) {
+                    $.post(url, function (html, status) {
+                        if (status === "success") {
+                            $(".list").html(html);
+                        }
+                    });
+                }
+            })
+        });
+        $(".condition").on("change", "div input[type=checkbox]", function () {
+            if ($(this).prop("checked") && $(this).val() != "") {
+                $(this).parent().parent().find("input[type=checkbox]:first").prop("checked", false);
+            }
+        }).on("change", "div input[name=Brand]", function () {
+            var $target = $(this);
+            if ($target.val() != "") {
+                $.get("/Tire/GetPatternsByBrand", { brand: $target.val() }, function (result) {
+                    if (result.length) {
+                        if ($target.prop("checked")) {
+                            var html = '';
+                            $.each(result, function (i, v) {
+                                html += '<label><input type="checkbox" name="Pattern" value="' + v + '">' + v + '</label>';
+                            });
+                            $(".patternList").append(html);
+                        }
+                        else {
+                            $.each(result, function (i, v) {
+                                $(".patternList input[name=Pattern]").each(function () {
+                                    if ($(this).val() == v)
+                                        $(this).parent().remove();
+                                });
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+}

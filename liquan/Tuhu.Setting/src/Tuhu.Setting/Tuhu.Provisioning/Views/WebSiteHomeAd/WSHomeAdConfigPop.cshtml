@@ -1,0 +1,238 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.AdColumnModel
+@{
+    Tuhu.Provisioning.DataAccess.Entity.AdvertiseModel advertise = null;
+    if (Model.Advertises != null && Model.Advertises.Any())
+    {
+        advertise = Model.Advertises.FirstOrDefault();
+    }
+    var url = "https://image.tuhu.cn";
+    var Products = Model.Products;
+}
+
+<div class="content">
+    <ul>
+        @if (String.Compare(ViewBag.type, "advertise", true) == 0)//广告位里的广告
+        {
+            if (String.Compare(ViewBag.act, "add", true) == 0)//新增
+            {
+                <li>
+                    @if (ViewBag.remark == "banner")
+                    {
+                        @:广告顺序：
+                        <input type="text" name="Position" /><span class="bitian">不能为空</span>
+                    }
+                    else
+                    {
+                        <input type="hidden" name="Position" value="0" />
+                    }
+                </li>
+
+            }
+            else//修改
+            {
+                <li>
+                    <input type="text" name="Position" value="@advertise.Position" /><span class="bitian">不能为空</span>
+                </li>
+            }
+            <li>
+                广告标题：
+                <input type="hidden" name="AdColumnID" value="@Model.ID" />
+                <input type="hidden" name="PKID" value="@(advertise==null?0:advertise.PKID)" />
+                <input type="text" name="AdName" value="@(advertise == null?null:advertise.AdName)" maxlength="14" placeholder="最多14个字" />
+                <span class="bitian">不能为空</span>
+            </li>
+            <li>
+                广告时间：
+                <input type="text" name="BeginDateTime" id="startDate" readonly="readonly" value="@(advertise == null || advertise.BeginDateTime==null? null : advertise.BeginDateTime.ToString("yyyy-MM-dd HH:mm"))" /><span class="bitian">不能为空</span>
+                —
+                <input type="text" name="EndDateTime" id="endDate" readonly="readonly" value="@(advertise == null || advertise.EndDateTime==null ? null : advertise.EndDateTime.ToString("yyyy-MM-dd HH:mm"))" /><span class="bitian">不能为空</span>
+
+            </li>
+            if (String.Compare(ViewBag.description, "img", true) == 0)
+            {
+                if (String.Compare(ViewBag.remark, "product", true) == 0)
+                {//这里是产品配置的地方
+                    <li style="height:auto;">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td style="width:160px">产品PID</td>
+                                    <td>产品序号</td>
+                                    <td style="width:500px">产品名 </td>
+                                    <td> 产品市场价 </td>
+                                    <td> 产品途虎价 </td>
+                                    <td> 操作 </td>
+                                </tr>
+                                @if (Products != null && Products.Count() > 0 && String.Compare(ViewBag.act, "add", true) != 0)
+                                {
+                                    foreach (var p in Products)
+                                    {
+                                        <tr class="productdisplay">
+                                            <td>
+                                                <input name="PID" type="text" value="@p.PID" style="width:160px;" class="ChangeProductName" /><span class="bitian">**</span>
+                                            </td>
+                                            <td>
+                                                <input name="Position" type="text" value="@p.Position" style="width:40px;" /><span class="bitian">**</span>
+                                            </td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td><span class="productdel" data-pid="@p.PID">删除</span></td>
+
+                                        </tr>
+                                    }
+                                    <tr>
+                                        <td colspan="6"><span class="addproduct">新增产品</span></td>
+                                    </tr>
+                                }
+                                @if (String.Compare(ViewBag.act, "add", true) == 0)
+                                {
+                                    <tr class="productdisplay">
+                                        <td>
+                                            <input name="PID" type="text" style="width:160px;" class="ChangeProductName" /><span class="bitian">必填</span>
+                                        </td>
+                                        <td>
+                                            <input name="Position" type="text" style="width:40px;" /><span class="bitian">必填</span>
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td><span class="productdel">删除</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="6"><span class="addproduct">新增产品</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </li>
+                }
+                else
+                {
+                    <li class="imgli">
+                        广告图片：<input type="hidden" name="Image" value="@(advertise == null ? null : advertise.Image)" />
+                        <div class="imgshow">
+                            上传图片
+                            <img src="@(advertise == null ? null : url + advertise.Image)" />
+                            <input type="file" name="Img" style="display:none;" id="image" accept="image/*" />
+                        </div>
+                        <span>图片大小为500*20</span>
+                        <span class="bitian">不能为空</span>
+                    </li>
+                    <li>广告链接：<input type="text" name="Url" value="@(advertise == null ? null : advertise.Url)" placeholder="以http（或https）://开头" /><span class="bitian">不能为空</span></li>
+                    <li style="display:@(String.Compare(Model.ID, "Home_Banner", true) == 0  ? null : "none")">
+                        背景颜色：<input type="text" name="bgColor" value="@(advertise == null ? null : advertise.bgColor)" /><span class="bitian">不能为空</span>
+                    </li>
+                }
+            }
+            else
+            {
+                <li>广告链接：<input type="text" name="Url" value="@(advertise == null ? null : advertise.Url)" placeholder="以http（或https）://开头" /><span class="bitian">不能为空</span></li>
+            }
+            <li>
+                状态：
+                <label><input type="radio" name="state" value="1" class="state" checked="@(advertise == null || advertise.State == 1 ? "checked" :null)" />开启</label>
+                <label><input type="radio" name="state" value="0" class="state" checked="@(advertise==null||advertise.State==1?null:"checked")" />关闭</label>
+            </li>
+        }
+        else
+        {
+            if (String.Compare(ViewBag.description, "img", true) == 0)
+            {
+                <li>
+                    <input type="hidden" name="ID" value="@Model.ID" />
+                    <input type="hidden" name="ADCName" value="@(String.IsNullOrWhiteSpace(Model.ADCName) ? Model.ID : Model.ADCName)" />
+                </li>
+                if (String.Compare(ViewBag.remark, "product", true) == 0)
+                {//这里是产品配置的地方
+                    <li style="height:auto;">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td style="width:160px">产品PID</td>
+                                    <td>产品序号</td>
+                                    <td style="width:500px">产品名</td>
+                                    <td>产品市场价</td>
+                                    <td>产品途虎价</td>
+                                    <td>操作</td>
+                                </tr>
+                                @if (Products != null && Products.Count() > 0 && String.Compare(ViewBag.act, "add", true) != 0)
+                                {
+                                    foreach (var p in Products)
+                                    {
+                                        <tr class="productdisplay">
+                                            <td>
+                                                <input name="PID" type="text" value="@p.PID" style="width:160px;" class="ChangeProductName" /><span class="bitian">**</span>
+                                            </td>
+                                            <td>
+                                                <input name="Position" type="text" value="@p.Position" style="width:40px;" /><span class="bitian">**</span>
+                                            </td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td><span class="productdel" data-pid="@p.PID">删除</span></td>
+                                        </tr>
+                                    }
+                                    <tr>
+                                        <td colspan="6">
+                                            <span class="addproduct">新增产品</span>
+                                        </td>
+                                    </tr>
+                                }
+                                @if (String.Compare(ViewBag.act, "add", true) == 0)
+                                {
+                                    <tr class="productdisplay">
+                                        <td>
+                                            <input name="PID" type="text" style="width:160px;" class="ChangeProductName" /><span class="bitian">必填</span>
+                                        </td>
+                                        <td>
+                                            <input name="Position" type="text" style="width:40px;" /><span class="bitian">必填</span>
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td><span class="productdel">删除</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="6">
+                                            <span class="addproduct">新增产品</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </li>
+                }
+                else
+                {
+                    <li class="imgli">
+                        广告图片：<input type="hidden" name="DefaultImage" value="@Model.DefaultImage" />
+                        <div class="imgshow">
+                            上传图片
+                            <img src="@(String.IsNullOrWhiteSpace(Model.DefaultImage)?null:url+Model.DefaultImage)" /> 
+                            <input type="file" name="DefaultImg" style=" display:none;" id="image" accept="image/*" />
+                        </div>
+                        <span>图片大小为500*20</span>
+                        <span class="bitian">不能为空</span>
+                    </li>
+                    <li>广告链接：<input type="text" name="DefaultUrl" value="@Model.DefaultUrl" placeholder="以http（或https）://开头" /><span class="bitian">不能为空</span></li>
+                    <li style="display:@(String.Compare(Model.ID, "Home_Banner", true) == 0 || String.Compare(Model.ID, "Home-Top", true) == 0 ? null : "none")">
+                        背景颜色：<input type="text" name="DefaultbgColor" value="@Model.DefaultbgColor" /><span class="bitian">不能为空</span>
+                    </li>
+                }
+            }
+            else
+            {
+                <li>
+                    <input type="hidden" name="ID" value="@Model.ID" />
+                    广告标题：
+                    <input type="text" name="ADCName" value="@(String.IsNullOrWhiteSpace(Model.ADCName) ? Model.ID : Model.ADCName)" maxlength="12" placeholder="最多12个字" />
+                    <span class="bitian">不能为空</span>
+                </li>
+                <li>广告链接：<input type="text" name="DefaultUrl" value="@Model.DefaultUrl" placeholder="以http（或https）://开头" /><span class="bitian">不能为空</span></li>
+            }
+        }
+    </ul>
+
+    <div class="save" data-type="@(String.Compare(ViewBag.type, "advertise", true) == 0 ? "advertise" : "adcolunm")" data-action="@ViewBag.act">保存</div>
+</div>

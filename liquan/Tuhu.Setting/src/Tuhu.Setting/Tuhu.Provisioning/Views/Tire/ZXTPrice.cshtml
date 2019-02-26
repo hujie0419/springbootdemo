@@ -1,0 +1,186 @@
+﻿@model List<Tuhu.Provisioning.DataAccess.Entity.PriceChangeLog>
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>ZXTByPidPriceChange</title>
+</head>
+<body>
+    <button style="float:right;width: 150px;height: 30px;" onclick="window.open('https://item.tuhu.cn/Products/@(ViewBag.PID.Replace("|","/")).html')">查看商品详情页</button>
+    @if (Model.Any())
+    {
+        <div id="ZXTmain" style="height:600px"></div>
+        <div>
+            <table style="width: 689px;margin-left: 200px;margin-top:30px;">
+                <tr>
+                    <th>时间</th>
+                    <th>官网价格</th>
+                </tr>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.ChangeDateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td>@item.NewPrice</td>
+                    </tr>
+                }
+            </table>
+        </div>
+    }
+</body>
+</html>
+@if (Model.Any())
+{
+    <script type="text/javascript">
+        // 路径配置
+        require.config({
+            paths: {
+                echarts: 'http://echarts.baidu.com/build/dist'
+            }
+        });
+        var xArr = '@ViewBag.xArr'.split(',');
+        var yArr = '@ViewBag.yArr'.split(',');
+        // 使用
+        require(
+            [
+                'echarts',
+                'echarts/chart/line' // 使用柱状图就加载bar模块，按需加载
+            ],
+            function (ec) {
+
+                var option = BulidData(xArr, yArr);
+                // 基于准备好的dom，初始化echarts图表
+                var myChart = ec.init(document.getElementById('ZXTmain'));
+
+                // 为echarts对象加载数据
+                myChart.setOption(option);
+            }
+        );
+        function BulidData(xArr, yArr) {
+            var option = {
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['价格变动']// data: ['蒸发量', '降水量', '最低气温', '最高气温']
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        position: 'bottom',
+                        boundaryGap: true,
+                        axisLine: {    // 轴线
+                            show: true,
+                            lineStyle: {
+                                color: 'green',
+                                type: 'solid',
+                                width: 2
+                            }
+                        },
+                        axisTick: {    // 轴标记
+                            show: true,
+                            length: 10,
+                            lineStyle: {
+                                color: 'red',
+                                type: 'solid',
+                                width: 2
+                            }
+                        },
+                        axisLabel: {   //轴文本
+                            show: true,
+                            interval: 'auto',    // {number}
+                            margin: 8,
+                            rotate: 45,
+                            formatter: '{value}',
+                            textStyle: {
+                                color: 'blue',
+                                fontFamily: 'sans-serif',
+                                fontSize: 10,
+                                fontStyle: 'italic',
+
+                            }
+                        },
+                        splitLine: {  //分割线
+                            show: true,
+                            lineStyle: {
+                                color: '#483d8b',
+                                type: 'dashed',
+                                width: 1
+                            }
+                        },
+                        splitArea: { //分离区域
+                            show: true,
+                            areaStyle: {
+                                color: ['rgba(144,238,144,0.3)', 'rgba(135,200,250,0.3)']
+                            }
+                        }, //数据
+                        data: xArr
+                    },
+                ],
+                yAxis: [
+                    {
+                        type: 'value',
+                        position: 'left',
+                        //min: 0,
+                        //max: 300,
+                        //splitNumber: 5,
+
+                        axisLine: {    // 轴线
+                            show: true,
+                            lineStyle: {
+                                color: 'red',
+                                type: 'dashed',
+                                width: 2
+                            }
+                        },
+                        axisTick: {    // 轴标记
+                            show: true,
+                            length: 10,
+                            lineStyle: {
+                                color: 'green',
+                                type: 'solid',
+                                width: 2
+                            }
+                        },
+                        axisLabel: {
+                            show: true,
+                            interval: 'auto',    // {number}
+
+                            margin: 18,
+                            formatter: '￥{value}',    // Template formatter!
+                            textStyle: {
+                                color: '#1e90ff',
+
+                            }
+                        },
+                        splitLine: {
+                            show: true,
+                            lineStyle: {
+                                color: '#483d8b',
+                                type: 'dotted',
+                                width: 2
+                            }
+                        },
+                        splitArea: {
+                            show: true,
+                            areaStyle: {
+                                color: ['rgba(205,92,92,0.3)', 'rgba(255,215,0,0.3)']
+                            }
+                        }
+                    }
+                ],
+                series: [
+                    {
+                        name: '价格变动',
+                        type: 'line',
+                        data: yArr
+                    },
+                ]
+            };
+            return option;
+        };
+    </script>
+}

@@ -1,0 +1,234 @@
+﻿@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.TireSizeModel>
+    @{
+        ViewBag.Title = "轮胎缺货状态查询";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+
+    @section head{
+        <style>
+            .title {
+                float: left;
+            }
+
+            .content {
+                clear: both;
+            }
+
+            .condition .name {
+                font-size: 16px;
+                font-weight: bold;
+                position: absolute;
+                left: 0;
+            }
+
+            .condition label {
+                font-size: 14px;
+                margin-left: 10px;
+            }
+
+            .condition > div {
+                margin-bottom: 10px;
+                padding-left: 82px;
+                position: relative;
+            }
+
+            .f14 {
+                font-size: 14px;
+                margin-left: 10px;
+            }
+
+            .red {
+                color: red;
+            }
+
+            .tiresize-append label.hide {
+                display: none;
+            }
+
+            .tiresize-append label {
+                margin-right: 50px;
+                display: inline-block;
+                min-width: 99px;
+            }
+
+            .list table {
+                width: 100%;
+            }
+
+            .data_count {
+                color: blue;
+                font-size: 14px;
+                font-weight: bold;
+                margin-left: 10px;
+            }
+
+            #Tire_Width {
+                margin-left: 13px;
+            }
+
+            div#BatchAddItem > div, div#ReplaceItem > div {
+                margin-bottom: 20px;
+            }
+
+            img.img {
+                width: 100px;
+                height: 100px;
+                cursor: pointer;
+            }
+
+            span.no {
+                color: red;
+            }
+
+            .list {
+                width: 100%;
+                overflow-x: scroll;
+            }
+        </style>
+    }
+    <div class="title">
+        <h2>轮胎缺货状态查询</h2>
+    </div>
+    <div class="content">
+        <div class="condition">
+            <div>
+                <span class="name">地区：</span>
+                <select id="province">
+                    <option data-pkid="1" value="上海市">上海市</option>
+                </select>
+                <select id="city">
+                    <option value="上海市" data-pkid="1">上海市</option>
+                </select>
+            </div>
+            <div class="tiresize-select">
+                <span class="name">轮胎规格</span>
+                @Html.DropDownList("Tire_Width", Model.Select(T => T.Width).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "胎面宽")<b>/</b>
+                @Html.DropDownList("Tire_AspectRatio", Model.Select(T => T.AspectRatio).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "扁平比")<b>R</b>
+                @Html.DropDownList("Tire_Rim", Model.Select(T => T.Rim).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "直径")
+            </div>
+            <div class="stockout">
+                <span class="name">是否缺货</span>
+                <select>
+                    <option value="0">全部</option>
+                    <option value="-1">缺货</option>
+                    <option value="1">有货</option>
+                    <option value="-2">N/A</option>
+                </select>
+            </div>
+            <div>
+                <span class="name">PID</span>
+                <input type="text" name="PID" value="" style="width:150px" />
+            </div>
+            <div>
+                <button onclick="LoadList(1)" class="button_select" style="width: 200px;height: 30px;display: block;MARGIN-TOP: 12px;">查询</button>
+            </div>
+        </div>
+
+        <div style="margin-bottom:30px">
+            每页显示：
+            <select class="PageSize">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="10000">10000</option>
+            </select>条
+            <span class="data_count"></span>
+        </div>
+        <img class="loadimg" src="~/Scripts/layer/skin/default/loading-2.gif" style="margin:5% 50%;display:none;" />
+        <div class="list"></div>
+    </div>
+    <script>
+        $(function () {
+
+            $.ajax({
+                url: "http://www.tuhu.cn/Shop/Region.aspx",
+                jsonpCallback: "__Regions__",
+                dataType: "jsonp",
+            }).done(function (regions) {
+                //渲染省
+                var html_p = '';
+                $.map(regions, function (value, key) {
+                    if (value.PKID != 1)
+                        html_p += '<option data-pkid="' + value.PKID + '" value="' + value.RegionName + '">' + value.RegionName + '</option>';
+                });
+                $("#province").append(html_p);
+
+                //渲染市
+                $("#province").change(function () {
+                    var PKID = $("#province>option:selected").attr("data-pkid");
+                    var name = $("#province>option:selected").val();
+                    var html_c = '';
+                    var zxs = false;
+                    if (PKID == 1 || PKID == 2 || PKID == 19 || PKID == 20)
+                        zxs = true;
+
+                    if (PKID && PKID.length) {
+                        $.map(regions, function (value, key) {
+                            if (value.PKID == PKID) {
+                                if (zxs) {
+                                    html_c += '<option data-pkid="' + PKID + '" value="' + name + '">' + name + '</option>'
+                                }
+                                else {
+                                    html_c += '<option value="">请选择</option>'
+                                    $.map(value.ChildrenRegion, function (v, k) {
+
+                                        html_c += '<option data-pkid="' + v.PKID + '" value="' + v.RegionName + '">' + v.RegionName + '</option>';
+                                    });
+                                }
+                            }
+                        });
+                    }
+                    $("#city").empty().append(html_c);
+                });
+            });
+
+            LoadList(1);
+            $(".list").on("click", ".pager>a", function (event) {
+                event.preventDefault();
+                var url = $(this).attr("href");
+                if (url) {
+                    $.post(url, function (html, status) {
+                        if (status === "success") {
+                            $(".list").html(html);
+                        }
+                    });
+                }
+            })
+        });
+        $(".PageSize").change(function () {
+            LoadList(1);
+        });
+
+        //加载列表
+        var LoadList = function (pageIndex) {
+            $(".loadimg").show();
+            var cityId = $("#city>option:selected").data("pkid");
+            var TireSize = '';
+            //规格尺寸的补充
+            var Tire_Width = $("#Tire_Width option:selected").val();
+            var Tire_AspectRatio = $("#Tire_AspectRatio option:selected").val();
+            var Tire_Rim = $("#Tire_Rim option:selected").val();
+            if (Tire_Width.length && Tire_AspectRatio.length && Tire_Rim.length) {
+                TireSize = Tire_Width + '/' + Tire_AspectRatio + 'R' + Tire_Rim;
+            }
+            var stockout = $(".stockout option:selected").val();
+            var pid = $("[name=PID]").val();
+            $.post("/Tire/TireStockoutList", {
+                CityId: cityId,
+                TireSize: TireSize,
+                Status: stockout,
+                PID: pid,
+                Address: $("#province option:selected").val() + ';' + $("#city option:selected").text(),
+                PageSize: $(".PageSize option:selected").val(),
+                PageIndex: pageIndex,
+            }, function (html, status) {
+                if (status === "success") {
+                    $(".loadimg").hide();
+                    $(".list").html(html);
+                    $(".data_count").text('共' + ($(".table").length ? $(".table").attr("data-count") : 0) + '条数据');
+                }
+            });
+        }
+    </script>
+

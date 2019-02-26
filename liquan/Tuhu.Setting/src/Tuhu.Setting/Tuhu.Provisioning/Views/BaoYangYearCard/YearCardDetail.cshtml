@@ -1,0 +1,916 @@
+﻿@model  List<BaoYangYearCard>
+    @using Tuhu.Provisioning.DataAccess.Entity
+    @{
+        ViewBag.Title = "年卡虚拟产品详情页";
+    }
+    <script type="text/javascript" src="/Scripts/plugins/PageChange/jquery.pagination.js"></script>
+    <link href="/Scripts/plugins/PageChange/pagination.css" rel="stylesheet" />
+    <link href="/Content/BaoYangYearCard/BaoYangYearCard.css" rel="stylesheet" />
+    <script type="text/javascript" src="/Scripts/plugins/spinner/wan-spinner.js"></script>
+    <link href="/Scripts/plugins/spinner/wan-spinner.css" rel="stylesheet" />
+    <script type="text/javascript" src="/Scripts/controls/ajaxfileupload.js"></script>
+    <div>
+        <h2>年卡虚拟产品详情页</h2>
+        <div>
+            <label>年卡PID：</label>
+            <input type="text" id="YearCardId" value="@(Model != null ? Model.FirstOrDefault().Pid : null)"/>&nbsp;&nbsp;
+            <span isValidate=""></span>
+        </div>
+        <br />
+        <div>
+            <label>年卡名称：</label>
+            <input type="text" id="YearCardCategory" value="@(Model != null ? Model.FirstOrDefault().DisplayName : null)"/>
+        </div>
+        <br />
+        <div>
+            <label>年卡类别：</label>
+            <select id="cards">
+                <option value="">-请选择年卡类别-</option>
+                <option value="黄金卡" selected="@(Model != null && Model.FirstOrDefault().CategoryName == "黄金卡" ? "selected" : null)">黄金卡</option>
+                <option value="铂金卡" selected="@(Model != null && Model.FirstOrDefault().CategoryName == "铂金卡" ? "selected" : null)">铂金卡</option>
+                <option value="钻石卡" selected="@(Model != null && Model.FirstOrDefault().CategoryName == "钻石卡" ? "selected" : null)">钻石卡</option>
+                <option value="保养3送1" selected="@(Model != null && Model.FirstOrDefault().CategoryName == "保养3送1" ? "selected" : null)">保养3送1</option>
+            </select>
+        </div>
+        <br />
+        <div>
+            <label>拆分优惠券数量：</label>
+            <div class="wan-spinner wan-spinner-1">
+                <a href="javascript:void(0)" class="minus">-</a>
+                <input type="text" value="1">
+                <a href="javascript:void(0)" class="plus">+</a>
+            </div>
+            <br>
+        </div>
+        <br />
+        <div>
+            <label style="float: left;">优惠券金额比例：</label>
+            <div id="PromotionPercentage" style="width: 300px; display: inline-block; margin-top: -20px;">
+                @if (Model != null)
+                {
+                    for (int i = 1; i <= Model.FirstOrDefault().PromotionCount; i++)
+                    {
+                        <div style="margin-top: 20px;">
+                            <div id="Promotion@(i)" style="background-color: #a9a9a9; width: 80px; height: 30px; float: left; text-align: center;">
+                                 <span style="margin-top: 5px;display:inline-flex;color: #000000;">优惠券@(i)</span>
+                            </div>
+                            <input type="text" id="ProCount@(i)" value="@(Model.FirstOrDefault(p => p.PromotionIndex.Equals(i))!=null ? Model.FirstOrDefault(p => p.PromotionIndex.Equals(i)).PromotionPercentage : 0)%" style="text-align: center;width: 80px; height: 30px; margin-left: 30px;"/>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+        <br />
+        <div>
+            <label style="float: left;">年卡图片URL：</label>
+            <div style="display: inline-block;">
+                <input style='width: 150px;' type='file' class='UploadImg' name='imgArea' id='imgArea' onchange='ShowImg()'/>
+                <br><br>
+                <img id="imgPath" src="@(Model != null ? Model.FirstOrDefault().ImageUrl : null)" style="width: 150px; height: 150px; display: @(Model != null && Model.Any(C => !string.IsNullOrEmpty(C.ImageUrl)) ? null : "none")"/>
+            </div>
+        </div>
+        <br />
+        <div>
+            <label>添加门店限制：</label>
+            <div class="area">
+                <label><input type="checkbox" name="name" value="" checked="@(Model != null && Model.Any(C => C.ShopType > 0) ? "checked" : null)" />按类型</label>
+                <div id="Shop_Type" style="display: @(Model != null && Model.Any(C => C.ShopType > 0) ? null : "none")">
+                    <label><input type="checkbox" name="shoptype" value="512" checked="@(Model != null && Model.Any(C => C.ShopType == 512) ? "checked" : null)" />工厂店</label>
+                    <label><input type="checkbox" name="shoptype" value="129" checked="@(Model != null && Model.Any(C => C.ShopType == 129) ? "checked" : null)" />星级保养店</label>
+                    <label><input type="checkbox" name="shoptype" value="2048" checked="@(Model != null && Model.Any(C => C.ShopType == 2048) ? "checked" : null)" />技术中心</label>
+                </div>
+            </div>
+            <div class="area">
+                <label><input type="checkbox" name="name" value="" checked="@(Model != null && Model.Any(C => C.ShopID > 0) ? "checked" : null)" />按ShopID</label>
+                <div id="Shop_ID" style="display: @(Model != null && Model.Any(C => C.ShopID > 0) ? null : "none")">
+                    <table class="tableContainer">
+                        <tr>
+                            <th width="25%">ShopID</th>
+                            <th>门店名称</th>
+                            <th width="15%">操作</th>
+                        </tr>
+                        @if (Model != null && Model.Any(C => C.ShopID > 0))
+                        {
+                            foreach (var item in Model.Where(C => C.ShopID > 0).Select(C => C.ShopID + "|" + C.ShopName).Distinct())
+                            {
+                                <tr>
+                                    <td><input type="text" name="shopid" value="@item.Split('|')[0]" onblur="FetchShopName(this)" /></td>
+                                    <td><span>@item.Split('|')[1]</span></td>
+                                    <td><a href="javascript:void(0)" onclick="$(this).parent().parent().remove()">删除</a></td>
+                                </tr>
+                            }
+                        }
+                        <tr id="appendShipButton" class="tableContainer">
+                            <td>
+                                <a href="javascript:void(0)" onclick="AppendShopID()">继续添加门店</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <br />
+        <div>
+            <label>保养项目配置：</label>
+            <input type="button" onclick="AddYearCardDetail()" id="addDetail" value="添加项目" />
+            <br><br>
+            <table id="YearCardProject" class="tableContainer"></table>
+            <div id="YearCardProject-remark" style="margin-top:10px;display:none;">
+                <div style="width:20px;display:inline-block;vertical-align:top;"><p style="margin:3px 0">注:</p></div>
+                <div style="display:inline-block;" class="right"></div>
+            </div>
+        </div>
+        <div><input type="button" value="保存" onclick="SaveYearCardInfo()" style="cursor: pointer; margin: 20px auto 18px auto; display: inherit;"></div>
+        <div id="configPanel" style="display: none">
+            <select id="yearcardConfig" onchange="showEditArea()"></select>
+            <br><br>
+                <div id="xby" style="display: none;"></div>
+                <div id="carAdapt" style="display: none;"></div>
+                <div id="staticPid" style="display: none;"></div>
+                <select id="SelectTicket"></select>
+            <br><br>
+                <input id="saveConfig" type="button" value="保存" onclick="SaveConfig()" />
+        </div>
+    </div>
+
+    <script>
+        Array.prototype.firstOrDefault = function (func) {
+            var result = null;
+            for (var index = 0; index < this.length; index++) {
+                var value = this[index];
+                if (func(value, index)) {
+                    result = value;
+                    break;
+                }
+            }
+            return result;
+        };
+
+        Array.prototype.all = function (func) {
+            var result = true;
+            for (var index = 0; index < this.length; index++) {
+                var value = this[index];
+                if (!func(value, index)) {
+                    result = false;
+                    break;
+                }
+            }
+            return result;
+        };
+
+        var YearCardId = @ViewBag.Pkid;
+        var BaoYangConfig;
+        var PackageTypeRelations = []; 
+        var AppendShopID = function() {
+            var trHtml = '<tr>';
+            trHtml += '<td><input type="text" name="shopid" value=""  onblur="FetchShopName(this)" /></td>';
+            trHtml += '<td></td>';
+            trHtml += '<td><a href="javascript:void(0)" onclick="$(this).parent().parent().remove()">删除</a></td>';
+            trHtml += '</tr>';
+            $("#appendShipButton").before(trHtml);
+        };
+        var FetchShopName = function(target) {
+            var $target = $(target);
+            var shopId = $target.val().trim();
+            if (shopId.length) {
+                $.get("/Promotion/FetchShopNameByID",
+                    { shopId: shopId },
+                    function(data) {
+                        if (data && data.length)
+                            $target.parent().next().html('<span>' + data + '</span>');
+                        else
+                            $target.parent().next().html('<span style="color:red;">门店不存在<span>');
+
+                    });
+
+            }
+        };
+        $(function() {
+            if (YearCardId !== 0) {
+                $("#YearCardId").attr("disabled", "disabled");
+                $("#YearCardId").next().attr("isValidate", 1);
+            } else {
+                $("#YearCardId").bind('input propertychange', function() { CheckYearCardPId(); });
+            }
+            $("#configPanel")
+                .dialog({
+                    modal: true,
+                    autoOpen: false,
+                    width: 600,
+                    height: "auto"
+                });
+            var options = {
+                maxValue: 20,
+                minValue: 0,
+                step: 1,
+                inputWidth: 50,
+                start: 1,
+                plusClick: function() {
+                    var proIndex = $(".wan-spinner-1 input").val();
+                    var html = "<div style='margin-top: 20px;'>" +
+                    "<div id='Promotion"+ proIndex+ "' style='background-color: #a9a9a9; width: 80px; height: 30px; float: left; text-align: center;'>" +
+                    "<span style='margin-top: 5px;display:inline-flex;color: #000000;'>优惠券" + proIndex + "</span></div>" +
+                    "<input type='text' id='ProCount" + proIndex + "' value='0%' style='text-align: center;width: 80px; height: 30px; margin-left: 30px;' />" +
+                    "</div>";
+                    $("#PromotionPercentage").append(html);
+                    $("#PromotionPercentage input").bind('input propertychange', function() {PromotionOnChange(this); });
+                },
+                minusClick: function() {
+                    $("#PromotionPercentage").children().last().remove();
+                }
+            }
+            $(".wan-spinner-1").WanSpinner(options).css("border-color", "#2C3E50");
+            $(".wan-spinner-1 input").val(@(Model != null ? Model.FirstOrDefault().PromotionCount : 0));
+            $(".wan-spinner-1 input").bind('input propertychange', function() {AppendPromotionPercentage(); });
+            $(".area>label").on("click", function() {
+                if ($(this).find("input").prop("checked"))
+                    $(this).next().show();
+                else
+                    $(this).next().hide();
+
+            });
+            $("#PromotionPercentage input").bind('input propertychange', function() {PromotionOnChange(this); });
+            SearchYearCardProject();
+            $.get("GetBaoYangYearCardConfig", function(data) {
+                BaoYangConfig = data;
+            });
+        });
+
+        function AppendPromotionPercentage() {
+            var proIndex = $(".wan-spinner-1 input").val();     
+            if (proIndex > 20) {
+                return;
+            }
+            $("#PromotionPercentage").empty();       
+            var html = "";
+            for (var i = 1; i <= proIndex; i++) {
+                html += "<div style='margin-top: 20px;'>" +
+                    "<div id='Promotion"+ i+ "' style='background-color: #a9a9a9; width: 80px; height: 30px; float: left; text-align: center;'>"+
+                    "<span style='margin-top: 5px;display:inline-flex;color: #000000;'>优惠券" + i + "</span></div>" +
+                    "<input type='text' id='ProCount" + i + "' value='0%' style='text-align: center;width: 80px; height: 30px; margin-left: 30px;' />" +
+                    "</div>";
+            }
+            $("#PromotionPercentage").append(html);
+            $("#PromotionPercentage input").bind('input propertychange', function() {PromotionOnChange(this); });
+        }
+
+        //验证优惠券金额比例输入值
+        function PromotionOnChange(o) {
+            var item = $(o);
+            var count = 0;
+            $.each($("#PromotionPercentage input"), function() {
+                count += parseInt($(this).val().replace("%", ''));
+            });
+            var inputVal = parseInt(item.val().replace("%", ''));
+            var zInt = /^[0-9]*$/;
+            if (!zInt.test(inputVal) || count > 100) {
+                item.val("0%");
+            } else {
+                item.val(inputVal + "%");
+            }   
+            var proIndex = item.prev().children().text().replace("优惠券","");
+            $.each($("#YearCardProject tr:not(:first)"), function() {
+                if(proIndex === $(this).children().eq(4).text()) {
+                    $(this).children().eq(6).text(item.val());
+                }               
+            });
+        }
+
+        //验证年卡PID
+        function CheckYearCardPId() {
+            var pid = $("#YearCardId").val();
+            if (pid == null || pid == "") {
+                $("#YearCardId").next().css("color", "red");
+                $("#YearCardId").next().text("PID不能为空！");
+                $("#YearCardId").next().attr("isValidate", 0);
+                return;
+            }
+            $.get("IsExistBaoYangYearCardPid", { pid: pid }, function(data) {
+                if (!data.Status) {
+                    $("#YearCardId").next().css("color", "red");
+                    $("#YearCardId").next().text(data.Msg);
+                    $("#YearCardId").next().attr("isValidate", 0);
+                } else {
+                    $("#YearCardId").next().css("color", "green");
+                    $("#YearCardId").next().text("输入的PID可以使用");
+                    $("#YearCardId").next().attr("isValidate", 1);
+                }
+            });
+        }
+
+        function GetAllFuelBrand() {
+            $.get("GetAllFuelBrand", function(data) {
+                if (data.Status) {
+                    if (data.Data.length > 0) {
+                        $.each(data.Data, function(index) {
+                            $("#fuelBrand").append("<option value=" + data.Data[index] + ">" + data.Data[index] + "</option>");
+                        });
+                    }
+                }
+            });
+        }
+
+        function GetOilLevel() {
+            $.get("SelectAllOilLevel", function(data) {
+                if (data.Status) {
+                    if (data.Data.length > 0) {
+                        $.each(data.Data, function(index) {
+                            $("#oilLevel").append("<option value=" + data.Data[index] + ">" + data.Data[index] + "</option>");
+                        });
+                    }
+                }
+            });
+        }
+
+        function GetOilviscosity() {
+            $.get("SelectOilviscosity", function(data) {
+                if (data.Status) {
+                    if (data.Data.length > 0) {
+                        $.each(data.Data, function(index) {
+                            $("#oilviscosity").append("<option value=" + data.Data[index] + ">" + data.Data[index] + "</option>");
+                        });
+                    }
+                }
+            });
+        }
+
+        function GetOilBundle() {
+            $("#oilBundle").parent().next().children().text("");
+            $("#oilBundle option:not(:first)").remove();
+            var oilBrand = $("#fuelBrand").val();
+            var oilLevel = $("#oilLevel").val();
+            var oilViscosity = $("#oilviscosity").val();
+            $.get("SelectOilBundle", { brand: oilBrand, level: oilLevel, viscosity: oilViscosity }, function(data) {
+                if (data.Status) {
+                    if (data.Data.length > 0) {
+                        $.each(data.Data, function(index) {
+                            $("#oilBundle").append("<option value='" + data.Data[index].split(",")[1] + "'>" + data.Data[index].split(",")[0] + "</option>");
+                        });
+                    }
+                }
+            });
+        }
+
+        //获取年卡保养项目
+        function SearchYearCardProject() {
+            $("#YearCardProject").empty();
+            $.get("GetYearCardDetails", { yearCardId: YearCardId }, function (data) {
+                BindData(data);
+                GetPackageTypeRelations(SettingByRelations);
+            });
+        }
+
+        function BindData(data) {
+            if (data.Status) {
+                if (data.Data.length > 0) {
+                    var html = "<tr>" +
+                        "<th>保养项目</th>" +
+                        "<th>配件</th>" +
+                        "<th>PID</th>" +
+                        "<th>产品名称</th>" +
+                        "<th>所属优惠券</th>" +                       
+                        "<th>产品数量</th>" +
+                        "<th>优惠券比例</th>" +
+                        "<th>操作</th>" +
+                        "</tr>";
+                    $.each(data.Data, function(index) {
+                        var pid = data.Data[index].Pid == "" ? "-" : data.Data[index].Pid;
+                        var displayName = data.Data[index].DisplayName == "" ? "-" : data.Data[index].DisplayName;
+                        html += "<tr id='" + data.Data[index].Pkid + "'>" +
+                            "<td>" + data.Data[index].PackageType + "</td>" +
+                            "<td>" + data.Data[index].BaoYangType + "</td>" +
+                            "<td>" + pid + "</td>" +
+                            "<td>" + displayName + "</td>" +
+                            "<td>" + data.Data[index].PromotionIndex + "</td>" +
+                            "<td>" + data.Data[index].ProductCount + "</td>" +
+                            "<td>" + data.Data[index].PromotionPercentage + "%</td>"+
+                            "<td><a OnClick='DeleteProjectItem(this)' style='cursor: pointer;'>删除</a></td>" +
+                            "</tr>";
+                    });                    
+                    $("#YearCardProject").append(html);
+                    $("#YearCardProject tr").mouseover(function () {
+                        $(this).addClass("mouseOn");
+                    });
+                    $("#YearCardProject tr").mouseout(function () {
+                        $(this).removeClass("mouseOn");
+                    });
+                }
+            }
+        }
+
+        function ShowImg() {
+            if (!confirm("是否确认上传图片?")) {
+                return false;
+            }
+            //var filePath = $e.val();
+            var filePath = $("#imgArea").val();
+            // 获取“.”位置
+            var extStart = filePath.lastIndexOf(".");
+            // 获取文件格式后缀，并全部大写
+            var ext = filePath.substring(extStart, filePath.length).toUpperCase();
+            // 判断文件格式
+            if (ext != ".BMP" && ext != ".PNG" && ext != ".JPG" && ext != ".JPEG") {
+                alert("图片仅限于.BMP .PNG .JPG .JPEG文件。");
+                return false;
+            } else {
+                $.ajaxFileUpload({
+                    url: '/BaoYangYearCard/ImageUploadToAli',
+                    secureuri: false,
+                    fileElementId: "imgArea",
+                    dataType: 'json',
+                    success: function(result) {
+                        if (result.Image !== "" && result.Image !== null) {
+                            alert("图片上传成功！");
+                            $("#imgPath").show();
+                            $("#imgPath").attr("src", result.Image);
+                        } else {
+                            alert("图片上传失败！");
+                            return;
+                        }
+                    }
+                });
+            }
+        }
+
+        //删除年卡保养项目
+        function DeleteProjectItem(o) {
+            var item = $(o);
+            item.parent().parent().remove();
+            SettingByRelations();
+        }
+
+        //添加年卡新保养项目
+        function AddYearCardDetail() {
+            $("#yearcardConfig").empty();
+            if (BaoYangConfig.Status) {
+                if (BaoYangConfig.Data.BaoYangYearCardConfig.length > 0) {
+                    var cardConfig = BaoYangConfig.Data.BaoYangYearCardConfig;
+                    $.each(cardConfig, function(index) {
+                        $("#yearcardConfig").append("<option value='" + cardConfig[index].Type + "'>" + cardConfig[index].Name + "</option>");
+                    });
+                }
+            }
+            showEditArea();
+            $("#SelectTicket").empty();
+            var promoteCount = $(".wan-spinner-1").find("input").val();
+            if (promoteCount == 0) {
+                alert("拆分优惠券数量须大于0！");
+                return;
+            }
+            for (var i = 0; i < promoteCount; i++) {
+                $("#SelectTicket").append("<option value='" + (i + 1) + "'>" + "优惠券" + (i + 1) + "</option>");
+            }
+
+            $("#configPanel").dialog("open");
+        }
+
+        //生成年卡保养项目配置窗口
+        function showEditArea() {
+            $("#xby").empty();
+            $("#xby").hide();
+            $("#carAdapt").empty();
+            $("#carAdapt").hide();
+            $("#staticPid").empty();
+            $("#staticPid").hide();
+            var choice = $("#yearcardConfig").val();
+            var htmlToShow = "";
+            var html = "";
+            if (BaoYangConfig.Status) {
+                if (BaoYangConfig.Data.BaoYangYearCardConfig.length > 0) {
+                    var cardConfig = BaoYangConfig.Data.BaoYangYearCardConfig;
+                    $.each(cardConfig, function(index) {
+                        if (cardConfig[index].Type === choice) {
+                            var content = cardConfig[index].Content;
+                            //var html = "";
+                            //var htmlToShow = "";
+                            $.each(content, function(i) {
+                                if (choice === "xby") {
+                                    htmlToShow = "xby";
+                                    if (content[i].Category === "") {
+                                        html += "<select id='fuelBrand' onchange='GetOilBundle()'>" +
+                                            "<option value=''>-请选择机油品牌-</option>" +
+                                            "</select>&nbsp;" +
+                                            "<select id='oilLevel' onchange='GetOilBundle()'>" +
+                                            "<option value=''>-请选择机油等级-</option>" +
+                                            "</select>&nbsp;" +
+                                            "<select id='oilviscosity' onchange='GetOilBundle()'>" +
+                                            "<option value=''>-请选择机油粘度-</option>" +
+                                            "</select><p>" +
+                                            "<select id='oilBundle'>" +
+                                            "<option value=''>-请选择机油组合-</option>" +
+                                            "</select><p>" +
+                                            "<span pid=''></span><p>";
+                                        html += "<div><label>产品数量：</label>" +
+                                            "<div class='wan-spinner wan-spinner-2' id='" + content[i].Type + "_spinner' >" +
+                                            "<a href='javascript:void(0)' class='minus'>-</a>" +
+                                            "<input type='text' value='1'>" +
+                                            "<a href='javascript:void(0)' class='plus'>+</a></div></div><p>";
+                                    }
+                                    if (content[i].Category === "车型适配") {
+                                        html += "<span>" + content[i].Name + ":根据车型适配</span><p>";
+                                        html += "<div><label>产品数量：</label>" +
+                                            "<div class='wan-spinner wan-spinner-2' id='" + content[i].Type + "_spinner' >" +
+                                            "<a href='javascript:void(0)' class='minus'>-</a>" +
+                                            "<input type='text' value='1'>" +
+                                            "<a href='javascript:void(0)' class='plus'>+</a></div></div><p>";
+                                    }
+                                    //return true;
+                                } else if (content[i].Category === "车型适配") {
+                                    html += "<span>" + content[i].Name + "：根据车型适配</span><p>";
+                                    html += "<div><label>产品数量：</label>" +
+                                        "<div class='wan-spinner wan-spinner-2' id='" + content[i].Type + "_spinner' >" +
+                                        "<a href='javascript:void(0)' class='minus'>-</a>" +
+                                        "<input type='text' value='1'>" +
+                                        "<a href='javascript:void(0)' class='plus'>+</a></div></div><p>";
+                                    htmlToShow = "carAdap";
+                                } else { /*条件：content[i].Category === "固定PID"*/
+                                    html += "<label>" + content[i].Name + "：</label>&nbsp;"
+                                        + "<input type='Text' id='" + content[i].Type + "_pidinput' placeholder='请输入产品的PID' class='inputPid'/><p>"
+                                        + "<span></span><p>";
+                                    html += "<div><label>产品数量：</label>" +
+                                        "<div class='wan-spinner wan-spinner-2' id='" + content[i].Type + "_spinner' >" +
+                                        "<a href='javascript:void(0)' class='minus'>-</a>" +
+                                        "<input type='text' value='1'>" +
+                                        "<a href='javascript:void(0)' class='plus'>+</a></div></div><p>";
+                                    htmlToShow = "staticPid";
+
+                                }
+                            });
+                            return false;
+                        }
+                    });
+                    if (htmlToShow === "carAdap") {
+                        $("#carAdapt").append(html);
+                        $("#carAdapt").show();
+                    } else if (htmlToShow === "staticPid") {
+                        $("#staticPid").append(html);
+                        $("#staticPid").show();
+                        $(".inputPid").bind('input propertychange', function() { getProductName(this); });
+                    } else {
+                        $("#xby").append(html);
+                        GetAllFuelBrand();
+                        GetOilLevel();
+                        GetOilviscosity();
+                        $("#xby").show();
+                    }
+                    var options = {
+                        maxValue: 20,
+                        minValue: 0,
+                        step: 1,
+                        inputWidth: 50,
+                        start: 1
+                    }
+                    $(".wan-spinner-2").WanSpinner(options);
+                }
+            }
+        }
+
+        //验证产品PID
+        function getProductName(o) {
+            var item = $(o);
+            var pid = item.val();
+            item.next().text("");
+            if (pid == null || pid == "") {
+                item.next().text("");
+                return;
+            }
+            $.get("CheckProductName", { pid: pid }, function(data) {
+                if (data.status === "success") {
+                    if (data.Data != null && data.Data !== "") {
+                        item.next().css('color', '#000000');
+                        item.next().text(data.Data);
+                    } else {
+                        item.next().css('color', '#ff0000');
+                        item.next().text("未查到相关数据");
+                    }
+                } else {
+                    item.next().css('color', '#ff0000');
+                    item.next().text("未查到相关数据");
+                }
+            });
+        }
+
+        //保存年卡年卡保养项目配置
+        function SaveConfig() {
+            var choice = $("#yearcardConfig").val();
+            var parameter = new Array();
+            var htmlToShow = "";
+            if (BaoYangConfig.Status) {
+                if (BaoYangConfig.Data.BaoYangYearCardConfig.length > 0) {
+                    var cardConfig = BaoYangConfig.Data.BaoYangYearCardConfig;
+                    $.each(cardConfig, function(index) {
+                        if (cardConfig[index].Type === choice) {
+                            var content = cardConfig[index].Content;
+                            $.each(content, function(i) {
+                                if (choice === "xby") {
+                                    htmlToShow = "xby";
+                                    if (content[i].Category === "") {
+                                        var jiyouobj = new Object();
+                                        jiyouobj.PackageType = cardConfig[index].Name;
+                                        jiyouobj.BaoYangType = content[i].Name;
+                                        jiyouobj.Pid = $("#oilBundle").val();
+                                        jiyouobj.DisplayName = $("#oilBundle").children('option:selected').text();
+                                        jiyouobj.PromotionIndex = $("#SelectTicket").val();
+                                        jiyouobj.ProductCount = $("#" + content[i].Type + "_spinner").find("input").val();
+                                        parameter.push(jiyouobj);
+                                    }
+                                    if (content[i].Category === "车型适配") {
+                                        var xbyadaobj = new Object();
+                                        xbyadaobj.PackageType = cardConfig[index].Name;
+                                        xbyadaobj.BaoYangType = content[i].Name;
+                                        xbyadaobj.Pid = "-";
+                                        xbyadaobj.DisplayName = "-";
+                                        xbyadaobj.PromotionIndex = $("#SelectTicket").val();
+                                        xbyadaobj.ProductCount = $("#" + content[i].Type + "_spinner").find("input").val();
+                                        parameter.push(xbyadaobj);
+                                    }
+                                } else if (content[i].Category === "车型适配") {
+                                    htmlToShow = "carAdap";
+                                    var adaobj = new Object();
+                                    adaobj.PackageType = cardConfig[index].Name;
+                                    adaobj.BaoYangType = content[i].Name;
+                                    adaobj.Pid = "-";
+                                    adaobj.DisplayName = "-";
+                                    adaobj.PromotionIndex = $("#SelectTicket").val();
+                                    adaobj.ProductCount = $("#" + content[i].Type + "_spinner").find("input").val();
+                                    parameter.push(adaobj);
+                                } else { /*条件：content[i].Category === "固定PID"*/
+                                    htmlToShow = "staticPid";
+                                    var pidobj = new Object();
+                                    pidobj.PackageType = cardConfig[index].Name;
+                                    pidobj.BaoYangType = content[i].Name;
+                                    pidobj.Pid = $("#" + content[i].Type + "_pidinput").val();
+                                    pidobj.DisplayName = $("#" + content[i].Type + "_pidinput").next().text();
+                                    pidobj.PromotionIndex = $("#SelectTicket").val();
+                                    pidobj.ProductCount = $("#" + content[i].Type + "_spinner").find("input").val();
+                                    parameter.push(pidobj);
+                                }
+                            });
+                            return false;
+                        }
+                    });
+                }
+            }
+            var html = "";
+            if ($("#YearCardProject").text() === "") {
+                html += "<tr>" +
+                    "<th>保养项目</th>" +
+                    "<th>配件</th>" +
+                    "<th>PID</th>" +
+                    "<th>产品名称</th>" +
+                    "<th>所属优惠券</th>" +
+                    "<th>产品数量</th>" +
+                    "<th>优惠券比例</th>" +
+                    "<th>操作</th>" +
+                    "</tr>";
+            }
+            for (var i = 0; i < parameter.length; i++) {
+                if (htmlToShow == "xby" && parameter[i].BaoYangType == "机油") {
+                    if (parameter[i].Pid == "" || parameter[i].DisplayName == "") {
+                        alert("请选择有效的机油产品！");
+                        return;
+                    }
+                }
+                if (htmlToShow == "staticPid") {
+                    if (parameter[i].Pid == "") {
+                        parameter[i].Pid = "-";
+                        parameter[i].DisplayName = "-";
+                    }
+                    else if (parameter[i].DisplayName == "未查到相关数据") {
+                        alert("请输入有效的PID！");
+                        return;
+                    }
+                }
+                var proPercent = 0;
+                $.each($("#PromotionPercentage").children(), function() {
+                    var item = $(this);
+                    var stringLength = item.find("span").text().length;
+                    var PromotionIndex = item.find("span").text().substring(stringLength-1, stringLength);
+                    var PromotionPercentage = item.find("input").val();
+                    if(PromotionIndex == parameter[i].PromotionIndex){
+                        proPercent = PromotionPercentage;
+                    }
+                });
+                html += "<tr>" +
+                    "<td>" + parameter[i].PackageType + "</td>" +
+                    "<td>" + parameter[i].BaoYangType + "</td>" +
+                    "<td>" + parameter[i].Pid + "</td>" +
+                    "<td>" + parameter[i].DisplayName + "</td>" +
+                    "<td>" + parameter[i].PromotionIndex + "</td>" +
+                    "<td>" + parameter[i].ProductCount + "</td>" +
+                    "<td>" + proPercent + "</td>" +
+                    "<td><a OnClick='DeleteProjectItem(this)' style='cursor: pointer;'>删除</a></td>" +
+                    "</tr>";
+            }
+            $("#YearCardProject").append(html);
+            $("#YearCardProject tr").mouseover(function () {
+                $(this).addClass("mouseOn");
+            });
+            $("#YearCardProject tr").mouseout(function () {
+                $(this).removeClass("mouseOn");
+            });
+            SettingByRelations();
+        }
+
+        //保存年卡信息配置
+        function SaveYearCardInfo() {
+            var yearCardPId = $("#YearCardId").val();
+            var yearcardName = $("#YearCardCategory").val();
+            var category = $("#cards").val();
+            var imgUrl = $("#imgPath").attr("src");
+            if (yearCardPId == null || yearCardPId == "") {
+                alert("请添加年卡PID!");
+                return;
+            }
+            if (yearcardName == null || yearcardName == "") {
+                alert("请添加年卡名称!");
+                return;
+            }
+            if (category == null || category == "") {
+                alert("请选择年卡类别!");
+                return;
+            }
+            if ($("#YearCardId").next().attr("isValidate") == 0) {
+                alert("请输入有效的年卡PID!");
+                return;
+            }
+            if (imgUrl == null || imgUrl == "") {
+                alert("请上传图片!");
+                return;
+            }
+            if (!confirm("是否确认提交?")) {
+                return;
+            }
+            //年卡信息
+            var yearCardData = { Pkid: YearCardId, PID: yearCardPId, DisplayName: yearcardName, CategoryName: category, ImageUrl:imgUrl  };
+            var yearCardObj = JSON.stringify(yearCardData);
+
+            //年卡详细信息
+            var yearCardDetails = new Array();
+            var MaxPromotionIndex = 0;
+            $.each($("#YearCardProject tr:not(:first)"), function() {
+                var obj = new Object();
+                obj.YearCardId = YearCardId;
+                obj.Pkid = $(this).attr("id");
+                obj.PackageType = $(this).children().eq(0).text();
+                obj.BaoYangType = $(this).children().eq(1).text();
+                obj.Pid = $(this).children().eq(2).text() == "-" ? "" : $(this).children().eq(2).text();
+                obj.DisplayName = $(this).children().eq(3).text() == "-" ? "" : $(this).children().eq(3).text();
+                obj.PromotionIndex = $(this).children().eq(4).text();
+                obj.ProductCount = $(this).children().eq(5).text();
+                yearCardDetails.push(obj);
+                if(obj.PromotionIndex > MaxPromotionIndex){
+                    MaxPromotionIndex = obj.PromotionIndex;
+                }
+            });
+            if($(".wan-spinner-1 input").val()!= MaxPromotionIndex){
+                alert("所属优惠券券号和拆分优惠券数量不匹配，请重新修改！");
+                return;
+            }
+            var detailsObj = JSON.stringify(yearCardDetails);
+
+            var yearcardShop = new Array();
+            //门店Type
+            if ($("#Shop_Type").prev().find("[type=checkbox]").prop("checked")) {
+                $("input[name=shoptype]:checked").each(function() {
+                    var obj = new Object();
+                    obj.YearCardId = YearCardId;
+                    obj.ShopType = $(this).val();
+                    obj.ShopID = 0;
+                    yearcardShop.push(obj);
+                });
+            }
+
+            //门店ID
+            if ($("#Shop_ID").prev().find("[type=checkbox]").prop("checked")) {
+                $("input[name=shopid]").each(function() {
+                    if ($(this).val() == "") {
+                        alert('请填写门店ID');
+                    } else if ($(this).parent().next().find("span").text() == "门店不存在") {
+                        alert('请正确填写门店ID');
+                    } else
+                        var obj = new Object();
+                    obj.YearCardId = YearCardId;
+                    obj.ShopType = 0;
+                    obj.ShopID = $(this).val();
+                    yearcardShop.push(obj);
+                });
+            }
+            var yearShopObj = JSON.stringify(yearcardShop);
+
+            //优惠券金额比例
+            var promotionArray = new Array();
+            var totalPercentage = 0;
+            var proLength = $("#PromotionPercentage").children().length;
+            var isPercentageValide = true;
+            if (proLength > 0) {
+                $.each($("#PromotionPercentage").children(), function() {
+                    var item = $(this);
+                    var stringLength = item.find("span").text().length;
+                    var obj = new Object();
+                    obj.YearCardId = YearCardId;
+                    obj.PromotionIndex = item.find("span").text().substring(stringLength-1, stringLength);
+                    obj.PromotionPercentage = item.find("input").val().replace("%", "");
+                    if(obj.PromotionPercentage == 0){
+                        isPercentageValide = false;
+                        return false;
+                    }
+                    promotionArray.push(obj);
+                    totalPercentage += parseInt(obj.PromotionPercentage);
+                });
+            }
+            if(!isPercentageValide){
+                alert("优惠券金额比例不能为0，请修改！");
+                return;
+            }
+            if(totalPercentage != 100){
+                alert("优惠券金额比例总额不是100%，请修改！");
+                return;
+            }
+            var promotionObj = JSON.stringify(promotionArray);
+
+            $.post("AddBaoYangYearCardInfo", { yearCard: yearCardObj, shop: yearShopObj, detail: detailsObj, promotion: promotionObj }, function(data) {
+                if (data.Status) {
+                    alert("保存成功！");
+                    RefreshData(data.Data);
+                } else {
+                    alert("保存失败！");
+                }
+            });
+        }
+
+        //更新保养年卡缓存
+        function RefreshData(yearCardId) {
+            $.post("UpdateBaoYangYearcardConfig", function (data) {
+                    alert(data.Msg);
+                    window.location.href="/BaoYangYearCard/YearCardDetail?YearCardId=" + yearCardId;                
+            });
+        }
+
+        function SettingByRelations() {
+            var packageNames = [];
+            $.each($("#YearCardProject tr:not(:first)"), function () {
+                var packageName = $(this).children().eq(0).text();
+                packageNames.push(packageName);
+            });
+            var template = "<p style=\"margin:3px 0 3px 10px\"><span style=\"color:red;\">$MainPackage$</span>做活动时，必须与<span style=\"color:red;\">$AuxiliaryPackages$</span>需要一起勾选中，如果单选<span style=\"color:red;\">$MainPackage$</span>，容易产生保养故障风险</p>"
+            var html = "";
+
+            var relations = PackageTypeRelations.map(function (relation) {
+                return relation;
+            });
+
+            if (relations.length > 0 && packageNames.length > 0) {
+                relations.forEach(function (relation) {
+                    var mainPackageName = relation.PackageName;
+                    var auxiliaryPackageNames = relation.RelatedPackages.map(function (package) {
+                        return package.PackageName;
+                    });
+                    if (packageNames.indexOf(mainPackageName) > -1) {
+                        if (!auxiliaryPackageNames.all(function (name) { return packageNames.indexOf(name) > -1 })) {
+                            html += template
+                                .replace(/\$MainPackage\$/g, mainPackageName)
+                                .replace("$AuxiliaryPackages$", auxiliaryPackageNames.join(", "));
+                        }
+                    }
+                });
+            }
+            if (html) {
+                $("#YearCardProject-remark").show();
+            } else {
+                $("#YearCardProject-remark").hide();
+            }
+            $("#YearCardProject-remark .right").empty();
+            $("#YearCardProject-remark .right").html(html);
+        }
+
+        function GetPackageTypeRelations(callback) {
+            $.get("/BaoYang/GetPackageTypeRelations", function (res) {
+                if (res != null && res.length > 0) {
+                    PackageTypeRelations = res.filter(function (x) {
+                        return x.IsStrongRelated && x.RelatedPackages != null && x.RelatedPackages.length > 0;
+                    }).map(function (x) {
+                        return {
+                            PackageType: x.PackageType,
+                            PackageName: x.PackageName,
+                            RelatedPackages: x.RelatedPackages
+                        };
+                    });
+                    var types = [];
+                    var $checkboxs = $(".activity-baoyangType");
+                    $checkboxs.each(function () {
+                        var $this = $(this);
+                        var checked = $this.prop("checked");
+                        if (checked) {
+                            var value = $this.val();
+                            types.push(value);
+                        }
+                    });
+                }
+                if (callback) {
+                    callback();
+                }
+            });
+        }
+
+    </script>

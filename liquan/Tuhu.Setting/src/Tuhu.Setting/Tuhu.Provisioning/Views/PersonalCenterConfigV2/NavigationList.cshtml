@@ -1,0 +1,99 @@
+﻿@{
+    ViewBag.Title = "NavigationList";
+    Layout = null;
+}
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.SE_HomePageConfig>
+
+
+<ul class="nav" id="side-menu">
+    <li class="nav-header" style="padding-left:50px">
+        <div class="dropdown profile-element">
+            <span>
+                <img alt="image" class="img-circle" src="https://resource.tuhu.cn/Image/UserCenter/hu.png" width="48" height="48" />
+            </span>
+            <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                <span class="clear">
+                    <span class="block m-t-xs">
+                    </span> <span class="text-muted text-xs block">@(string.IsNullOrWhiteSpace(User.Identity.Name) ? "管理员" : User.Identity.Name)</span>
+                </span>
+            </a>
+
+        </div>
+        <div class="logo-element">
+            IN+
+        </div>
+    </li>
+    <li>
+        <a href="#"><i class="fa fa-edit"></i> <span class="nav-label" data-i18n="nav.forms" onclick="location.href = '/PersonalCenterConfigV2/Index'">用户个人中心</span><span class="fa arrow"></span></a>
+        <ul class="nav nav-second-level collapse ">
+            @if (Model != null)
+            {
+                foreach (var item in Model.OrderByDescending(o => o.CreateDateTime))
+                {
+                    <li>
+                        <a href="#">
+                            <span class="homepagespan" data-id="@item.ID" @(item.IsEnabled == true ? "style=color:red" : "")>@(item.HomePageName)</span>
+                            <span class="fa arrow"></span>
+                        </a>
+                        @if (item.ModuleItems != null)
+                        {
+                            <ul class="nav nav-second-level collapse">
+                                @foreach (var module in item.ModuleItems.OrderBy(o => o.PriorityLevel))
+                                {
+                                    if (module.ModuleHelper.Count() <= 0)
+                                    {
+                                        <li>
+                                            @if (module.ModuleType.Value == 1)
+                                            {
+                                                <a href="/PersonalCenterConfigV2/HomePageModuleContentList?moduleID=@module.ID&type=@module.ModuleType.Value" target="_self">@module.ModuleName</a>
+                                            }
+                                            else if (module.ModuleType.Value == 2)
+                                            {
+                                                <a href="/PersonalCenterConfigV2/HomePageModuleContentList?moduleID=@module.ID&type=@module.ModuleType.Value" target="_self">@module.ModuleName</a>
+                                            }
+                                            else if (module.ModuleType.Value == 3)
+                                            {
+                                                <a href="/PersonalCenterConfigV2/HomePageModuleContentList?moduleID=@module.ID&type=@module.ModuleType.Value" target="_self">@module.ModuleName</a>
+                                            }
+                                            else if (module.ModuleType.Value == 4)
+                                            {
+                                                <a href="/PersonalCenterConfigV2/CouponList?moduleID=@module.ID&type=@module.ModuleType.Value" target="_self">@module.ModuleName</a>
+                                            }
+                                            else if (module.ModuleType.Value == 5)
+                                            {
+                                                <a href="/UserPermission/SaleProductList" target="_self">@module.ModuleName</a>
+                                            }
+                                            else if (module.ModuleType.Value == 6)
+                                            {
+                                                <a href="/PersonalCenterConfigV2/HomePageModuleContentList?moduleID=@module.ID&type=@module.ModuleType.Value" target="_self">@module.ModuleName</a>
+                                            }
+                                        </li>
+                                    }
+
+                                }
+                            </ul>
+                        }
+
+                    </li>
+                }
+            }
+
+        </ul>
+    </li>
+    <li>
+        <a href="/ExchangeCenterConfig/Index">
+            <span>积分兑换配置</span>
+        </a>
+    </li>
+    @*<li>
+        <a href="/UserPermission/SaleProductList">
+            <span>会员商城配置</span>
+        </a>
+    </li>*@
+
+    <li>
+        <a href="/PersonalCenterConfigV2/HomePageLoger">
+            用户个人中心日志
+        </a>
+    </li>
+</ul>

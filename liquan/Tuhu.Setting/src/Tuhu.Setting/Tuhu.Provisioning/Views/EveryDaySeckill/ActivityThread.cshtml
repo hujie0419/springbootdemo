@@ -1,0 +1,68 @@
+﻿@{
+    ViewBag.Title = "ActivityThread";
+    Layout = null;
+}
+
+<table class="table tab-content">
+    <thead>
+        <tr>
+            <th>排 序</th>
+            <th>样 式</th>
+            <th>万能跳转</th>
+            <th>背景图片</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                <input type="number" id="OrderBy" name="OrderBy" value="1" />
+            </td>
+            <td>
+                <span>三列</span>
+                <input type="hidden" id="Style" name="Style" value="3" />
+            </td>
+            <td>
+                <input type="text" id="Url" name="Url" style="width:350px;" />
+            </td>
+            <td>
+                <img id="imgacFile1" width="30" height="30"/>
+                <input type="file" id="acFile1" name="acFile1"  onchange="UploadBgImg(this, 'imgacFile1', 'BgUrl1')" />
+                <input type="hidden" id="BgUrl1" name="BgUrl" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="number" id="OrderBy" name="OrderBy" value="2" />
+            </td>
+            <td>
+                <span>三列</span>
+                <input type="hidden" id="Style" name="Style" value="3" />
+            </td>
+            <td>
+                <input type="text" id="Url" name="Url" style="width:350px;" />
+            </td>
+            <td>
+                <img id="imgacFile2" width="30" height="30" />
+                <input type="file" id="acFile2" name="acFile2" onchange="UploadBgImg(this, 'imgacFile2', 'BgUrl2')" />
+                <input type="hidden" id="BgUrl2" name="BgUrl" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="number" id="OrderBy" name="OrderBy" value="3" />
+            </td>
+            <td>
+                <span>三列</span>
+                <input type="hidden" id="Style" name="Style" value="3" />
+            </td>
+            <td>
+                <input type="text" id="Url" name="Url" style="width:350px;" />
+            </td>
+            <td>
+                <img id="imgacFile3" width="30" height="30" />
+                <input type="file" id="acFile3" name="acFile3" onchange="UploadBgImg(this, 'imgacFile3', 'BgUrl3')" />
+                <input type="hidden" id="BgUrl3" name="BgUrl" />
+            </td>
+        </tr>
+    </tbody>
+</table>

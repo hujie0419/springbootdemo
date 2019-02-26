@@ -1,0 +1,68 @@
+﻿
+@{
+    ViewBag.Title = "保养价格指导";
+}
+<style>
+    .list {
+        width: 100%;
+        overflow-x: scroll;
+    }
+    .tuhu_self.color {
+    background-color: #8ADE94;
+    }
+
+    .tuhu_other.color {
+    background-color: #DCC8B9;
+    }
+    #ProductTable th {
+       min-width: 50px;
+    }
+</style>
+<script src="~/Content/ProductVehicleType/js/angular.min.js"></script>
+<script type="text/javascript" src="/Scripts/plugins/PageChange/jquery.pagination.js"></script>
+<script src="/Scripts/BaoYangPriceGuide/BaoYangPriceGuide.js?v=20181022"></script>
+<link href="/Scripts/plugins/PageChange/pagination.css" rel="stylesheet" />
+<link href="/Content/Public/Public.css" rel="stylesheet" />
+<h2>保养价格指导</h2>
+@Html.Partial("Search")
+<div id="SaleNumItem" style="display: none;">
+    <p>PID:<span class="pid"></span></p>
+    <p>产品名称：<span class="name"></span></p>
+    <table width="400"></table>
+</div>
+<div id="ShopNumItem" style="display: none;">
+    <p>PID:<span class="pid"></span></p>
+    <p>产品名称：<span class="name"></span></p>
+    <table width="400"></table>
+</div>
+<div id="ZXTPrice"></div>
+<div id="ZXTCost"></div>
+<script src="/Scripts/echarts.js"></script>
+<script>
+    $(function () {
+        LoadList(1,"cost");
+        $(".list").on("click", ".pager>a", function (event) {
+            $(".list").html(loading);
+            event.preventDefault();
+            var url = $(this).attr("href");
+            if (url) {
+                $.post(url, function (html, status) {
+                    $(".list").empty();
+                    if (status === "success") {
+                        if (html) {
+                            $(".list").html(html);
+                        } else {
+                            $(".list").html(nodata);
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+
+    $("#Search").click(function () {
+        LoadList(1,"cost");
+    });
+    
+</script>

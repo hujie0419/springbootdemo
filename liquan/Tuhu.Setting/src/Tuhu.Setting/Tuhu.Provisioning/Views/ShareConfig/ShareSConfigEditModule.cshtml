@@ -1,0 +1,441 @@
+﻿@using Tuhu.Service.Push.Models.WeiXinPush;
+@using Tuhu.Provisioning.DataAccess.Entity;
+@model ShareSupervisionConfig
+@{
+    Layout = null;
+}
+
+<form id="FrmShareSConfig" action="/ShareConfig/SaveShareSConfig" method="post">
+    @Html.HiddenFor(m => m.PKId, new { id = "PKId1", @name = "PKId" })
+    @Html.HiddenFor(m => m.Location, new { id = "Location1", @name = "Location" })
+    @Html.HiddenFor(m => m.JumpId, new { @name = "JumpId" })
+    <table id="TabShareSConfig" style="font-size:12px;width:100%;" border="0">
+        <tr>
+            <td style="width:100px;">分享渠道</td>
+            <td>
+                @Html.DropDownListFor(m => m.ShareScene,
+                    new[]
+                    {
+                        new SelectListItem() {Selected=(Model.ShareScene==1), Value="1", Text="微信好友"},
+                        new SelectListItem() {Selected=(Model.ShareScene==2), Value="2", Text="朋友圈"},
+                        new SelectListItem() {Selected=(Model.ShareScene==4), Value="4", Text="新浪微博"},
+                        new SelectListItem() {Selected=(Model.ShareScene==8), Value="8", Text="QQ好友"},
+                        new SelectListItem() {Selected=(Model.ShareScene==16), Value="16", Text="QQ空间"},
+                        new SelectListItem() {Selected=(Model.ShareScene==32), Value="32", Text="复制链接"},
+                        new SelectListItem() {Selected=(Model.ShareScene==64), Value="64", Text="短信"},
+                    },
+                    new
+                    {
+                        id = "ShareScene",
+                        @name = "ShareSceneCriterion",
+                        @class = "form-control",
+                        style = "width:30%",
+                        @onchange=""
+                    })
+            </td>
+        </tr>
+        <tr>
+            <td>分享类型</td>
+            <td>
+                @Html.DropDownListFor(m => m.ShareType,
+                    new[]
+                    {
+                        new SelectListItem() {Selected=(Model.ShareType==0), Value="0", Text="链接"},
+                        new SelectListItem() {Selected=(Model.ShareType==1), Value="1", Text="图片"},
+                        new SelectListItem() {Selected=(Model.ShareType==2), Value="2", Text="文字"},
+                        new SelectListItem() {Selected=(Model.ShareType==3), Value="3", Text="小程序"},
+                    },
+                    new
+                    {
+                        id = "ShareType",
+                        @name = "ShareTypeCriterion",
+                        @class = "form-control",
+                        style = "width:30%"
+                    })
+            </td>
+        </tr>
+        <tr>
+            <td>分享状态</td>
+            <td>
+                @Html.DropDownListFor(m => m.Status,
+                    new[]
+                    {
+                        new SelectListItem() {Selected=(Model.Status==1), Value="1", Text="启用"},
+                        new SelectListItem() {Selected=(Model.Status==2), Value="2", Text="禁用"},
+                    },
+                    new
+                    {
+                        id = "Status",
+                        @name = "StatusCriterion",
+                        @class = "form-control",
+                        style = "width:30%"
+                    })
+            </td>
+        </tr>
+        <tr>
+            <td>顺序</td>
+            <td>
+                @Html.TextBoxFor(m => m.SceneSequence, new { id = "SceneSequence", @name = "SceneSequenceCriterion", @class = "form-control", @style = "width:30%" })
+            </td>
+        </tr>
+        <tr>
+            <td>标题<span id="td1" style="margin-left:2px;color:red;"></span></td>
+            <td>
+                @Html.TextBoxFor(m => m.Title, new { id = "Title", @name = "TitleCriterion", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>内容<span id="td2" style="margin-left:2px;color:red;"></span></td>
+            <td>
+                @Html.TextAreaFor(m => m.Description, new { id = "Description1", @name = "DescriptionCriterion", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>参数参考<span id="td3" style="margin-left:2px;color:red;"></span></td>
+            <td>
+                @Html.HiddenFor(m => m.ParameterRef, new { id = "ParameterRef", @name = "ParameterRefCriterion", @class = "form-control", @style = "width:100%" })
+                <table id="TbParameterRef" style="width:100%;">
+                    <tr>
+                        <td style="width:40%;">参数</td>
+                        <td style="width:40%;">说明</td>
+                        <td style="width:20%;"><input type="button" onclick="TableControl.AddRow()" value="添加" /></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td>分享链接<span id="td4" style="margin-left:2px;color:red;"></span></td>
+            <td>
+                @Html.TextBoxFor(m => m.ShareUrl, new { id = "ShareUrl", @name = "ShareUrlCriterion", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr>
+            <td>页面路径<span id="td5" style="margin-left:2px;color:red;"></span></td>
+            <td>
+                @Html.TextBoxFor(m => m.PagePath, new { id = "PagePath", @name = "PagePathCriterion", @class = "form-control", @style = "width:100%" })
+            </td>
+        </tr>
+        <tr id="miniGramPart">
+            <td>微信小程序<span id="td8" style="margin-left:2px;color:red;"></span></td>
+            <td>
+                @Html.DropDownList("miniGramId", new[]
+                    {
+                        new SelectListItem() {Selected=false, Value="gh_513038890d99", Text="途虎养车Tuhu小程序"},
+                        new SelectListItem() {Selected=false, Value="gh_9d3cedff1f68", Text="途虎洗车小程序"},
+                        new SelectListItem() {Selected=false, Value="gh_1e01f36e7b69", Text="途虎违章查询"},
+                        new SelectListItem() {Selected=false, Value="gh_5c79c52e5ca7", Text="途虎问答小程序"},
+                        new SelectListItem() {Selected=false, Value="gh_45b5ae08e697", Text="途虎拼团小程序"},
+                        new SelectListItem() {Selected=false, Value="gh_a6d7373ba31a", Text="途虎众测小程序"},
+                        new SelectListItem() {Selected=false, Value="gh_bf315083643e", Text="途虎工厂店"},
+                    }
+           , "--请选择--", new
+               {
+                   id = "miniGramId",
+                   @style = "width:155px"
+               });
+            </td>
+        </tr>
+        <tr>
+            <td>缩略图<span id="td6" style="margin-left:2px;color:red;"></span></td>
+            <td>
+                <input type="file" id="ThumbPicInput" name="ThumbPicInput" onchange="UploadPic(this, 'VwThumbPic', 'ThumbPic');" />
+                <br />
+                <img height="40" src="@Model.ThumbPic" id="VwThumbPic" style="width:100px;height:100px;" />
+                <br />
+                @Html.TextBoxFor(m => m.ThumbPic, new { @name = "ThumbPicCriterion", @style = "width:300px;" })
+            </td>
+        </tr>
+        <tr>
+            <td>高清大图<span id="td7" style="margin-left:2px;color:red;"></span></td>
+            <td>
+                <input type="file" id="BgPicInput" name="BgPicInput" onchange="UploadPic(this, 'VwBgPic', 'BgPic');" />
+                <br />
+                <img height="40" src="@Model.BgPic" id="VwBgPic" style="width:100px;height:100px;" />
+                <br />
+                @Html.TextBoxFor(m => m.BgPic, new { @name = "BgPicCriterion", @style = "width:300px;" })
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input type="button" id="btnSaveShareSConfig" class="btn btn-primary btn-small" onclick="SaveShareSConfig()" value="保存" />
+            </td>
+        </tr>
+    </table>
+</form>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var pkid1 = $("#PKId1").val();
+        if (pkid1 != "0") {
+            var tbparameterref = document.getElementById("TbParameterRef");
+            var parameterrefdata = $("#ParameterRef").val();
+            if (parameterrefdata != "") {
+                var json = JSON.parse(parameterrefdata);
+                for (var item in json) {
+                    var tr = tbparameterref.insertRow();
+                    tr.innerHTML = "<td><input type='text' value='" + item + "' /></td>" +
+                        "<td><input type='text' value='" + json[item] + "' /></td>" +
+                        "<td><input type='button' onclick='TableControl.DeleteRow(this)' value='删除' /></td>";
+                }
+            }
+        }
+        var sharescenedata = $("#ShareScene option:selected'").val();
+        var sharetypedata = $("#ShareType option:selected'").val();
+        ChangeShareTypeOption(sharescenedata, sharetypedata);
+        ChangeRequiredFlag(sharescenedata, sharetypedata);
+    });
+    $(function () {
+        $("#ShareScene").change(function () {
+            var sharescenedata = $("#ShareScene option:selected'").val();
+            var sharetypedata = $("#ShareType option:selected'").val();
+            ChangeShareTypeOption(sharescenedata, sharetypedata);
+        })
+        $("#ShareType").change(function () {
+            var sharescenedata = $("#ShareScene option:selected'").val();
+            var sharetypedata = $("#ShareType option:selected'").val();
+            ChangeRequiredFlag(sharescenedata, sharetypedata);
+        })
+    })
+    var TableControl = {
+        AddRow: function () {
+            var tbparameterref = document.getElementById("TbParameterRef");
+            var tr = tbparameterref.insertRow();
+            tr.innerHTML = "<td><input type='text' /></td>" +
+                "<td><input type='text' /></td>" +
+                "<td><input type='button' onclick='TableControl.DeleteRow(this)' value='删除' /></td>";
+        },
+        DeleteRow: function (btn) {
+            var tbparameterref = document.getElementById("TbParameterRef");
+            var tr = btn.parentNode.parentNode;
+            tbparameterref.deleteRow(tr.rowIndex);
+        },
+    }
+    function ChangeShareTypeOption(sharescenedata, sharetypedata) {
+        if (sharescenedata == 1) {
+            $("#ShareType option[value='0']").attr("disabled", false);
+            $("#ShareType option[value='1']").attr("disabled", false);
+            $("#ShareType option[value='2']").attr("disabled", false);
+            $("#ShareType option[value='3']").attr("disabled", false);
+            ChangeRequiredFlag(sharescenedata, sharetypedata);
+        }
+        else if (sharescenedata == 2 || sharescenedata == 8 || sharescenedata == 16) {
+            $("#ShareType option[value='0']").attr("disabled", false);
+            $("#ShareType option[value='1']").attr("disabled", false);
+            $("#ShareType option[value='2']").attr("disabled", false);
+            $("#ShareType option[value='3']").attr("disabled", true);
+            if (sharetypedata == 3) {
+                $("#ShareType").get(0).selectedIndex = 0;
+                ChangeRequiredFlag(sharescenedata, 0);
+            }
+            else {
+                ChangeRequiredFlag(sharescenedata, sharetypedata);
+            }
+        }
+        else if (sharescenedata == 32) {
+            $("#ShareType option[value='0']").attr("disabled", false);
+            $("#ShareType option[value='1']").attr("disabled", true);
+            $("#ShareType option[value='2']").attr("disabled", true);
+            $("#ShareType option[value='3']").attr("disabled", true);
+            if (sharetypedata == 1 || sharetypedata == 2 || sharetypedata == 3) {
+                $("#ShareType").get(0).selectedIndex = 0;
+                ChangeRequiredFlag(sharescenedata, 0);
+            }
+            else {
+                ChangeRequiredFlag(sharescenedata, sharetypedata);
+            }
+        }
+        else if (sharescenedata == 64) {
+            $("#ShareType option[value='0']").attr("disabled", false);
+            $("#ShareType option[value='1']").attr("disabled", true);
+            $("#ShareType option[value='2']").attr("disabled", false);
+            $("#ShareType option[value='3']").attr("disabled", true);
+            if (sharetypedata == 1 || sharetypedata == 3) {
+                $("#ShareType").get(0).selectedIndex = 0;
+                ChangeRequiredFlag(sharescenedata, 0);
+            }
+            else {
+                ChangeRequiredFlag(sharescenedata, sharetypedata);
+            }
+        }
+        else if (sharescenedata == 4) {
+            $("#ShareType option[value='0']").attr("disabled", false);
+            $("#ShareType option[value='1']").attr("disabled", false);
+            $("#ShareType option[value='2']").attr("disabled", false);
+            $("#ShareType option[value='3']").attr("disabled", true);
+            if (sharetypedata == 3) {
+                $("#ShareType").get(0).selectedIndex = 0;
+                ChangeRequiredFlag(sharescenedata, 0);
+            }
+            else {
+                ChangeRequiredFlag(sharescenedata, sharetypedata);
+            }
+        }
+    }
+    function ChangeRequiredFlag(sharescenedata, sharetypedata) {
+        $("#miniGramPart").hide();
+        if (sharetypedata == 0) {
+            if (sharescenedata == 1 || sharescenedata == 2 || sharescenedata == 8 || sharescenedata == 16) {
+                $("#td1").text("*");
+                $("#td2").text("*");
+                $("#td4").text("*");
+                $("#td5").text("");
+                $("#td6").text("*");
+                $("#td7").text("");
+            }
+            else if (sharescenedata == 32) {
+                $("#td1").text("");
+                $("#td2").text("");
+                $("#td4").text("*");
+                $("#td5").text("");
+                $("#td6").text("");
+                $("#td7").text("");
+            }
+            else if (sharescenedata == 64) {
+                $("#td1").text("");
+                $("#td2").text("*");
+                $("#td4").text("*");
+                $("#td5").text("");
+                $("#td6").text("");
+                $("#td7").text("");
+            }
+        }
+        else if (sharetypedata == 1) {
+            if (sharescenedata == 1 || sharescenedata == 2) {
+                $("#td1").text("");
+                $("#td2").text("");
+                $("#td4").text("");
+                $("#td5").text("");
+                $("#td6").text("*");
+                $("#td7").text("*");
+            }
+            else if (sharescenedata == 8) {
+                $("#td1").text("*");
+                $("#td2").text("");
+                $("#td4").text("");
+                $("#td5").text("");
+                $("#td6").text("*");
+                $("#td7").text("*");
+            }
+            else if (sharescenedata == 16) {
+                $("#td1").text("*");
+                $("#td2").text("*");
+                $("#td4").text("");
+                $("#td5").text("");
+                $("#td6").text("*");
+                $("#td7").text("*");
+            }
+        }
+        else if (sharetypedata == 2) {
+            $("#td1").text("");
+            $("#td2").text("*");
+            $("#td4").text("");
+            $("#td5").text("");
+            $("#td6").text("");
+            $("#td7").text("");
+        }
+        else if (sharetypedata == 3) {
+            $("#miniGramPart").show();
+            $("#td1").text("*");
+            $("#td2").text("*");
+            $("#td4").text("*");
+            $("#td5").text("*");
+            $("#td6").text("*");
+            $("#td7").text("*");
+            $("#td8").text("*");
+        }
+        if (sharescenedata == 4) {
+            $("#td1").text("");
+            $("#td2").text("");
+            $("#td4").text("");
+            $("#td5").text("");
+            $("#td6").text("");
+            $("#td7").text("");
+            $("#td8").text("");
+        }
+    }
+    function SaveShareSConfig() {
+        var pkid1 = $("#PKId1").val();
+        var sharescenedata = $("#ShareScene option:selected'").val();
+        var sharetypedata = $("#ShareType option:selected'").val();
+        var result = 1;
+        //验证分享渠道是否重复
+        $.ajax({
+            url: "/ShareConfig/CheckShareSConfig",
+            type: "POST",
+            data: {
+                pkid: pkid1,
+                jumpId: $("#JumpId").val(),
+                sharescene: sharescenedata,
+            },
+            dataType: "text",
+            async: false,
+            success: function (data) {
+                if (data == "false") {
+                    result = 0;
+                    alert("每个渠道只能配置一次！");
+                }
+            },
+            error: function () {
+                result = 0;
+                alert('请求失败！');
+            },
+        });
+        if (result == 0) {
+            return;
+        }
+        //检测不允许为空的输入框是否为空
+        if ($("#td1").text() == "*") {
+            if ($("#Title").val() == "") {
+                alert("标题不能为空!");
+                return;
+            }
+        }
+        if ($("#td2").text() == "*") {
+            if ($("#Description1").val() == "") {
+                alert("内容不能为空!");
+                return;
+            }
+        }
+        if ($("#td4").text() == "*") {
+            if ($("#ShareUrl").val() == "") {
+                alert("分享链接不能为空!");
+                return;
+            }
+        }
+        if ($("#td5").text() == "*") {
+            if ($("#PagePath").val() == "") {
+                alert("页面路径不能为空!");
+                return;
+            }
+        }
+        if ($("#td6").text() == "*") {
+            if ($("#ThumbPic").val() == "") {
+                alert("请输入缩略图链接或选择一张缩略图!");
+                return;
+            }
+        }
+        if ($("#td7").text() == "*") {
+            if ($("#BgPic").val() == "") {
+                alert("请输入高清大图链接或选择一张高清大图!");
+                return;
+            }
+        }
+        if (sharetypedata == 3) {
+            if (!$("#miniGramId").val()) {
+                alert("请选择微信小程序!");
+                return;
+            }
+        }
+        //将参数参考的数据转换为Json型
+        var tbparameterref = document.getElementById("TbParameterRef");
+        var paramrefs = {};
+        for (var i = 1; i < tbparameterref.rows.length; i++) {
+            var parameter = tbparameterref.rows[i].cells[0].children[0].value;
+            var reference = tbparameterref.rows[i].cells[1].children[0].value;
+            paramrefs[parameter] = reference;
+        }
+        var json = JSON.stringify(paramrefs);
+        $("#ParameterRef").val(json);
+        FrmShareSConfig.submit();
+    }
+</script>

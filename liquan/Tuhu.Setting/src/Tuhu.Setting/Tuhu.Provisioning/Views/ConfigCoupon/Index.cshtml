@@ -1,0 +1,93 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.ConfigCoupon
+@{
+    ViewBag.Title = "红包样式全局配置";
+}
+
+<h2>红包样式全局配置</h2>
+<style>
+    .button1 {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        font-family: "Microsoft Yahei";
+        outline: none;
+        cursor: pointer;
+        background: #0088cc;
+        border-color: #0088cc;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: #0088cc;
+        border: solid 1px #0088cc;
+    }
+</style>
+
+<input type="button" class="button1" id="Insert" value="添加" />
+<div style="margin-top:20px;">
+    <table style="width:100%">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>背景图</th>
+                <th>链接图</th>
+                <th>背景颜色</th>
+                <th>链接开关</th>
+                <th>链接</th>               
+                <th>选择分享链接</th>
+                <th>编辑</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                @if (Model != null)
+                {
+                    <td>@Model.Id</td>
+                    <td>
+                        <img style="height:40px;" src="@Model.BackgroundImage" />
+                    </td>
+                    <td>
+                        <img style="height:40px;" src="@Model.LinkImage" />
+                    </td>
+                    <td>@Model.BackgroundColor</td>
+                    <td>@(Model.LinkAvailable?"启用":"停用")</td>
+                    <td>
+                        app链接：@Model.AppLink <br />
+                        微信链接：<a href="@Model.WeixinLink" target="_blank">@Model.WeixinLink</a> <br />
+                        分享链接：<a href="@Model.Link" target="_blank">@Model.Link</a>  <br />
+                    </td>
+                    <td>@(Model.CheckLink?"是":"否")</td>
+                    <td><a href="javascript:;" onclick="Update(@Model.Id)">修改</a></td>
+                }
+
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+    $("#Insert").click(function () {
+        $("#AddItem").load('/ConfigCoupon/Add');
+        $("#AddItem").dialog({
+            title: "添加",
+            width: 600,
+            height: 600,
+            modal: true
+        });
+    })
+
+    function Update(Id) {
+        $("#AddItem").load('/ConfigCoupon/Add?Id=' + (Id || 0));
+        $("#AddItem").dialog({
+            title: "添加",
+            width: 600,
+            height: 600,
+            modal: true
+        });
+    }
+</script>
+
+<div id="AddItem" style="display: none"></div>

@@ -1,0 +1,75 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@{
+    Layout = "";
+}
+@helper PagesHtml()
+{
+int totalCount = ViewBag.TotalCount != null ? Convert.ToInt32(ViewBag.TotalCount) : 0;
+System.Text.StringBuilder sb = new System.Text.StringBuilder();
+for (int i = 0; i < totalCount; i++)
+{
+    var style = "";
+    if (i ==Convert.ToInt32(ViewBag.pageIndex)-1) {
+
+        style = "background: rgb(0, 136, 204);";
+    }
+    sb.AppendFormat("<a class='pageStyle' href='javascript:;' style=\""+style+"\" onclick='ProductLibraryConfig.PageEvent(this,{0})' data-page={0} >{0}</a>", i + 1);
+}
+sb.Append("<span style='clear:none;'></span>");
+    <tr><td colspan="11" style="text-align:center;">@Html.Raw(sb.ToString())</td></tr>
+}
+
+<table id="ProductList" style="margin:5px 0 0 0;">
+    <thead>
+        @PagesHtml()
+        <tr>
+            <td style="width:40px;">
+                <label><input id="ProductListCheck" type="checkbox" onclick="ProductLibraryConfig.CheckALLOrOut(this);" /></label>
+            </td>
+            <td>品牌</td>
+            <td>名称</td>
+            <td>PID</td>
+            <td>成本价</td>
+            <td>优惠券数量</td>
+            <td>销售价</td>
+            <td>券后最低售价</td>
+            <td>券后最低毛利</td>
+            <td>状态</td>
+            <td>管理</td>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            var productsList = ViewBag.ProductList as List<QueryProductsModel>;
+            var num = 0;
+            foreach (var item in productsList)
+            {
+                int couponNum = 0;
+                decimal? minPriceAfterCoupon = 0;
+                decimal? minGrossProfit = 0;
+                if (item.UseCouponEffects != null)
+                {
+                    couponNum = item.UseCouponEffects.Count();
+                    minPriceAfterCoupon = item.UseCouponEffects.Min(t => t.PriceAfterCoupon);
+                    minGrossProfit = item.UseCouponEffects.Min(t => t.GrossProfit);
+                }
+                <tr>
+                    <td><input name="BodyCheckBox" type="checkbox" value="@item.Oid" />@(++num + ((ViewBag.pageIndex - 1) * ViewBag.pageSize))</td>
+                    <td>@item.CP_Brand</td>
+                    <td>@item.DisplayName</td>
+                    <td>@item.PID</td>
+                    <td>@item.cy_cost</td>
+                    <td>@couponNum</td>
+                    <td>@item.cy_list_price</td>
+                    <td>@minPriceAfterCoupon</td>
+                    <td>@minGrossProfit</td>
+                    <td>@(item.OnSale ? "上架" : "下架")</td>
+                    <td><a href="javascript:;" onclick="ProductLibraryConfig.EditProductDetails(this,@item.Oid,'@item.CouponIds')">编辑</a></td>
+                </tr>
+            }
+            @PagesHtml()
+        }
+    </tbody>
+</table>
+
+<input id="hid_product_error_PID" type="hidden" value="@ViewBag.ErrorPId" />

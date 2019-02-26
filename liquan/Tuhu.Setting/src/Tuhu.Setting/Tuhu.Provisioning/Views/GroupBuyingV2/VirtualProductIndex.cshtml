@@ -1,0 +1,437 @@
+﻿@{
+    ViewBag.Title = "虚拟商品优惠券配置";
+}
+@section head{
+    <link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        input[readonly],
+        input[disabled],
+        button[disabled],
+        textarea[disabled],
+        select[disabled] {
+            cursor: not-allowed;
+        }
+
+        .invalid, .ng-invalid {
+            border: 1px solid red;
+        }
+    </style>
+}
+<div class="title" style="margin-bottom:20px;">
+    <h2>拼团虚拟商品优惠券配置</h2>
+</div>
+<div ng-app="VirtualProductApp" ng-controller="MainCtrl" style="padding: 1em;">
+    <div class="header form-inline">
+        <div style="float: left;width:40%">
+            <label for="pid">商品PID</label>
+            <input type="text" value="" class="form-control" id="pid" />
+            <button type="button" ng-click="loadData()" class="btn btn-primary">查询</button>
+        </div>
+        <div style="float: right">
+            <button type="button" class="btn btn-default" id="btnViewLog">查看日志</button> &nbsp;&nbsp;
+            <a role="button" class="btn btn-primary" href="javascript:void(0)" ng-click="add()">+新增商品优惠券关系</a> &nbsp;
+        </div>
+    </div>
+    <div class="body" style="padding-top: 1em;clear:both">
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>商品PID</th>
+                    <th>商品名称</th>
+                    <th>上下架状态</th>
+                    <th>商品价格</th>
+                    <th>包含优惠券数量</th>
+                    <th>创建时间</th>
+                    <th>更新时间</th>
+                    <th style="width:100px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="item in list">
+                    <td ng-bind="::item.PID"></td>
+                    <td ng-bind="::item.ProductName"></td>
+                    <td ng-bind="::item.IsActive?'上架':'下架'"></td>
+                    <td ng-bind="::item.ProductPrice"></td>
+                    <td ng-bind="::item.CouponCount"></td>
+                    <td ng-bind="::item.CreateTime"></td>
+                    <td ng-bind="::item.UpdateTime"></td>
+                    <td>
+                        <button type="button" ng-click="show(item.PID)" class="btn btn-primary">查看/编辑</button> &nbsp;&nbsp;
+                        @*<button type="button" ng-click="deleteProduct(item.PID)" class="btn btn-danger">删除</button>*@
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="line-height: 1.8em;font-size:1.2em;">
+            <ul class="pagination" style="display: inline;">
+                <li ng-class="{disabled:pageIndex===1}">
+                    <a href="javascript:void(0)" ng-click="loadData(pageIndex-1)" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="javascript:void(0)" ng-bind="pageIndex">
+                        <span class="sr-only" ng-bind="pageIndex"></span>
+                    </a>
+                </li>
+                <li ng-class="{disabled:list.length<pageSize}">
+                    <a href="javascript:void(0)" ng-click="loadData(pageIndex+1)" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+            &nbsp;&nbsp;
+            <label for="ddlPageSize">
+                每页商品数
+            </label>&nbsp;
+            <select id="ddlPageSize" ng-model="pageSize" convert-to-number>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+            </select>
+        </div>
+    </div>
+    <div id="hiddenForm" style="display: none; padding: 1em">
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>商品PID</th>
+                        <th>商品名称</th>
+                        <th>商品价格</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <input type="text" id="editPid" class="form-control" ng-model="configDetails.PID" required="required" ng-blur="getProductInfo()" ng-readonly="!configDetails.IsNew" />
+                        </td>
+                        <td ng-bind="configDetails.ProductName"></td>
+                        <td ng-bind="configDetails.ProductPrice"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <div style="padding:1em 0" ng-repeat="item in configDetails.Coupons">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>优惠券{{$index+1}}</th>
+                            <th>虚拟成本比例（%）</th>
+                            <th>优惠券名称</th>
+                            <th>优惠券描述</th>
+                            <th>面额（元）</th>
+                            <th>使用条件（元）</th>
+                            <th>优惠券有效期</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <input type="text" class="form-control" ng-model="item.CouponId" ng-readonly="!item.IsNew" required="required" ng-blur="getCouponInfo($index)" />
+                            </td>
+                            <td>
+                                <input type="number" ng-model="item.CouponRate" max="100" min="1" value="" />
+                            </td>
+                            <td ng-bind="item.CouponName"></td>
+                            <td ng-bind="item.CouponDescription"></td>
+                            <td ng-bind="item.CouponPrice"></td>
+                            <td ng-bind="item.CouponLeastPrice"></td>
+                            <td ng-bind="item.AvailablePeriod"></td>
+                            <td><button ng-show="item.IsNew" type="button" class="close" data-dismiss="alert" ng-click="removeCoupon($index)" aria-label="Close"><span aria-hidden="true" style="color:red">&times;</span></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="padding-top:1em">
+                <a href="javascript:void(0)" ng-click="addCoupon()">+新增优惠券</a><br /><br />
+                <p>
+                    备注：<br />
+                    1. 优惠券虚拟成本比例只能是 1~100 的整数
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/layer/layer.js"></script>
+<script src="https://cdn.bootcss.com/angular.js/1.6.9/angular.min.js"></script>
+<script src="https://res.tuhu.org/Scripts/tuhu.public.min.js?v=20170531"></script>
+<script>
+
+    $("#btnViewLog").click(function () {
+        layer.open({
+            type: 2,
+            area:["800px","600px"],
+            content: '/CommonConfigLog/ListLoger?objectType=VirtualProductCouponConfig',
+            btn: ["确定"],
+            btn1: function(index) {
+                layer.close(index);
+            }
+        });
+    });
+    angular.module("VirtualProductApp", [])
+        .directive('convertToNumber', function() {
+            return {
+                require: 'ngModel',
+                link: function(scope, element, attrs, ngModel) {
+                    ngModel.$parsers.push(function(val) {
+                        return parseInt(val, 10);
+                    });
+                    ngModel.$formatters.push(function(val) {
+                        return '' + val;
+                    });
+                }
+            };
+        })
+        .controller("MainCtrl", [
+            "$rootScope", "$scope", "$http", function ($rootScope,$scope, $http) {
+                $scope.pageIndex = 1;
+                $scope.pageSize = 20;
+                $scope.list = [];
+                $scope.configDetails = {
+                    PID: '',
+                    ProductName: '',
+                    ProductPrice: '',
+                    IsNew: true,
+                    Coupons: []
+                };
+                //
+                $scope.loadData = function (pageIndex) {
+                    if (!pageIndex || pageIndex<1) {
+                        pageIndex = 1;
+                    }
+                    if ($scope.list.length < $scope.pageSize && pageIndex > $scope.pageIndex) {
+                        layer.msg("已经是最后一页了~");
+                        return;
+                    }
+                    var loading = layer.load(3);
+                    $http.get('/GroupBuyingV2/VirtualProductList?pageIndex=' + pageIndex + '&pageSize=' + $scope.pageSize + '&pid=' + $("#pid").val()).then(function (response) {
+                        layer.close(loading);
+                        if (response.status === 200) {
+                            if (response.data) {
+                                $scope.list = response.data;
+                                $scope.pageIndex = pageIndex;
+                            } else {
+                                layer.msg("没有更多数据了");
+                            }
+                        } else {
+                            layer.alert("服务器出错");
+                        }
+                    });
+                };
+                // onInit
+                this.$onInit = function() {
+                    $scope.loadData(1);
+                };
+
+                $scope.add = function () {
+                    $scope.configDetails = {
+                        PID: '',
+                        ProductName: '',
+                        ProductPrice: '',
+                        IsNew: true,
+                        Coupons: []
+                    };
+                    layer.open({
+                        type: 1,
+                        title:'新增商品优惠券关系',
+                        content: $("#hiddenForm"),
+                        area: ["800px", "600px"],
+                        btn: ["保存", "取消"],
+                        yes: function (index) {
+                            var isValid = $scope.validRequest();
+                            if (isValid) {
+                                layer.confirm("一旦保存后商品的PID以及优惠券不能修改或删除，只能修改虚拟成本，是否确定保存？",
+                                    { title: "温馨提示" },
+                                    function (confirmIndex) {
+                                        layer.close(confirmIndex);
+                                        layer.close(index);
+                                        $scope.save(1);
+                                    });
+                            }
+                        },
+                        cancel: function () {}
+                    });
+                };
+
+                $scope.deleteProduct = function(pid) {
+                    layer.confirm("确定要删除商品【" + pid + "】的配置吗？",
+                        { title: "警告" },
+                        function(index) {
+                            layer.close(index);
+                            var loading = layer.load(3);
+                            $http.post('@Url.Action("DeleteVirtualProductConfig")', { "pid": pid })
+                                .then(function (response) {
+                                    layer.close(loading);
+                                    if (!response.data) {
+                                        layer.alert('删除成功',
+                                            function() {
+                                                location.reload();
+                                            });
+                                    } else {
+                                        layer.alert(response.data);
+                                    }
+                                });
+                        });
+                };
+                //根据pid获取产品信息
+                $scope.getProductInfo = function () {
+                    var pid = $scope.configDetails.PID;
+                    if (pid) {
+                        $http.get('/GroupBuyingV2/FetchProductInfo?pid=' + pid).then(function (response) {
+                            if (response.data) {
+                                $scope.configDetails.ProductName = response.data.ProductName;
+                                $scope.configDetails.ProductPrice = response.data.ProductPrice;
+                                $scope.configDetails.IsNew = true;
+                            } else {
+                                layer.alert('PID不存在，请修改');
+                            }
+                        });
+                    } else {
+                        layer.alert('产品PID不能为空！');
+                    }
+                };
+                //根据couponId获取优惠券信息
+                $scope.getCouponInfo = function (index) {
+                    var coupon = $scope.configDetails.Coupons[index];
+                    if (coupon.CouponId) {
+                        $http.get('/GroupBuyingV2/FetchCouponInfo?couponId=' + coupon.CouponId).then(function (response) {
+                            if (response.data) {
+                                $scope.configDetails.Coupons[index] = response.data;
+                                $scope.configDetails.Coupons[index].CouponRate = 0;
+                                $scope.configDetails.Coupons[index].IsNew = true;
+                            } else {
+                                layer.alert('优惠券不存在，请修改');
+                            }
+                        });
+                    } else {
+                        layer.alert('优惠券ID不能为空！');
+                    }
+                };
+                //
+                $scope.show = function (pid) {
+                    var loading = layer.load(3);
+                    $http.get('/GroupBuyingV2/VirtualProductCouponConfigDetail?pid=' + pid)
+                        .then(function (response) {
+                            layer.close(loading);
+                            if (response.data) {
+                                $scope.configDetails = response.data.data;
+                                layer.open({
+                                    type: 1,
+                                    title:'编辑商品优惠券关系',
+                                    content: $("#hiddenForm"),
+                                    area: ["800px", "600px"],
+                                    btn:["保存","取消"],
+                                    yes: function (index) {
+                                        var isValid = $scope.validRequest();
+                                        if (isValid) {
+                                            layer.confirm("一旦保存后商品的PID以及优惠券不能修改或删除，只能修改虚拟成本，是否确定保存？",
+                                                { title: "温馨提示" },
+                                                function (confirmIndex) {
+                                                    layer.close(confirmIndex);
+                                                    layer.close(index);
+                                                    $scope.save(2);
+                                                });
+                                        }
+                                    },
+                                    cancel: function() {
+                                    }
+                                });
+                            } else {
+                                layer.alert("请求参数异常," + response.data.errMsg);
+                            }
+                        });
+                };
+                $scope.addCoupon = function () {
+                    if ($scope.configDetails.Coupons.any(_ => _.CouponId === '')) {
+                        return;
+                    }
+                    $scope.configDetails.Coupons.push({
+                        CouponId: '',
+                        CouponName: '',
+                        CouponDescription: '',
+                        CouponPrice: '',
+                        CouponLeastPrice:'',
+                        AvailablePeriod: '',
+                        CouponRate: 1,
+                        IsNew: true
+                    });
+                };
+                $scope.removeCoupon = function (index) {
+                     $scope.configDetails.Coupons.remove($scope.configDetails.Coupons[index]);
+                };
+                //
+                $scope.validRequest = function () {
+                    if (!$scope.configDetails.PID) {
+                        layer.alert("商品PID不能为空", { title: "错误" });
+                        return false;
+                    }
+                    if ($scope.configDetails.Coupons.length === 0) {
+                        layer.alert('优惠券不能为空，请添加优惠券！', {title:"错误"});
+                        return false;
+                    }
+                    var couponRateTemp = 0;
+                    var isFloatExist = false;
+                    for (var i = 0; i < $scope.configDetails.Coupons.length; i++) {
+                        if ($scope.configDetails.Coupons[i].CouponId) {
+                            if (parseInt($scope.configDetails.Coupons[i].CouponRate) !== $scope.configDetails.Coupons[i].CouponRate) {
+                                isFloatExist = true;
+                                break;
+                            }
+                            couponRateTemp = couponRateTemp + $scope.configDetails.Coupons[i].CouponRate;
+                            }
+                    }
+                    if (isFloatExist) {
+                        layer.alert('虚拟成本比例只能是0~100的整数', { title: "错误" });
+                        return false;
+                    }
+                    if (couponRateTemp !== 100) {
+                        layer.alert('虚拟成本比例总和必须是100', { title: "错误" });
+                        return false;
+                    }
+                    return true;
+                }
+                $scope.save = function (operType) {
+                    var loading = layer.load(3);
+                    //prepare for submit
+                    var submitData = [];
+                    for (var i = 0; i < $scope.configDetails.Coupons.length; i++) {
+                        if ($scope.configDetails.Coupons[i].CouponId) {
+                            //
+                            submitData.push({
+                                PKID: $scope.configDetails.Coupons[i].PKID,
+                                PID: $scope.configDetails.PID,
+                                CouponId: $scope.configDetails.Coupons[i].CouponId,
+                                CouponRate: $scope.configDetails.Coupons[i].CouponRate
+                            });
+                        }
+                    }
+                    //More...
+                    $http.post('@Url.Action("SaveProductCouponConfig")',
+                            {
+                                "configJson": angular.toJson(submitData),
+                                "operType": operType
+                            })
+                        .then(function (response) {
+                            layer.close(loading);
+                            if (response.status === 200) {
+                                if (!response.data) {
+                                    layer.alert('保存成功',
+                                        { title: "提示" },
+                                        function() {
+                                            location.reload();
+                                        });
+                                } else {
+                                    layer.alert(response.data, {title:"错误"});
+                                }
+                            } else {
+                                layer.alert('服务器出错！');
+                            }
+                        });
+                }
+            }
+        ]);
+</script>

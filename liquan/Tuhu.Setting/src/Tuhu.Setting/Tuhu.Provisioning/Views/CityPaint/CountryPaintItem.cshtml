@@ -1,0 +1,178 @@
+﻿@model  Tuhu.Provisioning.DataAccess.Entity.PaintInfoModel
+
+@{
+    var title = "增加编辑油漆产品全国价";
+
+    ViewBag.Title = title;
+}
+<style>
+    .ui-dialog {
+        border-radius: 3px;
+        padding: 0px;
+        width: auto;
+    }
+
+    .ui-dialog-grid {
+        width: 100%;
+    }
+
+    .ui-dialog-title {
+        width: 75%;
+        padding: 8px 15px 8px 15px;
+    }
+
+    .ui-dialog-close {
+        top: 8px;
+    }
+
+    .ui-dialog-body {
+        padding: 10px;
+    }
+
+    .ui-dialog-content {
+        padding: 0px;
+    }
+
+    .ui-dialog-footer {
+        padding: 5px 10px 5px 5px;
+        background: #ffffff;
+        border-top: 1px solid #eee;
+    }
+
+        .ui-dialog-footer button {
+            padding: 3px 15px;
+            border-radius: 2px;
+            box-shadow: 0 1px 1px rgba(0,0,0,.15);
+            font-size: 12px;
+        }
+
+            .ui-dialog-footer button.ui-dialog-autofocus {
+                font-weight: 700;
+                text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+            }
+
+    .expanded_table_icon {
+        background: url(/Scripts/TableTree/images/tree.gif) no-repeat 0px -4px;
+        width: 9px;
+        cursor: pointer;
+        padding-top: 0px;
+        margin: 0px;
+        padding-left: 13px;
+        zoom: 1;
+    }
+
+    .collapsed_table_icon {
+        background: url(/Scripts/TableTree/images/tree.gif) no-repeat 0px -24px;
+        width: 9px;
+        cursor: pointer;
+        padding-top: 0px;
+        margin: 0px;
+        padding-left: 13px;
+        zoom: 1;
+    }
+
+
+    .button1 {
+        border-radius: 5px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        font-family: "Microsoft Yahei";
+        outline: none;
+        cursor: pointer;
+        background: #0088cc;
+        border-color: #0088cc;
+    }
+
+    table th {
+        color: white;
+        padding: 6px 5px;
+        text-align: left;
+        background-color: #0088cc;
+        border: solid 1px #0088cc;
+    }
+
+    .Price {
+        background: url(/Images/rmb.png) no-repeat left center;
+        vertical-align: middle;
+        padding-top: -2px;
+        padding-left: 10px;
+    }
+</style>
+<link href="~/Content/filtrateSelect.css" rel="stylesheet" />
+<script src="../../Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<link rel="stylesheet" href="/Scripts/artDialog6.0.4/css/ui-dialog.css" />
+<script src="~/Scripts/artDialog6.0.4/dist/dialog-min.js"></script>
+<script src="~/Scripts/artDialog6.0.4/dist/dialog-plus-min.js"></script>
+
+<link href="~/Scripts/jQuery-EasyUI/themes/default/easyui.css" type="text/css" rel="stylesheet" />
+<link href="~/Scripts/jQuery-EasyUI/themes/icon.css" type="text/css" rel="stylesheet" />
+<script type="text/javascript" src="~/Scripts/jQuery-EasyUI/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="~/Scripts/jQuery-EasyUI/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="~/Scripts/layer/layer.js"></script>
+<script src="~/Scripts/jquery.filtrateSelect.js"></script>
+<table style="width:100%">
+    <tbody>
+        <tr>
+            <td>油漆产品 </td>
+            <td>@Html.DropDownListFor(T => T.PID, ViewData["ddlPaintTypeData"] as SelectList, new { @id = "ddlType" }) <span>@Html.ValidationMessageFor(T => T.PID)</span></td>
+        </tr>
+        <tr>
+            <td>价格/标准面 </td>
+            <td style="font-family:Arial"><input class="Price" id="Price" type="text" value="@Model.Price" /></td>
+        </tr>
+    </tbody>
+</table>
+<div>
+    <input type="hidden" id="PKID" value="@Model.PKID" />
+    <input type="hidden" id="PID" value="@Model.PID" />
+    <input type="hidden" id="IsCountry" value="@Model.IsCountry" />
+    <input type="hidden" id="LastUpdateTime" value="@Model.UpdatedTime" />
+    <input type="hidden" id="CreateTime" value="@Model.CreatedTime" />
+</div>
+<br /><br />
+<div style="text-align: center; width: 100%; height: 100%; margin: 0px;">
+    <a class="button1" href="javascript:;" style="margin-bottom: 20px; float: none" onclick="savecountry()">保存</a>
+</div>
+<script type="text/javascript">
+
+    function savecountry() {
+
+        if (confirm("是否确认要保存？")) {
+            var pkid = $("#PKID").val();
+
+            if (pkid == "0") {
+                $.post("/CityPaint/InsertCountryPaintItem", { pid: $("#ddlType").val(), displayName: $("#ddlType option:selected").text(), price: $("#Price").val() }, function (data) {
+
+                    if (data.msg == "success") {
+                        alert("保存成功！");
+                        window.location.href = "/CityPaint/MultiCityPaintList";
+                    }
+                    else if (data.msg == "has")
+                    {
+                        alert("已有相同全国价产品，不能重复添加");
+                    }else {
+                        alert("保存失败！");
+                    }
+                });
+            } else {
+                $.post("/CityPaint/UpdateCountryPaintItem", { pkid: pkid, pid: $("#ddlType").val(), displayName: $("#ddlType option:selected").text(), price: $("#Price").val()}, function (data) {
+
+                    if (data.msg =="success") {
+                        alert("保存成功！");
+                        window.location.href = "/CityPaint/MultiCityPaintList";
+
+                    }
+                    else if (data.msg == "has") {
+                        alert("选择油漆已配置，不能修改");
+                    } else {
+                        alert("保存失败！");
+                    }
+                });
+            }
+        }
+    }
+
+
+</script>

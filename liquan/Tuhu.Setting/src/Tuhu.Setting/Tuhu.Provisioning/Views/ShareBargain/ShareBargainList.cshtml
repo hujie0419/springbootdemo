@@ -1,0 +1,62 @@
+﻿@using Tuhu.Provisioning;
+@using Tuhu.Provisioning.DataAccess.Entity;
+@model Tuhu.Component.Common.Models.ListModel<ShareBargainItemModel>
+@{
+    Layout = null;
+    var request = ViewBag.request as BargainProductRequest;
+}
+
+@if (Model.Source.Any())
+{
+    <table class="table" data-count="@Model.Pager.TotalItem" width="100%">
+        <tr>
+            <th>ID</th>
+            <th>类型</th>
+            <th>商品名称</th>
+            <th>商品PID</th>
+            <th>实际库存</th>
+            <th>活动价</th>
+            <th>上架时间</th>
+            <th>下架时间</th>
+            <th>创建人</th>
+            <th>操作</th>
+        </tr>
+        @foreach (var item in Model.Source)
+        {
+        <tr>
+            <td class="pkid">@item.PKID</td>
+            <td>@(item.ProductType == 2 ? "优惠券" : "商品")</td>
+            <td>@item.ProductName</td>
+            <td>@item.PID</td>
+            <td>@item.CurrentStockCount</td>
+            <td>@item.FinalPrice.ToString("#0.00")</td>
+            <td>@item.BeginDateTime</td>
+            <td>@item.EndDateTime</td>
+            <td>@item.Operator</td>
+            <td>
+                @if (item.ProductType == 1)
+                {
+                    <a href="javascript:void(0);" onclick="EditBargainProduct(@item.PKID)">编辑</a>
+                    <a href="javascript:void(0);" onclick="CopyBargainProduct(@item.PKID)">复制</a>
+                }
+                else
+                {
+                    <a href="javascript:void(0);" onclick="EditBargainCoupon(@item.PKID)">编辑</a>
+                    <a href="javascript:void(0);" onclick="CopyBargainCoupon(@item.PKID)">复制</a>
+                }
+                <a href="/ShareBargain/ShareBargainLogList?PKID=ShareBarginProduct_@item.PKID" target="_blank">操作日志</a>
+                <a href="javascript:void(0);" onclick="RemoveBargainProduct(@item.PKID)">删除</a>
+            </td>
+        </tr>
+        }
+    </table>
+}
+@Html.Pager(Model.Pager, true, id => Url.Action("ShareBargainList", new
+{
+    PID = request.PID,
+    ProductName = request.ProductName,
+    Operator = request.Operator,
+    OnSale = request.OnSale,
+    pageSize = request.PageSize,
+    pageIndex = id
+}))

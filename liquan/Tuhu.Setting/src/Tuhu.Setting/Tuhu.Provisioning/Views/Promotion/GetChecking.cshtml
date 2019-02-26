@@ -1,0 +1,193 @@
+﻿@using Tuhu.Provisioning.Business;
+@using Tuhu.Provisioning.DataAccess.Entity;
+@using Tuhu.Component.Framework;
+@model Tuhu.Component.Common.Models.ListModel<ExchangeCodeDetail>
+
+    <!DOCTYPE HTML>
+
+    <html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <title></title>
+        <style>
+            #tb tr th{
+            text-align:center;
+             }
+            #tb tr td{
+            text-align:center;
+             }
+            #ad{
+                float:right;
+                margin-right:15px;
+            }
+             .head{
+                 margin-top: 20px;
+                   float: left; 
+                    font-size: 22px; 
+                     font-weight: 900;
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <div style="height:80px">
+                <span class="head">途虎优惠券详细信息|<a href="#" onclick="GetAdd(@ViewBag.Parentid)">添加</a>|<a href="#" onclick="GoBack(1)">返回</a></span>
+            </div>
+            <div id="div_Window2"></div>
+            <div>
+                <table id="tb" style="width:100%;">
+                    <tr>
+                        <th>优惠券描述</th>
+                        <th>发放渠道</th>
+                        <th>优惠券开始生效时间</th>
+                        <th>优惠券结束生效时间</th>
+                        <th>优惠券兑换后有效天数</th>
+                        <th>优惠券类型</th>
+                        <th>金额</th>
+                        <th>限制最低金额</th>
+                        <th>数量</th>
+                        <th>是否有效</th>
+                        <th>操作</th>
+                    </tr>
+                    @if (Model != null)
+                    {
+                        foreach (var item in Model)
+                        {
+                            var IA = "无";
+                            if (@item.IsActive == true)
+                            {
+                                IA = "是";
+                            }
+                            else
+                            {
+                                IA = "否";
+                            }
+                            var type = "暂无";
+                            if (@item.CodeType == 0)
+                            {
+                                type = "优惠券";
+                            }
+                            if (@item.CodeType == 1)
+                            {
+                                type = "轮胎券";
+                            }
+                            if (@item.CodeType == 2)
+                            {
+                                type = "保养券";
+                            }
+                            if (item.CodeType == 3)
+                            {
+                                type = "5分洗车券";
+                            }
+                            if (item.CodeType == 4)
+                            {
+                                type = "洗车券";
+                            }
+                            if (item.CodeType == 5)
+                            {
+                                type = "美容抵用券";
+                            }
+                            if (item.CodeType == 6)
+                            {
+                                type = "轮胎、保养券";
+                            }
+                            if (item.CodeType == 7)
+                            {
+                                type = "内饰清洗券";
+                            }
+                            if (item.CodeType == 8)
+                            {
+                                type = "车品券";
+                            }
+                            if (item.CodeType == 11)
+                            {
+                                type = "保养免单券(买多少,返多少)";
+                            }
+                            if (item.CodeType == 12)
+                            {
+                                type = "途虎现金券";
+                            }
+                            if (item.CodeType == 99)
+                            {
+                                type = "免费洗车券";
+                            }
+                            <tr>
+                                <td>@item.Name</td>
+                                <td>@item.CodeChannel</td>
+                                <td>@item.CodeStartTime</td>
+                                <td>@item.CodeEndTime</td>
+                                <td>@item.Validity</td>
+                                <td>@type</td>
+                                <td>@item.Money</td>
+                                <td>@item.MinMoney</td>
+                                <td>@item.Number</td>
+                                <td>@IA</td>
+                                <td><a href="#" onclick="GetEdit(@item.PKID)">编辑</a>&nbsp;|&nbsp;<a href="#" onclick="return GetDel(@item.PKID)">删除</a></td>
+                            </tr>
+                        }
+                    }
+                </table>
+                @*<div id="ad"><a href="#" onclick="GetAdd(@ViewBag.Parentid)">添加</a></div>*@
+            </div>
+        </div>
+</body>
+</html>
+    <script type="text/javascript">
+        function GetEdit(id) {
+            event.preventDefault();
+            $("#div_Window2").load("/Promotion/GetEdit?id=" + id);
+            $("#div_Window2").dialog({
+                title: "编辑",
+                width: 900,
+                modal: true,
+                show: "slide",
+                buttons: {
+                    "确认": function () {
+                        $("#EditSubmit").click();
+                        
+                    },
+                    "取消": function () {
+                        $("#div_Window2").dialog("close");
+                    }
+                }
+            });
+        }
+
+        function GetDel(pkid) {
+            if (confirm("亲，是否确定删除？")) {
+                $.post("@Url.Action("DeletePromoCode")", { pkid: pkid }, function (data) {
+                    if (data == "ok") {
+                        history.go(0);
+                        alert("删除成功！");
+                    }  else {
+                        alert("删除失败！");
+                    }
+
+                }, "text")
+            }
+        }
+
+        function GetAdd(id) {
+            event.preventDefault();
+            $("#div_Window2").load("/Promotion/GetAdd?id="+id);
+            $("#div_Window2").dialog({
+                title: "添加",
+                width: 900,
+                modal: true,
+                show: "slide",
+                buttons: {
+                    "确认": function () {
+                        $("#EditSubmit").click();
+
+                    },
+                    "取消": function () {
+                        $("#div_Window2").dialog("close");
+                    }
+                }
+            });
+        }
+
+        function GoBack(pageIndex) {
+            window.location.href = "/Promotion/SelectGiftBag?pageIndex=" + pageIndex;
+        }
+    </script>

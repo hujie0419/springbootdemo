@@ -1,0 +1,61 @@
+﻿@if (Request.IsAuthenticated)
+{
+    <text>您好 <b>
+            @Context.User.Identity.Name
+            @if (("chenwei@tuhu.cn,sunxiaomei@tuhu.cn,yangpeipei@tuhu.cn").Contains(User.Identity.Name))
+            {
+                <strong style="color:red;border-bottom:1px solid #ffd800;cursor:pointer;" onclick="UserHistory()">查询</strong>
+            }
+        </b>
+        祝您工作愉快！
+        [ <a href="@ThBiz.Common.Configurations.YewuDomainConfig.YewuSite/Account/LogOff" onclick="RefreshUserRoles()">退出</a> ]</text>
+}
+else
+{
+    @:[ <a href="@ThBiz.Common.Configurations.YewuDomainConfig.YewuSite/Account/LogOn">登录</a>  ]
+}
+<div style="display:none;" id="showHistory">
+    查询人:<input type="text" placeholder="输入查询人的邮箱" id="queryPerson" /> 时间：<input type="text" id="queryTime" placeholder="输入需查询的时间." />
+    <input type="button" onclick="queryHistory()" value="查询" />
+    <div id="divHistory"></div>
+</div>
+<script>
+    $(function () {
+        $("#queryTime").datepicker();
+    });
+    function UserHistory() {
+        $("#showHistory").dialog({
+            title: "查询用户登陆历史记录",
+            width: 500,
+            height: 400,
+            modal: true,
+            show: 'slide',
+            left: 1,
+            buttons: { '取消': function () { $(this).dialog("close"); } }
+        });
+    }
+    function queryHistory() {
+        if ($("#queryPerson").val() == "")
+        { $("#queryPerson").css("border", "solid 1px red"); return false; }
+        if ($("#queryTime").val() == "")
+        { $("#queryTime").css("border", "solid 1px red"); return false; }
+        $.getJSON("/Account/GetUserLoginRecord", { "author": $("#queryPerson").val(), "time": $("#queryTime").val() }, function (data) {
+            $("#divHistory").html(data);
+        });
+    }
+    function RefreshUserRoles() {
+        $.ajax({
+            url: 'Home/RefreshUserRoles',
+            type: 'POST',
+            async: false,
+            success: function (data) {
+                if (!data.Result) {
+                    console.log("退出时刷新用户权限失败=>" + data.Msg);
+                }
+            },
+            error: function () {
+                console.log("退出时刷新用户权限异常");
+            },
+        });
+    }
+</script>

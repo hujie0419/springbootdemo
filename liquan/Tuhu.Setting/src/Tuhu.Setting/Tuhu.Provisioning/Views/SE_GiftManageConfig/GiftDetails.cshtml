@@ -1,0 +1,213 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@model List<Tuhu.Provisioning.Business.Models.MatchGiftsResponse>
+@{
+    ViewBag.Title = "GiftDetails";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section head{
+    <link href="~/Content/nfine/js/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/ProductVehicleType/css/bootstrap-datetimepicker.css" rel="stylesheet" />
+}
+@helper  U_ChannelPayHTML(int type = 0)
+{
+
+var list = ((List<ChannelDictionariesModel>)ViewBag.U_ChannelPayList).Where(_ => _.ChannelType == (type == 1 ? "H5合作渠道" : type == 2 ? "其他" : type == 3 ? "第三方平台" : type == 4 ? "自有渠道" : "")).ToList();
+    <div>
+        <h4 style="color:blue;display:inline-block;"> @(list.FirstOrDefault().ChannelType)</h4>
+    </div>
+foreach (var item in list)
+{
+        <label style="display:inline-block;"><input data-checked-value="@(item.ChannelKey)" name="Channel"data-checked-type="@(type)" type="radio" value="@item.ChannelKey" @(item.IsChecked ? "checked=checked" : "") />@item.ChannelKey</label>
+}
+}
+<form id="ProductsForm" class="form-inline" style="margin: 20px" action="GiftDetails">
+    <div class="form-group">
+        <label>订单渠道：</label>
+        <input type="text" class="form-control" id="OrderChannel" placeholder="订单渠道" >
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ChannelModal" aria-label="Left Align">选择渠道
+        <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span></button>
+
+        @*<input type="text" class="form-control" id="OrderChannel" placeholder="订单渠道">*@
+    </div>
+
+    <div class="form-group">
+        <label>安装方式：</label>
+        <label class="radio-inline"><input type="radio" name="InstallType" value="1ShopInstall">到店安装</label>
+        <label class="radio-inline"><input type="radio" name="InstallType" value="4SentInstall">上门安装</label>
+        <label class="radio-inline"><input type="radio" name="InstallType" value="3NoInstall">无需安装</label>
+    </div>
+
+    <div class="form-group">
+        <label for="VehicleID">车型：</label>
+        <input type="email" class="form-control" id="VehicleID" placeholder="车型">
+    </div>
+    <button type="button" class="btn btn-primary" onclick="Search(false)">
+        搜索详情页赠品
+        <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="btn btn-primary" onclick="Search(true)">
+        搜索下单页赠品
+        <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+    </button>
+    <div style=" font-weight: bold; color: blue;padding-left: 300px;"><label>产品信息</label></div>
+    <table class="table" id="Products" style="width:800px;">
+        <thead>
+            <tr>
+                <th>PID</th>
+                <th>数量</th>
+                <th>名称</th>
+                <th>尺寸</th>
+                <th><input type="button" value="添加" onclick="Add_Products();" /> </th>
+            </tr>
+        </thead>
+        <tbody id="Productstbody"></tbody>
+    </table>
+</form>
+<div class="modal fade " tabindex="-1" role="dialog" id="ChannelModal">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">勾选渠道</h4>
+            </div>
+            <div class="modal-body">
+                @U_ChannelPayHTML(1)
+                <hr/>
+                @U_ChannelPayHTML(2)
+                <hr/>
+                @U_ChannelPayHTML(3)
+                <hr/>
+                @U_ChannelPayHTML(4)
+                <hr/>
+            </div>
+    
+        <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+         <button type="button" class="btn btn-primary" onclick="SelectChannel()">Save</button>
+        </div>
+      </div>
+    </div>
+</div>
+<div id="Place"></div>
+@*<table class="table table-bordered table-striped">
+        <tr>
+            <th width="15%">PID</th>
+            <th>赠品名称</th>
+            <th>数量</th>
+            <th>是否必须</th>
+            <th>赠送类型</th>
+            <th>赠品描述信息</th>
+        </tr>
+
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Pid</td>
+                    <td>@item.ProductName</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.Require</td>
+                    <td>@item.GiftsType</td>
+                    <td>@item.GiftDescription</td>
+                </tr>
+            }
+        }
+
+    </table>*@
+     <script src="~/Content/nfine/js/bootstrap/bootstrap.js"></script>
+    <script src="~/Content/ProductVehicleType/js/bootstrap.min.js"></script>
+<script type="text/template" id="ProductsTemplate">
+    <tr>
+        <td><input onblur="onblur_PID(this);" type="text" style="width:200px;" name="Pid" value="{{Pid}}" /></td>
+        <td><input type="number" min="1" value="{{Quantity}}" style="width:100px;" name="Quantity" /></td>
+        <td><input type="text" value="{{Displayname}}" style="width:300px;" name="Displayname" /></td>
+        <td><input type="number" min="1" value="{{Rim}}" style="width:100px;" name="Rim" /></td>
+        <td><input type="button" value="删除" onclick="Del_Products(this);" /></td>
+    </tr>
+</script>
+<script>
+    function SelectChannel() {
+        document.getElementById('OrderChannel').value = $('input:radio[name="Channel"]:checked').val();
+        //$("#ChannelModal").close();
+        $('#ChannelModal').modal('hide');
+    }
+    function Add_Products() {
+        $("#Products tbody").append($("#ProductsTemplate").html()
+            .replace(/{{Pid}}/ig, "")
+            .replace(/{{Quantity}}/ig, "")
+            .replace(/{{Displayname}}/ig, "")
+            .replace(/{{Rim}}/ig, ""));
+    }
+    function onblur_PID(el) {
+        var val = $.trim($(el).val()),
+            _parentElement = $(el).closest("table[id='Products']").attr("id");
+
+        if (val.length > 0) {
+            $.ajax({
+                type: "POST",
+                url: "/SE_GiftManageConfig/GetVW_ProductsModel",
+                data: { pid: val },
+                success: function (r) {
+                    if (r.Status <= 0) {
+                        $(el).val("");
+                        alert("PID:『" + val + "』不存在！");
+                    }
+                    else {
+                        if (_parentElement != 'undefined') {
+                            $(el).parents("td").next().next().find("input[type='text']").val(r.DisplayName);
+                        }
+                    }
+                }
+            });
+        }
+    }
+    function Del_Products(obj) {
+        if (confirm("确认删除？"))
+            $(obj).parents("tr").remove();
+    }
+</script>
+<script>
+
+    function Search(isOrder) {
+        $("#Place").empty();
+        var products = [];
+        $("#Productstbody").each(function () {
+            var PID = $(this).find("[name=Pid]").val().trim(); //PID
+            var Quantity = $(this).find("[name=Quantity]").val().trim();
+            var Displayname = $(this).find("[name=Displayname]").val().trim();
+            var Rim = $(this).find("[name=Rim]").val().trim();
+
+            var onepro = {
+                PID: PID,
+                Quantity: Quantity,
+                Displayname: Displayname,
+                Rim: Rim
+            };
+
+            products.push(onepro);
+        });
+        var matchGift = {
+            OrderChannel: $("#OrderChannel").val(),
+            InstallType: $('input:radio[name="InstallType"]:checked').val(),
+            VehicleID: $("#VehicleID").val(),
+            Products: products
+        };
+        $.ajax({
+            type: "post",
+            url: '/SE_GiftManageConfig/GiftDetails',
+            async: true,
+            data: {
+                request: matchGift,
+                isOrder: isOrder
+            },
+           beforeSend: function () {
+            $("#Place").text("查询中，请稍后！")
+            },
+            success: function (result) {
+                $("#Place").html(result.Html);
+            }
+        });
+    }
+</script>

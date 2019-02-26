@@ -1,0 +1,643 @@
+﻿@{
+    ViewBag.Title = "通用服务码模版产品列表";
+    Layout = "~/Views/Shared/_LayoutNew.cshtml";
+    var dev = System.Configuration.ConfigurationManager.AppSettings["env"] == "dev" ? 1 : 0;
+}
+@section css{
+    <link rel="stylesheet" href="~/Content/iview/iview.css" />
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+}
+<div id="APP" v-cloak>
+    <div>
+        <i-button type="info" v-on:click="Edit()">新建</i-button>
+    </div><br />
+    <i-table :data="tableDataList"
+             :columns="tableColumns"
+             stripe>
+    </i-table>
+    <div>
+        <Modal title="编辑通用服务码模版产品配置" v-model="generalBeautyServerCodeProductDetail.showModal" width="600"
+               :mask-closable="false"
+               v-on:on-ok="SaveSetting"
+               v-on:on-cancel="CancelSetting">
+            <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                <i-col span="3">
+                    <div class="modal-label">名称:</div>
+                </i-col>
+                <i-col span="8">
+                    <i-input v-model="generalBeautyServerCodeProductDetail.name" placeholder="名称"></i-input>
+                </i-col>
+                <i-col span="3">
+                    <div class="modal-label">选择服务:</div>
+                </i-col>
+                <i-col span="8">
+                    <i-select transfer placeholder="选择服务" :filterable="true" v-model="generalBeautyServerCodeProductDetail.codeTypeConfigId" style="width:200px;" :disabled="generalBeautyServerCodeProductDetail.isEdit">
+                        <i-option :value="0" :key="0">请选择</i-option>
+                        <i-option v-for="item in generalBeautyServerCodeProductDetail.services" :value="item.Id" :key="item.Id">{{item.Text}}</i-option>
+                    </i-select>
+                </i-col>
+                <i-col span="3">
+                    <div class="modal-label">结算价:</div>
+                </i-col>
+                <i-col span="20">
+                    <i-input v-model="generalBeautyServerCodeProductDetail.settlementPrice" placeholder="结算价" style="width:190px;" :disabled="generalBeautyServerCodeProductDetail.isEdit"></i-input>
+                </i-col>
+                <i-col span="3">
+                    <div class="modal-label">数量:</div>
+                </i-col>
+                <i-col span="8">
+                    <i-input v-model="generalBeautyServerCodeProductDetail.number" placeholder="数量" :disabled="generalBeautyServerCodeProductDetail.isEdit"></i-input>
+                </i-col>
+                <i-col span="3">
+                    <div class="modal-label">有效期:</div>
+                </i-col>
+                <i-col span="8">
+                    <i-input v-model="generalBeautyServerCodeProductDetail.validDate" placeholder="有效期" :disabled="generalBeautyServerCodeProductDetail.isEdit"></i-input>
+                </i-col>
+                <i-col span="3">
+                    <div class="modal-label">描述:</div>
+                </i-col>
+                <i-col span="20">
+                    <i-input v-model="generalBeautyServerCodeProductDetail.description" placeholder="描述" type="textarea" :rows="5"></i-input>
+                </i-col>
+                <i-col span="3">
+                    <div class="modal-label">是否生效:</div>
+                </i-col>
+                <i-col span="20">
+                    <Radio-Group v-model="generalBeautyServerCodeProductDetail.isActive">
+                        <Radio :label=1>
+                            <span>是</span>
+                        </Radio>
+                        <Radio :label=0>
+                            <span>否</span>
+                        </Radio>
+                    </Radio-Group>
+                </i-col>
+            </row>
+        </Modal>
+    </div>
+
+    <div>
+        <Modal title="配置地区限购" v-model="generalBeautyServerCodeProductRegion.showModal" width="800"
+               v-on:on-ok="submitRegion"
+               v-on:on-cancel="cancleRegion">
+            <table>
+                <tr>
+                    <td style="width:200px;">省/自治区/直辖市</td>
+                    <td style="width:800px;">市/区</td>
+                    <td style="width:50px;"><i-button type="primary" v-on:click="addLimitArea()">添加</i-button></td>
+                </tr>
+                <tr v-for="item  in generalBeautyServerCodeProductRegion.areaData" style="background-color:blanchedalmond">
+                    <td style="width:180px;">
+                        <i-select v-model="item.provinceId" placeholder="请选择" v-on:on-change="provinceChange(item,1)">
+                            <i-option v-for="itemo in item.provinceData" :value="itemo.id" :key="itemo.id">{{itemo.name}}</i-option>
+                        </i-select>
+                    </td>
+                    <td style="width:800px;">
+                        <div style="border-bottom: 1px solid #e9e9e9;padding-bottom:6px;margin-bottom:6px;">
+                            <Checkbox :indeterminate="item.indeterminate"
+                                      :value="item.checkall"
+                                      v-on:click.prevent.native="handleCheckAll(item)">全选</Checkbox>
+                        </div>
+                        <Checkbox-Group v-model="item.checkallgroup" v-on:on-change="checkAllGroupChange($event,item)">
+                            <Checkbox v-for="itemc in item.cityData" :label="itemc.id">{{itemc.name}}</Checkbox>
+                        </Checkbox-Group>
+                    </td>
+                    <td style="width:50px;"><i-button type="error" v-on:click="deleteLAComponent(item)">删除</i-button></td>
+                </tr>
+            </table>
+        </Modal>
+
+    </div>
+
+</div>
+
+
+
+
+
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/iview/iview.min.js"></script>
+    <script type="text/javascript">
+        var vm = new Vue({
+            el: '#APP',
+            data() {
+                return {
+                    tableDataList: this.GetDataList(),
+                    tableColumns: [
+                        {
+                            title: 'PKID',
+                            key: 'PKID',
+                            width: 80
+                        },
+                        {
+                            title: '服务展示名称',
+                            key: 'Name',
+                            width: 200
+                        },
+                        {
+                            title: '服务名',
+                            key: 'Name'
+                        },
+                        {
+                            title: 'PID',
+                            key: 'PID'
+                        },
+                        {
+                            title: '结算价（单次）',
+                            key: 'SettlementPrice'
+                        },
+                        {
+                            title: '数量',
+                            key: 'Number'
+                        },
+                        {
+                            title: '有效期(天)',
+                            key: 'ValidDate'
+                        },
+                        {
+                            title: '创建人',
+                            key: 'CreatedUser'
+                        },
+                        {
+                            title: '创建时间',
+                            key: 'CreatedDateTimeString'
+                        },
+                        {
+                            title: '操作',
+                            key: 'action',
+                            width: 250,
+                            align: 'center',
+                            render: (h, params) => {
+                                return h('div',
+                                    [
+                                        h('Button',
+                                            {
+                                                props: {
+                                                    type: 'primary',
+                                                    size: 'small'
+                                                },
+                                                style: {
+                                                    marginRight: '5px'
+                                                },
+                                                on: {
+                                                    click: () => {
+                                                        this.openRegionLimit(params.index);
+                                                    }
+                                                }
+                                            },
+                                            '限购'),
+                                        h('Button',
+                                            {
+                                                props: {
+                                                    type: 'primary',
+                                                    size: 'small'
+                                                },
+                                                style: {
+                                                    marginRight: '5px'
+                                                },
+                                                on: {
+                                                    click: () => {
+                                                        this.Edit(params.index);
+                                                    }
+                                                }
+                                            },
+                                            '编辑'),
+                                        h('Button',
+                                            {
+                                                props: {
+                                                    type: 'error',
+                                                    size: 'small'
+                                                },
+                                                style: {
+                                                    marginRight: '5px'
+                                                },
+                                                on: {
+                                                    click: () => {
+                                                        this.Remove(params.index);
+                                                    }
+                                                }
+                                            },
+                                            '删除')
+                                    ]);
+                            }
+                        }
+                    ],
+                    currentPage: 1,
+                    pageSize: 15,
+                    generalBeautyServerCodeProductDetail: {
+                        isActive: 0,
+                        name: '',
+                        settlementPrice: '',
+                        settlementMethod: '',
+                        number: '',
+                        validDate: '',
+                        description: '',
+                        codeTypeConfigId: '',
+                        services: [],
+                        showModal: false,
+                        isEdit:false,
+                    },
+                    generalBeautyServerCodeProductRegion: {
+                        showModal: false,
+                        areaData: [],
+                        provinceDatas: [],
+                        pkid: 0,
+                        isChange: false,
+                    }
+                }
+            },
+            mounted: function () {
+                this.GetBeautyServiceCodeTypeConfigs();
+                this.getProvinceDatas();
+            },
+            methods: {
+                GetDataList() {
+                    var resultData = [];
+                    var _this = this;
+                    $.ajax({
+                        url: "/GeneralBeautyServerCode/GetGeneralBeautyServerCodeProductsList?packageId="+'@ViewBag.PackageId',
+                        type: "get",
+                        async: false,
+                        success: function(data) {
+                            if (data != null) {
+                                resultData = data.Result;
+                            }
+                        },
+                        error: function() {
+                            alert("服务端异常！");
+                        }
+                    });
+                    return resultData;
+                },
+                ChangePage() {
+
+                },
+                Remove(a) {
+                    if (confirm("确定要删除？")) {
+                        var item = this.tableDataList[a];
+                        $.ajax({
+                            url: "/GeneralBeautyServerCode/DeleteGeneralBeautyServerCodeProduct?pkid="+item.PKID,
+                            type: "post",
+                            async: true,
+                            data: {
+                                pkid: item.PKID
+                            },
+                            success: function (data) {
+                                if (data.Result) {
+                                    window.location.href = '/GeneralBeautyServerCode/GeneralBeautyServerCodeProductsList?packageId='+'@ViewBag.PackageId';
+                                }
+                                else {
+                                    this.$Notice.warning({
+                                        title: '删除失败',
+                                        desc: data.Item2
+                                    });
+                                }
+                            },
+                            error: function () {
+                                alert("服务端异常！");
+                            }
+                        });
+                    }
+                },
+                Add() {
+                    var _this = this;
+                    window.location.href = '/GeneralBeautyServerCode/GeneralBeautyServerCodeProductsDetail?packageId='+'@ViewBag.PackageId'+'&pkid=';
+                },
+                Edit(a) {
+                    var item = this.tableDataList[a];
+                    var _this = this.generalBeautyServerCodeProductDetail;
+                    _this.showModal = true;
+                    var postData = {
+                        pkid: item.PKID
+                    };
+                    $.ajax({
+                        url: "/GeneralBeautyServerCode/GetGeneralBeautyServerCodeProductDetail",
+                        type: "post",
+                        async: false,
+                        data: postData,
+                        success: function(data) {
+                            if (data != null) {
+                                console.log(data);
+                                _this.isActive = data.Result.IsActive ? 1 : 0;
+                                _this.description = data.Result.Description;
+                                _this.settlementMethod = data.Result.SettlementMethod;
+                                _this.settlementPrice = data.Result.SettlementPrice;
+                                _this.name = data.Result.Name;
+                                _this.pkid = data.Result.PKID;
+                                _this.number = data.Result.Number;
+                                _this.validDate = data.Result.ValidDate;
+                                _this.isEdit = data.Result.PKID > 0;
+                                _this.codeTypeConfigId = data.Result.CodeTypeConfigId;
+                            }
+                        },
+                        error: function() {
+                            alert("服务端异常！");
+                        }
+                    });
+                },
+                GetBeautyServiceCodeTypeConfigs: function () {
+                    var _this = this.generalBeautyServerCodeProductDetail;
+                    $.get("/BeautyServicePackage/GetAllBeautyServiceCodeTypeConfig?ServerType=" + _this.serverType, function (data) {
+                        _this.services = (data || []).map(function (service) {
+                            return { Id: service.PKID, Text: service.Name };
+                        });
+                    });
+                },
+                SaveSetting() {
+                    var _this = this.generalBeautyServerCodeProductDetail;
+                    var isactive = _this.isActive==0?false:true;
+                    var description = _this.description;
+                    var name = _this.name;
+                    var settlementMethod = _this.settlementMethod;
+                    var settlementPrice = _this.settlementPrice;
+                    var packageId = '@ViewBag.PackageId';
+                    var pkid = _this.pkid;
+                    var number = _this.number;
+                    var validDate = _this.validDate;
+                    var codeTypeConfigId = _this.codeTypeConfigId;
+                    var postData = {
+                        IsActive: isactive,
+                        Description: description,
+                        SettlementMethod: settlementMethod,
+                        SettlementPrice: settlementPrice,
+                        Name: name,
+                        PackageId: packageId,
+                        PKID: pkid,
+                        Number: number,
+                        ValidDate: validDate,
+                        CodeTypeConfigId: codeTypeConfigId
+                    };
+                    $.ajax({
+                        url: "/GeneralBeautyServerCode/SaveGeneralBeautyServerCodeProductDetail",
+                        type: "post",
+                        async: false,
+                        data: postData,
+                        success: function(data) {
+                            if (data != null&&data.Result) {
+                                window.location.href = '/GeneralBeautyServerCode/GeneralBeautyServerCodeProductsList?packageId=' +
+                                    '@ViewBag.PackageId';
+                            }
+                            else {
+                                alert("保存失败！");
+                            }
+                        },
+                        error: function() {
+                            alert("服务端异常！");
+                        }
+                    });
+                },
+                CancelSetting() {
+                      window.location.href = '/GeneralBeautyServerCode/GeneralBeautyServerCodeProductsList?packageId=' +
+                                    '@ViewBag.PackageId';
+                },
+                provinceChange: function (e, edit) {
+                    console.log(edit);
+                    var _this = this.generalBeautyServerCodeProductRegion;
+                    if (_this.isChange&&edit==1)
+                    {
+                        return;
+                    }
+                    var exist = _this.areaData.filter(function (x) { return x.provinceId == e.provinceId; });
+                    if (exist.length <= 1) {
+                        $.ajax({
+                            url: "/BeautyYearCardConfig/GetAllCitys",
+                            type: "post",
+                            async: false,
+                            data: {
+                                ProvinceId: e.provinceId
+                            },
+                            success: function (data) {
+                                if (data != null && data.length > 0) {
+                                    e.cityData = data;
+                                    e.cityIds = [];
+                                    data.forEach(function (x) {
+                                        e.cityIds.push(x.id);
+                                    });
+                                    if (edit == 1) {
+                                        e.checkall = false;
+                                        e.checkallgroup = [];
+                                    }
+                                    if (e.checkall) {
+                                        e.checkallgroup = e.cityIds;
+                                    }
+                                }
+                                else {
+                                    _this.$Notice.warning({
+                                        title: '获取省市信息异常！',
+                                        desc: '获取省市信息异常！',
+                                    });
+                                }
+                            },
+                            error: function () {
+                                alert("服务端异常！");
+                            }
+                        });
+
+                    }
+                    else {
+                        this.$Notice.warning({
+                            title: '重复省份',
+                            desc: '选择的省份/直辖市已经存在，清重新选择！',
+                        });
+                        e.cityData = [];
+                        return;
+                    }
+                },
+                openRegionLimit(a)
+                {
+                    var item = this.tableDataList[a];
+                    var vm = this;
+                    var _this = this.generalBeautyServerCodeProductRegion;
+                    if (_this.pkid==0||item.PKID == _this.pkid)
+                    {
+                        _this.isChange = false;
+                    }
+                    else {
+                        _this.isChange = true;
+                    }
+
+                    console.log(_this);
+                    _this.showModal = true;
+                    _this.pkid = item.PKID;
+                    var postData = {
+                        pkid: item.PKID
+                    };
+                   $.ajax({
+                       url: "/GeneralBeautyServerCode/GetGeneralBeautyServerCodeProductRegions",
+                        type: "post",
+                        async: false,
+                        data: postData,
+                        success: function(data) {
+                            if (data != null && data.IsSuccess) {
+                                _this.areaData = [];
+                                data.Result.forEach(function (x) {
+                                    let mm = [];
+                                    if (!x.IsAllCitys) {
+                                        x.CityIdArray.forEach(function (y) { mm.push(Number.parseInt(y)) });
+                                    }
+                                    var e = {
+                                        'provinceId': x.ProvinceId,
+                                        'provinceData': _this.provinceDatas,
+                                        'cityData': [],
+                                        'cityIds': [],
+                                        'indeterminate': false,
+                                        'checkall': x.IsAllCitys,
+                                        'checkallgroup': mm,
+                                    };
+                                    vm.provinceChange(e,2);
+                                    _this.areaData.push(e);
+                                });
+                            }
+                            else {
+                                alert("保存失败！");
+                            }
+                        },
+                        error: function() {
+                            alert("服务端异常！");
+                        }
+                    });
+
+
+                },
+                addLimitArea(a) {
+                    var _this = this.generalBeautyServerCodeProductRegion;
+                    var item = this.tableDataList[a];
+                    _this.areaData.push({
+                        'provinceId': '',
+                        'provinceData': _this.provinceDatas,
+                        'cityData': [],
+                        'cityIds': [],
+                        'indeterminate': false,
+                        'checkall': false,
+                        'checkallgroup': [],
+                    });
+                },
+                getProvinceDatas() {
+                    var _this = this;
+                    $.ajax({
+                        url: "/BeautyYearCardConfig/GetAllProvinces",
+                        type: "post",
+                        async: false,
+                        data: {},
+                        success: function (data) {
+                            if (data != null && data.length > 0) {
+                                $(data).each(function (i, e) {
+                                    _this.generalBeautyServerCodeProductRegion.provinceDatas.push({
+                                        name: e.name,
+                                        id: e.id,
+                                    })
+                                })
+                            }
+                            else {
+                                _this.$Notice.warning({
+                                    title: '获取省市信息异常！',
+                                    desc: '获取省市信息异常！',
+                                });
+                            }
+                        },
+                        error: function () {
+                            alert("服务端异常！");
+                        }
+                    });
+
+                },
+                deleteLAComponent(i) {
+                    var _this = this.generalBeautyServerCodeProductRegion;
+                    var n = _this.areaData.indexOf(i);
+                    _this.areaData.splice(n, 1);
+                },
+                handleCheckAll(e) {
+                    if (e.indeterminate) {
+                        e.checkall = false;
+                    } else {
+                        e.checkall = !e.checkall;
+                    }
+                    e.indeterminate = false;
+
+                    if (e.checkall) {
+                        e.checkallgroup = e.cityIds;
+                    } else {
+                        e.checkallgroup = [];
+                    }
+                },
+                checkAllGroupChange(data, e) {
+                    if (data.length === e.cityData.length) {
+                        e.indeterminate = false;
+                        e.checkall = true;
+                    } else if (data.length > 0) {
+                        e.indeterminate = true;
+                        e.checkall = false;
+                    } else {
+                        e.indeterminate = false;
+                        e.checkall = false;
+                    }
+                },
+                cancleRegion() {
+                    window.location.href = '/GeneralBeautyServerCode/GeneralBeautyServerCodeProductsList?packageId=' +
+                        '@ViewBag.PackageId';
+                },
+                submitRegion() {
+                    var _this = this.generalBeautyServerCodeProductRegion;
+                    let areas = [];
+                    var areasInsert = true;
+                    _this.areaData.forEach(function (x) {
+                        if (!x.provinceId) {
+                            _this.$Notice.warning({
+                                title: '限购地区省/自治区/直辖市必选',
+                                desc: "限购地区省/自治区/直辖市必选"
+                            });
+                            areasInsert = false;
+                            return;
+                        }
+                        if (!x.checkallgroup || x.checkallgroup.length <= 0) {
+                            _this.$Notice.warning({
+                                title: '限购地区市/区必选',
+                                desc: "限购地区市/区必选"
+                            });
+                            areasInsert = false;
+                            return;
+                        }
+                        areas.push({
+                            'ProvinceId': x.provinceId,
+                            'IsAllCitys': x.checkall,
+                            'CityIds': x.checkallgroup.reduce(function (a, b) { return a + ',' + b; }),
+                            'PackageProductId': _this.pkid,
+                        });
+                    });
+                    if (areasInsert == false || areas.length <= 0) {
+                        return;
+                    }
+
+                    $.ajax({
+                        url:'/GeneralBeautyServerCode/SaveGeneralBeautyServerCodeProductRegions',
+                        type: "post",
+                        async: false,
+                        data: {
+                            models:areas
+                        },
+                        success: function (data) {
+                            if (data != null && data.Result) {
+                                window.location.href = '/GeneralBeautyServerCode/GeneralBeautyServerCodeProductsList?packageId=' +
+                                    '@ViewBag.PackageId';
+                            }
+                            else {
+                                alert(data.Msg);
+                            }
+                        },
+                        error: function () {
+                            alert("服务端异常！");
+                        }
+                    });
+                }
+            }
+        })
+
+
+    </script>
+}

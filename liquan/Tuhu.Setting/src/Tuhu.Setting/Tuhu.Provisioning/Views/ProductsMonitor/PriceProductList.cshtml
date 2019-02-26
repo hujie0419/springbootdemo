@@ -1,0 +1,318 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@using Tuhu.Provisioning.DataAccess.Entity.CompetingProductsMonitor;
+@using Tuhu.Provisioning;
+@model Tuhu.Component.Common.Models.ListModel<CompetingProductsMonitorModel>
+    @{
+        Layout = null;
+        var selectModel = ViewBag.SelectModel as PriceSelectModel;
+    }
+    @helper ShowPrice(decimal? price, string pid, string type)
+    {
+
+if (price == null)
+{
+        <span>-</span>
+}
+else
+{
+    if (pid == null)
+    {
+            <span>@price.Value.ToString("0")</span>
+    }
+    else
+    {
+        var href = string.Empty;
+        var tempPid = pid.Split(',');
+        if (tempPid.Length == 2 && !string.IsNullOrWhiteSpace(tempPid[1]) && Convert.ToUInt64(tempPid[1]) > 0)
+        {
+            switch (type)
+            {
+                case "TB":
+                    href = "https://item.taobao.com/item.htm?id=" + tempPid[0] + "&skuid=" + tempPid[1]; break;
+                case "TM":
+                    href = "https://detail.tmall.com/item.htm?id=" + tempPid[0] + "&skuid=" + tempPid[1]; break;
+                case "JD":
+                    href = "http://item.jd.com/" + tempPid[0] + ".html"; break;
+                case "MLT":
+                    href = "http://www.mailuntai.cn/product/" + tempPid[0] + ".html"; break;
+                case "QCCRL":
+                    href = "http://www.qccr.com/detail/" + tempPid[0] + ".html"; break;
+                case "QCCRP":
+                    href = "https://pch.qccr.com/html/goods/itemdetail.html?id=" + tempPid[0]; break;
+            }
+        }
+        else
+        {
+            switch (type)
+            {
+                case "TB":
+                    href = "https://item.taobao.com/item.htm?id=" + tempPid[0]; break;
+                case "TM":
+                    href = "https://detail.tmall.com/item.htm?id=" + tempPid[0]; break;
+                case "JD":
+                    href = "http://item.jd.com/" + tempPid[0] + ".html"; break;
+                case "MLT":
+                    href = "http://www.mailuntai.cn/product/" + tempPid[0] + ".html"; break;
+                case "QCCRL":
+                    href = "http://www.qccr.com/detail/" + tempPid[0] + ".html"; break;
+                case "QCCRP":
+                    href = "https://pch.qccr.com/html/goods/itemdetail.html?id=" + tempPid[0]; break;
+            }
+        }
+
+        <a target="_blank" href="@href">@price.Value.ToString("0")</a>
+    }
+}
+
+}
+    @if (Model.Source.Any())
+    {
+        <table data-count="@Model.Pager.TotalItem" class="table" width="100%">
+            <tr>
+                <th width="9%">品牌</th>
+                <th width="9%">PID</th>
+                <th width="20%">产品名称</th>
+                @if (ViewBag.PageType != "see")
+                {
+                    <th width="5%">进货价</th>
+                }
+                <th width="5%">官网价格</th>
+                <th width="5%">监控产品数量</th>
+                <th width="4%">查看明细</th>
+                <th width="20%">最低价商品</th>
+                <th width="8%">商品店铺</th>
+                <th width="5%">最低价</th>
+                <th width="9%">最后更新时间</th>
+            </tr>
+            @foreach (var item in Model.Source)
+            {
+                var guidePriceStr = item.cost == null ? "-" : (item.cost.Value + item.cost.Value * item.JiaQuan / 100).ToString("0.00");
+                var guidePriceStr_1 = "-";
+                var ShowStatus = "N/A";
+                if (item.ShowStatus == 1)
+                {
+                    ShowStatus = "有货";
+                }
+                else if (item.ShowStatus == 2)
+                {
+                    ShowStatus = "缺货";
+                }
+                else if (item.ShowStatus == 3)
+                {
+                    ShowStatus = "不展示";
+                }
+                if (guidePriceStr == "-")
+                {
+                    if (item.JDSelfPrice != null)
+                    {
+                        guidePriceStr_1 = item.JDSelfPrice.Value.ToString("0.00");
+                    }
+                }
+                else
+                {
+                    if (item.JDSelfPrice == null)
+                    {
+                        guidePriceStr_1 = guidePriceStr;
+                    }
+                    else
+                    {
+                        if (Convert.ToDecimal(guidePriceStr) >= Convert.ToDecimal(item.JDSelfPrice))
+                        {
+                            guidePriceStr_1 = item.JDSelfPrice.Value.ToString("0.00");
+                        }
+                        else
+                        {
+                            guidePriceStr_1 = guidePriceStr;
+                        }
+                    }
+                }
+                var tuhuPriceBgcolor = "";
+                if (selectModel.MatchWarnLine == 1)
+                {
+                    tuhuPriceBgcolor = "#f39122";
+                }
+                else if (selectModel.MatchWarnLine == -1)
+                {
+                    tuhuPriceBgcolor = "red";
+                }
+                if (selectModel.Type == 1
+                && item.cost != null &&
+                (selectModel.Contrast == 1 &&
+                Convert.ToDouble(item.Price / item.cost.Value) >= selectModel.Proportion
+                || selectModel.Contrast == -1
+                && Convert.ToDouble(item.Price / item.cost.Value) <= selectModel.Proportion))
+                {
+                    tuhuPriceBgcolor = "#CBD8DC";
+                }
+                if (item.Price > item.JDSelfPrice && item.Price > item.TWLTMPrice && item.Price > item.MLTTMPrice)
+                {
+                    tuhuPriceBgcolor = "red";
+                }
+
+                var QPLProfi = item.QPLPrice != null && item.cost != null ? (item.QPLPrice.Value - item.cost.Value).ToString("0.00") : "-";
+                var QPLProfitRate = item.cost != null && item.QPLPrice != null && item.QPLPrice.Value != 0 ? ((item.QPLPrice.Value - item.cost.Value) / item.QPLPrice.Value).ToString("0.00%") : "-";
+
+                var ShopProfit = item.Price > 0 && item.QPLPrice != null ? (item.Price - item.QPLPrice.Value).ToString("0.00") : "-";
+                var ShopProfitRate = item.Price > 0 && item.QPLPrice != null ? ((item.Price - item.QPLPrice.Value) / item.Price).ToString("0.00%") : "-";
+                <tr data-SingleCustomPrice="@item.SingleCustomPrice">
+                    <td>@(item.Brand ?? "-")</td>
+                    <td>@item.PID</td>
+                    <td>@item.ProductName</td>
+                    @if (ViewBag.PageType != "see")
+                    {
+                        <td class="join4" data-name="cost">
+                            @if (item.cost == null)
+                            {
+                                @:-
+                            }
+                            else
+                            {
+                                @item.cost.Value.ToString("0.00");
+                            }
+                        </td>
+                    }
+                    <td class="tuhu join4" data-name="list" style="background-color:@tuhuPriceBgcolor">@item.Price.ToString("0.00")</td>
+                    <td>@item.MonitorCount</td>
+                    <td><a href="javascript:void(0);" onclick="Func.ShowMonitor('@item.PID','@item.ProductName','@item.MinPrice')">查看</a></td>
+                    <td>
+                        @if (item.ItemID > 0)
+                        {
+                            <a href="javascript:void(0);" onclick="Goto('@item.ShopCode',@item.ItemID)">@item.ItemID</a>;
+                        }
+                        else if (item.SkuID > 0)
+                        {
+                            <a href="javascript:void(0);" onclick="Goto('@item.ShopCode',@item.SkuID)">@item.SkuID</a>                        ;
+                        }
+                        else if (!string.IsNullOrEmpty(item.ItemCode))
+                        {
+                            <a href="javascript:void(0);" onclick="Goto('@item.ShopCode',@item.ItemCode)">@item.ItemCode;</a>
+                        }
+                            <br />
+                            @item.Title
+</td>
+                    <td>@item.ShopCode</td>
+                    <td>@(item.MinPrice > 0 ? item.MinPrice.ToString("0.00") : "")</td>
+                    <td>@(item.LastUpdateDateTime==DateTime.MinValue? "":item.LastUpdateDateTime.ToString())</td>
+                </tr>
+            }
+        </table>
+        @Html.Pager(Model.Pager, true, id => Url.Action("PriceProductList", new
+       {
+           ProductName = selectModel.ProductName,
+           PID = selectModel.PID,
+           Brand = selectModel.Brand,
+
+           #region 隐藏项
+           Patterns = selectModel.Patterns,
+           TireSize = selectModel.TireSize,
+           Rims = selectModel.Rims,
+           StockStatus = selectModel.StockStatus,
+           Type = selectModel.Type,
+           Contrast = selectModel.Contrast,
+           Proportion = selectModel.Proportion,
+           MaoLiE = selectModel.MaoLiE,
+           MatchMaoLiE = selectModel.MatchMaoLiE,
+           PCPricePer = selectModel.PCPricePer,
+           MatchPCPricePer = selectModel.MatchPCPricePer,
+           OnSaleStatus = selectModel.OnSaleStatus,
+           MatchWarnLine = selectModel.MatchWarnLine,
+           MatchStock = selectModel.MatchStock,
+           MatchStockValue = selectModel.MatchStockValue,
+           MatchZZTS = selectModel.MatchZZTS,
+           MatchZZTSValue = selectModel.MatchZZTSValue,
+           SingleCustomPrice = selectModel.SingleCustomPrice,
+           ManyCustomPrice = selectModel.ManyCustomPrice,
+
+           MonthCount = selectModel.MonthCount,
+           MonthCountValue = selectModel.MonthCountValue,
+           WeekCount = selectModel.WeekCount,
+           WeekCountValue = selectModel.WeekCountValue,
+           ShowStatus = selectModel.ShowStatus,
+           VehicleCount = selectModel.VehicleCount,
+           VehicleCountValue = selectModel.VehicleCountValue,
+           #endregion
+
+           pageSize = Model.Pager.PageSize,
+           pageIndex = id,
+           pageType = ViewBag.PageType
+
+       }))
+    }
+    <script>
+        var type = "@selectModel.Type",
+            contrast = "@selectModel.Contrast",
+            manyCustomPrice='@selectModel.ManyCustomPrice';
+            proportion = parseFloat("@selectModel.Proportion");
+        if (type > 1) {
+            if (type == 4) {
+                $(".join4").each(function () {
+                    var $target = $(this);
+                    if ($target.find("a").length == 1) {
+                        var price = parseFloat($target.find("a").text());
+                        var custonPrice = parseFloat($target.parent().attr("data-SingleCustomPrice"));
+                        console.log(custonPrice);
+                        var per = price / custonPrice;
+                        if (((contrast == -1 && per <= proportion) || (per >= proportion && contrast == 1)) && manyCustomPrice.indexOf($target.attr("data-name"))>=0) {
+                            $target.css('background-color', '#e3b3e6');
+                        }
+                    }
+                    if ($target.attr("data-name") == "coupon") {
+                        var price = parseFloat($target.text());
+                        var custonPrice = parseFloat($target.parent().attr("data-SingleCustomPrice"));
+                        console.log(custonPrice);
+                        var per = price / custonPrice;
+                        if (((contrast == -1 && per <= proportion) || (per >= proportion && contrast == 1)) && manyCustomPrice.indexOf($target.attr("data-name")) >= 0) {
+                            $target.css('background-color', '#e3b3e6');
+                        }
+                    }
+                });
+            }
+
+            $(".list>table td").each(function () {
+                var $target = $(this);
+                if ($target.find("a").length == 1) {
+                    var price = parseFloat($target.find("a").text());
+                    var tuhu_price = parseFloat($target.parent().find(".tuhu>a").text());
+                    var per = price / tuhu_price;
+
+                    if (type == 2 && $target.hasClass("tuhu_self") || (type == 3 && $target.hasClass("tuhu_other"))) {
+                        if ((contrast == -1 && per <= proportion) || (per >= proportion && contrast == 1)) {
+                            $target.addClass("color");
+                        }
+                    }
+                }
+            });
+            }
+        //跳转其他网站
+        function Goto(shopCode, itemCode) {
+            var webSite = "";
+            switch (shopCode) {
+                case "京东自营":
+                    webSite = "http://item.jd.com/" + itemCode + ".html";
+                    break;
+                case "麦轮胎官网":
+                    webSite = "http://www.mailuntai.cn/product/" + itemCode + ".html";
+                    break;
+                case "养车无忧":
+                    webSite = "http://item.yangche51.com/p-" + itemCode + ".html";
+                    break;
+                case "汽车超人零售":
+                    webSite = "http://www.qccr.com/detail/" + itemCode + ".html";
+                    break;
+                case "汽车超人批发":
+                    webSite = "https://pch.qccr.com/html/goods/itemdetail.html?id=" + itemCode;
+                    break;
+                case "康众官网":
+                    webSite = "http://www.carzone.cn/search/p_" + itemCode + "-c_0-b_0-t_0-a_0-d_0-p_1-l_2-pg_1.html";
+                    break;
+                case "淘宝":
+                    webSite = "https://item.taobao.com/item.htm?id=" + itemCode;
+                    break;
+                default:
+                    webSite = 'http://detail.tmall.com/item.htm?id=' + itemCode;
+                    break;
+            }
+            window.open(webSite);
+        }
+    </script>
+

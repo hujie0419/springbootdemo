@@ -1,0 +1,544 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@model Tuple<IEnumerable<string>, IEnumerable<TireSizeModel>>
+@{
+    ViewBag.Title = "京东秒杀监控";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link href="~/Content/sweetalert/sweetalert.css" rel="stylesheet" />
+<script type='text/javascript' src="~/Content/sweetalert/sweetalert.js"></script>
+@section head{
+    <style>
+        .title {
+            float: left;
+        }
+
+        .content {
+            clear: both;
+        }
+
+        .condition .name {
+            left: 0;
+        }
+
+        .condition {
+            margin-bottom: 10px;
+        }
+
+            .condition > div {
+                margin-bottom: 10px;
+            }
+
+                .condition > div label {
+                    margin-top: 5px;
+                }
+
+                    .condition > div label input[type=text] {
+                        width: 50px;
+                    }
+
+        table td {
+            max-width: 150px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #E8EEF4;
+        }
+
+        .pointer {
+            cursor: pointer;
+        }
+    </style>
+}
+
+<div class="title">
+    <h2>
+        京东秒杀监控
+    </h2>
+</div>
+
+<div class="content">
+
+    <div class="condition" style="position:relative;">
+        <div>
+            <span class="name">品牌：</span>
+            <select class="brand">
+                <option value="">所有</option>
+                @foreach (var brand in Model.Item1)
+                {
+                    <option value="@brand">@brand.Split('/')[0]</option>
+                }
+            </select>
+        </div>
+        <div>
+            <span class="name">轮胎规格：</span>
+            @Html.DropDownList("Tire_Width", Model.Item2.Select(T => T.Width).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "胎面宽")<b>/</b>
+            @Html.DropDownList("Tire_AspectRatio", Model.Item2.Select(T => T.AspectRatio).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "扁平比")<b>R</b>
+            @Html.DropDownList("Tire_Rim", Model.Item2.Select(T => T.Rim).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "直径")
+        </div>
+        <div>
+            <span class="name">产品名称：</span>
+            <input type="text" name="ProductName" value="" />
+        </div>
+        <div>
+            <span class="name right">PID：</span>
+            <input type="text" name="PID" value="" />
+        </div>
+        <div>
+
+        </div>
+        @*<div class="CouponPrice">
+                <input type="checkbox" value="" />
+                <span class="name">券后价</span>
+                <select>
+                    <option value="1">>=</option>
+                    <option value="-1">&lt;=</option>
+                </select>
+                <span>最低限价</span>
+            </div>*@
+
+
+        <div class="pricedif">
+            <input type="checkbox" name="price_check" id="price_check" value="" />
+            <span class="name"> 途虎价格</span>
+            <select>
+                <option value="1">></option>
+                <option value="0">=</option>
+                <option value="-1"><</option>
+            </select>
+            <span class="name"> 京东秒杀</span>
+            @*<strong>最小毛利筛选项无效，可以导出Excel后操作</strong>*@
+        </div>
+
+
+        <button id="querybotton" class="select btn btn-info btn-sm" onclick="ThirdFunc.LoadList(1)">查询</button>
+        <div class="beforetable">
+            每页显示：
+            <select class="PageSize">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>条
+            <span class="data_count"></span>
+
+            <button id="syncbotton" style="background-color:deepskyblue;height:30px;width:80px;margin-left:50px" onclick="ThirdFunc.SyncList('京东自营')">同步数据</button>
+        </div>
+        <img class="loadimg" src="~/Scripts/layer/skin/default/loading-2.gif" style="margin:5% 50%;display:none;" />
+        <div class="list">
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(function () {
+        //ThirdFunc.LoadTireMaxCount();
+        ThirdFunc.LoadList(1);
+        //浏览其他页
+        $(".list").on("click",
+            ".pager>a",
+            function (event) {
+                event.preventDefault();
+                var url = $(this).attr("href");
+                if (url) {
+                    $.post(url,
+                        function (html, status) {
+                            if (status === "success") {
+                                $(".list").html(html);
+                            }
+                        });
+                }
+            });
+        $(".PageSize").change(function () {
+            ThirdFunc.LoadList(1);
+        });
+        $("#MaxTireCount").change(function () {
+            ThirdFunc.LoadList(1);
+        });
+    });
+</script>
+
+<script>
+    var ThirdFunc = {
+        LoadList: function (index) {
+            var Tire_Width = $("#Tire_Width option:selected").val();
+            var Tire_AspectRatio = $("#Tire_AspectRatio option:selected").val();
+            var Tire_Rim = $("#Tire_Rim option:selected").val();
+            var TireSize = '';
+            var pricedifstatus = -2;
+            if (Tire_Width.length && Tire_AspectRatio.length && Tire_Rim.length) {
+                TireSize = Tire_Width + '/' + Tire_AspectRatio + 'R' + Tire_Rim;
+            }
+
+
+            var ProductName = $("[name=ProductName]").val().trim(),
+                PID = $("[name=PID]").val().trim(),
+                Brand = $(".condition select.brand>option:selected").val(),
+
+                pageSize = $(".PageSize>option:selected").val();
+
+
+            //website_maoli
+            //if ($(".CouponPrice >input[type=checkbox]").prop("checked")) {
+            //    CouponPriceStatus = $(".CouponPrice>select>option:selected").val();
+            //}
+
+            if ($(".pricedif >input[type=checkbox]").prop("checked")) {
+                pricedifstatus = $(".pricedif>select>option:selected").val();
+
+            }
+
+            $("#querybotton").prop("disabled", true);
+
+
+
+            $.post("/ThirdShop/MiaoShaProductList", {
+                ProductName: ProductName,
+                PID: PID,
+                Brand: Brand,
+                TireSize: TireSize,
+                shopCode: "京东自营",
+                PriceDifStatus: pricedifstatus,
+                PageIndex: index,
+                PageSize: pageSize
+            }, function (html, status) {
+                $("#querybotton").prop("disabled", false);
+                if (status === "success") {
+                    $(".loadimg").hide();
+                    $(".list").html(html);
+                    $(".data_count").text('共' + ($(".table").length ? $(".table").attr("data-count") : 0) + '条数据');
+                }
+            });
+        },
+
+        GetDescriptionByType: function (type) {
+            var title = "";
+            switch (type) {
+                case "LowestPrice_Normal":
+                    title = "修改最低面价(平时)";
+                    break;
+                case "LowestPrice_Promotion":
+                    title = "修改最低面价(大促)";
+                    break;
+                case "CouponPrice_Normal":
+                    title = "修改最低券后价价(平时)";
+                    break;
+                case "CouponPrice_Promotion":
+                    title = "修改最低券后价(大促)";
+                    break;
+                default:
+            }
+            return title;
+        },
+        EditLowestLimit: function (type, pid, oldPrice) {
+            $(".OldPrice").text(oldPrice);
+            $(".NewPrice").val(oldPrice);
+            $("#ViewLog").attr("onclick", `ThirdFunc.ShowChangeLog("${pid}","${type}")`);
+            var old;
+            if (!isNaN(oldPrice)) {
+                old = oldPrice;
+            }
+            title = ThirdFunc.GetDescriptionByType(type);
+            $("#LowestLimitBox").dialog({
+                title: title,
+                width: 350,
+                height: 300,
+                modal: true,
+                buttons: {
+                    "保存": function () {
+                        var dialog = $(this);
+                        var newPrice = $(".NewPrice").val();
+                        if (newPrice === oldPrice) {
+                            dialog.dialog("close");
+                            return false;
+                        }
+                        $.post("/ThirdShop/SetLowestLimitPrice", {
+                            PID: pid,
+                            OldPrice: old,
+                            LowestLimitPrice: newPrice,
+                            type: type
+                        }, function (data) {
+                            if (data.Code == 1) {
+                                alert("修改成功");
+                            }
+                            else {
+                                alert("修改失败", data.Info);
+                            }
+                            dialog.dialog("close");
+                            ThirdFunc.LoadList(1);
+                        });
+                    },
+                    "取消": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            })
+        },
+        ShowChangeLog: function (pid, type) {
+            var title = ThirdFunc.GetDescriptionByType(type);
+            $("#LogDetail").empty();
+            $.post("/ThirdShop/GetLowestLimitLog", {
+                PID: pid,
+                type: type
+            }, function (data) {
+                if (data.Code == 0) {
+                    alert(data.Info);
+                    return false;
+                }
+                else {
+                    var html = "";
+                    $.each(data.Data, function (k, v) {
+
+                        html += `<tr><td>${v.PID}</td><td>${v.OldPrice}</td><td>${v.NewPrice}</td><td>${title}</td><td>${v.Operator}</td><td>${ThirdFunc.FormatTime(v.CreateDateTime)}</td></tr>`;
+                    });
+                    $("#LogDetail").append(html);
+                }
+            });
+
+            $("#LowestLimitLog").dialog({
+                title: title + "修改历史",
+                width: 500,
+                height: 300,
+                modal: true,
+                buttons: {
+                    "关闭": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        },
+        SyncList: function (shopCode) {
+            // var shopCode = "";
+            //  $("#LogDetail").empty();
+            $.post("/ThirdShop/SyncMiaoShaItems", {
+                shopCode: shopCode
+            }, function (data) {
+                if (data.result == true) {
+                    swal({
+                        title: "同步成功！"
+                    },
+                        function () {
+
+                            ThirdFunc.LoadList(1);
+                        });
+                }
+                else
+                    swal("同步失败!");
+            });
+        },
+        FormatTime: function (strTime) {
+            var obj = new Date(parseInt(strTime.replace("/Date(", "").replace(")/", ""), 10));
+            return obj.Format("yyyy-MM-dd hh:mm:ss");
+        },
+        CouponDetail: function (shopName, price, originPrice) {
+            if (price == originPrice || originPrice == null) {
+                alert("无可用优惠券");
+                return false;
+            }
+            var maxTireCount = $("#MaxTireCount").val();
+            $.post("/ThirdShop/FetchLowestPrice", {
+                ShopName: shopName,
+                Price: originPrice,
+                MaxTireCount: maxTireCount
+            }, function (data) {
+                if (data.Code === 0) {
+                    alert(data.Info);
+                    return false;
+                }
+                else {
+                    $("#finalsprice").text(data.FinalPrice);
+                    $("#TireCount").text(data.Count);
+                    $("#coupondetail").text(data.CouponDetail);
+                    $("#ShowCouponDetail").dialog({
+                        title: "商品最低价",
+                        width: 400,
+                        height: 330,
+                        buttons: {
+                            "关闭": function () {
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+                    return true;
+                }
+            });
+        },
+        TryFetchLowestPrice: function (shopName, price, href) {
+            $("#CurrentPrice").text(price);
+            $("#TestPrice").val("");
+            $("#finalsprice2").text("");
+            $("#TireCount2").text("");
+            $("#coupondetail2").text("");
+
+            $("#productDeailsHref").val(href);
+
+
+            $("#TryFetchLowestPrice").dialog({
+                title: shopName,
+                width: 500,
+                height: 400,
+                buttons: {
+                    "试算": function () {
+                        var testPrice = $("#TestPrice").val();
+                        var maxTireCount = $("#MaxTireCount").val();
+                        if (testPrice == null) {
+                            alert("请输入试算价格");
+                            return false;
+                        }
+                        $.post("/ThirdShop/FetchLowestPrice", {
+                            ShopName: shopName,
+                            Price: testPrice,
+                            MaxTireCount: maxTireCount
+                        }, function (data) {
+                            if (data.Code === 0) {
+                                alert(data.Info);
+                                return false;
+                            }
+                            else {
+                                $("#finalsprice2").text(data.FinalPrice);
+                                $("#TireCount2").text(data.Count);
+                                $("#coupondetail2").text(data.CouponDetail);
+                                return true;
+                            }
+                        })
+                    },
+                    "关闭": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        },
+        BatchEdit: function (pid, value) {
+            var objArr = [];
+
+            if (!pid && !value) {
+                if (!$("[name=selectSingle]:checked").length) {
+                    alert("未选中", "当前无任何选中,无法启用");
+                    return false;
+                }
+
+                $("[name=selectSingle]:checked").each(function () {
+                    var pid = $(this).val();
+                    objArr.push(pid);
+                });
+                if (!objArr.length) {
+                    alert("未选中", "当前无任何选中,无法启用");
+                    return false;
+                }
+            } else {
+                objArr.push(pid);
+            }
+            value = value ? value : "true";
+            $("#CanUseCoupon").val(value);
+            var html = '';
+            $.each(objArr, function (i, v) {
+                html += '<li class="pid">' + v + '</li>'
+            });
+            var $dialog = $("#editdiv");
+            $dialog.find("ul").html(html);
+            $dialog.dialog({
+                title: "编辑",
+                width: 500,
+                height: 400,
+                modal: true,
+                buttons: {
+                    "保存": function () {
+                        var canUseCoupon = $("#CanUseCoupon").val();
+                        $.post("/ThirdShop/EditCanUseCoupon",
+                            {
+                                pids: objArr,
+                                canUseCoupon: canUseCoupon
+                            }).then(function (data) {
+                                alert(data.msg);
+                                if (data.code == 1) {
+                                    $(this).dialog("close");
+                                    ThirdFunc.LoadList(1);
+                                }
+                            });
+                    },
+                    "关闭": function () {
+                        $(this).dialog("close"); //当点击取消按钮时，关闭窗口
+                    }
+                }
+
+            });
+        },
+        ExportExcel: function () {
+
+            var ProductName = $("[name=ProductName]").val().trim(),
+                PID = $("[name=PID]").val().trim(),
+                Brand = $(".condition select.brand>option:selected").val(),
+                OnSaleStatus = $("select.onsale-status>option:selected").val(),
+                $radio = $("[name=radio_1]:checked"),
+                $label = $radio.parent(),
+                Type = $radio.val(),
+                pageSize = $(".PageSize>option:selected").val(),
+                SingleCustomPrice = $(".singlePrice option:selected").val(),
+                ManyCustomPrice = "",
+                Proportion,
+                maxTireCount = $("#MaxTireCount").val(),
+                Contrast;
+            if ($(".CouponPrice >input[type=checkbox]").prop("checked")) {
+                CouponPriceStatus = $(".CouponPrice>select>option:selected").val();
+            }
+            var Min_maoliStatus, Min_maoliValue;
+            if ($(".min_maoli >input[type=checkbox]").prop("checked")) {
+                Min_maoliStatus = $(".min_maoli>select>option:selected").val();
+                Min_maoliValue = $(".min_maoli>input[type=text]").val();
+                if (!Min_maoliValue.length || isNaN(Min_maoliValue)) {
+                    alert("最小毛利不合法");
+                    return false;
+                }
+                Min_maoliValue = parseFloat(Min_maoliValue);
+            }
+
+            var Website_maoliStatus, Website_maoliValue;
+            if ($(".website_maoli >input[type=checkbox]").prop("checked")) {
+                Website_maoliStatus = $(".website_maoli>select>option:selected").val();
+                Website_maoliValue = $(".website_maoli>input[type=text]").val();
+                if (!Website_maoliValue.length || isNaN(Website_maoliValue)) {
+                    alert("官网券后毛利不合法");
+                    return false;
+                }
+                Website_maoliValue = parseFloat(Website_maoliValue);
+            }
+
+            if (Type > 0) {
+                Contrast = $label.find("select:last>option:selected").val();
+                Proportion = $label.find("[type=text]").val();
+                var $checkeds = $(".price_list").find("[type=checkbox]:checked");
+                if (!$checkeds.length) {
+                    alert("请选择参数筛选的除数");
+                    return false;
+                }
+                $checkeds.each(function () {
+                    ManyCustomPrice += $(this).val() + '|';
+                });
+                if (isNaN(Proportion)) {
+                    alert("更多条件中相对比的值不合法");
+                    return false;
+                }
+                Proportion = parseFloat(Proportion);
+            }
+            var href = `/ThirdShop/ExportExcel?ProductName=${encodeURIComponent(ProductName)}&PID=${PID}&Brand=${Brand}&OnSale=${OnSaleStatus}&Type=${Type}&ManyCustomPrice=${ManyCustomPrice}&Contrast=${Contrast
+                }&SingleCustomPrice=${SingleCustomPrice}&Proportion=${Proportion}&MaxTireCount=${maxTireCount}&Website_maoliValue=${Website_maoliValue}&Website_maoliStatus=${Website_maoliStatus}&Min_maoliValue=${Min_maoliValue}&Min_maoliStatus=${Min_maoliStatus}`;
+            window.location.href = href;
+        },
+        ProductDeails: function () {
+            window.open($("#productDeailsHref").val());
+        }
+        //LoadTireMaxCount: function () {
+        //    $.post("/ThirdShop/FetchPurchaseRestriction", {}, function (data) {
+        //        if (data.Code == 0) {
+        //            alert(data.Info);
+        //            return false;
+        //        }
+        //        else {
+        //            $("#MaxTireCount").text(data.Data);
+        //            return true;
+        //        }
+        //    });
+        //}
+    }
+</script>

@@ -1,0 +1,15 @@
+﻿@model List<Tuhu.Provisioning.DataAccess.DAO.Dictionary>
+@{
+    Layout = null;
+    
+}
+<style type="text/css">
+    ul.orderChannelDetail{ display: block;}
+    ul.orderChannelDetail li{ list-style: none;float:left; min-width:150px;}
+</style>
+<ul class="orderChannelDetail">
+    @foreach (var item in Model)
+    {
+        <li>@item.DicValue</li>
+    }
+</ul>

@@ -1,0 +1,87 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@using Tuhu.Provisioning;
+@using Tuhu.Component.Common.Models;
+@model ListModel<VehicleTypeInfo>
+@{
+    Layout = null;
+    var query = ViewBag.query as WheelAdapterConfigQuery;
+}
+<input type="hidden" id="BatchSelectStatus" value="0" />
+<table id="TbWheelAdapterConfig" style="background: #ffffff; font-size: 12px; width: 100%; text-align: center" border="1" class="table">
+    <tr>
+        <th>
+            <input type="checkbox" onclick="BatchSelectClick()" value="all" />
+        </th>
+        <th style="text-align: center">TID</th>
+        <th style="text-align: center">品牌</th>
+        <th style="text-align: center">车系</th>
+        <th style="text-align: center">排量</th>
+        <th style="text-align: center">生产年份</th>
+        <th style="text-align: center">车款</th>
+        <th style="text-align: center">PCD</th>
+        <th style="text-align: center">ET</th>
+        <th style="text-align: center">最小ET</th>
+        <th style="text-align: center">最大ET</th>
+        <th style="text-align: center">CB</th>
+        <th style="text-align: center">BoltNutSpec</th>
+        <th style="text-align: center">BoltNut</th>
+        <th style="text-align: center">最小轮毂尺寸</th>
+        <th style="text-align: center">最大轮毂尺寸</th>
+        <th style="text-align: center">最小轮毂宽度</th>
+        <th style="text-align: center">最大轮毂宽度</th>
+        <th style="text-align: center">操作</th>
+        <th style="text-align: center">操作记录</th>
+    </tr>
+    @if (Model.Source.Any())
+    {
+        foreach (var item in Model.Source)
+        {
+            <tr>
+                <td>
+                    <input class="batchselect" type="checkbox" name="BatchEditItems" value="@item.TID" />
+                </td>
+                <td>@item.TID</td>
+                <td>@item.Brand</td>
+                <td>@item.Vehicle</td>
+                <td>@item.PaiLiang</td>
+                <td>@item.Nian</td>
+                <td>@item.Nian<span>款 </span>@item.SalesName</td>
+                <td>@item.PCD</td>
+                <td>@item.ET</td>
+                <td>@item.MinET</td>
+                <td>@item.MaxET</td>
+                <td>@item.CB</td>
+                <td>@item.BoltNutSpec</td>
+                <td>@item.BoltNut</td>
+                <td>@item.MinWheelSize</td>
+                <td>@item.MaxWheelSize</td>
+                <td>@item.MinWheelWidth</td>
+                <td>@item.MaxWheelWidth</td>
+                <td><button class="btn btn-primary btn-small" onclick="WheelAdapterConfigEdit(@item.TID)">编辑</button></td>
+                <td><button class="btn btn-primary btn-small" onclick="CheckWheelAdapterConfigLog(@item.TID)">查看</button></td>
+            </tr>
+        }
+    }
+</table>
+
+@Html.Pager(Model.Pager, true, id => Url.Action("IndexList", new
+{
+    BrandCriterion = query.BrandCriterion,
+    VehicleCriterion = query.VehicleCriterion,
+    PaiLiangCriterion = query.PaiLiangCriterion,
+    YearCriterion = query.YearCriterion,
+    SalesNameCriterion = query.SalesNameCriterion,
+    PageIndex = id,
+    PageDataQuantity = query.PageDataQuantity,
+    QueryWay = query.QueryWay,
+    IsInfoSpecified = query.IsInfoSpecified
+}))
+
+<script>
+    $(document).ready(function () {
+        $("#DataCountInfo").text("共 @query.TotalCount 条数据");
+    });
+    function GetPageIndex() {
+        return @query.PageIndex;
+    }
+</script>

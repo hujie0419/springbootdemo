@@ -1,0 +1,56 @@
+﻿@{
+    ViewBag.Title = "批量导入轮胎规格参数";
+}
+<script src="~/Scripts/ajaxfileupload.js"></script>
+<h2>批量导入轮胎规格参数</h2>
+
+<form method="post" action="" enctype="multipart/form-data">
+    <input type="file" id="btnImport" class="btnImport" name="btnImport">
+</form>
+<br />
+<div>
+    <table>
+        <tr>
+            <td>
+                <label>表头如下图:(列名和数据前后不要有多余空格！！！)</label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="https://img1.tuhu.org/activity/image/b4df/4190/51ef358e8c5bd01566c35d67_w1257_h93.png" style="width:100%; height:100%">
+            </td>
+        </tr>
+    </table>
+
+</div>
+<script type="text/javascript">    
+    $('#btnImport').on('change', function () {
+        debugger
+        var id = $(this).attr('id');
+        $.ajaxFileUpload({
+            url: '/InputTireSpecParamsConfig/ImportGrade',
+            secureuri: false,
+            fileElementId: id,
+            dataType: 'json',
+            async: false,
+            data: {},
+            type: "post",
+            success: function (result) {
+                debugger
+                //console.log(result);
+                result = JSON.parse(result);
+                if (result.Status == 0) {
+                    alert("导入成功！");
+                } else {
+                    alert(html(result.Error));
+                }
+                alert(result);
+            },
+            error: function (data) //服务器响应失败处理函数
+            {
+                alert(JSON.stringify(data));
+            }
+        });
+    });
+</script>
+

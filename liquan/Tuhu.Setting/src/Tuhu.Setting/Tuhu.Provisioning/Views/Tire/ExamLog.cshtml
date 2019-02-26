@@ -1,0 +1,75 @@
+﻿@using Tuhu.Provisioning.Models
+@using Tuhu.Provisioning.DataAccess.Entity
+@model Tuhu.Component.Common.Models.ListModel<ExamUpdatePriceModel>
+@{
+    ViewBag.Title = "审批记录";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>审批记录</h2>
+<form method="get">
+    PID:<input type="text" name="PID" value="@ViewBag.PID" />
+    <input type="submit" value="查询" />
+</form>
+@if (Model.Source.Any())
+{
+    <table>
+        <tr>
+            <th>申请人</th>
+            <th>提交时间</th>
+            <th>品牌</th>
+            <th>PID</th>
+            <th>产品名称</th>
+            <th>进货价</th>
+            <th>官网价</th>
+            <th>最近一次采购价</th>
+            <th>实际指导价</th>
+            <th>京东自营价</th>
+            <th>官网申请价</th>
+            <th>毛利额</th>
+            <th>毛利率</th>
+            <th>超出指导价范围</th>
+            <th>库存</th>
+            <th>周销量</th>
+            <th>月销量</th>
+            <th>申请原因</th>
+            <th>审批人</th>
+            <th>审批时间</th>
+            <th>操作记录</th>
+        </tr>
+
+        @foreach (var item in Model.Source)
+        {
+            <tr>
+                <td>@item.ApplyPerson</td>
+                <td>@item.ApplyDateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@item.Brand</td>
+                <td><a href="https://item.tuhu.cn/Products/@(item.PID.Replace("|","/")).html" target="_blank">@item.PID</a></td>
+                <td>@item.ProductName</td>
+                <td>@(item.cost == null ? "-" : item.cost.Value.ToString("0.00"))</td>
+                <td>@(item.nowPrice==null?"-":item.nowPrice.Value.ToString("0.00"))</td>
+                <td>@(item.PurchasePrice == null ? "-" : item.PurchasePrice.Value.ToString("0.00"))</td>
+                <td>@(item.guidePrice == null ? "-" : item.guidePrice.Value.ToString("0.00"))</td>
+                <td>@(item.jdself == null ? "-" : item.jdself.Value.ToString("0.00"))</td>
+                <td>@item.Price.ToString("0.00")</td>
+                <td>@(item.maolie == null ? "-" : item.maolie.Value.ToString("0.00"))</td>
+                <td>@(item.maoliLv==null?"-":item.maoliLv.Value.ToString("0.00%"))</td>
+                <td>@(item.chaochu == null ? "-" : item.chaochu.Value.ToString("0.00%"))</td>
+                <td>@(item.totalstock==null?"-":item.totalstock.Value.ToString())</td>
+                <td>@(item.num_week == null ? "-" : item.num_week.Value.ToString())</td>
+                <td>@(item.num_month == null ? "-" : item.num_month.Value.ToString())</td>
+                <td>@item.Reason</td>
+                <td>@item.ExamPerson</td>
+                <td>@item.ExamDateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@(item.ExamStatus == 1 ? "通过" : "驳回")</td>
+            </tr>
+        }
+    </table>
+    @Html.Pager(Model.Pager, true, id => Url.Action("ExamLog", new
+{
+    PID = ViewBag.PID,
+    pageSize = Model.Pager.PageSize,
+    pageIndex = id
+}));
+        
+    }

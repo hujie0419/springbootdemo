@@ -1,0 +1,115 @@
+﻿@{
+    ViewBag.Title = "";
+    Layout = null;
+}
+
+@model Tuhu.Provisioning.DataAccess.Entity.SE_GroupBuyingConfig
+
+
+<form id="form1">
+    <table>
+            <tr>
+                <td>PID：</td>
+                <td>
+                    <input type="text" id="PID" name="PID" value="@Model.PID"/>
+                </td>
+                <td>
+                    活动ID：
+                </td>
+                <td>
+                    <input type="text" id="FalshSaleGuid" name="FalshSaleGuid" value="@(Model.FalshSaleGuid)"/>
+                </td>
+            </tr>
+        <tr>
+            <td>
+                产品名称：
+            </td>
+            <td>
+                <input type="text" id="ProductName" name="ProductName" readonly="readonly" value="@Model.ProductName"/>
+            </td>
+            <td>
+                活动价格:
+            </td>
+            <td>
+                <input type="text" id="ActivityPrice" name="ActivityPrice" readonly="readonly" value="@Model.ActivityPrice"/>
+            </td>
+        </tr>
+        <tr>
+            <td>每人限购：</td>
+            <td>
+                <input type="text" id="LimitSaleNumber" name="LimitSaleNumber" readonly="readonly" value="@Model.LimitSaleNumber"/>
+            </td>
+            <td>
+                几人可拼团:
+            </td>
+            <td>
+                <input type="text" id="LimitGroupNumber" name="LimitGroupNumber" value="@Model.LimitGroupNumber"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                排序:
+            </td>
+            <td colspan="3">
+                <input type="text" id="OrderBy" name="OrderBy" value="@Model.OrderBy"/>
+            </td>
+        </tr>
+    </table>
+    <input type="hidden" id="hidID" name="hidID" value="@Model.ID"/>
+</form>
+<script type="text/javascript">
+    $('#PID').on('change', function () {
+        var pid = $('#PID').val();
+        var falshSalse = $('#FalshSaleGuid').val();
+        if (pid && falshSalse) {
+            Submit.getProduct(falshSalse, pid);
+        }
+    });
+
+    $('#FalshSaleGuid').on('change', function () {
+        var pid = $('#PID').val();
+        var falshSalse = $('#FalshSaleGuid').val();
+        if (pid && falshSalse) {
+            Submit.getProduct(falshSalse, pid);
+        }
+    });
+
+    var Submit = {
+        getProduct: function (guid,pid) {
+            $.ajax({
+                type: 'post',
+                url: '/GroupBuying/GetFalshSaleProduct',
+                data: { guid: guid, pid: pid },
+                success: function (result) {
+                    if (result) {
+                        result = JSON.parse(result);
+                        $('#ProductName').val(result.ProductName);
+                        $('#ActivityPrice').val(result.Price);
+                        $('#LimitSaleNumber').val(result.MaxQuantity);
+
+                    } else {
+                        $('#ProductName').val('');
+                        $('#ActivityPrice').val('');
+                        $('#LimitSaleNumber').val('');
+                    }
+                },
+                error: function (XMLHttp, staus, error) {
+                    alert('系统提示', '活动ID校验失败');
+                }
+            });
+        },
+        getData: function () {
+            var data = {};
+            data.PID = $('#PID').val();
+            data.FalshSaleGuid = $('#FalshSaleGuid').val();
+            data.ProductName = $('#ProductName').val();
+            data.LimitSaleNumber = $('#LimitSaleNumber').val();
+            data.LimitGroupNumber = $('#LimitGroupNumber').val();
+            data.ID = $('#hidID').val();
+            data.OrderBy = $('#OrderBy').val();
+            data.ActivityPrice = $('#ActivityPrice').val();
+            return data;
+        }
+    }
+
+</script>

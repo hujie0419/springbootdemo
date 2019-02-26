@@ -1,0 +1,169 @@
+﻿
+@using Tuhu.Component.Common.Models;
+@using Tuhu.Provisioning.DataAccess.Entity
+
+@model ListModel<AppDownloadCount>
+
+<div>
+    <h2 style="background:#808080;margin:10px;width:150px;">App下载统计管理</h2>
+    <hr />
+    <label>当前位置：App下载统计列表</label>
+    <div onclick="ShowCreate()" style="float:right;font:bold 15px arial;height:30px;margin:2px;cursor:pointer;">
+        创建下载渠道文章
+    </div>
+    <div>
+        <table>
+            <thead>
+                <tr>
+                    <td>文章名称</td>
+                    <td>发布渠道</td>
+                    <td>安装包地址</td>
+                    <td>下载次数</td>
+                    <td>发布时间</td>
+                    <td> 操 作 </td>
+                </tr>
+            </thead>
+            <tbody>
+                @{foreach (var item in Model)
+                    {
+                        <tr id="tr+@item.PKID">
+                            <td>@item.ArticleTitle</td>
+                            <td>@item.Channel</td>
+                            <td><a href="http://api.tuhu.cn?appid=@item.PKID" target="_blank">http://api.tuhu.cn?appid=@item.PKID</a></td>
+                            <td>@item.DownloadCount</td>
+                            <td>@item.CreateDateTime</td>
+                            <td>
+                                <input type="button" value="下载记录" onclick="showhistory(@item.PKID)" />&nbsp;&nbsp;
+                                <input type="button" value="编辑包" onclick="EditAppFile(@item.PKID)" />&nbsp;&nbsp;
+                                <input type="button" id="deleteAppSem" onclick="deleteAppSem(@item.PKID)" value="删除" />
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<div id="createApp" style="display:none;">
+    <form method="post" action="/Sem/AppDownloadListAsync" id="download" enctype="multipart/form-data">
+        <table>
+            <tr>
+                <td>Android包：</td>
+                <td>
+                    <input type="file" id="appPath" name="appPath" />
+                </td>
+            </tr>
+            <tr>
+                <td>文章名称：</td>
+                <td>
+                    <input type="text" style="width:100%;" id="apptitle" name="apptitle" />
+                </td>
+            </tr>
+            <tr>
+                <td>文章渠道：</td>
+                <td style="text-align:left;">
+                    <select id="appchannel" name="appchannel" onchange='this.selectedIndex==3?document.getElementById("otherSpread").style.display="block":document.getElementById("otherSpread").style.display="none";'>
+                        <option value="0">-请选择-</option>
+                        <option value="途虎威信推送">途虎威信推送</option>
+                        <option value="途虎官网推送">途虎官网推送</option>
+                        <option value="其他媒体媒介推送">其他媒体媒介推送</option>
+                    </select><input type="text" value="" id="otherSpread" name="otherSpread" style="display:none;" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<div id="EditApp" style="display:none;">
+    <form method="post" action="/Sem/EditDownloadAppAsync" id="EditDownload" enctype="multipart/form-data">
+        Android包：
+        <input type="file" id="appEditPath" name="appEditPath" />
+        <input type="hidden" value="0" name="editPkid" id="editPkid" />
+        <br />
+    </form>
+</div>
+<div id="divHistory" style="display:none;">
+
+</div>
+<script>
+    function ShowCreate() {
+        document.getElementById("createApp").style.display = "block";
+        $("#createApp").dialog({
+            hide: true,
+            height: 300,
+            width: 500,
+            modal: true, //蒙层（弹出会影响页面大小）
+            title: '创建App下载渠道文章',
+            overlay: { opacity: 0.5, background: "black", overflow: 'auto' },
+            buttons: {
+                '确定': function () {
+                    $("#appPath").css("border", "");
+                    $("#apptitle").css("border", "");
+                    $("#appchannel").css("border", "");
+                    var path = $("#appPath").val();
+                    if (path.substr(path.length - 4) != ".apk") { $("#appPath").css("border", "solid 1px red"); return false; }
+                    if ($("#apptitle").val() == "") { $("#apptitle").css("border", "solid 1px red"); return false; }
+                    if ($("#appchannel").val().trim() == "0") { $("#appchannel").css("border", "solid 1px red"); return false; }
+
+                    document.getElementById("download").submit();
+                },
+                '取消': function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    }
+    function showhistory(id) {
+        $.ajaxSettings.async = false;
+      
+        $.getJSON("/Sem/GetHistory/" + id, function (data) {
+            $("#divHistory").html("<table><thead><tr><td>设备</td><td>IP</td><td>下载时间</td></tr></thead><tbody id='appendTbody'></tbody></table>");
+            $.each(data, function (i, n) {
+                $("#appendTbody").append("<tr><td>" + n.Machine + "</td><td>" + n.IP + "</td><td>" + n.DownloadTime + "</td></tr>");
+            });
+        });
+
+        $("#divHistory").dialog({
+            height: 500,
+            width: 900,
+            modal: true
+        });
+    }
+    function deleteAppSem(id) {
+        if (confirm("您确定要删除?")) {
+            $.get("/Sem/GetDelete/" + id, function (data) {
+                alert(data);
+                if (data == "删除成功")
+                    document.getElementById("tr+" + id).style.display = "none";
+            });
+        }
+    }
+    function EditAppFile(id) {
+        $("#editPkid").val(id);
+        $("#EditApp").dialog({
+            hide: true,
+            height: 300,
+            width: 500,
+            modal: true, //蒙层（弹出会影响页面大小）
+            title: '创建App下载渠道文章',
+            overlay: { opacity: 0.5, background: "black", overflow: 'auto' },
+            buttons: {
+                '确定': function () {
+                    $("#EditDownload").ajaxSubmit({
+                        url: this.href,
+                        success: function (data) { alert(data); },
+                        error: function () { alert("编辑出错了."); }
+                    });
+                },
+                '取消': function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    }
+</script>
+<style type="text/css">
+    table {
+        border: thin 2px #808080;
+        text-align: center;
+    }
+</style>

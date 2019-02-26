@@ -1,0 +1,579 @@
+﻿@{
+    ViewBag.Title = "翻盘明细列表";
+   
+}
+@model Tuhu.Provisioning.DataAccess.Entity.LuckyWheel
+<div style="margin-bottom:15px;width:100%">
+   <table>
+       <tr>
+           <td>
+               标题:
+           </td>
+           <td>
+               <input type="text" id="Title" name="Title" style="width:200px;" value="@Model.Title" />
+           </td>
+           <td>
+               分享参数:
+           </td>
+           <td>
+               <input type="text" id="DataParames" name="DataParames" style="width:200px;"  value="@Model.DataParames" />
+           </td>
+           <td style="width:160px;">
+               分享加1次抽奖:
+           </td>
+           <td>
+               @if (Model.IsAddOne == 1)
+               {
+                <input type="radio" name="IsAddOne" value="1" checked="checked" /><span>关闭</span>
+                <input type="radio" name="IsAddOne" value="0"  /><span>开启</span>
+               }
+               else
+               {
+                <input type="radio" name="IsAddOne" value="1" /><span>关闭</span>
+                <input type="radio" name="IsAddOne" value="0" checked="checked" /><span>开启</span>
+               }
+
+
+           </td>
+           <td>
+               抽奖类型:
+           </td>
+           <td>
+               <select id="IsIntegral" name="IsIntegral">
+                   <option value="0" @(Model.IsIntegral == 0?"selected=\"selected\"":"")>普通抽奖</option>
+                   <option value="1" @(Model.IsIntegral == 1?"selected=\"selected\"":"") >积分抽奖</option>
+                   <option value="2" @(Model.IsIntegral == 2?"selected=\"selected\"":"") >定人群抽奖</option>
+               </select>
+           </td>
+           <td>
+               分享前次数:
+           </td>
+           <td>
+               <input type="text" id="PreShareTimes" name="PreShareTimes" value="@Model.PreShareTimes" />
+           </td>
+       </tr>
+       <tr>
+           <td>是否开启一分钱领取:</td>
+           <td>
+              <select id="isUser" name="isUser">
+                  @if (Model.isNewUser == 0)
+                  {
+                    <option value="0" selected="selected">关闭</option>
+                  }
+                  else
+                  {
+                    <option value="0">关闭</option>
+                  }
+                 @if (Model.isNewUser == 1)
+                 {
+                    <option value="1" selected="selected">开启</option>
+                 }
+                 else
+                 {
+                    <option value="1">开启</option>
+                 }
+                 @*@if (Model.isNewUser == 2)
+                 {
+                    <option value="2" selected="selected">未领取一分洗车券用户</option>
+                 }
+                 else
+                 {
+                    <option value="2">未领取一分洗车券用户</option>
+                 }*@
+               
+              </select>
+           </td>
+           <td>
+               &nbsp;
+               &nbsp;
+               是否启用:
+           </td>
+           <td>
+               @if (Model.isStatus == 1)
+               {
+                    <input type="radio" value="1" checked="checked" name="rbStatus" /><span>是</span>
+                    <input type="radio" value="0" name="rbStatus"  /><span>否</span>
+               }
+               else
+               {
+                    <input type="radio" value="1"  name="rbStatus" /><span>是</span>
+                    <input type="radio" value="0" name="rbStatus" checked="checked" /><span>否</span>
+               }
+              
+           </td>
+          <td>
+              单次扣除积分数:
+          </td>
+           <td>
+               <input type="number" id="Integral" name="Integral" min="1" value="@(Model.Integral == 0?"":Model.Integral.ToString())" />
+           </td>
+           <td>分享后次数:</td>
+           <td>
+               <input type="text" id="CompletedShareTimes" name="CompletedShareTimes" value="@Model.CompletedShareTimes" />
+           </td>
+           <td  colspan="2" style="padding-left:300px;">
+               <input type="button" value="新 增" id="btnAddDeatil" onclick="wheelDeatil.add()" style="margin-right:50px;" />
+               <input type="button" value="保 存" id="btnSave"  onclick="wheelDeatil.save(this)" />
+           </td>
+       </tr>
+   </table>
+    
+</div>
+<table id="tbWheelList" style="width:100%" data-id="@Model.ID">
+     <thead>
+        <tr>
+            <th width="5%">
+                编号
+            </th>
+            <th width="5%">
+                用户等级
+            </th>
+            <th width="10%">
+                活动类型
+            </th>
+            <th width="10%">
+                优惠规则ID
+            </th>
+            <th width="10%">
+                领券上限(天)
+            </th>
+            <th width="15%">
+                背面(图片)
+            </th>
+            <th width="15%">
+                内容面(图片)
+            </th>
+            <th style="display:none">
+                翻转面(图片)
+            </th>
+            <th width="10%">
+                领券成功描述
+            </th>
+            <th width="10%">
+                去逛逛描述
+            </th>
+            <th style="display:none">
+                AppUrl
+            </th>
+            <th style="display:none">
+                WXUrl
+            </th>
+            <th style="display:none">
+                WwwUrl
+            </th>
+            <th style="display:none">
+                App处理值(IOS)
+            </th>
+            <th style="display:none">
+                App通信值(IOS)
+            </th>
+            <th style="display:none">
+                App处理值(Android)
+            </th>
+            <th style="display:none">
+                App通信值(Android)
+            </th>
+            <th width="10%">
+                排序
+            </th>
+        </tr>
+    </thead>
+    @if (Model.Items != null)
+    {
+        for (int i = 0; i < Model.Items.Count; i++)
+        {
+            var item = Model.Items[i];
+            <tr data-json="@(Newtonsoft.Json.JsonConvert.SerializeObject(item))" ondblclick="wheelDeatil.edit(this)">
+                <td>
+                    @*@( i+1)*@
+                    @item.ID
+                </td>
+                <td>
+                    @(item.UserRank == 0?"所有用户":item.UserRank == 1?"LV1":item.UserRank == 2?"LV2":item.UserRank == 3?"LV3":"LV4")
+                </td>
+                <td>
+                    @(item.Type == 4?"优惠券":"")
+                </td>
+                <td>
+                    @(item.CouponRuleID)
+                </td>
+                <td>
+                    @item.MaxCoupon
+                </td>
+                <td><img src="@item.BGImage" width="40" height="40" /></td>
+                <td><img src="@item.ContentImage" width="40" height="40" /></td>
+                @*<td><img src="@item.ChangeImage" width="40" height="40" /></td>*@
+                <td>@item.GetDescription</td>
+                <td>@item.GoDescription</td>
+                @*<td>@item.APPUrl</td>*@
+                @*<td>@item.WapUrl</td>*@
+                @*<td>@item.WwwUrl</td>*@
+                @*<td>@item.HandlerIOS</td>*@
+                @*<td>@item.SOAPIOS</td>*@
+                @*<td>@item.HandlerAndroid</td>*@
+                @*<td>@item.SOAPAndroid</td>*@
+                <td>@item.OrderBy</td>
+            </tr>
+        }
+    }
+</table>
+<div id="divEdit"></div>
+<div id="divRow" style="display:none;"></div>
+@section scripts{
+  <script src="/Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<script src="~/Scripts/jquery.validate-1.8.1.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        var rows = 1;
+
+        var wheelDeatil = {
+            add: function () {
+                var number = 0;
+                $('#tbWheelList tr').each(function (e) {
+                    number++;
+                });
+
+                if (number == 11) {
+                    alert("只能添加10个配置");
+                    return false;
+                }
+
+                $("#divEdit").empty();
+                $('#divEdit').load("/LuckyWheel/Edit");
+                window.add = true;
+                $('#divEdit').dialog({
+                    title: '编辑翻盘配置单元明细',
+                    width: 500,
+                    height: 800,
+                    modal: true,
+                    resizable: false,
+                    buttons: {
+                        "保 存": function () {
+                           
+                            var isresult = $("#formEdit").valid();
+                            if (isresult) {
+                              
+                                var data = GetData();
+                                var coupons = data.CouponRuleID.split(',');;
+                                var maxCoupon = data.MaxCoupon.split(',');
+                                if (maxCoupon != '') {
+                                    if (coupons.length != maxCoupon.length) {
+                                        alert("优惠券和领券上限(当日)，配置不匹配，请重新输入");
+                                        return false;
+                                    }
+                                }
+                                //$('#divRow').empty();
+                                // $('#divRow').load("/LuckyWheel/Row?json=" + JSON.stringify(data));
+                                data.ID = rows++;
+                               
+                                $.ajax({
+                                    type: 'post',
+                                    url: '/LuckyWheel/Row',
+                                    async:false,
+                                    data: { json: JSON.stringify(data) },
+                                    success: function (result) {
+                                        // console.log(result);
+                                        $('#tbWheelList tr').each(function (i) {
+                                            if (i != 0) {
+                                                var json = $(this).data("json");
+                                                if  ((json.ID+1) == data.ID ) {
+                                                    console.log("tianjia"+i);
+                                                    $(this).after(result);
+                                                    $("#divEdit").dialog('close');
+                                                }
+                                            }
+                                        });
+                                        if (data.ID == 1) {
+                                            console.log("一行添加");
+                                            $('#tbWheelList').append(result);
+                                             $("#divEdit").dialog('close');
+                                        }
+                                      
+                                    },
+                                    error: function () { }
+                                });
+                             
+                            }
+                           
+                        },
+                        "取 消": function () {
+                            $(this).dialog('close');
+                        }
+                    }
+                });
+            },
+            upload: function (obj, showImg, showUrl, table) {
+                var pobj = $(obj);
+
+                var fileSize = pobj[0].files[0].size / 1024 * 1.0;
+                if (fileSize.toFixed(2) > 400) {
+                    $.messager.alert("提示", "上传图片失败！图片不能超过400K");
+                    return;
+                }
+
+
+                var rd = Math.ceil(Math.random() * 9999) + 1;
+                var fileElId = $(obj).attr("id");
+                console.log(fileElId);
+                $.ajaxFileUpload({
+                    url: '/Article/ImageUploadToAli?rd=' + rd,
+                    secureuri: false,
+                    fileElementId: fileElId,
+                    dataType: 'json',
+                    async: false,
+                    success: function (result) {
+                        if (result.BImage != "" && result.SImage != "") {
+                            var type = $("#" + table + " [id=Type]").val();
+                            if (type == 0 || type == 1 || type == 6 || type == 7 || type == 10 || type == 11) {
+                                //
+                                if (location.origin.split('.')[2] != "dev" && location.origin.split('.')[2] != "test" && $("#" + table + " [id=IsImage]").val() == 0) {
+                                    result.BImage = result.BImage + "@@300w_300h_100Q.jpg";
+                                }
+                                //  console.log("上次图片路径:" + result.BImage + "@@300w_300h_100Q.jpg");
+                            }
+
+                            $("#" + table + " [id=" + showImg + "]").attr("src", result.SImage).show();
+                            $("#" + table + " [id=" + showUrl + "]").val(result.BImage);
+                        } else {
+                            alert("上传失败！");
+                        }
+                    },
+                    error: function (data, status, e)//服务器响应失败处理函数
+                    {
+                        alert(e);
+                    }
+                });
+            },
+            validateRule: function (obj) {
+                var values = $(obj).val();
+                var array = values.split(',');
+                var isResult = true;
+                array.forEach(function (value) {
+                    if (value != null && value != '') {
+                        $.ajax({
+                            type: 'post',
+                            url: '/ActivityV2/CouponVlidate1',
+                            dataType: 'json',
+                            data: { "couponRulePKID": value },
+                            success: function (result) {
+                                if (result.Name != "") {
+                                   
+                                } else {
+                                    $(obj).val("")
+                                    alert("优惠券不存在,请重新输入");
+                                    isResult = false;
+                                }
+
+                            },
+                            error: function (xmlHttp, status, em) {
+                                console.log(em);
+                                $.messager.alert("系统提示", "请输入正确的优惠券规则ID");
+                            }
+                        });
+                    }
+                });
+                
+            },
+            edit: function (obj) {
+               
+                var data = $(obj).data("json");
+                if (data) {
+                    //$(obj).remove();
+                    $("#divEdit").empty();
+                    $.ajax({
+                        url: '/LuckyWheel/Edit',
+                        type: "post",
+                        data: { json: JSON.stringify(data) },
+                        success: function (result) {
+                            $("#divEdit").append(result);
+                            $('#divEdit').dialog({
+                                title: '编辑翻盘配置单元明细',
+                                width: 500,
+                                height: 800,
+                                modal: false,
+                                resizable: false,
+                                closable:false,
+                                buttons: {
+                                    "保 存": function () {
+                                        var isresult = $("#formEdit").valid();
+                                        if (isresult) {
+                                            var num = 0;
+                                            var data = GetData();
+                                            var coupons = data.CouponRuleID.split(',');;
+                                            var maxCoupon = data.MaxCoupon.split(',');
+                                            if (maxCoupon != '') {
+                                                if (coupons.length != maxCoupon.length) {
+                                                    alert("优惠券和领券上限(当日)，配置不匹配，请重新输入");
+                                                    return false;
+                                                }
+                                            }
+
+                                            $.ajax({
+                                                type: 'post',
+                                                url: '/LuckyWheel/Row',
+                                                data: { json: JSON.stringify(data) },
+                                                success: function (result) {
+                                                    $('#tbWheelList tr').each(function (i) {
+                                                        num++;
+                                                        if (i != 0) {
+                                                            var json = $(this).data("json");
+                                                            if (json.ID == data.ID) {
+                                                                // $(this).after(result);
+                                                                $(this).replaceWith(result);
+                                                                $("#divEdit").dialog('close');
+                                                            }
+                                                        }
+                                                    });
+                                                    if (num == 1) {
+                                                        $('#tbWheelList').append(result);
+                                                        $("#divEdit").dialog('close');
+                                                    }
+                                                   
+                                                },
+                                                error: function () {
+                                                    alert("编辑保存失败");
+                                                }
+                                            });
+                                            // console.log($('#divRow').html());
+                                            // $('#tbWheelList').after($('#divRow').html());
+                                            //  $(this).dialog('close');
+                                        }
+
+                                    },
+                                }
+                            });
+                        },
+                        error: function () {
+                            alert("编辑错误");
+                        }
+                    });
+                   
+                }
+            },
+            save: function (obj) {
+                var rows = $('#tbWheelList tr');
+                var array = [];
+                if (rows.length != 1) {
+                    var isResult = false;
+                    rows.each(function (i) {
+                        if (i != 0) {
+                            var json = $(this).data("json");
+                            array.push(json);
+                           
+                            //if (json.MaxCoupon == null) {
+                            //    isResult = true;
+                            //}
+                            if (json.MaxCoupon == null ||json.MaxCoupon == '') {
+                                isResult = true;
+                            } else {
+                                if (json.MaxCoupon.indexOf(',') > -1) {
+                                    var a = json.MaxCoupon.split(',');
+                                    a.forEach(function (e) {
+                                        if (e == '' || e == null) {
+                                            isResult = true;
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    });
+                   
+                    if (isResult) {
+                        var data = {};
+                        var id = $("#tbWheelList").data("id");
+                        if (id != null && id != '') {
+                            data.ID = id;
+                        }
+                        data.Title = $("#Title").val();
+                        data.isNewUser = $('#isUser').val();
+                        data.isStatus = $('input[name=rbStatus]:checked').val();
+                        data.DataParames = $('#DataParames').val();
+                        data.IsAddOne = $('input[name=IsAddOne]:checked').val();
+                        data.IsIntegral = $("#IsIntegral").val();
+                        data.PreShareTimes = $("#PreShareTimes").val()||0;
+                        data.CompletedShareTimes = $("#CompletedShareTimes").val()||0;
+                        data.Integral = $('#Integral').val() || 0;
+                        if (data.IsIntegral == 1 && data.Integral == 0) {
+                            alert("请填写扣除积分数目");
+                            return;
+                        } else {
+                            if (data.IsIntegral == 0) {
+                                if (data.PreShareTimes <= 0 && data.CompletedShareTimes <= 0) {
+                                    alert("请配置分享前以及分享后的参数");
+                                    return;
+                                }
+                            }
+                        }
+                        data.Items = array;
+                        $.ajax({
+                            type: 'post',
+                            url: '/LuckyWheel/Save',
+                            data: { json: JSON.stringify(data) },
+                            async: false,
+                            success: function (result) {
+                                result = JSON.parse(result);
+                                if (result.result == 1) {
+                                    alert("保存成功");
+                                    location.href = "/LuckyWheel/List";
+                                } else {
+                                    alert("保存失败");
+                                }
+                            },
+                            error: function () {
+                                alert("保存失败");
+                            }
+                        });
+                    } else {
+                        alert("必须有一个优惠券不限制上限");
+                    }
+
+                } else {
+                    alert("添加的优惠券个数不为10个");
+                }
+            },
+            getQuerry: function (name) {
+                ///<summary>获取页面参数</summary>
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null) return unescape(r[2]); return null;
+            }
+        };
+
+        var validateRuleForm = {
+            rules: {
+                CouponRuleID: {
+                    required: true
+                  
+                },
+                hidBgImage: {
+                    required: true
+                },
+                hidContentImage: {
+                    required: true
+                },
+                OrderBy: {
+                    required: true,
+                    digits: true
+                }
+               
+            },
+            messages: {
+                CouponRuleID: {
+                    required: "请输入优惠券规则ID"
+                },
+                hidBgImage: {
+                    required: "请上传图片"
+                },
+                hidContentImage: {
+                    required: "请上传图片"
+                },
+                OrderBy: {
+                    required: "请输入排序字段",
+                    digits: "输入整数"
+                }
+            }
+        };
+
+
+
+    </script>
+    }

@@ -1,0 +1,9 @@
+export const isDebug = process.env.is_debug;
+export const credentials = !process.env.is_debug;
+export const loginUrl = process.env.login_url;
+export const logoutUrl = process.env.logout_url;
+export const page = 1;
+export const pageSize = 20;
+export const pageSizes = [20, 50, 100, 200, 500];
+export const login_tuhuscm_ticket = process.env.login_tuhuscm_ticket;
+export const ticket = {login_tuhuscm_ticket: login_tuhuscm_ticket};

@@ -1,0 +1,275 @@
+﻿@{
+    ViewBag.Title = "机油粘度优先级配置";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 style="padding:10px 0px;">
+    <a target="_blank" href="/OilBrandPriority/OilBrandPhonePriority">机油品牌推荐优先级配置</a>
+    <span>机油推荐配置</span>
+</h2>
+<link href="~/Content/Public/Public.css" rel="stylesheet" type="text/css" />
+<link href="~/Content/iview/iview.css" rel="stylesheet" />
+<link href="~/Content/BaoYangInstallFeeConfig/BaoYangInstallFeeConfig.css" rel="stylesheet" type="text/css" />
+
+<div id="div" v-cloak>
+    <div style="margin-top:15px;">
+        <label>1. 按粘度推荐机油</label>
+        <a target="_blank" href="/OilViscosityConfig/OilLevelPriority">2.等级推荐规则</a>
+        <a target="_blank" href="/OilViscosityConfig/OilViscosityRegionConfig">3.配置的地区里只显示0W或5W机油</a>
+    </div>
+    <fieldset>
+            <label>类型:</label>
+            <label><input type="radio" v-model="searchData.configType" value="User" /><span>用户类</span></label>
+            <label><input type="radio" v-model="searchData.configType" value="Package" /><span>套餐类</span></label>
+    </fieldset>
+    <table class="tableContainer">
+        <thead>
+            <tr>
+                <th style="width:20%;">原厂</th>
+                <th v-if="maxPriority>0" v-for="index in maxPriority">优先级{{index}}</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="loading">
+                <td colspan="10"><img src="~/Images/loading.gif" /></td>
+            </tr>
+            <tr v-else-if="searchResult != []" v-for="(value,index) in searchResult">
+                <td>{{value.OriginViscosity}}</td>
+                <td v-for="i in maxPriority">
+                    {{ value.ViscosityPriorities[i-1] || ""}}
+                </td>
+                <td>
+                    <button class="btn btn-basic" style="width:60px" v-on:click="OpenEditDialog(value)">编辑</button>
+                    <button class="btn btn-danger" style="width:60px;margin-left:5px" v-on:click="Delete(value)">删除</button>
+                </td>
+            </tr>
+            <tr v-else>
+                <td colspan="10">根据筛选条件未能查询到相关结果</td>
+            </tr>
+        </tbody>
+    </table>
+    <Modal v-model="editDialog.show" :mask-closable="false" width="40%">
+        <p slot="header" style="color:#f60;text-align:center">
+            <span>编辑原厂机油粘度{{oilViscosityPriorityModel.OriginViscosity}}优先级</span>
+        </p>
+        <div style="text-align:center">
+            <table>
+                <thead>
+                    <tr>
+                        <th>优先级</th>
+                        <th>粘度</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(value,index) in oilViscosityPriorityModel.ViscosityPriorities">
+                        <td>优先级{{index+1}}</td>
+                        <td>
+                            <v-select style="width:50%;" placeholder="-请选择机油粘度-" v-model="oilViscosityPriorityModel.ViscosityPriorities[index]" :options="allOilViscosity"></v-select>
+                        </td>
+                        <td style="border:none;width:60px;" v-if="index==oilViscosityPriorityModel.ViscosityPriorities.length-1">
+                            <span class='ui-icon ui-icon-plus' style="display: inline-block; margin-left: 5px; cursor: pointer" v-on:click="AddPriorityArea(oilViscosityPriorityModel.ViscosityPriorities[index])"></span>
+                            <span class='ui-icon ui-icon-minus' style="display: inline-block; margin-left: 5px; cursor: pointer" v-on:click="RemovePriorityArea(oilViscosityPriorityModel.ViscosityPriorities[index])"></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div slot="footer">
+            <Button type="button" class="btn btn-basic" v-on:click="Edit()">编辑</Button>
+            <Button type="button" class="btn btn-basic" v-on:click="editDialog.show=false">取消</Button>
+        </div>
+    </Modal>
+</div>
+<script src="~/Scripts/vue.min.js"></script>
+<script src="~/Scripts/vue-select/vue-select.js"></script>
+<script src="~/Scripts/iview/iview.js"></script>
+<script type="text/javascript">
+    Vue.component('v-select', VueSelect.VueSelect);
+    var vue = new Vue({
+        el: "#div",
+        data: {
+            maxPriority: 0,
+            allOilViscosity: [],
+            searchData: {
+                originViscosity: "",
+                configType:"User"
+            },
+            oilViscosityPriorityModel: [],
+            loading: false,
+            searchResult: [],
+            editDialog: {
+                show: false
+            },
+            vehicleAdditionalPrioritySwitch: true
+        },
+        created: function () {
+            var self = this;
+            self.GetAllOilViscosity();
+            self.Search();
+            self.$Notice.config({
+                top: 180,
+                duration: 5
+            });
+        },
+        watch: {
+            "searchData.configType": function () {
+                var self = this;
+                self.Search();
+            }
+        },
+        methods: {
+            GetAllOilViscosity: function () {
+                var self = this;
+                $.post("GetAllOilViscosity", function (result) {
+                    if (result.Status) {
+                        self.allOilViscosity = result.Data;
+                    }
+                });
+            },
+            Search: function () {
+                var self = this;
+                self.loading = true;
+                $.post("SelectOilViscosityPriorityConfig", { originViscosity: self.searchData.originViscosity, configType: self.searchData.configType }, function (result) {
+                    if (result.Status) {
+                        if (result.MaxPriorityLengrh > 0) {
+                            self.maxPriority = result.MaxPriorityLengrh;
+                        }
+                        else {
+                            self.maxPriority = 1;
+                        }
+                        self.searchResult = result.Data;
+                    }
+                    else {
+                        alert("查询失败!" + (result.Msg || ""));
+                        self.SearchResult = [];
+                    }
+                    self.loading = false;
+                });
+            },
+            OpenEditDialog: function (item) {
+                var self = this;
+                self.oilViscosityPriorityModel = new Object();
+                self.oilViscosityPriorityModel.PKID = item.PKID;
+                self.oilViscosityPriorityModel.OriginViscosity = item.OriginViscosity;
+                self.oilViscosityPriorityModel.ViscosityPriority = item.ViscosityPriority;
+                self.oilViscosityPriorityModel.ConfigType = item.ConfigType;
+                self.oilViscosityPriorityModel.ViscosityPriorities = [];
+                if (item.ViscosityPriorities.length > 0) {
+                    item.ViscosityPriorities.forEach(function (value) {
+                        self.oilViscosityPriorityModel.ViscosityPriorities.push(value);
+                    });
+                }
+                else {
+                    self.oilViscosityPriorityModel.ViscosityPriorities.push("");
+                }
+                self.editDialog.show = true;
+            },
+            closeEditDialog: function () {
+                var self = this;
+                self.editDialog.show = false;
+            },
+            AddPriorityArea: function (priority) {
+                var self = this;
+                if (priority) {
+                    self.editDialog.show = false;
+                    self.oilViscosityPriorityModel.ViscosityPriorities.push("");
+                    self.editDialog.show = true;
+                }
+                else {
+                    alert("请先填写上一级优先级");
+                }
+            },
+            RemovePriorityArea: function () {
+                var self = this;
+                if (self.oilViscosityPriorityModel.ViscosityPriorities.length > 1) {
+                    self.editDialog.show = false;
+                    self.oilViscosityPriorityModel.ViscosityPriorities.splice(-1, 1);
+                    self.editDialog.show = true;
+                }
+                else {
+                    alert("优先级不能为空");
+                }
+            },
+            Edit: function () {
+                var self = this;
+                var model = self.oilViscosityPriorityModel;
+                if (model.ViscosityPriorities.length < 1) {
+                    alert("优先级不能为空");
+                    return;
+                }
+                if (!confirm("是否确认更新" + model.OriginViscosity + "粘度优先级配置 ? ")) {
+                    return;
+                }
+                var viscosityPriority = ",";
+                for (var i = 0; i < model.ViscosityPriorities.length;i++) {
+                    if (!model.ViscosityPriorities[i]) {
+                        alert("优先级" + (i + 1) + ": 粘度不能为空");
+                        return;
+                    }
+                    if (viscosityPriority.indexOf(',' + model.ViscosityPriorities[i] + ',') != -1) {
+                        alert("优先级" + (i + 1) + ",粘度" + model.ViscosityPriorities[i] + "重复, 请确认后再添加");
+                        return;
+                    }
+                    viscosityPriority += model.ViscosityPriorities[i] + ",";
+                }
+                model.ViscosityPriority = viscosityPriority.substring(1, viscosityPriority.length - 1);
+                $.post("AddOrEditOilViscosityPriorityConfig", { model: model }, function (data) {
+                    if (data && data.Status) {
+                        alert("编辑成功!" + (data.Msg || ""));
+                        setTimeout(function () { self.RefreshCache(model.ConfigType, model.OriginViscosity) }, 2000);
+                        self.closeEditDialog();
+                        self.Search();
+                    }
+                    else {
+                        alert("编辑失败!" + (data.Msg || ""));
+                    }
+                });
+            },
+            Delete: function (item) {
+                var self = this;
+                if (!item || item.length < 1) {
+                    return;
+                }
+                if (!confirm("确认删除 " + item.OriginViscosity + " 的优先级配置?")) {
+                    return;
+                }
+                var originViscosity = item.OriginViscosity;
+                var configType = item.ConfigType;
+                if (!originViscosity) {
+                    return;
+                }
+                $.post("DeleteOilViscosityPriorityConfig", { originViscosity: originViscosity, configType: configType }, function (result) {
+                    if (result && result.Status) {
+                        alert("删除成功!" + (result.Msg || ""));
+                        setTimeout(function () { self.RefreshCache(configType, originViscosity) }, 2000);
+                        self.Search();
+                    }
+                    else {
+                        alert("删除失败!" + (result.Msg || ""));
+                    }
+                });
+            },
+            RefreshCache: function (configType, originViscosity) {
+                var self = this;
+                if (configType && originViscosity) {
+                    $.post("RemoveOilViscosityPriorityConfigCache", { configType: configType, originViscosity: originViscosity}, function (result) {
+                        if (result && result.Status) {
+                            self.$Notice.info({
+                                title: '缓存提示',
+                                desc: "刷新服务缓存成功!<br/>此消息将自动关闭"
+                            });
+                        }
+                        else {
+                            self.$Notice.error({
+                                title: '缓存提示',
+                                desc: "刷新服务缓存失败",
+                                duration:0
+                            });
+                        }
+                    });
+                }
+            }
+        }
+    })
+</script>

@@ -1,0 +1,156 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@{
+    Layout = "";
+}
+    <div style="max-height:200px;overflow-y:auto;overflow-x:hidden;">
+        <table id="tbody-condition">
+            <tbody>
+                <tr>
+                    <td width="70px;">
+                        <label><input type="checkbox" data-brand="" onclick="ProductLibraryConfig.CheckBoxManage(this, 'ParamsList_Brand', 'data-brand');" />品牌：</label>
+                    </td>
+                    <td id="ParamsList_Brand">
+                        @{
+                            foreach (var item in (ViewBag.CP_BrandList as List<FilterConditionModel>))
+                            {
+                                if (!string.IsNullOrWhiteSpace(item.Name))
+                                {
+                                    <text>
+                                        <span><input data-brand="@item.Name" type="checkbox" name="CP_Brand" value="@item.Name" />@(item.Name)</span>
+                                    </text>
+                                }
+                            }
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label><input type="checkbox" data-tab="" onclick="ProductLibraryConfig.CheckBoxManage(this, 'ParamsList_Tab', 'data-tab');" />标签:</label>
+                    </td>
+                    <td id="ParamsList_Tab">
+                        @{
+                            foreach (var item in (ViewBag.CP_tabList as HashSet<string>))
+                            {
+                                if (!string.IsNullOrWhiteSpace(item))
+                                {
+                                    <text>
+                                        <span><input data-tab="@item" type="checkbox" name="CP_Tab" value="@item" />@(item)</span>
+                                    </text>
+                                }
+                            }
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label><input type="checkbox" data-rim="" onclick="ProductLibraryConfig.CheckBoxManage(this, 'ParamsList_Rim', 'data-rim');" />尺寸:</label>
+                    </td>
+                    <td id="ParamsList_Rim">
+                        @{
+                            foreach (var item in (ViewBag.CP_Tire_RimList as List<FilterConditionModel>))
+                            {
+                                if (!string.IsNullOrWhiteSpace(item.Name))
+                                {
+                                    <text>
+                                        <span><input data-rim="@item.Name" type="checkbox" name="CP_Tire_Rim" value="@item.Name" />@(item.Name)寸</span>
+                                    </text>
+                                }
+                            }
+                        }
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div style="margin-top:10px;">
+        <table id="tb-condition2">
+            <tr>
+                <td style="text-align:right;width:70px"> 商品展示：</td>
+                <td>
+                    <select id="S_IsShow" name="S_IsShow" class="select_s" style="width:10%;">
+                        <option value="-1">全部</option>
+                        <option value="1">显示</option>
+                        <option value="0">隐藏</option>
+                    </select>
+                    商品状态：
+                    <select id="onsale" name="onsale" class="select_s" style="width:70px;">
+                        <option value="">请选择</option>
+                        <option value="1">上架</option>
+                        <option value="0">下架</option>
+                    </select>
+                    筛选:
+                    <select id="filtrateType" name="filtrateType" class="select_s" style="width:90px;">
+                        <option value="GrossMarginAfter">券后毛利</option>
+                        <option value="CostPrice">成本价</option>
+                        <option value="SalePrice">销售价</option>
+                        <option value="SalePriceAfter">券后销售价</option>
+                    </select>
+                    <select id="maoli" name="maoliSort" class="select_s" style="width:80px;">
+                        <option value="">请选择</option>
+                        <option value="asc">升序</option>
+                        <option value="desc">降序</option>
+                    </select>
+                    <input type="text" data-id="S_Price_Begin" name="S_Price_Begin" style="width:20%" data-bind="SecondSearch" />
+                    -
+                    <input type="text" data-id="S_Price_End" name="S_Price_End" style="width:20%" data-bind="SecondSearch" />
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align:right;">产品ID：</td>
+                <td>
+                    <input type="text" data-id="S_PID" name="S_PID" style="width:42%" data-bind="SecondSearch" />
+                    &nbsp;  &nbsp;&nbsp; 优惠券ID：
+                    <input type="text" data-id="S_Coupon" name="S_Coupon" style="width:40%" data-bind="SecondSearch" />
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align:right;">花纹：</td>
+                <td>
+                    <select id="S_Figure" name="S_Figure" class="select_s" style="width:42%">
+                        <option value="">请选择</option>
+                        @foreach (var item in (ViewBag.Pattern as List<string>))
+                        {
+                            if (!string.IsNullOrWhiteSpace(item))
+                            {
+                                <option value="@item">@item</option>
+                                <option value="@item">@item</option>
+                            }
+                        }
+                    </select>
+                    &nbsp;每页显示数量：
+                    <select id="pageSize" name="pageSize" class="select_s" style="width:40%">
+                        <option value="0">请选择</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                        <option value="500">500</option>
+                        <option value="1000">1000</option>
+                        <option value="2000">2000</option>
+                        <option value="5000">5000</option>
+                    </select>
+                </td>
+            </tr>
+            <tbody id="tb_error_imputInfo"  style="display:none;">
+                <tr>
+                    <td style="color:red;font-weight:bold;text-align:right;width:80px">
+                        未匹配PID：
+                    </td>
+                    <td class="td-product-pid" style="word-wrap:break-word;word-break:break-all;">
+                    </td>
+                </tr>
+            </tbody>
+            <tr>
+                <td align="center" colspan="2">
+                    <input type="button" value="搜索" onclick="ProductLibraryConfig.Search();" />&nbsp;&nbsp;&nbsp;
+                    <input type="button" value="重置" onclick="ProductLibraryConfig.ResetSearch();" />&nbsp;&nbsp;&nbsp;
+                    <input type="button" value="导入" onclick="javascript:$('#fileInputPIds').click()" id="btn_imput_Excel" />
+                    <input type="button" value="删除导入数据" onclick="ProductLibraryConfig.ClearImputExcel()" id="btn_clear_imput_Excel" style="display:none;" />
+                    <a href="~/Scripts/Product/导入PID模板.xlsx" target="_self">模板下载</a>
+                    <a href="/ProductLibraryConfig/LogList?obj=PLC" target="_blank" id="rizhi">日  志</a>&nbsp;&nbsp;&nbsp;
+                    <input type="button" onclick="ProductLibraryConfig.ShowCouponUseMoneyConfigDialog();" value="添加优惠券" />&nbsp;&nbsp;&nbsp;
+                    <input type="button" onclick="ProductLibraryConfig.BatchDeleteCouponOpen();" value="删除优惠券" />&nbsp;&nbsp;&nbsp;
+                </td>
+            </tr>
+        </table>
+    </div>
+

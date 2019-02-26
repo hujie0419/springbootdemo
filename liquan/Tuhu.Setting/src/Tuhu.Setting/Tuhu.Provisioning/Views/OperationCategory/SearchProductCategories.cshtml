@@ -1,0 +1,83 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@{
+    Layout = null;
+    ViewBag.Title = "产品列表";
+    List<VW_ProductsModel> _JsonData = ViewBag.JsonData;
+}
+
+@{
+    <text>
+    <table>
+    <thead>
+        <tr>
+            <th><input type="checkbox" onclick="SearchProductCategoriesConfig.CheckAllOrOut(this)" />全选/反选</th>
+            <th>产品名称</th>
+            <th>上下架</th>
+            <th>库存</th>
+            <th>PID</th>
+            <th>途虎价</th>
+            <th>销售价格</th>
+            <th>品牌/地域</th>
+            <th>型号/规格</th>
+            <th>产品图</th>
+        </tr>
+    </thead>
+    </text>
+    if (_JsonData != null && _JsonData.Count > 0)
+    {
+        for (int i = 0; i < _JsonData.Count; i++)
+        {
+            <tr>
+                <td>
+                    <input class="ckeckProduct" id="@(_JsonData[i].oid)" name="@(_JsonData[i].oid)" value="@(_JsonData[i].oid)" @(_JsonData[i].isChecked == true ? "checked=checked":"") type="checkbox" />
+                </td>
+                <td>@(_JsonData[i].DisplayName)</td>
+                <td>@(_JsonData[i].OnSale == 1 ? "上架" : "下架")</td>
+                <td>@(_JsonData[i].Stockout == 1 ? "缺货" : "正常")</td>
+                <td>@(_JsonData[i].PID)</td>
+                <td>@(_JsonData[i].CY_List_Price)</td>
+                <td>@(_JsonData[i].CY_Marketing_Price)</td>
+                <td>@(_JsonData[i].CP_Brand + "/" + _JsonData[i].CP_Place)</td>
+                <td>@(_JsonData[i].CP_Tab + "/" +_JsonData[i].TireSize)</td>
+                <td><img src="@("https://file.tuhu.cn"+_JsonData[i].Image)" width="100" height="100" /></td>
+            </tr>
+        }
+    }
+    else
+    {
+        @:<tr><td colspan="10" align="center">无数据</td></tr>
+    }
+    @:</table>
+}
+<script type="text/javascript">
+    var SearchProductCategoriesConfig = {
+        CheckAllOrOut: function (t) {
+            if ($(t).is(":checked")) {
+                $(".ckeckProduct").attr("checked", true);
+            }
+            else {
+                $(".ckeckProduct").attr("checked", false);
+            }
+        },
+        GetCheck: function () {
+            var itemsJson = []; 
+            $(".ckeckProduct").each(function (i, j) {
+                if ($(this).is(":checked")) {
+                    var _model = new SearchProductCategoriesConfig.model();
+                    _model.key = $(this).val();
+                    _model.value = $(this).val();
+                    _model.isShow = 0;
+                    itemsJson.push(_model);
+                }
+            });
+            var _json = JSON.stringify(itemsJson) || "";
+            console.log(_json);
+            return _json;
+        },
+        model: function () {
+            this.key,
+            this.value,
+            this.isShow
+        }
+    };
+</script>

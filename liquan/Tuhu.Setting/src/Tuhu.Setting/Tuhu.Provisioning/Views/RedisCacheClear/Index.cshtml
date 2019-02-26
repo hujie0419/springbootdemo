@@ -1,0 +1,122 @@
+﻿
+@{
+    ViewBag.Title = "RedisCacheClear";
+}
+
+
+<!DOCTYPE html>
+<style>
+    .redisClearContainer {
+        width:100%;
+        border-right:1px solid #ccc;
+        border-bottom:1px solid #ccc;
+    }
+    .redisClearContainer td:first-child {
+        width:200px;
+    }
+    .redisClearContainer td{
+        height:30px;
+        vertical-align: middle;
+        border-left:1px solid #ccc;
+        border-top:1px solid #ccc;
+    }
+</style>
+<div>
+    <table class="redisClearContainer">
+        <tr>
+            <td>请选择服务</td>
+            <td>
+                <select id="site">
+                    <option selected="selected" value="">--Select--</option>
+                    @foreach (var serviceName in ViewBag.ServiceList)
+                    {
+                        <option value="@serviceName">@serviceName</option>
+                    }
+                    
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>RedisDataType</td>
+            <td>
+                <select id="redisDataType">
+                    @foreach (var name in ViewBag.RedisDataType)
+                    {
+                        if (name == "String")
+                        {
+                            <option value="@name" selected="selected">@name</option>
+                        }
+                        else
+                        {
+                            <option value="@name">@name</option>
+                        }
+                    }
+
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>CacheName</td>
+            <td><input id="cacheName" /></td>
+        </tr>
+        <tr>
+            <td>CacheKey</td>
+            <td><input id="cacheKey" /></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><button id="btnClear">清除</button></td>
+        </tr>
+    </table>
+    
+</div>
+<script type="text/javascript">
+    (function() {
+        var elements = {
+            site: jQuery('#site'),
+            redisDataType: jQuery("#redisDataType"),
+            cacheName: jQuery('#cacheName'),
+            cacheKey: jQuery('#cacheKey'),
+            btnClear:jQuery('#btnClear')
+        };
+        elements.site.bind('change',
+            function() {
+                var serviceName = this.value;
+                elements.cacheName.val(serviceName.replace('Tuhu.Service.', ''));
+            });
+        elements.btnClear.bind('click',
+            function () {
+                if (elements.site.val() === "") {
+                    alert("请选择一个服务");
+                    return false;
+                }
+                if (elements.cacheName.val() === "") {
+                    alert("请输入CacheName");
+                    return false;
+                }
+                if (elements.cacheKey.val() === "") {
+                    alert("请输入CacheKey");
+                    return false;
+                }
+                $.ajax({
+                    url: '/RedisCacheClear/Execute',
+                    type:'POST',
+                    data: {
+                        site: elements.site.val(),
+                        redisDataType: elements.redisDataType.val(),
+                        cacheName: elements.cacheName.val(),
+                        cacheKey: elements.cacheKey.val()
+                    },
+                    dataType:'json',
+                    success: function(res) {
+                        if (res && res.result) {
+                            alert("清除成功");
+                        } else {
+                            alert(res && res.message || "清除失败");
+                        }
+                    }
+                });
+            });
+
+    })();
+</script>

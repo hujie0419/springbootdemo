@@ -1,0 +1,180 @@
+﻿@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.SE_MDBeautyCategoryProductConfigModel>
+
+@{
+    ViewBag.Title = "门店美容商品产品配置";
+    Layout = null;
+    var dev = System.Configuration.ConfigurationManager.AppSettings["env"]== "dev";
+}
+<div>
+    <input type="button" value="添加标准产品" style="margin:5px 0;" onclick="SE_MDBeautyCategoryProductConfig_IndexView.AddOrEdit(0);" />
+    <input type="button" value="添加品牌" style="margin:5px 0;" onclick="SE_MDBeautyCategoryProductConfig_IndexView.OpenPage();" />
+    <input type="button" value="重置分页" style="margin:5px 0;" onclick="SE_MDBeautyCategoryProductConfig_IndexView.ResetPage();" />
+</div>
+
+<table>
+    <tbody>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.PId)
+            </th>
+            <th>
+                @Html.DisplayName("产品库PID")
+            </th>
+            <th>
+                @Html.DisplayName("产品名称")
+            </th>
+            <th>
+                @Html.DisplayName("商品类别")
+            </th>
+            <th>
+                @Html.DisplayName("简单描述")
+            </th>
+            <th>
+                @Html.DisplayName("价格范围")
+            </th>
+            <th>
+                @Html.DisplayName("促销价范围")
+            </th>
+            <th>
+                @Html.DisplayName("佣金")
+            </th>
+            <th>
+                @Html.DisplayName("每日最大件数")
+            </th>
+            <th>
+                @Html.DisplayName("推荐车型级别")
+            </th>
+            <th>
+                @Html.DisplayName("适配车型")
+            </th>
+            <th>
+                @Html.DisplayName("是否禁用")
+            </th>         
+            <th>
+                @Html.DisplayName("是否不展示")
+            </th>         
+            <th>操作</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProdcutId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProdcutName)
+                </td>
+                <td>
+                    @Html.HiddenFor(modelItem => item.CategoryIds)
+                    @Html.Raw(string.Join("<span style='color:red;font-weight:bold'> > </span>", item.ParentsName.Split(',')))
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Describe)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.BeginPrice)
+                    -
+                    @Html.DisplayFor(modelItem => item.EndPrice)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.BeginPromotionPrice)
+                    -
+                    @Html.DisplayFor(modelItem => item.EndPromotionPrice)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Commission)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EveryDayNum)
+                </td>
+                <td>
+                    @Html.Label(item.RecommendCar == 4 ? "无推荐车型" : "有推荐车型")
+                </td>
+                <td>
+                    @Html.Label(item.AdaptiveCar == 1 ? "五座轿车" :
+                                item.AdaptiveCar == 2 ? "SUV/MPV" : 
+                                item.AdaptiveCar == 3 ? "SUV" : 
+                                item.AdaptiveCar == 4 ? "MPV" : "无车型")
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IsDisable)
+                </td>            
+                <td>
+                     @Html.DisplayFor(modelItem => item.IsNotShow)
+                </td>               
+                <td>
+                    <input type="button" value="编辑" onclick="SE_MDBeautyCategoryProductConfig_IndexView.AddOrEdit(@item.PId)" />
+                </td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <td id="kkpager" colspan="13"></td>
+        </tr>
+    </tfoot>
+</table>
+
+<div id="SE_MDBeautyCategoryProductConfig_Index"></div>
+
+<div id="SE_MDBeautyCategoryProductConfig_Loding" style="width:200px;height:100px;display:none;">
+    <img src="~/Images/loading.gif" style="margin:25px 90px;" />
+</div>
+
+<script src="~/Scripts/jquery.cookie.js"></script>
+<script src="~/Scripts/kkpager/kkpager.min.js"></script>
+<link href="~/Scripts/kkpager/kkpager_blue.css" rel="stylesheet" />
+
+<script type="text/javascript">
+    var SE_MDBeautyCategoryProductConfig_IndexView = {
+        AddOrEdit: function (pid) {
+            pid = pid || 0; 
+            var _title = (pid == 0 ? "添加标准产品" : "编辑标准产品");
+            var dialogConfig = { title: _title, width: 450, height: 800, modal: true };
+            if (pid == 0) {
+                $("#SE_MDBeautyCategoryProductConfig_Index").html("")
+                .load('/SE_MDBeautyCategoryProductConfig/Edit')
+                .dialog(dialogConfig);
+            }
+            else if (pid > 0) {
+                $("#SE_MDBeautyCategoryProductConfig_Index").html("")
+                .load('/SE_MDBeautyCategoryProductConfig/Edit?id=' + pid)
+                .dialog(dialogConfig);
+            }
+        },
+        OpenPage:function(){
+            window.open("/SE_MDBeautyBrandConfig/Index","_blank")
+        },
+        ResetPage:function(){
+            $.cookie('SE_MDBeautyCategoryProductConfigPageIndex', null, { expires: -1 });
+            $.cookie('SE_MDBeautyCategoryProductConfigPageIndex', null, { path: '/',expires: -1 });
+        }
+    };
+
+    var totalPage = @(ViewBag.totalPage), 
+        totalRecords = @(ViewBag.totalRecords), 
+        pageNo = $.cookie("SE_MDBeautyCategoryProductConfigPageIndex") || 1;
+
+    //生成分页
+    kkpager.generPageHtml({
+        pno: pageNo,
+        //总页码
+        total: totalPage,
+        //总数据条数
+        totalRecords: totalRecords,
+        mode:'click',
+        click:function(pageIndex){
+            $.cookie("SE_MDBeautyCategoryProductConfigPageIndex",pageIndex,{path:'/'});
+            $("#LOAD_SE_MDBeautyCategoryProductConfig").html("")
+            .load('/SE_MDBeautyCategoryProductConfig/Index?pageIndex='+ (pageIndex||1) + "&categoryIds="+ ((seleectItem == null) ? "" : (seleectItem.childs || "")));
+        },
+        isGoPage: false,
+        getLink: function (n) {
+            return 'javascript:void(0);';
+        }
+    });
+    //kkpager.selectPage(pageIndex); 
+</script>

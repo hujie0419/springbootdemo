@@ -1,0 +1,234 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@model DefaultSearchConfig
+@{
+    Layout = null;
+}
+
+<style>
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    a {
+        color: cornflowerblue;
+    }
+</style>
+<script src="../../Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<link href="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.js"></script>
+
+<form action="/DefaultSearchConfig/Edit" method="post">
+    <input type="hidden" value="@Model.Id" name="Id" />
+    <div>
+        <table>
+            <tr id="typeTr" >
+                <td style="min-width:30%">描述</td>
+                <td>
+                    <select id="Type" name="Type" onchange="ChangeView()">
+                        <option value="4">活动浮层配置</option>
+                        <option value="3">品牌旗舰店</option>
+                        <option value="2">业务搜索配置</option>
+                        <option value="1">默认搜索配置</option>
+                    </select>
+                </td>
+            </tr>
+            <tr id="nameTr">
+                <td>名称</td>
+                <td>
+                    <input type="text" value="@Model.Name" id="Name" name="Name" />
+                </td>
+            </tr>
+            <tr id="keywordsTr">
+                <td>关键词</td>
+                <td>
+                    <input type="text" value="@Model.Keywords" id="Keywords" required="required" name="Keywords" />
+                </td>
+            </tr>
+
+            <tr id="activityTimeTr" style="display:none">
+                <td>活动时间</td>
+                <td>
+                <input type="text" style="width:150px" id="ActivityStartTime" name="ActivityStartTime" value="@(Model.ActivityStartTime==null?"":Model.ActivityStartTime.ToString())" />
+                -
+                <input type="text" style="width:150px" id="ActivityEndTime" name="ActivityEndTime" value="@(Model.ActivityEndTime==null?"":Model.ActivityEndTime.ToString())" />
+                    @*<input type="text" value="@Model.ActivityStartTime" id="ActivityStartTime" name="activityStartTime" />
+                    <input type="text" value="@Model.ActivityEndTime" id="ActivityEndTime" name="activityEndTime" />*@
+                </td>
+            </tr>
+
+            <tr id="activityTypeTd" style="display:none">
+                <td>活动类型</td>
+                <td>
+                    <select id="ActivityType" name="ActivityType" onchange="ChangeView()">
+                        <option value="1">@ActivityTypeEnum.领优惠券.ToString()</option>
+                        <option value="2">@ActivityTypeEnum.活动专场.ToString()</option>
+                    </select>
+                </td>
+            </tr>
+
+            <tr id="descriptionTr" style="display:none">
+                <td>描述</td>
+                <td>
+                    <textarea style="width:160px;" name="Description">@Model.Description</textarea>
+                </td>
+            </tr>
+            <tr id="imageTr">
+                <td>图片</td>
+                <td>
+                    <span id="title_span">***活动浮层图片尺寸：524*692***</span>
+                    <br>
+                    <img height="40" class="vwPicture" src="@Model.Image" />
+                    <input type="hidden" name="Image" class="image" value="@Model.Image" />
+                    <form method="post" action="" enctype="multipart/form-data">
+                        <input style="width:150px;" type="file" onchange="UploadImg(this)" id="2" name="2" />
+                    </form>
+                </td>
+            </tr>
+
+            <tr id="activityPromotionIdTd" style="display:none">
+                <td>优惠券guid</td>
+                <td><input type="text" value="@Model.ActivityPromotionId" name="ActivityPromotionId" /></td>
+            </tr>
+
+            <tr id="linkTr" style="display:none">
+                <td>URl</td>
+                <td><input type="text" value="@Model.Link" name="Link" /></td>
+            </tr>
+            <tr id="iOSProcessValueTr" style="display:none">
+                <td>iOS 处理值</td>
+                <td><input type="text" value="@Model.IOSProcessValue" name="IOSProcessValue" /></td>
+            </tr>
+            <tr id="iOSCommunicationValueTr" style="display:none">
+                <td>iOS 特殊通讯值</td>
+                <td><input type="text" value="@Model.IOSCommunicationValue" name="IOSCommunicationValue" /></td>
+            </tr>
+            <tr id="androidProcessValueTr" style="display:none">
+                <td>Android 处理值</td>
+                <td><input type="text" value="@Model.AndroidProcessValue" name="AndroidProcessValue" /></td>
+            </tr>
+            <tr id="androidCommunicationValueTr" style="display:none">
+                <td>Android 特殊通讯值</td>
+                <td><input type="text" value="@Model.AndroidCommunicationValue" name="AndroidCommunicationValue" /></td>
+            </tr>
+            <tr id="wXAPPValueTr" style="display:none">
+                <td>小程序处理值</td>
+                <td><input type="text" value="@Model.WXAPPValue" name="WXAPPValue" /></td>
+            </tr>
+            <tr id="h5ValueTr" style="display:none">
+                <td>移动站处理值</td>
+                <td><input type="text" value="@Model.H5Value" name="H5Value" /></td>
+            </tr>
+            <tr id="isJump" style="display:none">
+                <td>是否跳转</td>
+                <td>
+                    @*<input type="checkbox" value="@Model.IsJump" name="IsJump" />*@
+                    @Html.CheckBoxFor(x => x.IsJump, htmlAttributes: new { @checked = Model.IsJump ? "true" : "" })
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><input type="submit" value="保存" class="btn" /></td>
+            </tr>
+        </table>
+    </div>
+</form>
+<script>
+
+
+    $(function () {
+
+        $("#ActivityStartTime").datetimepicker({
+            timeFormat: "HH:mm:ss",
+            dateFormat: "yy-mm-dd",
+            monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+        });
+        $("#ActivityEndTime").datetimepicker({
+            timeFormat: "HH:mm:ss",
+            dateFormat: "yy-mm-dd",
+            monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+        });
+
+        $("#Type").val(@Model.Type);
+        $("#ActivityType").val(@((int)Model.ActivityType));
+        ChangeView();
+    })
+
+    function UploadImg(e) {
+        var $e = $(e);
+        var $ee = $e.parents("tr").find("td").eq(1).find("img");
+        var $smallImage = $e.parents("tr").find("td").eq(1).find("input[class='smallImage']");
+        var $image = $e.parents("tr").find("td").eq(1).find("input[class='image']");
+        $.ajaxFileUpload({
+            url: '/Article/AddArticleImg2',
+            secureuri: false,
+            fileElementId: $e.attr("id"),
+            dataType: 'json',
+            data: {},
+            type: "post",
+            success: function (result) {
+                if (result.BImage != "" && result.SImage != "") {
+                    $ee.attr("src", result.SImage);
+                    $(".vwPicture").show();
+                    $smallImage.val(result.SImage);
+                    $image.val(result.BImage);
+                } else {
+                    alert("上传失败！");
+                }
+            }
+        })
+    }
+
+    function ChangeView() {
+        var type = $("#Type").val();
+        var ActivityType = $("#ActivityType").val();
+        if (type != 4) {
+            $("#activityTimeTr").hide();
+            $("#activityTypeTd").hide();
+            $("#activityPromotionIdTd").hide();
+            $("#title_span").hide();
+
+            $("#descriptionTr").show();
+            $("#linkTr").show();
+            $("#iOSProcessValueTr").show();
+            $("#iOSCommunicationValueTr").show();
+            $("#androidProcessValueTr").show();
+            $("#androidCommunicationValueTr").show();
+            $("#wXAPPValueTr").show();
+            $("#h5ValueTr").show();
+            $("#isJump").show();
+        }
+        else {
+            $("#activityTimeTr").show();
+            $("#activityTypeTd").show();
+            $("#title_span").show();
+            $("#isJump").hide();
+            $("#descriptionTr").hide();
+            $("#iOSProcessValueTr").hide();
+            $("#iOSCommunicationValueTr").hide();
+            $("#androidProcessValueTr").hide();
+            $("#androidCommunicationValueTr").hide();
+            $("#wXAPPValueTr").hide();
+            $("#h5ValueTr").hide();
+
+            if (ActivityType == 2) {
+                $("#activityPromotionIdTd").hide();
+                $("#linkTr").show();
+            }
+            else {
+                $("#activityPromotionIdTd").show();
+                $("#linkTr").hide();
+            }
+        }
+    }
+
+</script>

@@ -1,0 +1,71 @@
+﻿@{
+    Layout = null;
+}
+
+
+@model Tuhu.Provisioning.DataAccess.Entity.ConfigHistory
+
+
+
+<div class="modal-dialog" style="width:96%;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                &times;
+            </button>
+            <h4 class="modal-title">
+                查看日志明细
+            </h4>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-sm-6">
+                    <center><h4>编辑之前内容</h4></center>
+                    <div class="row" style="height:350px;text-align:center">
+                        @if (!string.IsNullOrWhiteSpace(Model.BeforeValue))
+                        {
+                            <textarea id="json_input" name="json_input" style="width:100%; height:330px;">
+                                @Model.BeforeValue
+                            </textarea>
+                        }
+
+
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <center><h4>编辑之后内容</h4></center>
+                    <div class="row" style="height:350px;text-align:center">
+                        @if (!string.IsNullOrWhiteSpace(Model.AfterValue))
+                        {
+                            <textarea id="json_input1" name="json_input1" style="width:100%; height:330px;">
+                                @Model.AfterValue
+                            </textarea>
+                        }
+                       
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button name="validate" id="validate" value="Validate" class="btn btn-primary">校验(Ctrl+Enter)</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                取 消
+            </button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="~/Scripts/inone.js"></script>
+<script type="text/javascript">
+    $(function () {
+        //$('#validate').trigger("click");
+        if ($('#json_input').val()) {
+            var json = jsl.format.formatJson($('#json_input').val());
+            $('#json_input').val(json);
+        }
+
+        if ($('#json_input1').val()) {
+            var json = jsl.format.formatJson($('#json_input1').val());
+            $('#json_input1').val(json);
+        }
+    })
+</script>

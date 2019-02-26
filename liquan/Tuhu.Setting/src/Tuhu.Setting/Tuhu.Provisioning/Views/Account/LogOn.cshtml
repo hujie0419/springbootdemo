@@ -1,0 +1,365 @@
+﻿@model Tuhu.Provisioning.Models.LogOnModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>登录 - 途虎业务系统</title>
+    <script src="/Content/Easy-Responsive-Tabs/js/jquery-1.9.1.min.js"></script>
+    <style type="text/css">
+        body {
+            padding: 0;
+            margin: 0;
+            background: #ccc url('../../Content/images/light_wool.png');
+        }
+
+        .login-header {
+            width: 100%;
+            height: 60px;
+            background: #38AEF2;
+            box-shadow: 1px 1px 1px #e0e0e0;
+        }
+
+        .login-title {
+            padding-top: 10px;
+        }
+
+            .login-title p {
+                margin: 0;
+                text-align: center;
+                color: #FCFCFC;
+                text-shadow: 1px 1px 1px #555;
+                font-size: 30px;
+                font-weight: 500;
+                font-family: "Microsoft Yahei";
+            }
+
+        .login-main {
+            margin: 0 auto;
+            width: 400px;
+            margin-top: 100px;
+        }
+
+        .wrapper {
+            padding: 20px 50px 50px 50px;
+            background: #FFF;
+            border-radius: 3px;
+            box-shadow: 1px 1px 1px #ccc;
+            width: 300px;
+            margin: 0;
+        }
+
+        .editor-field {
+            background: #FAFAFA;
+            height: 32px;
+            border: 1px solid #EEE;
+            border-radius: 3px;
+            padding: 3px;
+            margin: 10px 0 0 0;
+        }
+
+        .editor-img {
+            display: block;
+            float: left;
+            width: 30px;
+            height: 30px;
+            margin: 5px 0 0 5px;
+        }
+
+        .editor-field input {
+            border: none;
+            outline: none;
+            width: 190px;
+            height: 30px;
+            color: #555;
+            font-family: "Microsoft Yahei";
+            font-size: 15px;
+            background-color: #FAFAFA !important;
+        }
+
+        input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0px 1000px #FAFAFA inset;
+            color: #FFF !important;
+        }
+
+        .editor-label {
+            margin: 10px;
+            font-size: 12px;
+            vert-align: middle;
+            font-family: "Microsoft Yahei";
+        }
+
+        .submit-button input {
+            width: 250px;
+            height: 40px;
+            background: #38aef2;
+            border: none;
+            border-radius: 3px;
+            font-family: "Microsoft Yahei";
+            font-size: 15px;
+            color: #fafafa;
+            cursor: pointer;
+        }
+
+            .submit-button input:hover {
+                background: #2F92CB;
+            }
+
+        .error-wrapper {
+            height: 40px;
+            width: 250px;
+            margin-left: 30px;
+        }
+
+            .error-wrapper ul {
+                padding: 0;
+                margin: 0;
+                width: 250px;
+            }
+
+                .error-wrapper ul li {
+                    list-style: none;
+                    padding: 10px;
+                    border-radius: 2px;
+                    background: #E85F76;
+                    color: #fafafa;
+                    font-size: 12px;
+                    font-family: "Microsoft YaHei";
+                }
+
+        #validated-code {
+        }
+
+        @@media screen and (max-device-width: 600px) {
+            body {
+                background: #ECFAFF;
+            }
+
+            .login-main {
+                margin: 0 auto;
+                margin-top: 100px;
+                width: auto;
+            }
+
+            .wrapper {
+                padding: 20px 50px 50px 50px;
+                margin: 0 auto;
+                background: none;
+                box-shadow: none;
+                width: 300px;
+                padding: 0px;
+            }
+
+            .editor-field {
+                border: 1px solid #CCC;
+                background: #FFF;
+            }
+
+            input:-webkit-autofill {
+                -webkit-box-shadow: 0 0 0px 1000px #FFF inset;
+                color: #FFF !important;
+            }
+
+            .editor-field input {
+                background-color: #FFF !important;
+            }
+
+            ul {
+                margin-top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    @{
+        var f = ViewBag.F.ToString();
+        if (string.IsNullOrEmpty(f) || f != "app")
+        {
+            <div class="login-header">
+                <div class="login-title">
+                    <p>途虎业务管理系统</p>
+                </div>
+            </div>
+
+            using (Html.BeginForm())
+            {
+                <div class="login-main">
+                    <div class="wrapper">
+                        <div class="error-wrapper">
+                            <div class="error-message">
+                                @Html.ValidationSummary(true)
+                            </div>
+                        </div>
+                        <div style="width:250px;margin-left:30px;">
+                            <div class="editor-field username">
+                                <span class="editor-img"><img src="../../Content/Images/username.jpg" /></span>
+                                <span class="editors-wrapper">
+                                    <input id="UserName" name="UserName" type="text" autocomplete="off" />
+                                </span>
+                            </div>
+                            <div class="editor-field password">
+                                <span class="editor-img"><img src="../../Content/Images/password.png" /></span>
+                                <span class="editors-wrapper">
+                                    <input data-val="true" id="Password" name="Password" type="password" />
+                                </span>
+                            </div>
+                            <div style="margin-top:15px;">
+                                <div class="editor-field" style="display: block;float:left;margin-top:0px;">
+                                    <span class="editors-wrapper"><input type="text" name="ValidatedCode" id="validated-code" style="width:80px;" /></span>
+                                </div>
+                                <span id="validated-code-img" style="border: 1px solid #eee;margin-left:5px;padding:1px 3px 1px 3px;display: block;float:left;">
+                                    <img src="/Account/ValidatedCodeImg" width="120" height="32" id="validate_code" style="cursor: pointer" title="看不清，换一张">
+                                </span>
+                                <span id="update-validate-code" style="display: block;float:left;padding-top: 8px;">
+                                    <img id="refreash_validated_code" src="/Content/images/refresh.png" style="cursor: pointer;" title="看不清，换一张" />
+                                </span>
+                                <div style="clear: both;"></div>
+                            </div>
+                            <div class="editor-label">
+                                @Html.CheckBoxFor(m => m.RememberMe)
+                                @Html.LabelFor(m => m.RememberMe)
+                            </div>
+                            <p class="submit-button">
+                                <input type="submit" value="登      录" />
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+            <script type="text/javascript">
+                $(document).ready(function () {
+
+                    $("#validate_code").on("click", function () {
+                        this.src = "/Account/ValidatedCodeImg?time=" + (new Date()).getTime();
+                    });
+
+                    $("#refreash_validated_code").on("click", function () {
+                        $("#validate_code").attr("src", "/Account/ValidatedCodeImg?time=" + (new Date()).getTime());
+                    });
+
+                    $(".error-message").delay(3000).fadeOut("slow");
+
+                    $("form").submit(function (event) {
+                        var userName = $("#UserName").val().trim(),
+                            password = $("#Password").val().trim();
+
+                        if (userName == "") {
+                            $(".error-message").html("<ul><li>用户名不能为空!</li></ul>");
+                            return false;
+                        } else if (password == "") {
+                            $(".error-message").html("<ul><li>密码不能为空!</li></ul>");
+                            $(".error-message").fadeIn("slow").delay(3000).fadeOut("slow");
+                            return false;
+                        }
+                        return true;
+                    });
+                });
+            </script>
+        }
+        else if (f == "app")
+        {
+
+            using (Html.BeginForm())
+            {
+                <div id="app_wait" style="width: 100%;">
+                    <div style="padding-top:10em;text-align:center;">
+                        <img src="data:image/gif;base64,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" alt="loading">
+                        <p style="margin-top:.6em;color:#999">加载中...</p>
+                    </div>
+                    <input type="hidden" name="UserName" id="UserName">
+                    <input type="hidden" name="Password" id="Password" />
+                </div>
+            }
+
+
+            <script type="text/javascript">
+                $(function () {
+                    AddJSInterface();
+                    var height = $(window).height();
+                    $("#app_wait").height(height);
+
+                    $("body").css("backgroundColor", "#F0F0F0");
+
+                    $("form").submit(function (event) {
+                        return true;
+                    });
+
+                    var f = "@ViewBag.F";
+                    if (f == "app") {
+                        $("#app_wait").show();
+                        var error = "@ViewBag.Error";
+                        if (error != null && error != "") {
+                            $("#app_wait").html("<ul><li>" + error + "</li></ul>");
+                            return;
+                        }
+                        $("#UserName").val("@ViewBag.UserName");
+                        $("#Password").val("@ViewBag.Password");
+                        var cycCount = "@ViewBag.CycCount";
+                        if (cycCount == null || cycCount == "")
+                            cycCount = 0;
+                        if (parseInt(cycCount) < 5)
+                            $("form").submit();
+                    }
+                    else {
+                        $("#app_wait").hide();
+                    }
+                });
+
+
+
+                function AddJSInterface() {
+                    window.jsInterface = {
+                        /*在app中弹出toast信息*/
+                        toast: function (arg0) {
+                            return alert('toast:' + arg0);
+                        },
+
+                        /*在app中输出调式信息*/
+                        log: function (arg1) {
+                            return alert('log:' + arg1);
+                        },
+
+                        /* 关闭当前activity*/
+                        close: function () {
+                            return alert('close:');
+                        },
+
+
+                        /*	HTM5传输json对象给APP的方法*/
+                        sendObj2Android: function (arg2) {
+                            return alert('obj:' + JSON.stringify(arg2));
+                        },
+
+                        /*
+                        HTM5调用APP的方法
+                        arg1：  方法名
+                        arg2：  方法中调用的参数，如果为多个参数,格式传json格式字符串
+                        arg3：  html5中调用者id
+                        */
+                        doNetiveMethod: function (arg1, arg2, arg3) {
+                            var methodjson = {
+                                methodname: arg1,
+                                args: arg2,
+                                tag: arg3
+                            };
+                            console.log(JSON.stringify(methodjson));
+                            return alert('method:' + JSON.stringify(methodjson));
+                        }
+                    };
+                }
+                function setWebTitle() {
+                    var obj = { left: { text: "查找", icon: "search" }, title: "工作任务", right: { text: "筛选", icon: "none" } };
+                    window.jsInterface.doNetiveMethod("setWebTitle", obj, "");
+                }
+
+            </script>
+        }
+    }
+</body>
+</html>

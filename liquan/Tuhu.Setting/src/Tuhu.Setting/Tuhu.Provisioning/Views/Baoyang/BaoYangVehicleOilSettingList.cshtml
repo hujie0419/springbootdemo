@@ -1,0 +1,126 @@
+﻿@model Tuhu.Component.Common.Models.ListModel<Tuhu.Provisioning.DataAccess.Entity.VehicleOilSetting>
+
+@{
+    Layout = null;
+    ViewBag.Title = "保养特殊车型配置";
+}
+<style type="text/css">
+    h2 {
+        padding-top: 0px;
+        padding-right: 0px;
+        padding-bottom: 10px;
+        padding-left: 0px;
+        font-size: 1.5em;
+    }
+
+    .table-striped tr:nth-child(odd) {
+        background-color: #EEEEEE;
+    }
+
+    .table-striped tr:hover:nth-child(odd) {
+        background: #FFEC8B;
+    }
+
+    .table-striped tr:hover:nth-child(even) {
+        background: #FFEC8B;
+    }
+
+    .table-striped tr th {
+        text-align: center;
+    }
+
+    .table-striped tr th {
+        background: #22A7F0;
+    }
+
+    .ui-dialog {
+        border-radius: 3px;
+        padding: 0px;
+        width: auto;
+    }
+
+    .ui-dialog-grid {
+        width: 100%;
+    }
+
+    .ui-dialog-title {
+        width: 50%;
+        padding: 8px 15px 8px 15px;
+    }
+
+    .ui-dialog-close {
+        top: 8px;
+    }
+
+    .ui-dialog-body {
+        padding: 10px;
+    }
+
+    .ui-dialog-content {
+        padding: 0px;
+    }
+
+    .ui-dialog-loading {
+        padding-top: 10px;
+    }
+
+    .ui-dialog-footer {
+        padding: 5px 10px 5px 5px;
+        background: #ffffff;
+        border-top: 1px solid #eee;
+    }
+
+        .ui-dialog-footer button {
+            padding: 3px 15px;
+            border-radius: 2px;
+            box-shadow: 0 1px 1px rgba(0,0,0,.15);
+            font-size: 12px;
+        }
+
+            .ui-dialog-footer button.ui-dialog-autofocus {
+                font-weight: 700;
+                text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+            }
+</style>
+<body>
+    <table style="text-align: center;width:100%;" class="table-striped">
+        <tr style="color:white">
+            <th><input id="IsChecked" type="checkbox" onclick="change(this)" />全选</th>
+            <th>汽车品牌</th>
+            <th>车系</th>
+            <th>排量</th>
+            <th>原厂粘度</th>
+            <th>推荐粘度</th>
+            <th>操作</th>
+        </tr>
+        @foreach (var item in Model)
+            {
+            <tr>
+                <td class="check-box"><input type="checkbox" name="checkName" value="@item.Vehicle"  onclick="changeItem(this)"/></td>
+                <td>@item.Brand</td>
+                <td>@item.Vehicle<a class="vehicleId" style="display:none">@item.VehicleId</a></td>
+                <td class="paiLiang">@item.PaiLiang</td>
+                <td>@item.Viscosity</td>
+                <td class="recommendViscosity">@item.RecommendViscosity</td>
+                <td><a style="cursor:pointer" href="#" onclick="EditViscosity(this)">编辑</a><span>-</span><a style="cursor:pointer" href="#" onclick="    Deleted(this)">删除</a></td>
+            </tr>
+        }
+    </table>
+    <input type="hidden" id="Totalcount" value="@(ViewBag.TotalCount)" />
+    <label style="position: absolute;color:#08c;margin-bottom:10px;margin-top:16px;margin-left:180px">共@(ViewBag.TotalCount)条数据</label>
+
+</body>
+<script type="text/javascript">
+
+    function change(obj) {
+        if (obj.checked) {
+            $("input[name='checkName']").each(function() {
+                $(this).attr("checked", true);
+            });
+        } else {
+            $("input[name='checkName']").each(function() {
+                $(this).attr("checked", false);
+            });
+        }
+    }
+</script>

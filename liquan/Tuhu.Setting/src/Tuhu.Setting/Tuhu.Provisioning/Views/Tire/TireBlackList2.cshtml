@@ -1,0 +1,68 @@
+﻿@using Tuhu.Provisioning;
+@using Tuhu.Provisioning.DataAccess.Entity;
+@model Tuhu.Component.Common.Models.ListModel<TireBlackListItem>
+    @{
+        Layout = null;
+    }
+@if (Model.Source.Any())
+{
+    var id = (Model.Pager.CurrentPage - 1) * Model.Pager.PageSize;
+    <table class="table" data-count="@Model.Pager.TotalItem" width="100%">
+        <tr>
+            <th>ID</th>
+            <th>BlackNum</th>
+            <th>类型</th>
+            <th>创建时间</th>
+            <th>终止时间</th>
+            <th>操作</th>
+        </tr>
+        @foreach (var item in Model.Source)
+        {
+            id += 1;
+            var type = "";
+            if (item.Type == 0)
+            {
+                type = "IP地址";
+            } else if (item.Type == 1)
+            {
+                type = "手机号";
+            } else if (item.Type == 2)
+            {
+                type = "设备号";
+            } else if (item.Type == 3)
+            {
+                type = "支付账号";
+            }
+            else if (item.Type == 4)
+            {
+                type = "用户Id";
+            }
+            else
+            {
+                type = "UserId";
+            }
+            <tr>
+                <td>@id</td>
+                <td>@item.BlackNumber</td>
+                <td>@type</td>
+                <td>@item.CreateDateTime</td>
+                <td>@item.EndTime</td>
+                <td>
+                    <a href="javascript:void(0)" onclick='DeleteItem("@item.BlackNumber","@item.Type")'>删除</a>
+                    <a href="javascript:void(0)" onclick='BlackItemhistory("@item.BlackNumber")'>历史</a>
+                </td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <div>无数据</div>
+}
+@Html.Pager(Model.Pager, true, id => Url.Action("TireBlackList2", new
+{
+    BlackNumber = ViewBag.BlackNumber,
+    Type= ViewBag.Type,
+    pageIndex = id,
+    pageSize = Model.Pager.PageSize
+}))

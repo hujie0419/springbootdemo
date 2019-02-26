@@ -1,0 +1,330 @@
+﻿@{
+    ViewBag.Title = "通用服务码发放记录";
+    Layout = "~/Views/Shared/_LayoutNew.cshtml";
+    var dev = System.Configuration.ConfigurationManager.AppSettings["env"] == "dev" ? 1 : 0;
+}
+@section css{
+    <link rel="stylesheet" href="~/Content/iview/iview.css" />
+
+}
+<div id="APP">
+    <div>
+        <label>合作用户</label>
+        <i-select :filterable="true"   style="width:180px;" v-model="searchKey.cooperateId">
+            <i-option v-for="item in searchKey.AllMrCooperateUserConfigs" v-bind:value="item.PKID">
+                {{item.CooperateName}}
+            </i-option>
+        </i-select>
+        <label>结算类型</label>
+        <i-select v-model="searchKey.settlementMethod" style="width:180px" placeholder="请选择">
+            <i-option v-for="item in searchKey.settlementMethodArray" :value="item.id" :key="item.id">{{ item.name }}</i-option>
+        </i-select>
+        <i-button type="info" v-on:click="Search()">查询</i-button>
+    </div><br />
+    <i-table :data="tableDataList"
+             :columns="tableColumns"
+             stripe>
+    </i-table>
+    <div style="margin: 10px; overflow: hidden">
+        <div style="float: right;">
+            <Page :total="totalCount" :current="currentPage" :page-size="pageSize" show-total v-on:on-change="ChangePage"></Page>
+        </div>
+    </div>
+    <div>
+        <Modal title="通用服务码发放记录详情" v-model="generalBeautyServerCodeSendRecordDetail.showModal" width="1000px;"
+               :mask-closable="false">
+            <i-table :data="generalBeautyServerCodeSendRecordDetail.tableDataList2"
+                     :columns="generalBeautyServerCodeSendRecordDetail.tableColumns2"
+                     stripe>
+            </i-table>
+        </Modal>
+    </div>
+</div>
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/vue.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/iview/iview.min.js"></script>
+    <script type="text/javascript">
+        var vm = new Vue({
+            el: '#APP',
+            data() {
+                return {
+                    tableDataList: this.GetDataList(),
+                    tableColumns: [
+                        {
+                            title: 'PKID',
+                            key: 'PKID',
+                            width: 80
+                        },
+                        {
+                            title: '流水号',
+                            key: 'SerialNumber',
+                            width: 200
+                        },
+                        {
+                            title: '包ID',
+                            key: 'PackageId'
+                        },
+                        {
+                            title: '包名称',
+                            key: 'PackageName'
+                        },
+                        {
+                            title: '合作用户',
+                            key: 'CooperateName'
+                        },
+                        {
+                            title: '结算类型',
+                            key: 'SettlementMethodName'
+                        },
+                        {
+                            title: '生成时间',
+                            key: 'CreatedDateTimeString'
+                        },
+                        {
+                            title: '操作',
+                            key: 'action',
+                            width: 250,
+                            align: 'center',
+                            render: (h, params) => {
+                                return h('div',
+                                    [
+                                        h('Button',
+                                            {
+                                                props: {
+                                                    type: 'primary',
+                                                    size: 'small'
+                                                },
+                                                style: {
+                                                    marginRight: '5px'
+                                                },
+                                                on: {
+                                                    click: () => {
+                                                        this.getDetail(params.index);
+                                                    }
+                                                }
+                                            },
+                                            '查看'),
+                                        h('Button',
+                                            {
+                                                props: {
+                                                    type: 'error',
+                                                    size: 'small'
+                                                },
+                                                style: {
+                                                    marginRight: '5px'
+                                                },
+                                                on: {
+                                                    click: () => {
+                                                        this.Invaild(params.index);
+                                                    }
+                                                }
+                                            },
+                                            '作废')
+                                    ]);
+                            }
+                        }
+                    ],
+                    currentPage: 1,
+                    pageSize: 15,
+                    generalBeautyServerCodeSendRecordDetail: {
+                        tableDataList2: this.GetDataList2(),
+                        tableColumns2: [
+                            {
+                                title: '服务码',
+                                key: 'ServiceCode',
+                            },
+                            {
+                                title: '服务名称',
+                                key: 'Name',
+                            },
+                            {
+                                title: '服务ID',
+                                key: 'PID'
+                            },
+                            {
+                                title: '手机',
+                                key: 'Phone'
+                            },
+                            {
+                                title: '核销门店',
+                                key: 'ShopName'
+                            },
+                            {
+                                title: '核销时间',
+                                key: 'VerifyTime'
+                            },
+                            {
+                                title: '核销区域',
+                                key: 'VerifyArea'
+                            }
+                        ],
+                        showModal: false,
+
+
+                    },
+                    searchKey: {
+                        cooperateId: '',
+                        AllMrCooperateUserConfigs: [],
+                        settlementMethod: '',
+                        settlementMethodArray: [
+                            {
+                                id: "All",
+                                name: "全部"
+                            },
+                            {
+                                id: "PreSettled",
+                                name: "买断"
+                            },
+                            {
+                                id: "ByPeriod",
+                                name: "据实"
+                            }
+                        ],
+                    },
+                }
+            },
+            mounted: function () {
+                this.GetDataList();
+                this.GetCooperateUsers();
+            },
+            methods: {
+                GetDataList() {
+                    var resultData = [];
+                    var _this = this;
+                    _this.totalCount = 0;
+                    var currentPage = _this.currentPage;
+                    if (!currentPage) {
+                        currentPage = 1;
+                    }
+                    var pageSize = _this.pageSize;
+                    if (!pageSize) {
+                        pageSize = 15;
+                    }
+                    var searchKey = _this.searchKey;
+                    var coopid = 0;
+                    var settle = '';
+                    if (!searchKey) {
+
+                    }
+                    else {
+                        coopid = _this.searchKey.cooperateId;
+                        settle = _this.searchKey.settlementMethod == 'All' ? '' : _this.searchKey.settlementMethod;
+                    }
+                    $.ajax({
+                        url: "/GeneralBeautyServerCode/GetGeneralBeautyServerCodeSendRecords",
+                        type: "post",
+                        async: false,
+                        data: {
+                            pageIndex: currentPage,
+                            pageSize: pageSize,
+                            cooperateId: coopid,
+                            settlementMethod: settle
+                        },
+                        success: function (data) {
+                            if (data != null && data.Result != null) {
+                                resultData = data.Result;
+                                _this.totalCount = data.Total;
+                            }
+                        },
+                        error: function () {
+                            alert("服务端异常！");
+                        }
+                    });
+                    return resultData;
+                },
+                ChangePage(page) {
+                    var _this = this;
+                    _this.currentPage = page;
+                    _this.tableDataList = _this.GetDataList();
+                },
+                Invaild(a) {
+                    if (confirm("确定要作废？")) {
+                        var item = this.tableDataList[a];
+                        $.ajax({
+                            url: "/GeneralBeautyServerCode/InvaildBeautyServerCodePackage",
+                            type: "post",
+                            async: true,
+                            data: {
+                                packageId: item.PackageId,
+                                serialNumber: item.SerialNumber
+                            },
+                            success: function (data) {
+                                if (data.Result) {
+                                    alert("操作成功！");
+                                    window.location.href = '/GeneralBeautyServerCode/GeneralBeautyServerCodeSendRecords';
+                                } else {
+                                    alert(data.Msg);
+                                }
+                            },
+                            error: function () {
+                                alert("服务端异常！");
+                            }
+                        });
+                    }
+                },
+                getDetail(a) {
+                    var item = this.tableDataList[a];
+                    var _this = this.generalBeautyServerCodeSendRecordDetail;
+                    _this.showModal = true;
+                    _this.tableDataList2 = this.GetDataList2(item.PKID);
+
+                },
+                GetDataList2(pkid) {
+                    var _this = this;
+                    console.log(pkid);
+                    if (!pkid)
+                    {
+                        return;
+                    }
+                    var resultData = [];
+                    $.ajax({
+                        url: "/GeneralBeautyServerCode/GetGeneralBeautyServerCodeSendRecordsDetail",
+                        type: "post",
+                        async: false,
+                        data: {
+                            pkid: pkid
+                        },
+                        success: function (data) {
+                            if (data != null && data.IsSuccess) {
+                                resultData = data.Result;
+                            }
+                            else {
+                                alert(data.Msg);
+                            }
+                        },
+                        error: function () {
+                            alert("服务端异常！");
+                        }
+                    });
+                    return resultData;
+                },
+                GetCooperateUsers() {
+                    var _this = this.searchKey;
+                    $.ajax({
+                        url: "/BankMRActivity/GetAllMrCooperateUserConfigs",
+                        type: "post",
+                        async: false,
+                        data: {},
+                        success: function (data) {
+                            if (data != null) {
+                                _this.AllMrCooperateUserConfigs = data;
+                            }
+                        },
+                        error: function () {
+                            alert("服务端异常！");
+                        }
+                    });
+
+                },
+                Search() {
+                    var _this = this;
+                    _this.tableDataList = _this.GetDataList();
+                },
+
+            },
+
+        })
+
+
+    </script>
+}

@@ -1,0 +1,34 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.SeekHotWord
+@{
+    Layout = "";
+}
+
+<div>
+
+    搜索词： <input type="text" value="@Model.HotWord" style="width:200px;" id="keyWord" />
+    <br />
+    <br />
+    <br />
+
+    状态：&nbsp;&nbsp;
+    <select id="OnOff">
+        <option value="0">启用</option>
+        <option value="1">禁用</option>
+       
+    </select>
+
+    <input type="hidden" class="onff" value="@Model.OnOff" />
+    <script>
+        $(function () {
+
+            if ($(".onff").val()) {
+
+                $("#OnOff").val(0)
+            } else {
+
+                $("#OnOff").val(1)
+            }
+        });
+
+    </script>
+</div>

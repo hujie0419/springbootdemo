@@ -1,0 +1,305 @@
+﻿@using Tuhu.Service.PushApi.Models.MessageBox
+@using Tuhu.Service.PushApi.Models.Push
+@model List<Tuhu.Service.PushApi.Models.Push.PushTemplate>
+@{
+    var plan = Model != null ? Model.FirstOrDefault() : null;
+    var androiddata = Model == null ? null : Model.FirstOrDefault(x => x.DeviceType == Tuhu.Service.PushApi.Models.Push.DeviceType.Android);
+
+    var sound = androiddata != null && androiddata.ExtraDict.ContainsKey("sound") && string.Equals(androiddata.ExtraDict["sound"], "1");
+    var shake = androiddata != null && androiddata.ExtraDict.ContainsKey("shake") && string.Equals(androiddata.ExtraDict["shake"], "1");
+    var light = androiddata != null && androiddata.ExtraDict.ContainsKey("light") && string.Equals(androiddata.ExtraDict["light"], "1");
+    var front = androiddata != null && androiddata.ExtraDict.ContainsKey("notify_foreground") && string.Equals(androiddata.ExtraDict["notify_foreground"], "1");
+    var wifi = androiddata != null && androiddata.ExtraDict.ContainsKey("wifi") && string.Equals(androiddata.ExtraDict["wifi"], "1");
+    if (androiddata == null)
+    {
+        sound = shake = light = front = true;
+    }
+    List<string> passextra = new List<string>() { "wifi", "sound", "shake", "light", "front", "notify_foreground", "showDialog" };
+    var batchid = plan != null ? plan.BatchID : 0;
+
+    Func<long?, string> ConvertTime = t =>
+    {
+        if (!t.HasValue)
+        {
+            return "";
+        }
+        DateTime d = new DateTime(androiddata.AppExpireTime.Value);
+        string s = string.Format("{0}/{1}/{2}", d.Day, d.Hour, d.Minute);
+        return s;
+    };
+    var dict = new Dictionary<string, string>();
+    if (ViewData["dict"] != null)
+    {
+        dict = ViewData["dict"] as Dictionary<string, string>;
+    }
+
+    var navigationTypes = ViewData["NavigationTypes"] as IEnumerable<MessageNavigationType>;
+    List<SelectListItem> navigationTypeSelects = new List<SelectListItem>();
+
+    foreach (var item in navigationTypes)
+    {
+        var selectitem = new SelectListItem()
+        {
+            Text = item.NavigationName,
+            Value = item.PkId.ToString()
+        };
+
+        if (androiddata != null && androiddata.MessageNavigationTypeId.HasValue)
+        {
+            selectitem.Selected = androiddata.MessageNavigationTypeId.Value == item.PkId;
+        }
+        navigationTypeSelects.Add(selectitem);
+    }
+    if (!navigationTypeSelects.Any(x => x.Selected))
+    {
+        navigationTypeSelects[0].Selected = true;
+    }
+}
+<div id="androidinfo" style="display:none">
+    <form id="AndroidForm">
+        @Html.Hidden("PKID", androiddata != null ? androiddata.PKID : 0)
+        @Html.Hidden("BatchID", plan != null ? plan.BatchID : 0)
+        @Html.Hidden("DeviceType", DeviceType.Android)
+        <input type="hidden" id="SubmitType" name="SubmitType" value="1" />
+        <input type="hidden" id="phonepreview" name="phonepreview" value="" />
+        <table id="iossetting" style="background: #ffffff; font-size: 12px; width: 100%; text-align: center" border="1">
+            <tr>
+                <th colspan="3">Android推送创建</th>
+            </tr>
+        <tr>
+            <td>计划ID</td>
+            <td colspan="2">
+                @if (plan != null)
+                {
+                    <span>@plan.BatchID</span>
+                }
+            </td>
+        </tr>
+            
+            <tr>
+                <td>模版ID</td>
+                <td colspan="2">
+                    @if (androiddata != null)
+                    {
+                        <span>@androiddata.PKID</span>
+                    }
+                </td>
+            </tr>
+        <tr>
+                <td colspan="3">内容设置</td>
+            </tr>
+            <tr>
+                <td>推送标题</td>
+                <td colspan="2">
+                    @Html.TextBox("Title", androiddata == null ? "" : androiddata.Title, new { @style = "width:100%" })
+                </td>
+            </tr>
+            @*<tr>
+                    <td>推送副标题</td>
+                    <td colspan="2">
+                        @Html.TextBox("SubTitle", androiddata == null ? "" : androiddata.SubTitle)
+                    </td>
+                </tr>*@
+            <tr>
+                <td colspan="3">通知内容</td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    @Html.TextArea("Content", androiddata == null ? "" : androiddata.Content, new { @style = "width:100%" })
+                </td>
+            </tr>
+
+            <tr>
+                <td>键值对</td>
+                <td colspan="2">
+                    <input type="button" value="新增" onclick="AddExtra('android')" />
+                </td>
+                <td></td>
+            </tr>
+            @{
+                int index = 0;
+            }
+            @if (androiddata != null && androiddata.ExtraDict.Count > 0)
+            {
+                index = 0;
+                foreach (var extra in androiddata.ExtraDict)
+                {
+                    if (passextra.IndexOf(extra.Key) >= 0)
+                    {
+                        continue;
+                    }
+                    <tr @(string.Format("id=androidextratitle{0}", index))>
+                        <td>键(key)</td>
+                        <td colspan="2">值(value)</td>
+                    </tr>
+
+                    <tr @(string.Format("id=androidextravalue{0}", index))>
+                        <td>
+                            <input type="text" class="androidextrakey" name="ExtraKey[@index].Key" value="@extra.Key" />
+                        </td>
+                        <td colspan="2">
+                            <input type="text" style="width:80%"  class="androidextravalue" name="ExtraKey[@index].Value" value="@extra.Value" />
+                            <input type="button" id="@string.Format("ios{0}",index)" onclick="DeleteExtra(this,'android')" value="删除" />
+                        </td>
+                    </tr>
+                    index++;
+                }
+            }
+            else
+            {
+
+                <tr @(string.Format("id=androidextratitle{0}", index))>
+                    <td>键(key)</td>
+                    <td colspan="2">值(value)</td>
+                </tr>
+                <tr @(string.Format("id=androidextravalue{0}", index))>
+                    <td>
+                        <input type="text" class="androidextrakey" name="ExtraKey[@index].Key" value="" />
+                    </td>
+                    <td colspan="2">
+                        <input type="text" style="width:80%"    class="androidextravalue" name="ExtraKey[@index].Value" value="" />
+                        <input type="button" id="@string.Format("ios{0}",index)" onclick="DeleteExtra(this,'android')" value="删除" />
+                    </td>
+                </tr>
+            }
+            @Html.Hidden("androidindex", index == 0 ? 0 : index - 1)
+
+            <tr id="androidappendto">
+                <td colspan="3">高级选项</td>
+            </tr>
+            <tr>
+                <td colspan="2">推送时间(单次推送可用)</td>
+                <td>
+                    @*@Html.TextBox("PushTime", androiddata != null && androiddata.Sendtime.HasValue ? androiddata.Sendtime.Value.ToString() : "",new{@class= "datetimepicker" })*@
+                    <input type="text" style="width: 200px;" id="AndroidPushTime" name="PushTime" value="@(androiddata != null && androiddata.Sendtime.HasValue ? androiddata.Sendtime.Value.ToString() : "")" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">消息过期周期</td>
+                <td>
+                    <input type="text" id="ExpireTime" onclick="SetExpireTime('android')" name="ExpireTime" value="@(dict.ContainsKey("Android")?dict["Android"].ToString():"")" />
+                    @*@Html.TextBox("ExpireTime", androiddata != null && androiddata.ExpireTime.HasValue ? androiddata.ExpireTime.Value.ToString() : "", new {@class = "datetimepicker"})*@
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">声音提醒</td>
+                <td>
+                    @Html.DropDownList("sound", new List<SelectListItem>()
+        {
+            new SelectListItem()
+            {
+                Text = "开启",
+                Value = "1",
+                Selected = sound
+            },
+            new SelectListItem()
+            {
+                Text = "关闭",
+                Value = "0",
+                Selected =!sound
+            },
+        })
+                </td>
+
+            </tr>
+            <tr>
+                <td colspan="2">震动</td>
+                <td>
+                    @Html.DropDownList("shake", new List<SelectListItem>()
+        {
+            new SelectListItem()
+            {
+                Text = "开启",
+                Value = "1",
+                Selected = shake
+            },
+            new SelectListItem()
+            {
+                Text = "关闭",
+                Value = "0",
+                Selected = !shake
+            },
+        })
+                </td>
+
+            </tr>
+            <tr>
+                <td colspan="2">呼吸灯</td>
+                <td>
+                    @Html.DropDownList("light", new List<SelectListItem>()
+        {
+            new SelectListItem()
+            {
+                Text = "开启",
+                Value = "1",
+                Selected = light
+            },
+            new SelectListItem()
+            {
+                Text = "关闭",
+                Value = "0",
+                Selected = !light
+            },
+        })
+                </td>
+
+            </tr>
+            <tr>
+                <td colspan="2">应用在前台仍通知</td>
+                <td>
+                    @Html.DropDownList("notify_foreground", new List<SelectListItem>()
+        {
+            new SelectListItem()
+            {
+                Text = "开启",
+                Value = "1",
+                Selected = front
+            },
+            new SelectListItem()
+            {
+                Text = "关闭",
+                Value = "0",
+                Selected = !front
+            },
+        })
+                </td>
+
+            </tr>
+        <tr>
+            <td colspan="2">仅推Wi-Fi用户</td>
+            <td>
+                @Html.DropDownList("wifi", new List<SelectListItem>()
+                {
+                    new SelectListItem()
+                    {
+                        Text = "开启",
+                        Value = "1",
+                        Selected = wifi
+                    },
+                    new SelectListItem()
+                    {
+                        Text = "关闭",
+                        Value = "0",
+                        Selected = !wifi
+                    },
+                })
+            </td>
+
+        </tr>
+        <tr>
+            <td colspan="2">消息类型</td>
+            <td>
+                @Html.DropDownList("MessageNavigationTypeId", navigationTypeSelects)
+            </td>
+
+        </tr>
+            <tr>
+                <td colspan="3">
+                    <input type="button" onclick="SubmitIOS('android')" value="保存模版" />
+                    <input type="button" value="预览" onclick="IOSPreview('android')" />
+                    <input type="button" value="生成传递参数" onclick="showintenturi()" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>

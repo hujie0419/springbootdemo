@@ -1,0 +1,378 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "糯米团购订单服务配置";
+}
+<h2 style="font-size:2em;color:#000;padding:0 0 10px 0;width:250px">糯米团购订单服务配置</h2>
+<link rel="stylesheet" href="/Scripts/artDialog6.0.4/css/ui-dialog.css" />
+<style type="text/css">
+    .buttonStyle { background: #50c16a; border: none; color: azure; box-shadow: 1px 1px 1px #eee8aa; width: 50px; height: 26px; border-radius: 3px; outline: none; cursor: pointer; font-size: 15px; font-family: "Microsoft Yahei"; }
+
+    .buttonStyle:hover { background-color: #008b8b; border-color: #008b8b; }
+    .buttonStyleHidden { background: #808080; }
+    .buttonStyleHidden:hover { background: #808080; }
+    .ui-dialog { width: auto; }
+</style>
+
+<div style="height:34px;width:98%">
+    <div>
+        <div style="float:left;line-height:27px;">
+            <input type="text" id="NuomiTitle" style="width:200px"  placeholder="请输入糯米团单名称" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="text" id="NuomiId" style="width:200px" placeholder="请输入糯米团单Id" />&nbsp;&nbsp;&nbsp;&nbsp;
+            @*<input type="text" id="startDate" style="width:100px" value="@DateTime.Now.AddDays(-1).ToShortDateString()" placeholder="请选择开始日期">-
+                <input type="text" id="endDate" style="width:100px" value="@DateTime.Now.ToShortDateString()" placeholder="请选择结束日期">&nbsp;&nbsp;&nbsp;&nbsp;*@
+            <input type="text" id="ServiceID" style="width:200px" placeholder="请输入途虎服务产品ID" />&nbsp;&nbsp;&nbsp;&nbsp;
+            <select class="IsValid">
+                <option value="-1">-请选择-</option>
+                <option value="1">有效</option>
+                <option value="0">无效</option>
+            </select>
+        </div>
+        <div style="float:left">
+            &emsp;
+            <input type="button" id="btn_submit" value="查询" style="width:80px" class="buttonStyle" onclick="GetList()" />
+            <input type="button" id="btn_submit" value="添加" style="width:80px" class="buttonStyle" onclick="AddConfig(this)" />
+            <input type="button" id="btn_submit" value="作废" style="width:80px" class="buttonStyle" onclick="BatchSolete()" />
+        </div>
+        <div style="float:right">
+            <input type='text' name='textfield' id='textfield' class='txt' style="display:none " />
+            <input type="file" name="fileData" data- id="fileupload" onchange="document.getElementById('textfield').value = this.value" />
+            <input type="button" id="upload" value="批量导入" />
+        </div>
+    </div>
+</div>
+
+<div id="div_table">
+</div>
+<div id="PageLoadingEffects" style="display:none;">
+    <table>
+        <tr>
+            <td><img src="/Images/loading.gif" /></td>
+            <td>玩命加载中，请稍后...</td>
+        </tr>
+    </table>
+</div>
+<input id="userEmailStr" style="display:none" value="@ViewBag.UserEmailStr"/>
+<div style="padding-top:10px;">
+    <br />
+    <span>每页显示：</span>
+    <select onchange="selChange(this);" style="width:70px">
+        <option value="10">10</option>
+        <option value="20" selected="selected">20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+    </select><span>&nbsp;&nbsp;条</span>
+</div>
+<div class="pager" style="height:25px;padding-left:0px;margin-top:15px;text-align:left"></div>
+<input type="hidden" id="hidden_Order" />
+<script src="/Scripts/ajaxfileupload.js"></script>
+<script src="/Scripts/artDialog6.0.4/dist/dialog-min.js"></script>
+<script src="/Scripts/artDialog6.0.4/dist/dialog-plus-min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        reFresh();
+    });
+    function reFresh() {
+        //$("#PageLoadingEffects").css("display", "block");
+        pageIndex = 1;
+        pageSize = 20;
+        groupCurNum = 1;
+        initTable(1);
+    }
+
+    function selChange(e) {
+        pageSize = parseInt($(e).val());
+        pageIndex = 1;
+        groupCurNum = 1;
+        initTable(1);
+    }
+
+    function GetList() {
+        initTable(1);
+    }
+
+    function AddConfig(o) {
+        var html = "<table style='width:100%;height:100%'>";
+        var userEmailStr = $("#userEmailStr").val();
+        var userEmailHtml = "<option value=" + userEmailStr + ">" + userEmailStr + "</option>";
+                
+        var html_NuomiTitle = "<tr><th style='width:130px'>糯米团购项目名称：</th><td><input class='now_nuomiTitle' style='width:90%' type='text' value='' /></td></tr>";
+        var html_NuomiID = "<tr><th>糯米团购ID：</th><td><input class='now_nuomiID' type='text' value=''style='width:90%' /></td></tr>";
+        var html_ServiceId = "<tr><th>途虎服务产品ID：</th><td><input class='now_serviceID' type='text'style='width:90%' value='' /><label class='now_serviceName'></label></td></tr>";
+        var html_UserEmail = "<tr><th>糯米商户账号：</th><td><select class='now_userEmail'  style='width:90%;'>" + userEmailHtml + "</select></td></tr>";
+        var html_Remarks = "<tr><th>团购配置备注：</th><td><input class='now_remarks' type='text'style='width:90%' value='' /></td></tr>";
+        html += html_NuomiTitle + html_NuomiID + html_ServiceId + html_UserEmail + html_Remarks + "</table>";
+        var nuomiTitle = "";
+        var nuomiID = "";
+        var serviceID = "";
+        var serviceName = "";
+        var remarks = "";
+        var userEmail = "";
+        var d = dialog({
+            title: "糯米团购配置",
+            width: 500,
+            height: 300,
+            fixed: true,
+            button: [
+                {
+                    value: '保存',
+                    callback: function () {
+                        if (confirm("是否确认操作？")) {
+                            nuomiTitle = $(".now_nuomiTitle").val();
+                            nuomiID = $(".now_nuomiID").val();
+                            remarks = $(".now_remarks").val();
+                            userEmail = $(".now_userEmail").val();
+                            if (nuomiTitle != "" && nuomiID != "" && serviceID != "" && userEmail != "") {
+                                if (!isNaN(nuomiID)) {
+                                    if (serviceID == "" || serviceName == "无效") {
+                                        alert("请输入正确的产品ID");
+                                        return false;
+                                    } else {
+                                        $.get("GetServiceNameByServiceId", { serviceId: serviceID }, function (result) {
+                                            if (result != "") {
+                                                $.post("AddNuomiServiceConfig", { nuomiTitle: nuomiTitle, nuomiId: nuomiID, serviceID: serviceID, userEmail: userEmail, remarks: remarks }, function (data) {
+                                                    if (data.status == 1) {
+                                                        alert("添加成功");
+                                                        initTable(1);
+                                                    } else if (data.status == 2) {
+                                                        alert("信息已存在");
+                                                        return false;
+                                                    } else {
+                                                        alert("添加失败");
+                                                        return false;
+                                                    }
+                                                });
+                                            } else {
+                                                alert("请输入正确的产品ID");
+                                                return false;
+                                            }
+                                        });
+                                    }
+                                } else {
+                                    alert("请正确输入糯米团购ID");
+                                }
+                            } else {
+                                alert("参数不能为空");
+                                return false;
+                            }
+                        }
+                    }
+                },
+                {
+                    value: "取消"
+                }
+            ]
+        });
+        //var $item = $(o);
+        //var html = $item.parent().find("a").attr('data-key');
+
+        d.content(html);
+        d.showModal();
+        $(".ui-dialog-button button:contains('保存')").attr("disabled", true).addClass("ui-state-disabled")
+        $(".now_serviceID").change(function () {
+            serviceID = $(".now_serviceID").val();
+            if (serviceID != "") {
+                $.get("GetServiceNameByServiceId", { serviceId: serviceID }, function (result) {
+                    if (result == "") {
+                        serviceID = "";
+                        serviceName = "无效";
+                    } else {
+                        $(".ui-dialog-button button:contains('保存')").attr("disabled", false).removeClass("ui-state-disabled");
+                        serviceName = result;
+                    }
+                    $(".now_serviceName").text(serviceName);
+                });
+            }
+        });
+    }
+
+    var groupCurNum = 1;
+    var groupSize = 25;
+    var num = 0;
+    function initTable(isFalg) {
+        pageIndex = isFalg;
+        $("#div_table").html("");
+        var nuomiTitle = $("#NuomiTitle").val();
+        var nuomiId = $("#NuomiId").val();
+        //var startTime = $("#startDate").val();
+        //var endTime = $("#endDate").val();
+        var serviceId = $("#ServiceID").val();
+        var isValid = $(".IsValid").val();
+        $("#PageLoadingEffects").css("display", "block");
+        $.ajax({
+            url: '/NuomiService/_NuomiServiceConfigList',
+            type: 'POST',
+            data:
+            {
+                "nuomiTitle": nuomiTitle,
+                "nuomiId": nuomiId == "" ? "0" : nuomiId,
+                "serviceId": serviceId,
+                "isValid": isValid,
+                "pageIndex": pageIndex,
+                "pageSize": pageSize
+            },
+            success: function (html) {
+                $("#PageLoadingEffects").css("display", "none");
+                $("#div_table").append(html);
+                initPage($("#Totalcount").val());
+            }
+        });
+    }
+
+    $("#upload").on("click", function () {
+        $.ajaxFileUpload({
+            url: '/NuomiService/UploadFile',
+            secureuri: false,
+            fileElementId: 'fileupload',
+            dataType: 'text',
+            data: {},
+            type: 'post',
+            success: function (data) {
+                var nuomiInfo = [];
+                var data =JSON.parse(data.replace(/<\/*?pre[^<>]*>/, '').replace(/<\/*?pre[^<>]*>/, ''));
+                if (data.msg == "") {
+                    var html = "<table style='width:100%;'>";
+                    html += "<tr><td colspan='3' style='color:red;text-align:center'>共上传 " + (data.SuccessData.length + data.ErrorData.length) + " 条数据，验证成功 " + data.SuccessData.length + " 条，验证失败 " + data.ErrorData.length + " 条";
+                    html += "<tr><th>团购ID</th><th>服务Id</th><th>备注</th></tr>";
+                    if (data.ErrorData.length > 0) {
+                        var item = data.ErrorData;
+                        for (var i = 0; i < item.length; i++) {
+                            html += "<tr><td>" + item[i].NuomiId + "</td><td>" + item[i].ServiceId + "</td><td>" + item[i].Remarks + "</td></tr>";
+                        }
+                    } else if (data.SuccessData.length > 0) {
+                        html += "<tr><td colspan='3' style='text-align:center;color:green;'>验证通过，允许导入</td></tr>";
+                    } else {
+                        html += "<tr><td colspan='3' style='text-align:center;color:red'>系统异常</td></tr>";
+                    }
+                    var d = dialog({
+                        title: "验证信息",
+                        width: 600,
+                        height: 400,
+                        fixed: true,
+                        button: [
+                            {
+                                value: '导入',
+                                callback: function () {
+                                    var item = data.SuccessData;
+                                    for (var i = 0; i < item.length; i++) {
+                                        nuomiInfo.push({ NuomiId: item[i].NuomiId, NuomiTitle: item[i].NuomiTitle, ServiceId: item[i].ServiceId, Remarks: item[i].Remarks });
+                                    }   
+                                    console.log(nuomiInfo);
+                                    if (nuomiInfo.length > 0) {
+                                        if (confirm("是否确认操作？")) {
+                                            $.post("BatchInsertNuomiConfig", { nuomiInfo: JSON.stringify(nuomiInfo) }, function (result) {
+                                                if (result == true) {
+                                                    alert("导入成功");
+                                                    initTable(1);
+                                                } else {
+                                                    alert("导入失败");
+                                                }
+                                            });
+                                        }
+                                    } else {
+                                        alert("不允许导入");
+                                        return false;
+                                    }
+                                }
+                            },
+                            {
+                                value: "取消"
+                            }
+                        ]
+                    });
+                    html += "</table>";
+                    d.content(html);
+                    d.showModal();
+                    //alert("上传成功！");
+                    //location.href = "/NuomiService/NuomiServicesConfig";
+                } else {
+                    alert(data.msg);
+                }
+            }
+        });
+    });
+
+    function initPage(total) {
+        $("div.pager").find("*").remove().empty();
+        //上一组
+        var prevGroup = "<a href=\"#\" id=\"prevGroup\" onclick=\"prevClick();return false;\" style=\"display:none;\">上一组</a>";
+        $("div.pager").append(prevGroup);
+        //下一组
+        var nextGroup = "<a href=\"#\" id=\"nextGroup\" onclick=\"nextClick();return false;\" style=\"display:none;\">下一组</a>";
+        $("div.pager").append(nextGroup);
+        //转业
+        num = Math.floor(total / pageSize) + (total % pageSize > 0 ? 1 : 0);
+        var turnPage = "";
+        if (total > 0) {
+            turnPage = "<a href=\"#\" id=\"turnGroup\" onclick=\"turnClick();return false;\">转到</a><input type=\"text\" id=\"txtTurn\" value=\"" + pageIndex + "\" style=\"width:30px;  padding: 1px 1px 0px 1px;\" /><span style=\"width:100px;border:0;\">页 当前页/总页：</span><span id=\"_numInfo\" style=\"width:80px;border:0;text-align:left;\">" + pageIndex + "/" + num + "</span>";
+        } else {
+            turnPage = "<input type=\"text\" id=\"txtTurn\" value=\"1\" style=\"width:30px;\" /><span style=\"width:100px;border:0;\">页 当前页/总页：</span><span id=\"_numInfo\" style=\"width:80px;border:0;text-align:left;\">" + pageIndex + "/" + (num + 1) + "</span>";
+        }
+        $("div.pager").append(turnPage);
+        pageOnPage();
+    }
+    //分页的分页
+    function pageOnPage() {
+        $("a[name='pageA']").remove();
+        var groupNums = Math.floor(num / groupSize) + (num % groupSize > 0 ? 1 : 0);
+        if (groupNums == 1 || groupNums == 0) {
+            $("#prevGroup").css("display", "none");
+            $("#nextGroup").css("display", "none");
+        }
+        else if (groupCurNum == 1 && groupNums > 1) {
+            $("#prevGroup").css("display", "none");
+            $("#nextGroup").css("display", "");
+        }
+        else if (groupCurNum < groupNums && groupNums > 1) {
+            $("#prevGroup").css("display", "");
+            $("#nextGroup").css("display", "");
+        }
+        else {
+            $("#prevGroup").css("display", "");
+            $("#nextGroup").css("display", "none");
+        }
+        var start = (groupCurNum - 1) * groupSize;
+        var end = (groupCurNum * groupSize > num ? num : groupCurNum * groupSize);
+        var temp = ""
+        for (var i = start; i < end; i++) {
+            if (i == (pageIndex - 1))
+                temp += "<a name=\"pageA\" id=\"_" + (i + 1).toString() + "\" href=\"javascript:;\" class=\"current\" onclick=\"pageClick(this," + (i + 1).toString() + ");return false;\">" + (i + 1).toString() + "</a>";
+            else
+                temp += "<a name=\"pageA\" id=\"_" + (i + 1).toString() + "\" href=\"javascript:;\" onclick=\"pageClick(this," + (i + 1).toString() + ");return false;\">" + (i + 1).toString() + "</a>";
+        }
+        if (i == 0 && start == 0 && end == 0) {
+            temp += "<a name=\"pageA\" id=\"_" + (i + 1).toString() + "\" href=\"javascript:;\" class=\"current\" onclick=\"pageClick(this," + (i + 1).toString() + ");return false;\">" + (i + 1).toString() + "</a>";
+        }
+        $("div.pager a").eq(0).after(temp);
+    }
+    function prevClick() {
+        groupCurNum -= 1;
+        pageOnPage();
+    }
+    function nextClick() {
+        groupCurNum += 1;
+        pageOnPage();
+    }
+    function turnClick() {
+        var rex = /^[0-9]*$/;
+        if (!rex.test($("#txtTurn").val()))
+            return;
+        pageIndex = parseInt($("#txtTurn").val());
+        pageIndex = (pageIndex > num ? num : pageIndex);
+        $("#txtTurn").val(pageIndex);
+        groupCurNum = Math.floor(pageIndex / groupSize) + (pageIndex % groupSize > 0 ? 1 : 0);
+        pageOnPage();
+        pageClick($("#_" + pageIndex.toString()), pageIndex);
+        //页信息
+        var nInfo = pageIndex + "/" + num;
+        $("#_numInfo").text(nInfo);
+    }
+    function pageClick(e, inum) {
+        $("a[name='pageA']").removeClass("current");
+        $(e).addClass("current");
+        pageIndex = inum;
+        initTable(inum);
+        //页信息
+        var nInfo = pageIndex + "/" + num;
+        $("#_numInfo").text(nInfo);
+    }
+</script>

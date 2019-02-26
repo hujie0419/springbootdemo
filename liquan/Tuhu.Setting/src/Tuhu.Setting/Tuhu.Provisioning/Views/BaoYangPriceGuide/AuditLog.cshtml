@@ -1,0 +1,125 @@
+﻿@using Tuhu.Provisioning.Models
+@using Tuhu.Provisioning.DataAccess.Entity
+@model Tuhu.Component.Common.Models.ListModel<PriceUpdateAuditModel>
+@{
+    ViewBag.Title = "审批记录";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@helper PidLink(string pid)
+{
+var pid1 = "";
+if (!string.IsNullOrWhiteSpace(pid.Split('|')[1]))
+{
+    pid1 = pid.Replace("|", "/");
+}
+else
+{
+    pid1 = pid.Replace("|", "");
+}
+    <a href="https://item.tuhu.cn/Products/@(pid1).html" target="_blank">@pid</a>
+}
+<link href="/Content/Public/Public.css" rel="stylesheet"/>
+<style>
+    .page {
+        min-width: 1400px;
+    }
+</style>
+@if (ViewBag.Type == "QPLPrice")
+{
+<h2>汽配龙审批记录</h2>
+}
+else
+{
+    <h2>审批记录</h2>
+}
+<form method="get">
+    PID:<input type="text" name="PID" value="@ViewBag.PID" />
+    <input name="type" type="hidden" value="@ViewBag.Type" />
+    <input type="submit" value="查询" />
+</form>
+@if (Model.Source.Any())
+{
+    <table style="margin-top: 30px;">
+        <tr>
+            <th>申请人</th>
+            <th>提交时间</th>
+            <th>品牌</th>
+            <th>PID</th>
+            <th>产品名称</th>
+            <th>进货价</th>
+            <th>官网价</th>
+
+            @if (ViewBag.Type != "QPLPrice")
+            {
+                <th>最近一次采购价</th>
+                <th>实际指导价</th>
+                <th>京东自营价</th>
+            }
+
+            @if (ViewBag.Type == "QPLPrice")
+            {
+                <th> 汽配龙申请价 </th>
+            }
+            else
+            {
+                <th>官网申请价</th>
+            }
+
+
+            @if (ViewBag.Type != "QPLPrice")
+            {
+                <th>毛利额</th>
+                <th>毛利率</th>
+                <th>超出指导价范围</th>
+                <th>库存</th>
+                <th>周销量</th>
+                <th>月销量</th>
+            } 
+            <th>申请原因</th>
+            <th>审批人</th>
+            <th>审批时间</th>
+            <th>操作记录</th>
+        </tr>
+
+        @foreach (var item in Model.Source)
+        {
+            <tr>
+                <td>@item.ApplyPerson</td>
+                <td>@item.ApplyDateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@item.Brand</td>
+                <td>@(PidLink(item.PID))</td>
+                <td>@item.ProductName</td>
+                <td>@(item.Cost == null ? "-" : item.Cost.Value.ToString("0.00"))</td>
+                <td>@(item.NowPrice==null?"-":item.NowPrice.Value.ToString("0.00"))</td>
+
+            @if (ViewBag.Type != "QPLPrice")
+            {
+                <td>@(item.PurchasePrice == null ? "-" : item.PurchasePrice.Value.ToString("0.00"))</td>
+                <td>@(item.GuidePrice == null ? "-" : item.GuidePrice.Value.ToString("0.00"))</td>
+                <td>@(item.JdSelf == null ? "-" : item.JdSelf.Value.ToString("0.00"))</td>
+            } 
+            <td>@item.ApplyPrice.ToString("0.00")</td> 
+            @if (ViewBag.Type != "QPLPrice")
+            {
+                <td>@(item.MaoLiE == null ? "-" : item.MaoLiE.Value.ToString("0.00"))</td>
+                <td>@(item.MaoLiE == null ? "-" : item.MaoLiE.Value.ToString("0.00%"))</td>
+                <td>@(item.OverFlow == null ? "-" : item.OverFlow.Value.ToString("0.00%"))</td>
+                <td>@(item.TotalStock == null ? "-" : item.TotalStock.Value.ToString())</td>
+                <td>@(item.Num_Week == null ? "-" : item.Num_Week.Value.ToString())</td>
+                <td>@(item.Num_Month == null ? "-" : item.Num_Month.Value.ToString())</td>
+            } 
+            <td>@item.ApplyReason</td>
+                <td>@item.AuditPerson</td>
+                <td>@item.AuditDateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@(item.AuditStatus == 1 ? "通过" : "驳回")</td>
+            </tr>
+        }
+    </table>
+    @Html.Pager(Model.Pager, true, id => Url.Action("AuditLog", new
+{
+    PID = ViewBag.PID,
+    pageSize = Model.Pager.PageSize,
+    pageIndex = id
+}));
+        
+    }

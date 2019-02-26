@@ -1,0 +1,513 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity
+@model IEnumerable<Tuhu.Provisioning.DataAccess.Entity.ShippingModel>
+@{
+    ViewBag.Title = "运费配置";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<style>
+    table td {
+        padding: 10px;
+        border: solid 1px #cbe3ff;
+        max-width:400px;
+        min-width:20px;
+    }
+
+    table th {
+        background-color: #cbe3ff;
+        color: #000000;
+        font-size: 20px;
+        height: 30px;
+    }
+
+    a {
+        cursor: pointer;
+    }
+
+    .col_name {
+        font-weight: bold;
+        height: 20px;
+        background-color: #ebebeb;
+    }
+
+    .tab_by {
+        margin-top: 50px;
+    }
+</style>
+
+<div style="clear:both;"></div>
+
+<div style="float:left;margin-bottom:30px;">
+    <h1>
+        <span>自营平台运费配置后台</span>
+    </h1>
+</div>
+@if (Model.Count() > 0)
+{
+    var tire = Model.Where(m => (m.Types & 2) == 2);
+    var by = Model.Where(m => (m.Types & 2) == 0 && (m.Types & 64) == 0);
+    var hub = Model.Where(m => (m.Types & 64) == 64);
+    if (tire.Count() > 0)//轮胎
+    {
+        var tireDian = tire.Where(m => (m.Types & 4) == 4);
+        var tireHome = tire.Where(m => (m.Types & 4) == 0);
+        <table style="width:100%;">
+            <tr>
+                <th colspan="7">轮胎</th>
+            </tr>
+            <tr class="col_name">
+                <td>配送方式</td>
+                <td>配置城市</td>
+                <td>运费规则</td>
+                <td>包邮规则</td>
+                <td>人群</td>
+                <td>操作</td>
+                <td>操作历史</td>
+            </tr>
+            @if (tireDian.Any())//到店
+            {
+                var defaultData = tireDian.Where(p => (p.Types & 1) == 1) ?? new List<ShippingModel>();
+                var notDefaultData = tireDian.Any(p => (p.Types & 1) == 0 && !string.IsNullOrWhiteSpace(p.StrCityIDs)) ?
+                    tireDian.Where(p => (p.Types & 1) == 0 && !string.IsNullOrWhiteSpace(p.StrCityIDs)).GroupBy(p => new { p.StrCityIDs, p.UserType, p.StrCityNames }).ToDictionary(t => Tuple.Create(t.Key.StrCityIDs, t.Key.UserType, t.Key.StrCityNames), t => t.Select(o => o))
+                    : new Dictionary<Tuple<string, int, string>, IEnumerable<ShippingModel>>();
+                if (defaultData.Any())
+                {
+                    var totalCount = 1 + notDefaultData.Count;
+                    var noFreeData = defaultData.FirstOrDefault(p => (p.Types & 8) == 0) ?? new ShippingModel();
+                    var freeData = defaultData.FirstOrDefault(p => (p.Types & 8) == 8) ?? new ShippingModel();
+                    <tr>
+                        <td rowspan="@totalCount">配送到店</td>
+                        <td>全国</td>
+                        <td>@(noFreeData.Value >= 0 ? "每条" + noFreeData.Value + "元" : "")</td>
+                        <td>@(freeData.Value != 0 ? (freeData.Types & 16) == 16 ? "满" + freeData.Value + "条包邮"
+                                                  : "满" + freeData.Value + "元包邮(" + ((freeData.Types & 32) == 32 ? "包含" : "不包含") + "安装费)": "")
+                        </td>
+                        <td>
+                            @{
+                                var userType = string.Empty;
+                                switch (noFreeData.UserType)
+                                {
+                                    case 1:
+                                        userType = "全部";
+                                        break;
+                                    case 2:
+                                        userType = "未下单";
+                                        break;
+                                }
+                                <label>@userType</label>
+                            }
+                        </td>
+                        <td rowspan="@totalCount"><a href="/Shipping/Tire">编辑</a></td>
+                        <td rowspan="@totalCount"><a href="javascript:void(0);" onclick="javascript:ShowOprlog(1)">查看操作历史</a></td>
+                   </tr>
+               }
+               foreach (var bd in notDefaultData)
+               {
+                     var noFreeData = bd.Value.FirstOrDefault(p => (p.Types & 8) == 0) ?? new ShippingModel();
+                     var freeData = bd.Value.FirstOrDefault(p => (p.Types & 8) == 8) ?? new ShippingModel();
+                     <tr>
+                           <td>@(noFreeData.StrCityNames)</td>
+                           <td>@(noFreeData.Value != 0 ? "每条" + noFreeData.Value + "元" : "")</td>
+                            <td>
+                                @(freeData.Value != 0 ? (freeData.Types & 16) == 16 ? "满" + freeData.Value + "条包邮"
+                                                     : "满" + freeData.Value + "元包邮(" + ((freeData.Types & 32) == 32 ? "包含" : "不包含") + "安装费)" : "")
+                            </td>
+                           <td>
+                           @{
+                               var userType = string.Empty;
+                               switch (bd.Key.Item2)
+                               {
+                                   case 1:
+                                         userType = "全部";
+                                         break;
+                                   case 2:
+                                         userType = "未下单";
+                                         break;
+                               }
+                               <label>@userType</label>
+                            }
+                           </td>
+                      </tr>
+                 }
+            }
+            @if (tireHome.Any())//到家
+            {
+                var defaultData = tireHome.Where(p => (p.Types & 1) == 1) ?? new List<ShippingModel>();
+                var notDefaultData = tireHome.Any(p => (p.Types & 1) == 0 && !string.IsNullOrWhiteSpace(p.StrCityIDs)) ?
+                    tireHome.Where(p => (p.Types & 1) == 0 && !string.IsNullOrWhiteSpace(p.StrCityIDs)).GroupBy(p => new { p.StrCityIDs, p.UserType, p.StrCityNames }).ToDictionary(t => Tuple.Create(t.Key.StrCityIDs, t.Key.UserType, t.Key.StrCityNames), t => t.Select(o => o))
+                    : new Dictionary<Tuple<string, int, string>, IEnumerable<ShippingModel>>();
+                if (defaultData.Any())
+                {
+                    var totalCount = 1 + notDefaultData.Count;
+                    var noFreeData = defaultData.FirstOrDefault(p => (p.Types & 8) == 0) ?? new ShippingModel();
+                    var freeData = defaultData.FirstOrDefault(p => (p.Types & 8) == 8) ?? new ShippingModel();
+                    <tr>
+                        <td rowspan="@totalCount">配送到家</td>
+                        <td>全国</td>
+                        <td>@(noFreeData.Value >= 0 ? "每条" + noFreeData.Value + "元" : "")</td>
+                        <td>
+                            @(freeData.Value != 0 ? (freeData.Types & 16) == 16 ? "满" + freeData.Value + "条包邮"
+                                                  : "满" + freeData.Value + "元包邮" : "")
+                        </td>
+                        <td>
+                            @{
+                                var userType = string.Empty;
+                                switch (noFreeData.UserType)
+                                {
+                                    case 1:
+                                        userType = "全部";
+                                        break;
+                                    case 2:
+                                        userType = "未下单";
+                                        break;
+                                }
+                                <label>@userType</label>
+                            }
+                        </td>
+                        <td rowspan="@totalCount"><a href="/Shipping/Tire?home&IsShopInstall=False">编辑</a></td>
+                        <td rowspan="@totalCount"><a href="javascript:void(0);" onclick="javascript:ShowOprlog(2)">查看操作历史</a></td>
+                   </tr>
+              }
+              foreach (var bd in notDefaultData)
+              {
+                   var noFreeData = bd.Value.FirstOrDefault(p => (p.Types & 8) == 0) ?? new ShippingModel();
+                   var freeData = bd.Value.FirstOrDefault(p => (p.Types & 8) == 8) ?? new ShippingModel();                  
+                   <tr>
+                       <td>@(noFreeData.StrCityNames)</td>
+                       <td>@(noFreeData.Value != 0 ? "每条" + noFreeData.Value + "元" : "")</td>
+                       <td>
+                           @(freeData.Value != 0 ? (freeData.Types & 16) == 16 ? "满" + freeData.Value + "条包邮"
+                                                  : "满" + freeData.Value + "元包邮" : "")
+                        </td>
+                        <td>
+                        @{
+                           var userType = string.Empty;
+                           switch (bd.Key.Item2)
+                           {
+                              case 1:
+                                    userType = "全部";
+                                    break;
+                               case 2:
+                                     userType = "未下单";
+                                     break;
+                            }
+                                <label>@userType</label>
+                         }
+                        </td>
+                  </tr>
+              }
+       }
+
+        </table>
+    }
+    if (hub.Count() > 0)//轮毂
+    {
+        var hubDian = hub.Where(m => (m.Types & 4) == 4);
+        var hubHome = hub.Where(m => (m.Types & 4) == 0);
+        <table style="width:100%; margin-top:50px;">
+            <tr>
+                <th colspan="7">轮毂</th>
+            </tr>
+            <tr class="col_name">
+                <td>配送方式</td>
+                <td>配置城市</td>
+                <td>运费规则</td>
+                <td>包邮规则</td>
+                <td>人群</td>
+                <td>操作</td>
+                <td>操作历史</td>
+            </tr>
+            @if (hubDian.Any())//到店
+            {
+                var defaultData = hubDian.Where(p => (p.Types & 1) == 1) ?? new List<ShippingModel>();
+                var notDefaultData = hubDian.Any(p => (p.Types & 1) == 0 && !string.IsNullOrWhiteSpace(p.StrCityIDs)) ?
+                    hubDian.Where(p => (p.Types & 1) == 0 && !string.IsNullOrWhiteSpace(p.StrCityIDs)).GroupBy(p => new { p.StrCityIDs, p.UserType, p.StrCityNames }).ToDictionary(t => Tuple.Create(t.Key.StrCityIDs, t.Key.UserType, t.Key.StrCityNames), t => t.Select(o => o))
+                    : new Dictionary<Tuple<string, int, string>, IEnumerable<ShippingModel>>();
+                if (defaultData.Any())
+                {
+                    var totalCount = 1 + notDefaultData.Count;
+                    var noFreeData = defaultData.FirstOrDefault(p => (p.Types & 8) == 0) ?? new ShippingModel();
+                    var freeData = defaultData.FirstOrDefault(p => (p.Types & 8) == 8) ?? new ShippingModel();
+                    <tr>
+                        <td rowspan="@totalCount">配送到店</td>
+                        <td>全国</td>
+                        <td>@(noFreeData.Value >= 0 ? "每条" + noFreeData.Value + "元" : "")</td>
+                        <td>@(freeData.Value != 0 ? (freeData.Types & 16) == 16 ? "满" + freeData.Value + "条包邮"
+                                                  : "满" + freeData.Value + "元包邮(" + ((freeData.Types & 32) == 32 ? "包含" : "不包含") + "安装费)": "")
+                        </td>
+                        <td>
+                            @{
+                                var userType = string.Empty;
+                                switch (noFreeData.UserType)
+                                {
+                                    case 1:
+                                        userType = "全部";
+                                        break;
+                                    case 2:
+                                        userType = "未下单";
+                                        break;
+                                }
+                                <label>@userType</label>
+                            }
+                        </td>
+                        <td rowspan="@totalCount"><a href="/Shipping/Hub">编辑</a></td>
+                        <td rowspan="@totalCount"><a href="javascript:void(0);" onclick="javascript:ShowOprlog(5)">查看操作历史</a></td>
+                   </tr>
+               }
+               foreach (var bd in notDefaultData)
+               {
+                     var noFreeData = bd.Value.FirstOrDefault(p => (p.Types & 8) == 0) ?? new ShippingModel();
+                     var freeData = bd.Value.FirstOrDefault(p => (p.Types & 8) == 8) ?? new ShippingModel();
+                        <tr>
+                           <td>@(noFreeData.StrCityNames)</td>
+                           <td>@(noFreeData.Value != 0 ? "每条" + noFreeData.Value + "元" : "")</td>
+                            <td>
+                                @(freeData.Value != 0 ? (freeData.Types & 16) == 16 ? "满" + freeData.Value + "条包邮"
+                                                     : "满" + freeData.Value + "元包邮(" + ((freeData.Types & 32) == 32 ? "包含" : "不包含") + "安装费)" : "")
+                            </td>
+                           <td>
+                           @{
+                               var userType = string.Empty;
+                               switch (bd.Key.Item2)
+                               {
+                                   case 1:
+                                         userType = "全部";
+                                         break;
+                                   case 2:
+                                         userType = "未下单";
+                                         break;
+                               }
+                               <label>@userType</label>
+                            }
+                           </td>
+                      </tr>
+                 }
+            }
+            @if (hubHome.Any())//到家
+            {
+                var defaultData = hubHome.Where(p => (p.Types & 1) == 1) ?? new List<ShippingModel>();
+                var notDefaultData = hubHome.Any(p => (p.Types & 1) == 0 && !string.IsNullOrWhiteSpace(p.StrCityIDs)) ?
+                    hubHome.Where(p => (p.Types & 1) == 0 && !string.IsNullOrWhiteSpace(p.StrCityIDs)).GroupBy(p => new { p.StrCityIDs, p.UserType, p.StrCityNames }).ToDictionary(t => Tuple.Create(t.Key.StrCityIDs, t.Key.UserType, t.Key.StrCityNames), t => t.Select(o => o))
+                    : new Dictionary<Tuple<string, int, string>, IEnumerable<ShippingModel>>();
+                if (defaultData.Any())
+                {
+                    var totalCount = 1 + notDefaultData.Count;
+                    var noFreeData = defaultData.FirstOrDefault(p => (p.Types & 8) == 0) ?? new ShippingModel();
+                    var freeData = defaultData.FirstOrDefault(p => (p.Types & 8) == 8) ?? new ShippingModel();
+                    <tr>
+                        <td rowspan="@totalCount">配送到家</td>
+                        <td>全国</td>
+                        <td>@(noFreeData.Value >= 0 ? "每条" + noFreeData.Value + "元" : "")</td>
+                        <td>
+                            @(freeData.Value != 0 ? (freeData.Types & 16) == 16 ? "满" + freeData.Value + "条包邮"
+                                                  : "满" + freeData.Value + "元包邮" : "")
+                        </td>
+                        <td>
+                            @{
+                                var userType = string.Empty;
+                                switch (noFreeData.UserType)
+                                {
+                                    case 1:
+                                        userType = "全部";
+                                        break;
+                                    case 2:
+                                        userType = "未下单";
+                                        break;
+                                }
+                                <label>@userType</label>
+                            }
+                        </td>
+                        <td rowspan="@totalCount"><a href="/Shipping/Hub?home&IsShopInstall=False">编辑</a></td>
+                        <td rowspan="@totalCount"><a href="javascript:void(0);" onclick="javascript:ShowOprlog(6)">查看操作历史</a></td>
+                   </tr>
+              }
+              foreach (var bd in notDefaultData)
+              {
+                   var noFreeData = bd.Value.FirstOrDefault(p => (p.Types & 8) == 0) ?? new ShippingModel();
+                   var freeData = bd.Value.FirstOrDefault(p => (p.Types & 8) == 8) ?? new ShippingModel();
+                   <tr>
+                        <td>@(noFreeData.StrCityNames)</td>
+                        <td>@(noFreeData.Value != 0 ? "每条" + noFreeData.Value + "元" : "")</td>
+                        <td>
+                            @(freeData.Value != 0 ? (freeData.Types & 16) == 16 ? "满" + freeData.Value + "条包邮"
+                                                  : "满" + freeData.Value + "元包邮" : "")
+                        </td>
+                        <td>
+                            @{
+                                 var userType = string.Empty;
+                                 switch (bd.Key.Item2)
+                                 {
+                                    case 1:
+                                           userType = "全部";
+                                           break;
+                                    case 2:
+                                           userType = "未下单";
+                                           break;
+                                 }
+                                <label>@userType</label>
+                             }
+                        </td>
+                   </tr>
+            }
+       }
+
+        </table>
+    }
+    if (by.Any())//车品保养
+    {
+        var byDian = by.Where(m => (m.Types & 4) == 4);
+        var byHome = by.Where(m => (m.Types & 4) == 0);
+        <table style="width:100%;" class="tab_by">
+            <tr>
+                <th colspan="7">车品/保养</th>
+            </tr>
+            <tr class="col_name">
+                <td>配送方式</td>
+                <td>配置城市</td>
+                <td>运费规则</td>
+                <td>包邮规则</td>
+                <td>人群</td>
+                <td>操作</td>
+                <td>操作历史</td>
+            </tr>
+            @if (byDian.Any())//到店
+            {
+                var defaultData = byDian.Where(p => (p.Types & 1) == 1) ?? new List<ShippingModel>();
+                var notDefaultData = byDian.Any(p => (p.Types & 1) == 0 && !string.IsNullOrWhiteSpace(p.StrCityIDs)) ?
+                    byDian.Where(p => (p.Types & 1) == 0 && !string.IsNullOrWhiteSpace(p.StrCityIDs)).GroupBy(p => new { p.StrCityIDs, p.UserType,p.StrCityNames}).ToDictionary(t => Tuple.Create(t.Key.StrCityIDs, t.Key.UserType, t.Key.StrCityNames), t => t.Select(o => o))
+                    : new Dictionary<Tuple<string, int, string>, IEnumerable<ShippingModel>>();
+                if (defaultData.Any())
+                {
+                    var totalCount = 1 + notDefaultData.Count;
+                    var noFreeData = defaultData.FirstOrDefault(p => (p.Types & 8) == 0) ?? new ShippingModel();
+                    var freeData = defaultData.FirstOrDefault(p => (p.Types & 8) == 8) ?? new ShippingModel();
+                    <tr>
+                        <td rowspan="@totalCount">配送到店</td>
+                        <td>全国</td>
+                        <td>@(noFreeData.Value >= 0 ? "每单" + noFreeData.Value + "元" : "")</td>
+                        <td>@(freeData.Value != 0 ? "满" + freeData.Value + "元包邮(" + ((freeData.Types & 32) == 32 ? "包含" : "不包含") + "安装费)" : "")</td>
+                        <td>
+                            @{
+                                var userType = string.Empty;
+                                switch (noFreeData.UserType)
+                                {
+                                    case 1:
+                                        userType = "全部";
+                                        break;
+                                    case 2:
+                                        userType = "未下单";
+                                        break;
+                                }
+                                <label>@userType</label>
+                            }
+                        </td>
+                        <td rowspan="@totalCount"><a href="/Shipping/BaoYang?IsShopInstall=True">编辑</a></td>
+                        <td rowspan="@totalCount"><a href="javascript:void(0);" onclick="javascript:ShowOprlog(3)">查看操作历史</a></td>
+                    </tr>
+                }
+                foreach (var bd in notDefaultData)
+                {
+                    var noFreeData = bd.Value.FirstOrDefault(p => (p.Types & 8) == 0) ?? new ShippingModel();
+                    var freeData = bd.Value.FirstOrDefault(p => (p.Types & 8) == 8) ?? new ShippingModel();
+                        <tr>
+                            <td>@(noFreeData.StrCityNames)</td>
+                            <td>@(noFreeData.Value != 0 ? "每单" + noFreeData.Value + "元" : "")</td>
+                            <td>@(freeData.Value != 0 ? "满" + freeData.Value + "元包邮(" + ((freeData.Types & 32) == 32 ? "包含" : "不包含") + "安装费)" : "")</td>
+                            <td>@{
+                                    var userType = string.Empty;
+                                    switch (bd.Key.Item2)
+                                    {
+                                        case 1:
+                                            userType = "全部";
+                                            break;
+                                        case 2:
+                                            userType = "未下单";
+                                            break;
+                                    }
+                                    <label>@userType</label>
+                                }</td>
+                        </tr>
+                }
+            }
+            @if (byHome.Any())//到家
+            {
+                var defaultData = byHome.Where(p => (p.Types & 1) == 1) ?? new List<ShippingModel>();
+                var notDefaultData = byHome.Any(p => (p.Types & 1) == 0 && !string.IsNullOrWhiteSpace(p.StrCityIDs)) ?
+                    byHome.Where(p => (p.Types & 1) == 0 && !string.IsNullOrWhiteSpace(p.StrCityIDs)).GroupBy(p => new { p.StrCityIDs, p.UserType, p.StrCityNames }).ToDictionary(t => Tuple.Create(t.Key.StrCityIDs, t.Key.UserType, t.Key.StrCityNames), t => t.Select(o => o))
+                    : new Dictionary<Tuple<string, int, string>, IEnumerable<ShippingModel>>();
+                if (defaultData.Any())
+                {
+                    var totalCount = 1 + notDefaultData.Count;
+                    var noFreeData = defaultData.FirstOrDefault(p => (p.Types & 8) == 0) ?? new ShippingModel();
+                    var freeData = defaultData.FirstOrDefault(p => (p.Types & 8) == 8) ?? new ShippingModel();
+                    <tr>
+                        <td rowspan="@totalCount">配送到家</td>
+                        <td>全国</td>
+                        <td>@(noFreeData.Value >= 0 ? "每单" + noFreeData.Value + "元" : "")</td>
+                        <td>@(freeData.Value != 0 ? "满" + freeData.Value + "元包邮" : "")</td>
+                        <td>
+                            @{
+                                var userType = string.Empty;
+                                switch (noFreeData.UserType)
+                                {
+                                    case 1:
+                                        userType = "全部";
+                                        break;
+                                    case 2:
+                                        userType = "未下单";
+                                        break;
+                                }
+                                <label>@userType</label>
+                            }
+                        </td>
+                        <td rowspan="@totalCount"><a href="/Shipping/BaoYang?home&IsShopInstall=False">编辑</a></td>
+                        <td rowspan="@totalCount"><a href="javascript:void(0);" onclick="javascript:ShowOprlog(4)">查看操作历史</a></td>
+                    </tr>
+                }
+                foreach (var bd in notDefaultData)
+                {
+                    var noFreeData = bd.Value.FirstOrDefault(p => (p.Types & 8) == 0) ?? new ShippingModel();
+                    var freeData = bd.Value.FirstOrDefault(p => (p.Types & 8) == 8) ?? new ShippingModel();
+                        <tr>
+                            <td>@(noFreeData.StrCityNames)</td>
+                            <td>@(noFreeData.Value != 0 ? "每单" + noFreeData.Value + "元" : "")</td>
+                            <td>@(freeData.Value != 0 ? "满" + freeData.Value + "元包邮" : "")</td>
+                            <td>
+                                @{
+                                    var userType = string.Empty;
+                                    switch (bd.Key.Item2)
+                                    {
+                                        case 1:
+                                            userType = "全部";
+                                            break;
+                                        case 2:
+                                            userType = "未下单";
+                                            break;
+                                    }
+                                    <label>@userType</label>
+                                }
+                            </td>
+                        </tr>
+                }
+            }
+        </table>
+    }
+}
+<div id="AddItem" style="display: none"></div>
+@section scripts{
+    <script>
+        var ShowOprlog = function (type) {
+            $("#AddItem").load('/Shipping/SelectOprLog?type=' + type);
+
+            $("#AddItem").dialog({
+                title: "操作日志",
+                width: 750,
+                height: 700,
+                modal: true
+            });
+
+        }
+    </script>
+}
+

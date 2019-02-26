@@ -1,0 +1,394 @@
+﻿@{
+    ViewBag.Title = "首页配置";
+    ViewBag.PageTitle = "首页配置";
+    Layout = "../Shared/_LayoutIndexPage.cshtml";
+}
+@using IndexConfigManager = Tuhu.Provisioning.Business.Setting.IndexConfigManager;
+@using IndexModuleConfig = Tuhu.Provisioning.DataAccess.Entity.IndexModuleConfig;
+<style>
+    #sortbtn {
+        margin-top: 50px;
+        margin-bottom: 50px;
+        width: 100%;
+        text-align: center;
+    }
+
+    span.glyphicon-plus {
+        font-size: 30px;
+        position: absolute;
+        top: 50px;
+        left: 85px;
+        text-align: center;
+    }
+
+        span.glyphicon-plus:hover {
+            color: grey;
+        }
+
+    span.glyphicon-pencil {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+    }
+
+        span.glyphicon-pencil:hover {
+            color: grey;
+        }
+
+    span.glyphicon-remove {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+        span.glyphicon-remove:hover {
+            color: grey;
+        }
+
+    ol.modules {
+        position: relative;
+        width: 100%;
+        margin: 0 auto;
+        overflow: hidden;
+        margin-top: 20px;
+    }
+
+        ol.modules li {
+            color: #fff;
+            width: 200px;
+            height: 130px;
+            float: left;
+            margin: 20px;
+            background-color: #5c87b2;
+            line-height: 130px;
+            text-align: center;
+            display: inline;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+            ol.modules li div {
+                position: relative;
+            }
+
+    body.dragging, body.dragging * {
+        cursor: move !important;
+    }
+
+    .dragged {
+        position: absolute;
+        opacity: 0.5;
+        z-index: 2000;
+    }
+
+    ol.modules li.placeholder {
+        position: relative;
+    }
+
+        ol.modules li.placeholder:before {
+            position: absolute;
+        }
+
+    div.modal.fade.in {
+        top: 30%;
+    }
+</style>
+<ol class='modules'>
+    @{
+        List<IndexModuleConfig> moduleList = IndexConfigManager.GetIndexModules();
+        foreach (var module in moduleList)
+        {
+            var url = "/IndexConfig/Module?moduleId=" + module.PKID;
+            <li>
+                <div data-id="@module.PKID" data-name="@module.ModuleName" onclick="JmoduleItems('@url')">
+                    @module.ModuleName
+                    <span class="glyphicon glyphicon-pencil" onclick="loadUpdateModule(this, event)" aria-hidden="true"></span>
+                    <span class="glyphicon glyphicon-remove" onclick="loadDeleteModule(this, event)" aria-hidden="true"></span>
+                </div>
+            </li>
+        }
+    }
+    <li>
+        <div>
+            <span onclick="loadAddModule()" class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+        </div>
+    </li>
+
+</ol>
+<div id="sortbtn">
+    <button class="btn btn-primary" onclick="drag(this)">调整模块顺序</button>
+</div>
+
+
+<!---添加模块模态框-->
+<div class="modal fade" id="addModule" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">
+                    添加配置模块类型
+                </h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form" id="addModuleForm">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">模块类型名</label>
+                        <div class="col-sm-6">
+                            <input autofocus type="text" name="moduleName" class="form-control" placeholder="模块类型名">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    取消
+                </button>
+                <button type="button" onclick="addModule()" class="btn btn-primary">
+                    添加
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--更新模块-->
+<div class="modal fade" id="updateModule" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">
+                    更新模块
+                </h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form" id="updateModuleForm">
+                    <input type="text" id="updateModuleId" name="moduleId" hidden />
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">模块类型名</label>
+                        <div class="col-sm-6">
+                            <input autofocus type="text" id="updateModuleName" name="moduleName" class="form-control" value="">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    取消
+                </button>
+                <button type="button" onclick="updateModule()" class="btn btn-primary">
+                    添加
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--确定删除模态框-->
+<div class="modal fade" id="deleteModule" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" style="text-align:center;width:100%;margin-bottom:30px">
+                    确定删除？
+                </h4>
+                <form id="deleteModuleForm">
+                    <input id="deleteModuleId" type="number" name="moduleId" hidden />
+                </form>
+                <div style="width:100%;text-align:center;">
+                    <button type="button" class="btn btn-default" style="margin-right:50px" data-dismiss="modal">
+                        取消
+                    </button>
+                    <button type="button" onclick="deleteModule()" class="btn btn-primary">
+                        删除
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+
+    function JmoduleItems(url) {
+        window.location.href = url;
+    }
+
+    //加载添加模块类型模态框
+    function loadAddModule() {
+        $("#addModule").modal("show");
+    }
+
+    //添加模块
+    function addModule() {
+        var o = document.getElementById("addModuleForm");
+        var data = getFormJson(o);
+        $.ajax({
+            url: "/IndexConfig/CreateModule",
+            method: "POST",
+            data: data,
+            success: function (status) {
+                if (status > 0)
+                    setCache();
+                $("#addModule").modal("hide");
+                location.reload(true);
+            }
+        })
+    }
+
+    //加载更新模块模态框
+    function loadUpdateModule(module, event) {
+        moduleId = $(module).parent().attr("data-id");
+        moduleName = $(module).parent().attr("data-name");
+        $("#updateModule").modal("show");
+        $("#updateModuleId").attr("value", moduleId);
+        $("#updateModuleName").attr("value", moduleName);
+        event.stopPropagation();
+    }
+    //更新模块
+    function updateModule() {
+        var o = document.getElementById("updateModuleForm");
+        var data = getFormJson(o);
+        $.ajax({
+            url: "/IndexConfig/UpdateModuleName",
+            method: "POST",
+            data: data,
+            success: function (status) {
+                if (status > 0)
+                    setCache();
+                $("#updateModule").modal("hide");
+                location.reload(true);
+            }
+        })
+    }
+    //加载删除
+    function loadDeleteModule(module, event) {
+        moduleId = $(module).parent().attr("data-id");
+        $("#deleteModule").modal("show");
+        $("#deleteModuleId").attr("value", moduleId);
+        event.stopPropagation();
+    }
+
+    //删除模块
+    function deleteModule() {
+        var o = document.getElementById("deleteModuleForm");
+        var data = getFormJson(o);
+        $.ajax({
+            url: "/IndexConfig/DeleteModule",
+            method: "POST",
+            data: data,
+            success: function (status) {
+                if (status > 0)
+                    setCache();
+                $("#deleteModule").modal("hide");
+                location.reload(true);
+            }
+        })
+    }
+
+    //更新顺序
+    function updateIndex() {
+        var moduleIds = "";
+        var lis = $("ol").children();
+        lis.each(function (i, v) {
+            if ($(v).children().first().attr("data-id") != undefined)
+                moduleIds += $(v).children().first().attr("data-id") + ",";
+        });
+        var data = {};
+        data["moduleIds"] = moduleIds;
+        $.ajax({
+            url: "/IndexConfig/UpdateModuleIndex",
+            method: "POST",
+            data: data,
+            success: function (status) {
+                if (status > 0)
+                    setCache();
+                location.reload(true);
+            }
+        })
+    }
+    //将form中的值转换为键值对。
+    function getFormJson(frm) {
+        var o = {};
+        var a = $(frm).serializeArray();
+        $.each(a, function () {
+            if (o[this.name] !== undefined) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    }
+
+    //重写缓存
+    function setCache() {
+        $.ajax({
+            url: "/IndexConfig/SetIndexModulesCache",
+            method: "POST",
+            success: function (result) {
+                if (result <= 0)
+                    alert("缓存更新失败");
+            }
+        });
+    }
+
+    function drag(e) {
+        if (e.innerHTML == "调整模块顺序") {
+            $("ol.modules").sortable("enable");
+            e.innerHTML = "保存调整结果";
+        }
+        else {
+            $("ol.modules").sortable("disable");
+            e.innerHTML = "调整模块顺序";
+            updateIndex();
+        }
+    }
+
+    //排序
+    $(function () {
+        var adjustment;
+
+        $("ol.modules").sortable({
+            group: 'modules',
+            pullPlaceholder: false,
+            // animation on drop
+            onDrop: function ($item, container, _super) {
+                var $clonedItem = $('<li/>').css({ height: 0 });
+                $item.before($clonedItem);
+                $clonedItem.animate({ 'height': $item.height() });
+
+                $item.animate($clonedItem.position(), function () {
+                    $clonedItem.detach();
+                    _super($item, container);
+                });
+            },
+            // set $item relative to cursor position
+            onDragStart: function ($item, container, _super) {
+                var offset = $item.offset(),
+                    pointer = container.rootGroup.pointer;
+
+                adjustment = {
+                    left: pointer.left - offset.left,
+                    top: pointer.top - offset.top
+                };
+
+                _super($item, container);
+            },
+            onDrag: function ($item, position) {
+                $item.css({
+                    left: position.left - adjustment.left,
+                    top: position.top - adjustment.top
+                });
+            }
+        });
+        $("ol.modules").sortable("disable");
+    });
+</script>

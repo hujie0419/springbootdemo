@@ -1,0 +1,87 @@
+﻿@using System.Globalization
+@using Tuhu.Provisioning.DataAccess.Entity;
+@using Tuhu.Provisioning;
+@model Tuhu.Component.Common.Models.ListModel<ThirdPartyMiaoShaModel>
+@{
+    Layout = null;
+    var Request = ViewBag.SelectModel as PriceSelectModel;
+}
+
+@helper ShowPrice(string pid = "", string type = "")
+{
+
+var href = string.Empty;
+
+//增加商品详情地址拼接
+switch (type)
+{
+    case "JD":
+        href = "http://item.jd.com/" + pid + ".html"; break;
+    case "Tuhu":
+        var tempPid = pid.Split('|');
+        if (tempPid.Length == 2 && !string.IsNullOrWhiteSpace(tempPid[1]) && Convert.ToUInt64(tempPid[1]) > 0)
+        {
+            href = "https://item.tuhu.cn/Products/" + tempPid[0] +"/"+ tempPid[1]+".html"; break;
+        }
+        else
+        {
+            href = "https://item.tuhu.cn/Products/" + tempPid[0] + ".html"; break;
+        }
+}
+    <a target="_blank" href="@href">@pid</a>
+}
+@if (Model.Source.Any())
+{
+    <table data-count="@Model.Pager.TotalItem" class="table" width="100%" style="text-align:center;">
+        <tr>
+            <th>途虎PID</th>
+            <th>途虎价格</th>
+            <th>京东产品ID</th>
+            <th>京东价格</th>
+            <th>京东秒杀价格</th>
+            <th>开始时间</th>
+            <th>结束时间</th>
+            <th>操作</th>
+        </tr>
+        @foreach (var item in Model.Source)
+        {
+        <tr>
+            @if (string.IsNullOrWhiteSpace(item.Pid))
+            {
+                <td>-</td>
+            }
+            else
+            {
+                <td>@ShowPrice(item.Pid, "Tuhu") <br />@item.ProductName)</td>
+            }
+              
+                <td>@(string.IsNullOrWhiteSpace(item.Pid) ? "-" : item.Price.ToString("0.00"))</td>
+                <td>@ShowPrice(item.SkuID.ToString(), "JD")<br />@item.Title</td>
+                <td>@(item.ThirdPartyPrice)</td>
+                <td>@(item.MiaoShaPrice)</td>
+                <td>@(item.Type == 1 ? "已开始(" + item.StartTime + ")" : item.StartTime.ToString())</td>
+                <td>@(item.EndTime)</td>
+                <td>
+                    <a href="/Tire/Price" target="_blank">改价</a>
+                </td>
+            </tr>
+        }
+    </table>
+    @Html.Pager(Model.Pager, true, id => Url.Action("MiaoShaProductList", new
+{
+    ProductName = Request.ProductName,
+    PID = Request.PID,
+    Brand = Request.Brand,
+    TireSize=Request.TireSize,
+    shopCode = ViewBag.shopCode,
+    PageIndex = id,
+    PageSize = Model.Pager.PageSize,
+    PriceDifStatus=ViewBag.PriceDifStatus
+}))
+}
+
+<script>
+    $("[name=SelectAll]").change(function () {
+        $("[name=selectSingle]").prop("checked", $(this).prop("checked"));
+    })
+</script>

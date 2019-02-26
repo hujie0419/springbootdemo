@@ -1,0 +1,402 @@
+﻿@{
+    Layout = null;
+}
+<style>
+    #region input {
+        width: 18px;
+    }
+
+    .province {
+        float: left;
+        margin: 10px;
+        width: 200px;
+        position: relative;
+    }
+
+    .trigger {
+        margin-left: 5px;
+        width: 14px;
+    }
+
+    .province_label {
+        font-size: 16px;
+    }
+
+    .citys {
+        width: 200px;
+        border: 1px solid blue;
+        background-color: #fff;
+        position: absolute;
+        top: 20px;
+        left: 0;
+        z-index: 9999;
+    }
+
+    #region .close_button {
+        width: 50px;
+    }
+
+    .citys div {
+        float: left;
+        width: 100px;
+    }
+
+    .check_num {
+        color: red;
+    }
+</style>
+<div id="region">
+
+</div>
+<script>
+
+    var targetID = $("#" + "@ViewBag.ID"),
+        targetClass = $("." + "@ViewBag.ID".split("_")[0]),
+        stringAll = targetClass.attr("data-serviceids"),
+        stringPart = targetID.attr("data-serviceids"),
+        arrAll = [],
+        arrPart = [],
+        category = {};
+    category.Tires = 0;
+    category.Gifts = 0;
+    category.Service = 0;
+    category.hub = 0;
+    category.AutoProduct = 0;
+    category.BaoYang = 0;
+    category.TC = 0;
+    category.SHOP = 0;
+
+    if (stringAll)
+        arrAll = stringAll.substr(0, stringAll.length - 1).split(";");
+    if (stringPart && stringAll)
+        arrPart = stringPart.substr(0, stringPart.length - 1).split(";");
+
+    $.ajax({
+        url: "/Promotion/GetCategory",
+        type: "get",
+        dataType: "json",
+        data: { type: "category" },
+        success: function (regions) {
+            console.log(regions)
+            if (regions.length <=0) {
+                return;
+            }
+            for (var i = 0; i <= regions.length-1; i++) {
+                category[regions[i].title] = regions[i].children.length
+            }
+            //category.Tires = regions[0].children.length;
+            //category.Gifts = regions[1].children.length;
+            //category.Service = regions[2].children.length;
+            //category.hub = regions[3].children.length;
+            //category.AutoProduct = regions[4].children.length;
+            //category.BaoYang = regions[5].children.length;
+            //category.TC = regions[6].children.length;
+            //category.SHOP = regions[7].children.length;
+            var html = "";
+            $.map(regions, function (value, key) {
+                var t = 0;
+                console.log(value);
+                var partflag = true;
+                var allflag = true;
+                var countpart = 0;
+                var type = 0;
+                var xm = 0;
+                if (arrAll.in_array(value.title)) {
+                    console.log(arrAll.in_array(value.title))//大类在arrAll
+                    if (arrPart.in_array(value.title)) {
+                        html += '<div class="province"><span ><input type="checkbox" checked="checked" value="" id="' + value.title + '"><label class="province_label" for="' + value.title + '">' + value.name + '</label><span class="check_num">()</span><img class="trigger" src="//gtd.alicdn.com/tps/i1/T1XZCWXd8iXXXXXXXX-8-8.gif"></span><div style="display:none;" class="citys">';
+                        $.map(value.children, function (v, k) {
+                            t++;
+                            html += '<div><input type="checkbox" checked="checked" value="" id="' + v.title + '"><label for="' + v.title + '">' + v.name + '</label></div>';
+                        })
+                    }
+                    else {
+                        type = 1;
+                    }
+                }
+                else {
+                    if (arrAll.length > 0)//all有值
+                    {
+
+                        if (arrPart.length > 0)//part有值
+                        {
+                            $.map(value.children, function (v, k) {
+                                if (arrPart.in_array(v.title)) {
+                                    //已选
+                                }
+                                else {
+                                    partflag = false;
+                                    countpart++;   //该大类下为选的小类个数
+                                }
+                            });
+                            if (partflag == false)//part该省下面的城市未全选
+                            {
+                                if (countpart == value.children.length)//part全部没选
+                                {
+
+                                    $.map(value.children, function (v, k) {
+                                        if (arrAll.in_array(v.title)) {
+
+                                        }
+                                        else {
+                                            allflag = false;
+                                        }
+                                    });
+                                    if (allflag == true)//该省下城市全部不显示,隐藏该省
+                                    {
+                                        type = 1;
+                                    }
+                                    else {
+                                        html += '<div class="province"><span ><input type="checkbox"  value="" id="' + value.title + '"><label class="province_label" for="' + value.title + '">' + value.name + '</label><span class="check_num">()</span><img class="trigger" src="//gtd.alicdn.com/tps/i1/T1XZCWXd8iXXXXXXXX-8-8.gif"></span><div style="display:none;" class="citys">';
+                                    }
+                                }
+                                else//part选了一些
+                                {
+                                    //计算在ALL的数目 ==value.ChildrenRegion.length就让checked
+                                    $.map(value.children, function (v, k) {
+                                        if (arrAll.in_array(v.title)) {
+
+                                        }
+                                        else {
+                                            allflag = false;
+                                        }
+
+                                    });
+                                    if (allflag)//全部在all 部分在part
+                                    {
+                                        html += '<div class="province"><span ><input type="checkbox" checked="checked" value="" id="' + value.title + '"><label class="province_label" for="' + value.title + '">' + value.name + '</label><span class="check_num">()</span><img class="trigger" src="//gtd.alicdn.com/tps/i1/T1XZCWXd8iXXXXXXXX-8-8.gif"></span><div style="display:none;" class="citys">';
+                                    }
+                                    else {
+                                        html += '<div class="province"><span ><input type="checkbox"  value="" id="' + value.title + '"><label class="province_label" for="' + value.title + '">' + value.name + '</label><span class="check_num">()</span><img class="trigger" src="//gtd.alicdn.com/tps/i1/T1XZCWXd8iXXXXXXXX-8-8.gif"></span><div style="display:none;" class="citys">';
+                                    }
+                                }
+                            }
+                            else//part该省下面的城市都被选中
+                            {
+                                html += '<div class="province"><span ><input type="checkbox" checked="checked" value="" id="' + value.title + '"><label class="province_label" for="' + value.title + '">' + value.name + '</label><span class="check_num">()</span><img class="trigger" src="//gtd.alicdn.com/tps/i1/T1XZCWXd8iXXXXXXXX-8-8.gif"></span><div style="display:none;" class="citys">';
+                            }
+                        }
+                        else {
+                            //存在隐藏和不隐藏两种
+                            $.map(value.children, function (v, k) {
+                                if (arrAll.in_array(v.title)) {
+
+                                }
+                                else {
+                                    allflag = false;
+                                }
+                            });
+                            if (allflag == true)//该省下城市全部不显示,隐藏该省
+                            {
+                                type = 1;
+                            }
+                            else {
+                                html += '<div class="province"><span ><input type="checkbox"  value="" id="' + value.title + '"><label class="province_label" for="' + value.title + '">' + value.name + '</label><span class="check_num">()</span><img class="trigger" src="//gtd.alicdn.com/tps/i1/T1XZCWXd8iXXXXXXXX-8-8.gif"></span><div style="display:none;" class="citys">';
+                            }
+                        }
+                    }
+                    else//正常的
+                    {
+                        html += '<div class="province"><span ><input type="checkbox" value="" id="' + value.title + '"><label class="province_label" for="' + value.title + '">' + value.name + '</label><span class="check_num">()</span><img class="trigger" src="//gtd.alicdn.com/tps/i1/T1XZCWXd8iXXXXXXXX-8-8.gif"></span><div style="display:none;" class="citys">';
+                    }
+
+                    $.map(value.children, function (v, k) {
+                        if (arrPart.length > 0 && arrPart.in_array(v.title))//当前这条规则中此城市已选
+                        {
+                            html += '<div><input type="checkbox" checked="checked" value="" id="' + v.title + '"><label for="' + v.title + '">' + v.name + '</label></div>';
+                            t++;
+                        }
+                        else {
+                            if (arrAll.length > 0 && arrAll.in_array(v.title)) {
+                                //已被其他规则选择  不允许重复
+                            }
+                            else
+                                html += '<div><input type="checkbox" value="" id="' + v.title + '"><label for="' + v.title + '">' + v.name + '</label></div>';
+                        }
+
+                    });
+                }
+
+                if (type != 1)
+                    html += '<p style="text-align:right;clear:both;"><input type="button" value="关闭" class="close_button"></p></div></div>';
+                html = html.replace('()', '(' + t + ')');
+            })
+            $("#region").empty().append(html);
+        }
+    });
+    $("#region").on("click", ".trigger", function ()//打开市弹框
+    {
+        $self = $(this);
+        $(".citys").hide();
+        $self.parent().next().show();
+    }).on("click", ".close_button", function ()//关闭市弹框
+    {
+        $(this).parent().parent().hide();
+    }).on("click", ".province>span>input[type='checkbox']", function ()//点击大类复选框
+    {
+        var $target = $(this);
+        if ($target.prop("checked") == true)    //下面判断是否全部小类都在里面？
+        {
+            var type = this.id;//Tires
+            var c = 0;
+            var t = 0;//判断大类中是否包括所有的小类
+
+            $target.parent().next().find("input[type='checkbox']").each(function ()    //大类下的小类个数
+            {
+                c++;
+            })
+            for (var prop in category) {
+                if (prop == type) {
+                    if (category[prop] == c) { t = 1; break; }
+                }
+            }
+            if (t) {
+                $target.parent().next().find("input[type='checkbox']").each(function () {
+                    var $self = $(this);
+                    if ($self.prop("checked") == true) {
+                        removeCityID($self);
+                    }
+                    else {
+                        $self.prop("checked", true);
+                    }
+                })
+                bindCityID($target);//追加大类id;
+            }
+            else {
+                $target.parent().next().find("input[type='checkbox']").each(function () {
+                    var $self = $(this);
+                    if ($self.prop("checked") != true) {
+                        $self.prop("checked", true);
+                        bindCityID($self);
+                    }
+                })
+            }
+
+            $target.next().next().text("(" + $target.parent().next().find("input[type='checkbox']").length + ")");
+        }
+        else {
+            $target.parent().next().find("input[type='checkbox']").each(function () {
+                var $self = $(this);
+                $self.prop("checked", false);
+                removeCityID($self);
+            })
+            removeCityID($target);  //移除大类
+            $target.next().next().text("(0)");
+        }
+    }).on("click", ".citys>div>input[type='checkbox']", function ()//点击市复选框(1全选的时候去一个2加一个变成全选3加一个减一个都未全选）
+    {
+        var $target = $(this);
+        var flag = true;
+        var type = $target.parent().parent().prev().find("input[type='checkbox']").prop("id");
+        var c = 0, t = 0;
+        var $checknum = $target.parent().parent().prev().find(".check_num");
+        $target.parent().parent().find("input[type = 'checkbox']").each(function () {
+            c++;
+        })
+        for (var prop in category) {
+            if (prop == type) {
+                if (category[prop] == c) { t = 1; break; }
+            }
+        }
+        if ($target.prop("checked") == true) {
+            bindCityID($target);
+            $target.parent().parent().find("input[type = 'checkbox']").each(function () {
+                if ($(this).prop("checked") == false)
+                    flag = false;
+            })
+            if (flag == true) {         //全选了，判断是否包括所有小类觉得追加的元素
+                $target.parent().parent().prev().find("input[type='checkbox']").prop("checked", true);
+                if (t == 1) {      //删除小类追加大类
+                    $target.parent().parent().find("input[type = 'checkbox']").each(function () {
+                        removeCityID($(this));
+                    })
+                    bindCityID($target.parent().parent().prev().find("input[type='checkbox']"));
+                }
+            }
+            $checknum.text("(" + (parseInt($checknum.text().replace("(", "").replace(")", "")) + 1) + ")");
+        }
+        else {
+            removeCityID($target);
+            if ($target.parent().parent().prev().find("input[type='checkbox']").prop("checked") == true) {   //大类勾选了，判断是否包括所有小类
+
+                if (t == 1) {
+                    removeCityID($target.parent().parent().prev().find("input[type='checkbox']"));
+                    $target.parent().parent().find("input[type = 'checkbox']").each(function () {
+                        if ($(this).prop("checked") == true) bindCityID($(this));
+                    })
+                }
+            }
+            $target.parent().parent().prev().find("input[type='checkbox']").prop("checked", false);
+            $checknum.text("(" + (parseInt($checknum.text().replace("(", "").replace(")", "")) - 1) + ")");
+        }
+    })
+    //绑定选中的城市ID到对应的TD和TABLE上,显示选中的城市名称在对应的TD上
+    var bindCityID = function (target) {
+        var cityids = targetID.attr("data-serviceids") + target.prop("id") + ";";
+        var allcityids = targetClass.attr("data-serviceids") + target.prop("id") + ";";
+        targetID.attr("data-serviceids", cityids);//追加到标签上
+        targetClass.attr("data-serviceids", allcityids);
+
+        var forshowlist = cityids.substr(0, cityids.length - 1).split(";");
+        var forshowtext = "";
+        for (var i = 0; i < forshowlist.length; i++) {
+            forshowtext += $("#" + forshowlist[i]).next().text() + ";";
+        }
+        if (forshowtext) {
+            if (forshowtext.length < 50)
+                forshowtext = forshowtext.substr(0, forshowtext.length - 1);
+            else
+                forshowtext = forshowtext.substr(0, 50) + "......";
+            targetID.html('<a style="float:right;" javascript:void(0);" onclick="javascript:ShowRegionDialog(this,2)">编辑</a>' + forshowtext);
+
+        }
+    }
+    //删除取消选中的城市ID到对应的TD和TABLE上,重新显示选中的城市名称在对应的TD上
+    var removeCityID = function (target) {
+        var listcityid = [];
+        var listallcityid = [];
+        var cityids = targetID.attr("data-serviceids");
+        var allcityids = targetClass.attr("data-serviceids");
+        if (cityids.indexOf(";") < 0 || allcityids.indexOf(";") < 0) {
+            console.log("未添加上,无法删除");
+            alert("配置错误,请重新尝试");
+            window.location.reload();
+        }
+        else {
+            listcityid = cityids.substr(0, cityids.length - 1).split(";");
+            listallcityid = allcityids.substr(0, allcityids.length - 1).split(";");
+            cityids = "";
+            allcityids = "";
+            for (var i = 0; i < listcityid.length; i++) {
+                if (listcityid[i] != target.prop("id")) {
+                    cityids += listcityid[i] + ";"
+                }
+            }
+            for (var i = 0; i < listallcityid.length; i++) {
+
+                if (listallcityid[i] != target.prop("id")) {
+                    allcityids += listallcityid[i] + ";"
+                }
+            }
+            targetID.attr("data-serviceids", cityids);//追加到标签上
+            targetClass.attr("data-serviceids", allcityids);
+            if (cityids) {
+                var forshowlist = cityids.substr(0, cityids.length - 1).split(";");
+                var forshowtext = "";
+                for (var i = 0; i < forshowlist.length; i++) {
+                    forshowtext += $("#" + forshowlist[i]).next().text() + ";";
+                }
+                if (forshowtext) {
+                    if (forshowtext.length < 50)
+                        forshowtext = forshowtext.substr(0, forshowtext.length - 1);
+                    else
+                        forshowtext = forshowtext.substr(0, 50) + "......";
+                    targetID.html('<a style="float:right;" javascript:void(0);" onclick="javascript:ShowRegionDialog(this,2)">编辑</a>' + forshowtext);
+                }
+            }
+            else
+                targetID.html('<a href="javascript:void(0);" onclick="javascript:ShowRegionDialog(this,1)">选择类别</a>');
+
+        }
+    }
+</script>

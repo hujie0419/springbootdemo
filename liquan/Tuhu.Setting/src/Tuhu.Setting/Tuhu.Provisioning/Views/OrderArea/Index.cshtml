@@ -1,0 +1,339 @@
+﻿@using Tuhu.Provisioning.DataAccess.Entity;
+@{
+    ViewBag.Title = "订单区域配置";
+    Layout = "../Shared/_Layout.cshtml";
+   
+    List<OrderArea> ParentList = (List<OrderArea>)ViewBag.ParentList;
+}
+<style type="text/css">
+    input[type=button], input[type=submit] {
+        background: #0088cc none repeat scroll 0 0;
+        border: medium none #0088cc;    
+        color: #f0f0f0;
+        cursor: pointer;
+        font-family: "Microsoft Yahei";
+        font-size: 12px;
+        outline: medium none;
+        padding: 5px 25px;
+    }
+</style>
+
+<link href="/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.css" rel="stylesheet" type="text/css" />
+<script src="/Scripts/jquery-ui-timepicker-addon/jquery-ui-sliderAccess.js" type="text/javascript"></script>
+<script src="/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.js" type="text/javascript"></script>
+<script src="/Scripts/ajaxfileupload.js"></script>
+
+
+<div style="margin-top:20px;">
+    <input class="button1" type="button" value="添加大业务模块"   onclick="OrderAreas.BigModule.AddOrEdit('添加大业务模块', 0);" style="display:@(User.Identity.Name == "chenyutao@tuhu.cn"?"":"none");" />
+    &nbsp;&nbsp;
+    @*<input class="button1" type="button" value="刷新缓存" onclick="OrderAreas.RefreshCache();" />*@
+    <input class="button1" type="button" value="查看日志" onclick="LookOplog()" />
+
+</div>
+
+<div>
+    <div id="left" style="float:left;width:20%;">
+        @{
+            <ul>
+                @if (ParentList != null && ParentList.Count > 0)
+                {
+                    for (int i = 0; i < ParentList.Count; i++)
+                    {
+                        <li id="ParentMenu@(ParentList[i].id)" style="padding:3px 0;list-style-type:decimal;">
+                            <a id="@(ParentList[i].id)" onclick="OrderAreas.ShowModuleChildList(@(ParentList[i].id),1)" href="javascript:void(0);"> @ParentList[i].modelname</a>
+                            <span style="color:red;">@(ParentList[i].showstatic <= 0 ? "禁用" : "启用")</span>
+                            &nbsp;
+                            <input type="button" value="编辑" style="padding:0;" onclick="OrderAreas.BigModule.AddOrEdit('@ParentList[i].modelname', @(ParentList[i].id));">
+                            &nbsp;
+                            <input type="button" value="添加楼层" style="padding:0;display:@(User.Identity.Name == "chenyutao@tuhu.cn"?"":"none");" onclick="OrderAreas.BigModuleChild.AddOrEdit('@ParentList[i].modelname',@(ParentList[i].id),0,2);">
+                        </li>
+                    }
+                }
+                else
+                {
+                <li>无模块</li>}
+            </ul>
+        }
+    </div>
+
+    <div id="right" style="float:left;width:80%;margin:20px 0;"></div>
+
+    <div style="clear:left;"></div>
+</div>
+
+<div id="EditBigModule" style="display:none;"></div>
+<div id="LookOplog"style="display:none;"></div>
+<div id="SelTires" style="display:none;"></div>
+<input type="hidden" value="OrderArea" id="hidObjectType" />
+<script type="text/javascript">
+    var CookieTools = {
+        GetCookie: function (name) {
+            var arr = document.cookie.match(new RegExp("(^| )" + name + "=([^;]*)(;|$)"));
+            if (arr != null) return unescape(arr[2]); return null;
+        },
+        SetCookie: function (name, value) {
+            var Days = 3600;
+            var exp = new Date();
+            //domain = "tuhu.cn";
+            exp.setTime(exp.getTime() + Days * 24 * 60 * 60 * 1000);
+            document.cookie = name + "=" + escape(value) + ";path=/;expires=" + exp.toGMTString();
+        },
+        DelCookie: function (name) {
+            var exp = new Date();
+            exp.setTime(exp.getTime() - 1);
+            var cval = getCookie(name);
+            if (cval != null)
+                document.cookie = name + "=" + cval + ";expires=" + exp.toGMTString() + "; path=/";
+        }
+    }
+
+    var OrderAreas = {
+        BigModule: {
+            AddOrEdit: function (t, n) {
+                $("#EditBigModule").html("").load("/OrderArea/BigModule?id=" + n);
+                $("#EditBigModule").dialog({
+                    title: t,
+                    width: 400,
+                    height: "auto",
+                    modal: true,
+                    resizable: false
+                });
+            }
+        },
+        BigModuleChild: {
+            AddOrEdit: function (t, p, n, c) {
+                $("#EditBigModule").html("").load("/OrderArea/BigModuleChild?pid=" + p + "&id=" + n + "&areatype=" + (c || 0));
+                $("#EditBigModule").dialog({
+                    title: t,
+                    width: 600,
+                    height: "auto",
+                    modal: true,
+                    resizable: false
+                });
+            }
+        },
+        ShowModuleChildList: function (p,f) {
+            var _index = (p || 0);
+            var _parent = (f || 0);
+            var _cookieIndex = CookieTools.GetCookie("ChildMenuOrderArea");
+            var _cookieParentIndex = CookieTools.GetCookie("ParentMenuOrderArea");
+
+            //点击当前项高亮显示
+            $("#left > ul > li").click(function (i) {
+                $(this).css("border", "2px solid red").siblings().css("border", "0");
+            });
+
+            //左边菜单(默认项)
+            if (_parent == 1) {
+                CookieTools.SetCookie("ParentMenuOrderArea", _index);
+            }
+            else {
+                if (_cookieParentIndex != null) {
+                    $("#ParentMenu" + _cookieParentIndex).css("border", "2px solid red").siblings().css("border", "0");
+                }
+            }
+
+            //右边列表(默认项)
+            if (_index > 0) {
+                CookieTools.SetCookie("ChildMenuOrderArea", _index);
+                $("#right").html("").load("/OrderArea/ShowModuleChildList?pid=" + _index);
+            }
+            else {
+                if (_cookieIndex != null) {
+                    //优先读取最近一次浏览过的列表
+                    CookieTools.SetCookie("ChildMenuOrderArea", _cookieIndex);
+                    $("#right").html("").load("/OrderArea/ShowModuleChildList?pid=" + _cookieIndex);
+                }
+                else {
+                    //若为空则默认加载列表第一项
+                    _index = $("#left > ul > li").first().find("a").attr("id");
+                    $("#right").html("").load("/OrderArea/ShowModuleChildList?pid=" + _index);
+                }
+            }
+        },
+        ProductList: {
+            Add: function (id) {
+                var url = "/OrderAreaProduct/Add/" + id;
+                window.open(url, "_blank");
+            },
+            Show: function (id) {
+                var url = "/OrderAreaProduct/SearchProductsByMoudleId/" + id;
+                window.open(url, "_blank");
+            }
+        },
+        UploadBImg: function (obj, showImg, showUrl) {
+            var pobj = $(obj).parent();
+            var rd = Math.ceil(Math.random() * 9999) + 1;
+            var fileElId = $(obj).attr("id");
+            console.log(fileElId);
+            $.ajaxFileUpload({
+                url: '/Article/ImageUploadToAli?rd=' + rd,
+                secureuri: false,
+                fileElementId: fileElId,
+                dataType: 'json',
+                async: false,
+                success: function (result) {
+                    if (result.BImage != "" && result.SImage != "") {
+                        console.log($(pobj).find("#" + showImg));
+                        $(pobj).find("#" + showImg).attr("src", result.SImage).show();
+                        $(pobj).find("#" + showUrl).val(result.BImage);
+                        //$(pobj).find("#icoimgurl").val(result.SImage);
+                    } else {
+                        alert("上传失败！");
+                    }
+                }
+            });
+        },
+        GetCityJsonOption: function (obj, bindTag) {
+            var parentID = $(obj).find('option:selected').val();
+            if (parentID >= 0) {
+                $.ajax({
+                    type: "POST",
+                    url: "/OrderArea/GetCityJson",
+                    data: "parentID=" + parentID,
+                    success: function (msg) {
+                        var ResultHtml = ""
+                        var TemplateHtml = '<option value="{value}">{text}</option>';
+                        var obj = eval(msg);
+                        $(obj).each(function (i) {
+                            ResultHtml += TemplateHtml.replace("{value}", obj[i].PKID).replace("{text}", obj[i].RegionName);
+                        });
+                        $("#" + bindTag).find("option").remove();
+                        $("#" + bindTag).append(ResultHtml);
+                    }
+                });
+            }
+        },
+        RefreshCache: function () {
+            var _domin = "setting.tuhu.cn";
+            var _host = window.location.host || ""; 
+            if (_host.indexOf(_domin) < 0) {
+                window.open("http://api.tuhu.test/Advertise/UpdateAdvertiseFirstData?apptype=1&ParentID=1", "_blank");
+            }
+            else {
+                window.open("http://api.tuhu.cn/Advertise/UpdateAdvertiseFirstData?apptype=1&ParentID=1", "_blank");
+            }
+        }
+    };
+    OrderAreas.ShowModuleChildList();
+
+
+    function LookOplog() {
+        $("#LookOplog").html("").load('/Logger/list?objectType=OrderArea');
+        $("#LookOplog").dialog({
+            title: "查看日志",
+            width: 850,
+            height: 450,
+            modal: true,
+            resizable: false,
+            buttons: {
+                "取消": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    }
+
+
+    //获取选择的轮胎品牌
+    function GetValues() {
+        var value = "";
+        $('input[name="ck"]:checked').each(function () {
+            value+= $(this).val()+",";
+        });
+        return value.substring(0,value.length-1);
+    }
+
+    //弹出层
+    function BindSelect(obj) {
+        var value = $(obj).val();
+
+        if (value != undefined && value == "cn.TuHu.Activity.TirChoose.TireUI") {
+            // $('.textbox').show();
+            $("#SelTires").html("").load("/OrderArea/SelTires");
+            $("#SelTires").dialog({
+                title: "",
+                width: 600,
+                height: "auto",
+                modal: true,
+                resizable: false
+            });
+        }
+
+        if (value != undefined && value == "THTireListViewController") {
+            $("#SelTires").html("").load("/OrderArea/SelTires");
+            $("#SelTires").dialog({
+                title: "",
+                width: 500,
+                height: "auto",
+                modal: true,
+                resizable: false
+            });
+           // $("#keyvaluelenth").val('{"needCarLevel":3}');
+        }
+
+        if (value == undefined || (value != "cn.TuHu.Activity.TirChoose.TireUI" && value != "THTireListViewController")) {
+          //  $('.textbox').hide();
+
+          //  Delete();
+        }
+    }
+
+    function SetTires(){
+        //apptype  1:android 2:IOS
+        var value =   GetValues();//$('#selTire').combobox("getValues");
+        var apptype = $('#apptype').val();
+        if (value != undefined && value != "") {
+            var keyvaluelenth = $('#keyvaluelenth').val();
+            if (keyvaluelenth == "") {
+                if (apptype == 1) {//android
+                    $('#keyvaluelenth').val("[{'brand':'" + value + "'}]");
+                } else {//IOS
+                    $('#keyvaluelenth').val('{"brand":"' + value + '","needCarLevel":3}');
+                }
+            } else {
+                if (apptype == 1) {
+                    var tempKeyValue = keyvaluelenth.replace(/'/g, '"');
+                    var tempJson = JSON.parse(tempKeyValue);
+                    tempJson[0].brand = value;
+                    $('#keyvaluelenth').val(JSON.stringify(tempJson).replace(/"/g, "'"));
+                } else {
+                    var tempJson = JSON.parse(keyvaluelenth);
+                    tempJson.brand = value;
+                    $('#keyvaluelenth').val(JSON.stringify(tempJson));
+                }
+            }
+        } else {//没有选择轮胎品牌时
+             Delete();
+        }
+        $("#SelTires").dialog("close");
+    }
+
+
+    function Delete() {
+        //删除已经有的轮胎品牌
+        var keyvaluelenth = $('#keyvaluelenth').val();
+        var apptype = $('#apptype').val();
+        if (keyvaluelenth != "") {
+            if (apptype == 1) {
+                var tempKeyValue = keyvaluelenth.replace(/'/g, '"');
+                var tempJson = JSON.parse(tempKeyValue);
+                delete tempJson[0].brand;
+                console.log(tempJson);
+                $('#keyvaluelenth').val(JSON.stringify(tempJson).replace(/"/g, "'"));
+                if ($('#keyvaluelenth').val().length == 4) {
+                    $('#keyvaluelenth').val("");
+                }
+            } else {
+                var tempJson = JSON.parse(keyvaluelenth);
+                delete tempJson.brand;
+                $('#keyvaluelenth').val(JSON.stringify(tempJson));
+                if ($('#keyvaluelenth').val().length == 2) {
+                    $('#keyvaluelenth').val("");
+                }
+            }
+        }
+    }
+
+</script>

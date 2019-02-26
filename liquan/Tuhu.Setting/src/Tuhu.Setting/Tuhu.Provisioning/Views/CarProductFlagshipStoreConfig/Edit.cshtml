@@ -1,0 +1,475 @@
+﻿
+@{
+    ViewBag.Title = "Edit";
+    Layout = null;
+}
+@model Tuhu.Service.Product.Models.ProductConfig.CarProductFlagshipStoreConfig
+
+<form id="CarProductFlagshipStoreForm" method="post" action="">
+    <span style="color:red">品牌信息</span>
+    <table style="font-size:12px;width:100%;">
+        <tr>
+            <td style="width:25%;">品牌</td>
+            <td>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Brand))
+                {
+                    <label id="lbBrand">@Model.Brand</label>
+                }
+                else
+                {
+                    <input type="text" name="makeupCo" id="makeupCo" class="makeinp" onfocus="setfocus(this)" oninput="setinput(this);" style="width:100%;" />
+                    <select id="Brand" name="Brand" onchange="changeF(this)" size="10" style="display:none;width:100%;">
+                        @if (ViewBag.BrandList != null)
+                        {
+
+                            System.Data.DataTable dt = (System.Data.DataTable)ViewBag.BrandList;
+                            foreach (System.Data.DataRow row in dt.Rows)
+                            {
+                                <option value="@row["CP_Brand"].ToString()">@row["CP_Brand"].ToString()</option>
+                            }
+                        }
+                    </select>
+                }
+            </td>
+        </tr>
+
+        <tr>
+            <td>名称</td>
+            <td>
+                <input id="Name" name="Name" type="text" style="width:100%;" value="@Model.Name" />
+            </td>
+        </tr>
+
+        <tr>
+            <td>标签</td>
+            <td>
+                <input id="Lable" name="Lable" type="text" style="width:100%;" value="@Model.Lable" />
+            </td>
+        </tr>
+
+        <tr>
+            <td>品牌logo 112px*112px</td>
+            <td>
+                <img id="img1" width="48" height="48" @(string.IsNullOrWhiteSpace(Model.LogoUrl) == true ? "" : "src=" + Model.LogoUrl) />
+                <input type="file" id="uploadFile1" name="uploadFile1" onchange="Upload(this, 'img1', 'LogoUrl')" />
+                <input type="hidden" id="LogoUrl" name="LogoUrl" value="@Model.LogoUrl.Trim()" />
+            </td>
+        </tr>
+
+        <tr>
+            <td>背景图 750px*300px</td>
+            <td>
+                <img id="img2" width="148" height="48" @(string.IsNullOrWhiteSpace(Model.BackGroundUrl) == true ? "" : "src=" + Model.BackGroundUrl) />
+                <input type="file" id="uploadFile2" name="uploadFile2" onchange="Upload(this, 'img2', 'BackGroundUrl')" />
+                <input type="hidden" id="BackGroundUrl" name="BackGroundUrl" value="@Model.BackGroundUrl.Trim()" />
+            </td>
+        </tr>
+
+        <tr>
+            <td>店铺简介</td>
+            <td>
+                <textarea id="StoreIntroduction" name="StoreIntroduction" style="width:100%; height:200px">@Model.StoreIntroduction</textarea>
+            </td>
+        </tr>
+
+        <tr>
+            <td>是否启用</td>
+            <td colspan="2">
+                <input type="radio" name="IsEnabled" value="1" @(Model.IsEnabled == true ? "checked=\"checked\"" : "") /><span>启用</span>
+                <input type="radio" name="IsEnabled" value="0" @(Model.IsEnabled == false ? "checked=\"checked\"" : "") /><span>禁用</span>
+            </td>
+        </tr>
+    </table>
+    </br>
+    <span style="color:red">菜单一</span>
+    <table style="font-size:12px;width:100%;">
+        <tr>
+            <td style="width:25%;">是否启用</td>
+            <td colspan="2">
+                <input type="radio" name="MenuOneIsEnabled" value="1" @(Model.MenuOneIsEnabled == true ? "checked=\"checked\"" : "") /><span>启用</span>
+                <input type="radio" name="MenuOneIsEnabled" value="0" @(Model.MenuOneIsEnabled == false ? "checked=\"checked\"" : "") /><span>禁用</span>
+            </td>
+        </tr>
+        <tr>
+            <td>菜单名称</td>
+            <td>
+                <input id="MenuOneName" name="MenuOneName" type="text" style="width:100%;" value="@Model.MenuOneName" />
+            </td>
+        </tr>
+        <tr>
+            <td>菜单类型</td>
+            <td>
+                <select id="MenuOneType" name="MenuOneType" style="width:100%;">
+                    <option value="AllProductList" @(string.IsNullOrWhiteSpace(Model.MenuOneType) || Model.MenuOneType == "AllProductList" ? "selected" : "")>全部商品列表</option>
+                    <option value="ActivityPage" @(Model.MenuOneType == "ActivityPage" ? "selected" : "")>活动页</option>
+                    <option value="StoreIntroduction" @(Model.MenuOneType == "StoreIntroduction" ? "selected" : "")>店铺简介</option>
+                </select>
+            </td>
+        </tr>
+        <tr id="trMenuOneUri" style=@(Model.MenuOneType == "ActivityPage" ? "visibility:visible":"visibility:hidden")>
+            <td><span class="hdMenuOneUri">H5链接</span></td>
+            <td>
+                <input class="hdMenuOneUri" id="MenuOneUri" name="MenuOneUri" type="text" style="width:100%;" value="@Model.MenuOneUri" />
+            </td>
+        </tr>
+    </table>
+    </br>
+    <span style="color:red">菜单二</span>
+    <table style="font-size:12px;width:100%;">
+        <tr>
+            <td style="width:25%;">是否启用</td>
+            <td colspan="2">
+                <input type="radio" name="MenuTwoIsEnabled" value="1" @(Model.MenuTwoIsEnabled == true ? "checked=\"checked\"" : "") /><span>启用</span>
+                <input type="radio" name="MenuTwoIsEnabled" value="0" @(Model.MenuTwoIsEnabled == false ? "checked=\"checked\"" : "") /><span>禁用</span>
+            </td>
+        </tr>
+        <tr>
+            <td>菜单名称</td>
+            <td>
+                <input id="MenuTwoName" name="MenuTwoName" type="text" style="width:100%" value="@Model.MenuTwoName" />
+            </td>
+        </tr>
+        <tr>
+            <td>菜单类型</td>
+            <td>
+                <select id="MenuTwoType" name="MenuTwoType" style="width:100%;">
+                    <option value="AllProductList" @(string.IsNullOrWhiteSpace(Model.MenuTwoType) || Model.MenuTwoType == "AllProductList" ? "selected" : "")>全部商品列表</option>
+                    <option value="ActivityPage" @(Model.MenuTwoType == "ActivityPage" ? "selected" : "")>活动页</option>
+                    <option value="StoreIntroduction" @(Model.MenuTwoType == "StoreIntroduction" ? "selected" : "")>店铺简介</option>
+                </select>
+            </td>
+        </tr>
+        <tr id="trMenuTwoUri" style=@(Model.MenuTwoType == "ActivityPage" ? "visibility:visible":"visibility:hidden")>
+            <td><span class="hdMenuTwoUri">H5链接</span></td>
+            <td>
+                <input class="hdMenuTwoUri" id="MenuTwoUri" name="MenuTwoUri" type="text" style="width:100%;" value="@Model.MenuTwoUri" />
+            </td>
+        </tr>
+    </table>
+    </br>
+    <span style="color:red">菜单三</span>
+    <table style="font-size:12px;width:100%;">
+        <tr>
+            <td style="width:25%;">是否启用</td>
+            <td colspan="2">
+                <input type="radio" name="MenuThreeIsEnabled" value="1" @(Model.MenuThreeIsEnabled == true ? "checked=\"checked\"" : "") /><span>启用</span>
+                <input type="radio" name="MenuThreeIsEnabled" value="0" @(Model.MenuThreeIsEnabled == false ? "checked=\"checked\"" : "") /><span>禁用</span>
+            </td>
+        </tr>
+        <tr>
+            <td>菜单名称</td>
+            <td>
+                <input id="MenuThreeName" name="MenuThreeName" type="text" style="width:100%;" value="@Model.MenuThreeName" />
+            </td>
+        </tr>
+        <tr>
+            <td>菜单类型</td>
+            <td>
+                <select id="MenuThreeType" name="MenuThreeType" style="width:100%;">
+                    <option value="AllProductList" @(string.IsNullOrWhiteSpace(Model.MenuThreeType) || Model.MenuThreeType == "AllProductList" ? "selected" : "")>全部商品列表</option>
+                    <option value="ActivityPage" @(Model.MenuThreeType == "ActivityPage" ? "selected" : "")>活动页</option>
+                    <option value="StoreIntroduction" @(Model.MenuThreeType == "StoreIntroduction" ? "selected" : "")>店铺简介</option>
+                </select>
+            </td>
+        </tr>
+        <tr id="trMenuThreeUri" style=@(Model.MenuThreeType == "ActivityPage" ? "visibility:visible":"visibility:hidden")>
+            <td><span class="hdMenuThreeUri">H5链接</span></td>
+            <td>
+                <input class="hdMenuThreeUri" id="MenuThreeUri" name="MenuThreeUri" type="text" style="width:100%;" value="@Model.MenuThreeUri" />
+            </td>
+        </tr>
+    </table>
+    </br>
+    <span style="color:red">菜单四</span>
+    <table style="font-size:12px;width:100%;">
+        <tr>
+            <td style="width:25%;">是否启用</td>
+            <td colspan="2">
+                <input type="radio" name="MenuFourIsEnabled" value="1" @(Model.MenuFourIsEnabled == true ? "checked=\"checked\"" : "") /><span>启用</span>
+                <input type="radio" name="MenuFourIsEnabled" value="0" @(Model.MenuFourIsEnabled == false ? "checked=\"checked\"" : "") /><span>禁用</span>
+            </td>
+        </tr>
+        <tr>
+            <td>菜单名称</td>
+            <td>
+                <input id="MenuFourName" name="MenuFourName" type="text" style="width:100%;" value="@Model.MenuFourName" />
+            </td>
+        </tr>
+        <tr>
+            <td>菜单类型</td>
+            <td>
+                <select id="MenuFourType" name="MenuFourType" style="width:100%;">
+                    <option value="AllProductList" @(string.IsNullOrWhiteSpace(Model.MenuFourType) || Model.MenuFourType == "AllProductList" ? "selected" : "")>全部商品列表</option>
+                    <option value="ActivityPage" @(Model.MenuFourType == "ActivityPage" ? "selected" : "")>活动页</option>
+                    <option value="StoreIntroduction" @(Model.MenuFourType == "StoreIntroduction" ? "selected" : "")>店铺简介</option>
+                </select>
+            </td>
+        </tr>
+        <tr id="trMenuFourUri" style=@(Model.MenuFourType == "ActivityPage" ? "visibility:visible":"visibility:hidden")>
+            <td><span class="hdMenuFourUri">H5链接</span></td>
+            <td>
+                <input class="hdMenuFourUri" id="MenuFourUri" name="MenuFourUri" type="text" style="width:100%;" value="@Model.MenuFourUri" />
+            </td>
+        </tr>
+    </table>
+</form>
+
+<script type="text/javascript">
+    var TempArr = [];
+    $(function () {
+        $("#Brand option").each(function (index, el) {
+            TempArr[index] = $(this).text();
+        });
+        $(document).bind('click', function (e) {
+            var e = e || window.event;
+            var elem = e.target || e.srcElement;
+            while (elem) {
+                if (elem.id && (elem.id == 'Brand' || elem.id == "makeupCo")) {
+                    return;
+                }
+                elem = elem.parentNode;
+            }
+            $('#Brand').css('display', 'none');
+        });
+    })
+    function changeF(this_) {
+        $(this_).prev("input").val($(this_).find("option:selected").text());
+        $("#Brand").css({ "display": "none" });
+    }
+    function setfocus(this_) {
+        $("#Brand").css({ "display": "" });
+        var select = $("#Brand");
+        select.empty();
+        setinput(this_);
+        if (!select) {
+            for (i = 0; i < TempArr.length; i++) {
+                var option = $("<option></option>").text(TempArr[i]);
+                select.append(option);
+            }
+        }
+    }
+    function setinput(this_) {
+        var select = $("#Brand");
+        select.html("");
+        for (i = 0; i < TempArr.length; i++) {
+            if (TempArr[i].indexOf(this_.value) != -1) {
+                var option = $("<option></option>").text(TempArr[i]);
+                select.append(option);
+            }
+        }
+    }
+
+    $("select[name='MenuOneType']").click(function () {
+        var status = $(this).val();
+        if (status == "ActivityPage") {
+            document.getElementById("trMenuOneUri").style.visibility = "visible";
+            $(".hdMenuOneUri").show()
+        }
+        else {
+            document.getElementById("trMenuOneUri").style.visibility = "hidden";
+            $(".hdMenuOneUri").hide();
+        }
+    })
+
+    $("select[name='MenuTwoType']").click(function () {
+        var status = $(this).val();
+        if (status == "ActivityPage") {
+            document.getElementById("trMenuTwoUri").style.visibility = "visible";
+            $(".hdMenuTwoUri").show()
+        }
+        else {
+            document.getElementById("trMenuTwoUri").style.visibility = "hidden";
+            $(".hdMenuTwoUri").hide();
+        }
+    })
+
+    $("select[name='MenuThreeType']").click(function () {
+        var status = $(this).val();
+        if (status == "ActivityPage") {
+            document.getElementById("trMenuThreeUri").style.visibility = "visible";
+            $(".hdMenuThreeUri").show()
+        }
+        else {
+            document.getElementById("trMenuThreeUri").style.visibility = "hidden";
+            $(".hdMenuThreeUri").hide();
+        }
+    })
+
+    $("select[name='MenuFourType']").click(function () {
+        var status = $(this).val();
+        if (status == "ActivityPage") {
+            document.getElementById("trMenuFourUri").style.visibility = "visible";
+            $(".hdMenuFourUri").show()
+        }
+        else {
+            document.getElementById("trMenuFourUri").style.visibility = "hidden";
+            $(".hdMenuFourUri").hide();
+        }
+    })
+
+    function SaveCarProductFlagshipStoreConfig(target, addoredit) {
+
+        var brand;
+        var lbBrand = document.getElementById("lbBrand");
+        if (lbBrand != null) brand = lbBrand.innerHTML;
+        else brand = $("#makeupCo").val();
+        var name = $("#Name").val();
+        if (name == "") {
+            alert("名称不能为空！");
+            return;
+        }
+
+        var lable = $("#Lable").val();
+        if (lable == "") {
+            alert("标签不能为空！");
+            return;
+        }
+
+        var logoUrl = $("#LogoUrl").val();
+        if (logoUrl == "") {
+            alert("品牌logo不能为空！");
+            return;
+        }
+
+        var backGroundUrl = $("#BackGroundUrl").val();
+        if (backGroundUrl == "") {
+            alert("背景图不能为空！");
+            return;
+        }
+
+        var storeIntroduction = $("#StoreIntroduction").val();
+        console.log(storeIntroduction);
+
+        var isEnabledVal = $('input[name="IsEnabled"]:checked').val();
+        var IsEnabled = isEnabledVal == 0 ? false : true;
+
+        var menuOneIsEnabledVal = $('input[name="MenuOneIsEnabled"]:checked').val();
+        var menuOneIsEnabled = menuOneIsEnabledVal == 0 ? false : true;
+
+        var menuOneName = $("#MenuOneName").val();
+        if (menuOneIsEnabled && menuOneName == "") {
+            alert("菜单一启用，菜单名称不能为空！");
+            return;
+        }
+        if (menuOneName != null && menuOneName.length > 4) {
+            alert("菜单一菜单名称不能超过4个字！");
+            return;
+        }
+
+        var menuOneTypeVal = $("#MenuOneType").val();
+        var menuOneUri = $("#MenuOneUri").val();
+        if (menuOneTypeVal != "ActivityPage") menuOneUri = "";
+
+        var menuTwoIsEnabledVal = $('input[name="MenuTwoIsEnabled"]:checked').val();
+        var menuTwoIsEnabled = menuTwoIsEnabledVal == 0 ? false : true;
+
+        var menuTwoName = $("#MenuTwoName").val();
+        if (menuTwoIsEnabled && menuTwoName == "") {
+            alert("菜单二启用，菜单名称不能为空！");
+            return;
+        }
+        if (menuTwoName != null && menuTwoName.length > 4) {
+            alert("菜单二菜单名称不能超过4个字！");
+            return;
+        }
+
+        var menuTwoTypeVal = $("#MenuTwoType").val();
+        var menuTwoUri = $("#MenuTwoUri").val();
+        if (menuTwoTypeVal != "ActivityPage") menuTwoUri = "";
+
+        var menuThreeIsEnabledVal = $('input[name="MenuThreeIsEnabled"]:checked').val();
+        var menuThreeIsEnabled = menuThreeIsEnabledVal == 0 ? false : true;
+
+        var menuThreeName = $("#MenuThreeName").val();
+        if (menuThreeIsEnabled && menuThreeName == "") {
+            alert("菜单三启用，菜单名称不能为空！");
+            return;
+        }
+        if (menuThreeName != null && menuThreeName.length > 4) {
+            alert("菜单三菜单名称不能超过4个字！");
+            return;
+        }
+
+        var menuThreeTypeVal = $("#MenuThreeType").val();
+        var menuThreeUri = $("#MenuThreeUri").val();
+        if (menuThreeTypeVal != "ActivityPage") menuThreeUri = "";
+
+        var menuFourIsEnabledVal = $('input[name="MenuFourIsEnabled"]:checked').val();
+        var menuFourIsEnabled = menuFourIsEnabledVal == 0 ? false : true;
+
+        var menuFourName = $("#MenuFourName").val();
+        if (menuFourIsEnabled && menuFourName == "") {
+            alert("菜单四启用，菜单名称不能为空！");
+            return;
+        }
+        if (menuFourName != null && menuFourName.length > 4) {
+            alert("菜单四菜单名称不能超过4个字！");
+            return;
+        }
+
+        var menuFourTypeVal = $("#MenuFourType").val();
+        var menuFourUri = $("#MenuFourUri").val();
+        if (menuFourTypeVal != "ActivityPage") menuFourUri = "";
+
+        if (IsEnabled == true
+            && menuOneIsEnabled == false
+            && menuTwoIsEnabled == false
+            && menuThreeIsEnabled == false
+            && menuFourIsEnabled == false) {
+            alert("至少需要启动一个菜单！");
+            return;
+        }
+
+        var config = {
+            "Brand": brand,
+            "Name": name,
+            "Lable": lable,
+            "LogoUrl": logoUrl,
+            "BackGroundUrl": backGroundUrl,
+            "StoreIntroduction": storeIntroduction,
+            "IsEnabled": IsEnabled,
+            "MenuOneIsEnabled": menuOneIsEnabled,
+            "MenuOneName": menuOneName,
+            "MenuOneType": menuOneTypeVal,
+            "MenuOneUri": menuOneUri,
+            "MenuTwoIsEnabled": menuTwoIsEnabled,
+            "MenuTwoName": menuTwoName,
+            "MenuTwoType": menuTwoTypeVal,
+            "MenuTwoUri": menuTwoUri,
+            "MenuThreeIsEnabled": menuThreeIsEnabled,
+            "MenuThreeName": menuThreeName,
+            "MenuThreeType": menuThreeTypeVal,
+            "MenuThreeUri": menuThreeUri,
+            "MenuFourIsEnabled": menuFourIsEnabled,
+            "MenuFourName": menuFourName,
+            "MenuFourType": menuFourTypeVal,
+            "MenuFourUri": menuFourUri,
+        }
+
+        $.ajax({
+            url: "/CarProductFlagshipStoreConfig/Save",
+            type: "POST",
+            data: {
+                modelConfig: config,
+                actionString: addoredit
+            },
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                if (data == true) {
+                    alert('保存成功！');
+                    $(target).dialog("close");
+                    window.location.reload();
+                }
+                else {
+                    alert('保存失败！');
+                }
+            },
+            error: function () {
+                alert('提交失败！');
+            },
+        })
+    }
+</script>
+

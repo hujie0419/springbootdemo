@@ -1,0 +1,614 @@
+﻿@model Tuhu.Provisioning.Models.TireViewModel
+@{
+    ViewBag.Title = "轮胎列表页活动配置";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section head{
+    <link href="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.css" rel="stylesheet" />
+    <link href="~/Content/sweetalert/sweetalert.css" rel="stylesheet" />
+    <style>
+        .title {
+            float: left;
+        }
+
+        .content {
+            clear: both;
+        }
+
+        .condition .name {
+            font-size: 16px;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .condition label {
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .condition > div {
+            margin-bottom: 10px;
+            padding-left: 82px;
+            position: relative;
+        }
+
+        .f14 {
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .red {
+            color: red;
+        }
+
+        .tiresize-append label.hide {
+            display: none;
+        }
+
+        .tiresize-append label {
+            margin-right: 50px;
+            display: inline-block;
+            min-width: 99px;
+        }
+
+        .list table {
+            width: 100%;
+        }
+
+        .data_count {
+            color: blue;
+            font-size: 14px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        #Tire_Width {
+            margin-left: 13px;
+        }
+
+        div#BatchAddItem > div, div#ReplaceItem > div {
+            margin-bottom: 20px;
+        }
+
+        img.img {
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+        }
+
+        span.no {
+            color: red;
+        }
+
+        .list {
+            width: 100%;
+            overflow-x: scroll;
+        }
+    </style>
+}
+<div class="title">
+    <h2>轮胎列表页活动配置</h2>
+</div>
+
+<div class="content">
+    <div class="condition">
+        <div>
+            <span class="name">品牌系列：</span>
+            <label><input type="checkbox" name="Department" checked value="ALL" />全部</label>
+            @foreach (var item in Model.VehicleDepartment)
+            {
+                <label><input type="checkbox" name="Department" value="@item" />@item</label>
+            }
+            <label><input type="checkbox" name="Department" value="Other" />其它</label>
+        </div>
+        <div>
+            <span class="name">价格范围：</span>
+            <label><input type="checkbox" name="PriceRange" checked value="ALL" />全部</label>
+            <label><input type="checkbox" name="PriceRange" value="High" />高端车(16万以上)</label>
+            <label><input type="checkbox" name="PriceRange" value="Middle" />中端车(8-16万)</label>
+            <label><input type="checkbox" name="PriceRange" value="Low" />低端车(8万以下)</label>
+            <label><input type="checkbox" name="PriceRange" value="Between" />自定义</label>
+            <input type="number" name="StartPrice" id="StartPrice" value=""  style="width:50px" />万至
+            <input type="number" name="EndPrice" id="EndPrice" value=""  style="width:50px" />万
+        </div>
+        <div>
+            <span class="name">车型类型：</span>
+            <label><input type="checkbox" name="VehicleBodyType" checked value="ALL" />全部</label>
+            @foreach (var item in Model.VehicleBodyTypes)
+            {
+                <label><input type="checkbox" name="VehicleBodyType" value="@item" />@item</label>
+            }
+        </div>
+        <div>
+            <span class="name">品牌车型：</span>
+            <span class="showVehicle"></span>
+            <span class="f14">
+                <a href="javascripts:void(0);" onclick="ShowSelectVehicleDialog()">选择品牌车型</a>
+            </span>
+        </div>
+        <div class="tiresize-append">
+            <span class="name">轮胎规格：</span>
+            <label><input type="checkbox" name="TireSize" checked value="ALL" />不限</label>
+        </div>
+        <div class="tiresize-select">
+            <span class="name"></span>
+            @Html.DropDownList("Tire_Width", Model.TireSize.Select(T => T.Width).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "胎面宽")<b>/</b>
+            @Html.DropDownList("Tire_AspectRatio", Model.TireSize.Select(T => T.AspectRatio).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "扁平比")<b>R</b>
+            @Html.DropDownList("Tire_Rim", Model.TireSize.Select(T => T.Rim).Distinct().OrderBy(v => v).Select(value => new SelectListItem() { Text = value, Value = value }), "直径")
+        </div>
+        <div class="showtype">
+            <span class="name">显示范围：</span>
+            <select>
+                <option value="0">-全部显示-</option>
+                <option value="1">仅显示当前有活动车型</option>
+                <option value="-1">仅显示当前无活动车型</option>
+            </select>
+        </div>
+        <div class="ingtype">
+            <span class="name">进行状态</span>
+            <select>
+                <option value="0">全部</option>
+                <option value="-1">未开始</option>
+                <option value="1">进行中</option>
+                <option value="-2">已结束</option>
+            </select>
+        </div>
+        <div>
+            <span class="name">活动名称：</span>
+            <input type="text" name="ActivityName" value="" />
+        </div>
+        <div id="Sort">
+            <span class="name">活动优先级：</span>
+            <select>
+                <option value="0">全部</option>
+                <option value="1">高</option>
+                <option value="2">中</option>
+                <option value="3">低</option>
+            </select>
+        </div>
+        <div class="isactive">
+            <span class="name">活动状态：</span>
+            <select>
+                <option value="0">全部</option>
+                <option value="1">启用</option>
+                <option value="-1">禁用</option>
+            </select>
+        </div>
+        <div class="rof">
+            <span class="name">是否防爆：</span>
+            <select>
+                <option value="-1">非防爆</option>
+                <option value="1">防爆</option>
+                <option value="0">全部</option>
+            </select>
+        </div>
+        <div>
+            <span class="name">活动时间</span>
+            <input type="text" name="StartTime" id="StartTime" value="" readonly style="width:150px" />至
+            <input type="text" name="EndTime" id="EndTime" value="" readonly style="width:150px" />
+        </div>
+        <div>
+            <button onclick="LoadList(1)" class="button_select" style="width: 150px;height: 30px;MARGIN-TOP: 12px;">查询</button>
+           
+        </div>
+    </div>
+
+    <div style="margin-bottom:30px">
+        每页显示：
+        <select class="PageSize">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="10000">10000</option>
+        </select>条
+        <span class="data_count"></span>
+        <button onclick="TuhuTire.Logic.ListActivity.BatchAdd()">添加活动</button>
+        <button onclick="TuhuTire.Logic.ListActivity.BatchOn()">批量启用</button>
+        <button onclick="TuhuTire.Logic.ListActivity.BatchOff()">批量禁用</button>
+        <button onclick="TuhuTire.Logic.ListActivity.ReplaceItem()">批量替换</button>
+        <button onclick="PartRefresh()" style="display:none;" id="PartRefresh"></button>
+        @*<button style="float:right;">添加活动</button>*@
+        <a href="javascript:void(0);" onclick="ExportExcel()" >导出</a>
+    </div>
+    <img class="loadimg" src="~/Scripts/layer/skin/default/loading-2.gif" style="margin:5% 50%;display:none;" />
+    <div class="list"></div>
+</div>
+<div id="SelectVehicleItem"></div>
+<div id="BatchAddItem" style="display:none;">
+    <div class="activityname">
+        <span>活动名称：</span> <input type="text" name="name" value="" onfocus="TuhuTire.Logic.ListActivity.ClearErrorTit($(this).parent())" />
+    </div>
+    <div class="status">
+        <span>活动状态：</span>
+        <select>
+            <option value="1">启用</option>
+            <option value="0">禁用</option>
+        </select>
+    </div>
+
+    <div class="Sort">
+        <span>活动优先级：</span>
+        <select>
+            <option value="1">高</option>
+            <option value="2">中</option>
+            <option value="3">低</option>
+        </select>
+    </div>
+
+    <div class="activitytime">
+        <span>活动时间：</span>
+        <input type="text" name="BitchAddStartTime" id="BitchAddStartTime" value="" readonly style="width:150px" onclick="TuhuTire.Logic.ListActivity.ClearErrorTit($(this).parent())" />至
+        <input type="text" name="BitchAddEndTime" id="BitchAddEndTime" value="" readonly style="width:150px" onclick="TuhuTire.Logic.ListActivity.ClearErrorTit($(this).parent())" />
+    </div>
+    <div class="image">
+        <span>弹框图片：</span>
+        <img src="" onclick="$(this).next().click()" class="img" />
+        <input type="file" value="" style="display:none;" onchange="TuhuTire.Logic.ListActivity.UploadImage(this)" />
+        <span style="color:blue;">807*882</span>
+    </div>
+    <div class="image2">
+        <span>新弹框图片：</span>
+        <img src="" onclick="$(this).next().click()" class="img" />
+        <input type="file" value="" style="display:none;" onchange="TuhuTire.Logic.ListActivity.UploadImage(this)" />
+        <span style="color:blue;">524*692</span>
+    </div>
+    <div class="icon">
+        <span>右下角图标：</span>
+        <img src="" class="img" onclick="$(this).next().click()" />
+        <input type="file" value="" style="display:none;" onchange="TuhuTire.Logic.ListActivity.UploadImage(this)" />
+        <span style="color:blue;">172*108</span>
+    </div>
+
+    <div class="buttontype">
+        <span>右侧按钮类型：</span>
+        <select>
+            <option value="0">立即参与</option>
+            <option value="1">立即领券</option>
+        </select>
+    </div>
+    <div class="getruleguid" style="display:none;">
+        <span>优惠券GUID：</span>
+        <input type="text" name="name" value="" onfocus="TuhuTire.Logic.ListActivity.ClearErrorTit($(this).parent())" />
+    </div>
+    <div class="buttontext">
+        <span>按钮文字：</span>
+        <input type="text" name="name" value="" onfocus="TuhuTire.Logic.ListActivity.ClearErrorTit($(this).parent())" />
+    </div>
+    <hr /><br />
+    <div class="pid">
+        <span>关联轮胎1</span><br />
+        PID1：<input type="text" name="PID1" value="" onblur="TuhuTire.Logic.ListActivity.CheckPID(this)" onfocus="$(this).next().text('').removeClass('no').removeClass('yes')" /><span></span>
+        <br />   <br />
+        <span>关联轮胎2</span><br />
+        PID2：<input type="text" name="PID2" value="" onblur="TuhuTire.Logic.ListActivity.CheckPID(this)" onfocus="$(this).next().text('').removeClass('no').removeClass('yes')" /><span></span>
+        <br /><br />
+        <span>关联轮胎3</span><br />
+        PID3：<input type="text" name="PID3" value="" onblur="TuhuTire.Logic.ListActivity.CheckPID(this)" onfocus="$(this).next().text('').removeClass('no').removeClass('yes')" /><span></span>
+    </div>
+</div>
+<div id="RelationPIDItem" style="display:none;">
+
+</div>
+<div id="ReplaceItem" style="display:none;">
+    <div class="activityname">
+        <span>活动名称：</span> <input type="text" name="name" value="" onfocus="TuhuTire.Logic.ListActivity.ClearErrorTit($(this).parent())" />
+    </div>
+    <div class="image">
+        <span>弹框图片：</span>
+        <img src="" onclick="$(this).next().click()" class="img" />
+        <input type="file" value="" style="display:none;" onchange="TuhuTire.Logic.ListActivity.UploadImage(this)" />
+        <span style="color:blue;">807*882</span>
+    </div>
+    <div class="image2">
+        <span>新弹框图片：</span>
+        <img src="" onclick="$(this).next().click()" class="img" />
+        <input type="file" value="" style="display:none;" onchange="TuhuTire.Logic.ListActivity.UploadImage(this)" />
+        <span style="color:blue;">524*692</span>
+    </div>
+    <div class="icon">
+        <span>右下角图标：</span>
+        <img src="" class="img" onclick="$(this).next().click()" />
+        <input type="file" value="" style="display:none;" onchange="TuhuTire.Logic.ListActivity.UploadImage(this)" />
+        <span style="color:blue;">172*108</span>
+    </div>
+    <div class="buttontext">
+        <span>按钮文字：</span>
+        <input type="text" name="name" value="" onfocus="TuhuTire.Logic.ListActivity.ClearErrorTit($(this).parent())" />
+    </div>
+</div>
+<!--导出Excel相关HTML-->
+<form id="excelForm" method="post" target="excelIFrame" action="/api/TireExcel/ExportListActivityListExcel" enctype="application/json">
+
+    <input type="hidden" name="searchCondition" id="searchCondition" />
+</form>
+<iframe id="excelIFrame" name="excelIFrame" style="display: none;"></iframe>
+<script src="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.js"></script>
+<script src="~/Content/sweetalert/sweetalert.js"></script>
+<script src="~/Scripts/ajaxfileupload.js"></script>
+<script src="~/Scripts/Tire.js"></script>
+<script>
+    $(function () {
+        LoadList(1);
+        $(".list").on("click", ".pager>a", function (event) {
+            event.preventDefault();
+            var url = $(this).attr("href");
+            if (url) {
+                $.post(url, function (html, status) {
+                    if (status === "success") {
+                        $(".list").html(html);
+                    }
+                });
+            }
+        })
+    });
+    //初始化活动时间的日期选择器
+    $("#StartTime").datetimepicker({
+        timeFormat: "HH:mm",
+        dateFormat: "yy-mm-dd",
+        monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+    });
+
+    $("#EndTime").datetimepicker({
+        timeFormat: "HH:mm",
+        dateFormat: "yy-mm-dd",
+        monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+    });
+    $("#BitchAddStartTime").datetimepicker({
+        timeFormat: "HH:mm",
+        dateFormat: "yy-mm-dd",
+        monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+    });
+
+    $("#BitchAddEndTime").datetimepicker({
+        timeFormat: "HH:mm",
+        dateFormat: "yy-mm-dd",
+        monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+    });
+
+
+    $(".PageSize").change(function () {
+        LoadList(1);
+    });
+    $("#BatchAddItem").on("change", ".buttontype select", function () {
+        if ($(this).val() == 1)
+            $("#BatchAddItem .getruleguid").show();
+        else
+            $("#BatchAddItem .getruleguid").hide();
+    });
+    $(".condition").on("change", "div input[type=checkbox]", function () {
+        if ($(this).prop("checked") && $(this).val() != "ALL") {
+            $(this).parent().parent().find("input[type=checkbox]:first").prop("checked", false);
+        }
+    }).on("change", ".tiresize-select select", function () {
+        $(".tiresize-append").find("input[type=checkbox]:first").prop("checked", false);
+    });
+
+    //选中的车型ID数组
+    var vehicleIdArr = [];
+    var brandArr = [];
+    var objArr = [];
+    //选车型弹框
+    var ShowSelectVehicleDialog = function () {
+        $("#SelectVehicleItem").load('/Tire/SelectVehicle');
+        $("#SelectVehicleItem").dialog({
+            title: "选择品牌车型",
+            width: 750,
+            height: 700,
+            modal: true,
+            close: function () {
+                vehicleIdArr.splice(0, vehicleIdArr.length);
+                brandArr.splice(0, brandArr.length);
+                objArr.splice(0, objArr.length);
+                $(".showVehicle").empty();
+                if ($("#Tire_Width option:selected").val().length || $("#Tire_AspectRatio option:selected").val().length || $("#Tire_Rim option:selected").val().length)
+                    $(".tiresize-append").html('<span class="name">规格尺寸：</span><label><input type="checkbox" name="Specification" value="ALL" />不限</label>');
+                else
+                    $(".tiresize-append").html('<span class="name">规格尺寸：</span><label><input type="checkbox" name="Specification" checked value="ALL" />不限</label>');
+                $("#select_vehicle .tab-content .brands .vehicles").each(function () {
+                    var $target = $(this);
+                    var checked = $target.find("input[type='checkbox']:checked");
+                    if (checked.length > 0) {
+                        checked.each(function () {
+                            var vehicleid = $(this).attr("data-vehileid");
+                            var brand = $(this).attr("data-brand");
+                            vehicleIdArr.push(vehicleid);
+                            brandArr.push(brand);
+                        })
+                    }
+                });
+                if (brandArr.length)//选择了车型一二级
+                {
+                    $.each(brandArr, function (i, v) {
+                        if (objArr.length)//数组有值
+                        {
+                            var flag = false;
+                            $.each(objArr, function (i, vv) {
+                                if (vv.Brand == v) {
+                                    vv.Count = vv.Count + 1;
+                                    flag = true;
+                                }
+                            });
+                            if (!flag) {
+                                var obj = {
+                                    Brand: v,
+                                    Count: 1
+                                };
+                                objArr.push(obj);
+                            }
+                        }
+                        else {
+                            var obj = {
+                                Brand: v,
+                                Count: 1
+                            };
+                            objArr.push(obj);
+                        }
+                    });
+                    // console.log(objArr);
+                    if (objArr.length) {
+                        var html = "";
+                        $.each(objArr, function (i, v) {
+                            html += '<span class="f14">' + v.Brand + '<span class="red">(' + v.Count + ')</span></span>';
+                        });
+                        $(".showVehicle").html(html);
+                    }
+                    if (vehicleIdArr.length) {
+                        var vidStr = vehicleIdArr.join(',');
+                        $.post("/Tire/GetSpecificationsByVehicle", { vehicleIDS: vidStr }, function (data) {
+                            // console.log(data);
+                            if (data.length) {
+
+                                $.each(data, function (i, v) {
+                                    if (i <= 30) {
+                                        if (i == 30 && data.length > 30)
+                                            $(".tiresize-append").append('<label><input type="checkbox" name="Specification" value="' + v + '" />' + v + '</label><a href="javascript:void(0);" onclick="TuhuTire.Logic.ListActivity.ShowMoreTireSize()" class="more">更多</a>');
+                                        else
+                                            $(".tiresize-append").append('<label><input type="checkbox" name="Specification" value="' + v + '" />' + v + '</label>');
+                                    }
+                                    else
+                                        $(".tiresize-append").append('<label class="hide"><input type="checkbox"  name="Specification" value="' + v + '" />' + v + '</label>');
+                                });
+
+                            }
+                        })
+                    }
+                }
+            }
+        });
+    }
+    //加载列表
+    var LoadList = function (pageIndex) {
+       
+
+        $(".loadimg").show();
+        //品牌系列
+        var DepartmentArr = [];
+        $("[name=Department]:checked").each(function () {
+            DepartmentArr.push($(this).val());
+        });
+
+        //价格范围
+        var PriceRangeArr = [];
+        $("[name=PriceRange]:checked").each(function () {
+            PriceRangeArr.push($(this).val());
+        });
+        //判断是否包含自定义
+        if (PriceRangeArr.indexOf('Between')>=0) {
+            if ($("#StartPrice").val() == "" || $("#EndPrice").val() == "") {
+                $(".loadimg").hide();
+                alert("自定义的最低价格和最高价格必填！");
+
+                return ;
+            }
+        }
+
+        //车型类型
+        var VehicleBodyTypeArr = [];
+        $("[name=VehicleBodyType]:checked").each(function () {
+            VehicleBodyTypeArr.push($(this).val());
+        });
+
+        //规格尺寸
+        var SpecificationArr = [];
+        $("[name=Specification]:checked").each(function () {
+            SpecificationArr.push($(this).val());
+        });
+
+        //规格尺寸的补充
+        var Tire_Width = $("#Tire_Width option:selected").val();
+        var Tire_AspectRatio = $("#Tire_AspectRatio option:selected").val();
+        var Tire_Rim = $("#Tire_Rim option:selected").val();
+        if (Tire_Width.length && Tire_AspectRatio.length && Tire_Rim.length) {
+            SpecificationArr.push(Tire_Width + '/' + Tire_AspectRatio + 'R' + Tire_Rim);
+        }
+
+        $.post("/Tire/ListActivityList", {
+            Department: DepartmentArr.join(';'),
+            PriceRange: PriceRangeArr.join(';'),
+            VehicleBodyType: VehicleBodyTypeArr.join(';'),
+            TireSize: SpecificationArr.join(';'),
+            ShowType: $(".showtype select option:selected").val(),
+            IngType: $(".ingtype select option:selected").val(),
+            ActivityName: $("[name=ActivityName]").val(),
+            IsActive: $(".isactive select option:selected").val(),
+            IsRof: $(".rof select option:selected").val(),
+            StartTime: $("#StartTime").val(),
+            EndTime: $("#EndTime").val(),
+            Sort: $("#Sort select option:selected").val(),
+            VehicleID: vehicleIdArr.length ? vehicleIdArr.join(';') : 'ALL',
+            PageSize: $(".PageSize option:selected").val(),
+            PageIndex: pageIndex,
+            StartPrice: $("#StartPrice").val(),
+            EndPrice: $("#EndPrice").val(),
+        }, function (html, status) {
+            if (status === "success") {
+                $(".loadimg").hide();
+                $(".list").html(html);
+                $(".data_count").text('共' + ($(".table").length ? $(".table").attr("data-count") : 0) + '条数据');
+            }
+        });
+    }
+    var ExportExcel = function () {
+       
+        //品牌系列
+        var DepartmentArr = [];
+        $("[name=Department]:checked").each(function () {
+            DepartmentArr.push($(this).val());
+        });
+
+        //价格范围
+        var PriceRangeArr = [];
+        $("[name=PriceRange]:checked").each(function () {
+            PriceRangeArr.push($(this).val());
+        });
+
+        //车型类型
+        var VehicleBodyTypeArr = [];
+        $("[name=VehicleBodyType]:checked").each(function () {
+            VehicleBodyTypeArr.push($(this).val());
+        });
+
+        //规格尺寸
+        var SpecificationArr = [];
+        $("[name=Specification]:checked").each(function () {
+            SpecificationArr.push($(this).val());
+        });
+
+        //规格尺寸的补充
+        var Tire_Width = $("#Tire_Width option:selected").val();
+        var Tire_AspectRatio = $("#Tire_AspectRatio option:selected").val();
+        var Tire_Rim = $("#Tire_Rim option:selected").val();
+        if (Tire_Width.length && Tire_AspectRatio.length && Tire_Rim.length) {
+            SpecificationArr.push(Tire_Width + '/' + Tire_AspectRatio + 'R' + Tire_Rim);
+        }
+
+        var condition={
+            Department: DepartmentArr.join(';'),
+            PriceRange: PriceRangeArr.join(';'),
+            VehicleBodyType: VehicleBodyTypeArr.join(';'),
+            TireSize: SpecificationArr.join(';'),
+            ShowType: $(".showtype select option:selected").val(),
+            IngType: $(".ingtype select option:selected").val(),
+            ActivityName: $("[name=ActivityName]").val(),
+            IsActive: $(".isactive select option:selected").val(),
+            IsRof: $(".rof select option:selected").val(),
+            StartTime: $("#StartTime").val(),
+            EndTime: $("#EndTime").val(),
+            Sort: $("#Sort select option:selected").val(),
+            VehicleID: vehicleIdArr.length ? vehicleIdArr.join(';') : 'ALL',
+            PageSize: $(".PageSize option:selected").val(),
+            StartPrice: $("#StartPrice").val(),
+            EndPrice: $("#EndPrice").val()
+        };
+
+        $("#searchCondition").val(JSON.stringify(condition));
+        $("#excelForm").submit();
+    }
+    var PartRefresh = function () {
+        LoadList($(".list .pager>a.current").text());
+    }
+</script>

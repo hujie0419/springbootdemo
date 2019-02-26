@@ -1,0 +1,12 @@
+﻿.kuaiDiBG{background:url(../../Content/KuaiDi/ChinaPost.jpg) no-repeat;width:830px;height:480px;position:relative;}
+    .kuaiDiBG{background-position:0px -98px;}
+    .kuaiDiBG div{position:absolute;background-color:rgba(255,255,255,.8)}
+    .From{left: 155px;top: 218px;}
+    .FromTel{left: 310px;top: 219px;}
+    .FromAddr{width: 262px;top: 251px;left: 189px;}
+    .To{left: 165px;top: 106px;}
+    .ToTel{top: 106px;left: 307px;}
+    .ToAddr{width: 262px;top: 135px;left: 187px;}
+    .remark{top: 97px;width: 174px;left: 480px;}
+    .FromDe,.ToDe{display:none;}
+    .small{font-size:12px;}

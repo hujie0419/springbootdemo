@@ -1,0 +1,421 @@
+﻿@{
+    ViewBag.Title = "套餐分组配置";
+    Layout = "~/Views/Shared/_LayoutNew.cshtml";
+    var dev = System.Configuration.ConfigurationManager.AppSettings["env"] == "dev" ? 1 : 0;
+}
+<head>
+    <meta charset="utf-8">
+    <title>iview example</title>
+    <link href="~/Content/iview/iview.css" rel="stylesheet" />
+    <script src="~/Scripts/vue.min.js"></script>
+    <script src="~/Scripts/iview/iview.min.js"></script>
+    <style>
+        .ivu-table .demo-table-info-row td {
+            background-color: #2db7f5;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-error-row td {
+            background-color: #ff6600;
+            color: #fff;
+        }
+
+        .ivu-table td.demo-table-info-column {
+            background-color: #2db7f5;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-info-cell-name {
+            background-color: #2db7f5;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-info-cell-age {
+            background-color: #ff6600;
+            color: #fff;
+        }
+
+        .ivu-table .demo-table-info-cell-address {
+            background-color: #187;
+            color: #fff;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+
+@section title{
+    <a href="/UnivRedemptionCode/UnivTmplList">通用兑换码模版列表</a>&nbsp;&nbsp;&gt;&nbsp;&nbsp;@ViewBag.Title
+}
+<body>
+
+    <div id="app" style="margin-left:10px;margin-right:10px;" v-cloak>
+        <br />
+        <i-input v-model="searchKey" placeholder="分组名称" style="width:200px;"></i-input> <i-button type="primary" shape="circle" icon="ios-search" v-on:click="search">查询</i-button>
+        <i-Button type="primary" v-on:click="editSetting()">新增</i-Button>
+        <i-Button type="primary" v-on:click="testUrl()" v-if="testOpen">测试</i-Button>
+        <br /><br />
+        <i-table :data="tabledata" :columns="tableColumns" :loading="loading"></i-table>
+        <div style="margin: 10px;overflow: hidden">
+            <div style="float: right;">
+                <Page :total="totalCount" :current="currentPage" :page-size="pageSize" show-total v-on:on-change="changePage"></Page>
+            </div>
+        </div>
+        <div>
+            <Modal title="添加分组配置" v-model="showModal" width="600"
+                   :mask-closable="false"
+                   v-on:on-ok="saveSetting"
+                   v-on:on-cancel="cancelSetting">
+                <row type="flex" justify="space-around" v-bind:align="'middle'" class="modal-row">
+                    <i-col span="5">
+                        <div class="modal-label">GroupId:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-input v-model="GroupId" readonly="readonly" placeholder="GroupId由服务端自动生成" style="color:red"></i-input>
+                    </i-col>
+                    <i-col span="5">
+                        <div class="modal-label">分组名称:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-input placeholder="输入名称" v-model="GroupName"></i-input>
+                    </i-col>
+                    <i-col span="5">
+                        <div class="modal-label">选择用户业务类型:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-select filterable style="width:70%" v-model="businessType">
+                            <i-option v-for="bType in businessTypes" :value="bType.Id" :key="bType.Id">{{bType.Name}}</i-option>
+                        </i-select>
+                    </i-col>
+                    <i-col span="5">
+                        <div class="modal-label">选择发码类型:</div>
+                    </i-col>
+                    <i-col span="16">
+                        <i-select filterable style="width:70%" v-model="sendCodeType">
+                            <i-option v-for="scType in sendCodeTypes" :value="scType.Id" :key="scType.Id">{{scType.Name}}</i-option>
+                        </i-select>
+                    </i-col>
+
+                    <i-col span="5" v-if="isDev">
+                        <div class="modal-label">所属AppId:</div>
+                    </i-col>
+                    <i-col span="16" v-if="isDev">
+                        <i-select filterable style="width:70%" v-model="appId">
+                            <i-option v-for="appid in appIds" :value="appid.AppId" :key="appid.Id">{{appid.AppName}}</i-option>
+                        </i-select>
+                    </i-col>
+                </row>
+            </Modal>
+        </div>
+
+    </div>
+</body>
+@section scripts{
+    <script>
+        var vue = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    tabledata: [],
+                    tableColumns: [
+                        {
+                            title: 'PKID',
+                            key: 'PKID',
+                            width: 100,
+                        },
+                        {
+                            title: '分组GroupId',
+                            key: 'GroupId'
+                        },
+                        {
+                            title: '分组名称',
+                            key: 'GroupName'
+                        },
+                        {
+                            title: '创建时间',
+                            key: 'CreateTimeString',
+                            width: 180,
+                        },
+                        {
+                            title: '操作',
+                            key: 'action',
+                            width: 260,
+                            align: 'center',
+                            render: (h, params) => {
+                                return h('div', [
+                                    h('Button', {
+                                        props: {
+                                            type: 'primary',
+                                            size: 'small'
+                                        },
+                                        style: {
+                                            marginRight: '5px'
+                                        },
+                                        on: {
+                                            click: () => {
+                                                this.editSetting(params)
+                                            }
+                                        }
+                                    }, '编辑'),
+                                    h('Button', {
+                                        props: {
+                                            type: 'error',
+                                            size: 'small'
+                                        },
+                                        style: {
+                                            marginRight: '5px'
+                                        },
+                                        on: {
+                                            click: () => {
+                                                this.removeSetting(params)
+                                            }
+                                        }
+                                    }, '删除')
+                                ]);
+                            }
+                        }
+                    ],
+                    currentPage: 1,
+                    pageSize: 10,
+                    GroupId: '',
+                    GroupName: '',
+                    showModal: false,
+                    totalCount: 0,
+                    searchKey: '',
+                    loading: false,
+                    businessTypes: [
+                        {
+                            Id: 0, Name: '用户唯一标识'
+                        },
+                        {
+                            Id: 1, Name: '手机号'
+                        },
+                        {
+                            Id: 2, Name: '用户唯一标识(需先登录)'
+                        }],
+                    businessType: '',
+                    sendCodeTypes: [
+                        {
+                            Id: 0, Name: '选择领取'
+                        },
+                        {
+                            Id: 1, Name: '自动发码'
+                        }],
+                    sendCodeType: '',
+                    appIds: [],
+                    appId:'',
+                    isDev: 0,
+                    testOpen: 0,
+                }
+            },
+            mounted: function () {
+                this.GetDataList();
+            },
+            methods: {
+                GetDataList() {
+                    var _this = this;
+                    _this.isDev=@dev;
+
+
+                    _this.loading = true;
+                    _this.totalCount = 0;
+                    var keyword = _this.searchKey;
+
+                    var pageSize = _this.pageSize;
+                    if (!pageSize) {
+                        pageSize = 10;
+                    }
+                    var pageIndex = _this.currentPage;
+                    if (!pageIndex) {
+                        pageIndex = 1;
+                    }
+
+                    $.ajax({
+                        url: "/UnivRedemptionCode/GetGroupSettings",
+                        type: "POST",
+                        //async: false,
+                        data: {
+                            PageIndex: pageIndex,
+                            PageSize: pageSize,
+                            KeyWord: keyword
+                        },
+                        success: function (data) {
+                            if (data != null && data.total > 0) {
+                                _this.totalCount = data.total;
+                                tableresult = data.result;
+                                _this.tabledata = tableresult;
+                                _this.appIds = data.appIdList;
+                            }
+                            else {
+                                _this.tabledata = [];
+                            }
+                            _this.loading = false;
+                        },
+                        error: function () {
+                            alert("服务端异常！");
+                            _this.tabledata = [];
+                            _this.loading = false;
+                        }
+                    });
+
+                },
+                changePage(page) {
+                    // The simulated data is changed directly here, and the actual usage scenario should fetch the data from the server
+                    this.currentPage = page;
+                    this.GetDataList();
+                },
+                editSetting(item) {
+                    var _this = this;
+                    if (_this.showModal)
+                        return;
+                    _this.showModal = true;
+
+                    if (!item) {//新增
+                        _this.GroupName = '';
+                        _this.GroupId = '';
+                        _this.businessType = '';
+                        _this.sendCodeType = '';
+                        _this.appId = '';
+                    }
+                    else {
+                        console.log(item);
+                        _this.GroupName = item.row.GroupName;
+                        _this.GroupId = item.row.GroupId;
+                        _this.businessType = item.row.BusinessType;
+                        _this.sendCodeType = item.row.SendCodeType;
+                        if (!item.row.AppId)
+                        {
+                            _this.appId = '';
+                        }
+                        else {
+                            _this.appId = item.row.AppId;
+                        }
+                    }
+                },
+                testUrl() {
+                    window.location.href = '/UnivRedemptionCode/RedeemTest';
+                },
+                saveSetting() {
+                    var _this = this;
+                    var groupName = _this.GroupName;
+                    if (!groupName) {
+                        this.$Notice.warning({
+                            title: '分组名称不能为空',
+                            desc: '分组名称不能为空'
+                        });
+                        return;
+                    }
+                    var groupId = _this.GroupId;
+                    var businessType = _this.businessType;
+                    var sendCodeType = _this.sendCodeType;
+
+                    var appid = _this.appId;
+                    if (_this.isDev == 1)
+                    {
+                        if (!appid) {
+                            this.$Notice.warning({
+                                title: 'AppId不能为空',
+                                desc: 'AppId不能为空'
+                            });
+                            return;
+                        }
+                    }
+
+                    var postData = {
+                        GroupId: groupId,
+                        GroupName: groupName,
+                        BusinessType: businessType,
+                        SendCodeType: sendCodeType,
+                        AppId: appid
+                    };
+
+                    $.ajax({
+                        url: "/UnivRedemptionCode/SaveGroupSetting",
+                        type: "POST",
+                        //async: false,
+                        data: { model: postData },
+                        success: function (data) {
+                            if (data.result) {
+                                window.location.href = '/UnivRedemptionCode/GroupSetting';
+                            }
+                            else {
+                                alert(data.msg);
+                            }
+                        },
+                        error: function () {
+                            alert("服务端异常！");
+                            _this.tabledata = [];
+                        }
+                    });
+
+                    _this.GroupName = '';
+                    _this.GroupId = '';
+                    _this.businessType = 0;
+                    _this.sendCodeType = 0;
+
+                },
+                cancelSetting() {
+                    var _this = this;
+                    _this.GroupName = '';
+                    _this.GroupId = '';
+                    _this.businessType = 0;
+                    _this.sendCodeType = 0;
+                },
+                removeSetting(item) {
+                    var _this = this;
+                    if (!confirm("确认要删除该条分组配置？")) {
+                        return;
+                    }
+
+
+                    var groupId = item.row.GroupId;
+                    if (!groupId) {
+                        this.$Notice.warning({
+                            title: '分组Id不能为空',
+                            desc: '分组Id不能为空'
+                        });
+                        return;
+                    }
+
+                    var postData = {
+                        GroupId: groupId
+                    };
+                    $.ajax({
+                        url: "/UnivRedemptionCode/DeleteGroupSetting",
+                        type: "POST",
+                        //async: false,
+                        data: { model: postData },
+                        success: function (data) {
+                            if (data.result) {
+                                window.location.href = '/UnivRedemptionCode/GroupSetting';
+                            }
+                            else {
+                                alert(data.msg);
+                            }
+                        },
+                        error: function () {
+                            alert("服务端异常！");
+                            _this.tabledata = [];
+                        }
+                    });
+
+                },
+                search() {
+                    var keyword = this.searchKey;
+                    if (!keyword) {
+                        this.$Notice.warning({
+                            title: '请输入关键词',
+                            desc: '请输入关键词'
+                        });
+                        return;
+                    }
+                    this.GetDataList();
+                }
+            },
+        });
+
+
+    </script>
+}

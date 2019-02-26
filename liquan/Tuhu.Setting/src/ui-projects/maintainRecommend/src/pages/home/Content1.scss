@@ -1,0 +1,258 @@
+@import "css/common/_var.scss";
+@import "css/common/_mixin.scss";
+@import "css/common/_iconFont.scss";
+@mixin placeholder($color: $color9, $size: 13px){
+    color: $color;
+    font-size: $size;
+    letter-spacing: 1px;
+  }
+.content{
+  background: $colorf;
+  min-height: 100vh;
+  position: relative;
+  .top{
+    display: flex;
+    align-items: center;
+    padding: 10px 24px;
+    .title{
+      flex-grow: 1;
+      color: $color0;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    .log{
+      font-size: $smallFontSize;
+      color: $stressColor;
+      text-align: right;
+      cursor: pointer;
+    }
+  }
+  .config-tab{
+    margin-bottom: 15px;
+    border-bottom: 1px solid $stressColor;
+    span{
+      display: inline-block;
+      box-sizing: border-box;
+      margin: 0 20px;
+      padding: 10px 0;
+      color: $color3;
+      cursor: pointer;
+      letter-spacing: 1px;
+      &.active{
+        border-bottom: 3px solid $stressColor;
+      }
+    }
+  }
+  .priority-title{
+    display: flex;
+    padding: 20px;
+    span{
+      padding: 10px 30px;
+      color: $color5a;
+      border-bottom: 1px solid $tabBrColor;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      &:last-child{
+        flex-grow: 1;
+        cursor: default;
+      }
+      &.active{
+        color: $stressColor;
+        border-top: 1px solid $tabBrColor;
+        border-left: 1px solid $tabBrColor;
+        border-right: 1px solid $tabBrColor;
+        border-bottom: none;
+      }
+    }
+  }
+  @keyframes showCard {
+    0%{transform: translate(400px, 80px) }
+    100%{transform: translate(0, 0) }
+  }
+  @keyframes showCardShort {
+    0%{transform: translate(-400px, 40px) }
+    100%{transform: translate(0, 0) }
+  }
+  .card{
+    display: none;
+    &.show{
+      display: block;
+      animation: showCardShort 0.3s;
+    }
+  }
+  .save-btn{
+    width: 260px;
+    height: 40px;
+    background: $stressColor;
+    color: $colorf;
+    text-align: center;
+    line-height: 40px;
+    margin: 50px 0 70px 107px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    border-radius: 4px;
+    cursor: pointer;
+    &.gray{
+      background: $grayBtnBg;
+      cursor: default;
+    }
+  }
+  hr{
+    background-color: $colore;
+    border: none;
+    height: 1px;
+    margin: 0 20px;
+  }
+  .notes{
+    color: $color3;
+    font-size: 13px;
+    letter-spacing: 1px;
+    padding: 20px;
+    font-family: "arial", "Microsoft YaHei";
+    max-width: 670px;
+    .notes-title{
+      padding: 1px;
+      line-height: 2em;
+      span{
+        text-align: right;
+        float: right;
+        cursor: pointer;
+        &::after{
+          content: '\e601';
+          @extend %mr_icon;
+          color: $color9;
+          font-size: 16px;
+        }
+      }
+    }
+    .notes-content{
+      width: 100%;
+      border: none;
+      font-family: "arial", "Microsoft YaHei";
+      font-size: 13px;
+      cursor: default;
+      border-radius: 5px;
+      padding: 5px;
+      border: 1px solid $btnBrColor;
+    //   &.has-border{
+    //     border: 1px solid $btnBrColor;
+    //   }
+      &:focus{
+        outline: none;
+        border: none;
+      }
+      &.edit{
+        border: 1px solid $btnBrColor;
+        cursor: text;
+      }
+      &::placeholder {
+        @include placeholder($color9, 13px)
+      }
+    }
+    .btn-group{
+      text-align: right;
+      .btn{
+        display: none;
+        width: 70px;
+        height: 35px;
+        text-align: center;
+        line-height: 35px;
+        margin: 10px 5px;
+        border-radius: 4px;
+        cursor: pointer;
+        &.ok-btn{
+          background: $stressColor;
+          color: $colorf;
+          border: 1px solid $stressColor;
+        }
+        &.cancle-btn{
+          background: $colorf;
+          color: $color6;
+          border: 1px solid $btnBrColor;
+        }
+        &.show{
+          display: inline-block;
+        }
+      }
+    }
+  }
+}
+@media screen and (max-width: $phoneWidth) {
+.content{
+  .top{
+    background: $grayBg;
+    padding: 10px 20px;
+    .title{
+      margin: 0;
+    }
+    .log{
+      color: $color9;
+      margin: 0;
+    }
+  }
+  .card{
+    &.show{
+      animation: showCard 0.3s;
+    }
+  }
+  .save-btn{
+    margin: 50px auto 70px auto;
+    width: 90%;
+    line-height: 3em;
+    font-size: 16px;
+  }
+  .config-tab{
+    margin-bottom: 10px;
+    border-bottom: 1px solid $colore;
+    span{
+      margin: 0;
+      width: 49%;
+      text-align: center;
+      color: $color9;
+      cursor: pointer;
+      &.active{
+        color: $color3;
+        border-bottom: 1px solid $stressColor;
+      }
+    }
+  }
+  .priority-title{
+    padding: 7px 5px;
+    span{
+      border: 1px solid $tabBrColor;
+      border-radius: 20px;
+      width: 33%;
+      margin: 0 1%;
+      padding: 5px 0;
+      text-align: center;
+      &:last-child{
+        display: none;
+      }
+      &.active{
+        background: $stressColor;
+        color: $colorf;
+      }
+    }
+  }
+  .notes{
+    background: $grayBg;
+    font-size: 1.4rem;
+    padding: 20px 15px;
+    .notes-title{
+      span{
+        position: relative;
+        @include iconPadding;
+        &::after{
+          color: $color9;
+        }
+      }
+    }
+    .notes-content{
+      background: $grayBg;
+      font-size: 1.4rem;
+    }
+  }
+}
+}

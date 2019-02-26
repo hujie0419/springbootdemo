@@ -1,0 +1,82 @@
+﻿@{
+    ViewBag.Title = "WapParameterEdit";
+    Layout = null;
+}
+
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                &times;
+            </button>
+            <h4 class="modal-title">
+                编辑首页配置
+            </h4>
+        </div>
+        <div class="modal-body">
+            <form id="form1" class="form-horizontal" role="form">
+
+               <div class="form-group">
+                   <label class="col-sm-3 control-label">名称:</label>
+                   <div class="col-sm-9">
+                       <input type="text"  id="Name" name="Name"  class="form-control"/>
+                   </div>
+               </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">关键字(Key):</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="KeyName" name="KeyName" class="form-control" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Android:</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="Android" name="Android" class="form-control" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">IOS:</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="IOS" name="IOS" class="form-control" />
+                    </div>
+                </div>
+
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="btnSave" name="btnSave" class="btn btn-primary">
+                保 存
+            </button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                取 消
+            </button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+
+        $('#btnSave').on('click', function () {
+            var data = {};
+            data.Name = $('#Name').val();
+            data.KeyName = $('#KeyName').val();
+            data.Android = $('#Android').val();
+            data.IOS = $('#IOS').val();
+            $.ajax({
+                url: '/HomePageConfigV2/WapParameterSave',
+                type: 'post',
+                data: data,
+                dataType: 'json'
+            }).done(function (result) {
+                if (result == 1) {
+                    location.reload();
+                } else {
+                    alert("保存失败");
+                }
+            }).fail(function () {
+                console.log("");
+            });
+
+        });
+    })
+</script>

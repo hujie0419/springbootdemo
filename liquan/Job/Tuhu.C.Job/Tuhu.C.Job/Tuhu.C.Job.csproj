@@ -1,0 +1,515 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\librdkafka.redist.0.11.1\build\net\librdkafka.redist.props" Condition="Exists('..\packages\librdkafka.redist.0.11.1\build\net\librdkafka.redist.props')" />
+  <Import Project="..\packages\Microsoft.Net.Compilers.2.1.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.2.1.0\build\Microsoft.Net.Compilers.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{95D9E5D7-EA62-4EDC-9BAD-B5A84FDD6539}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Tuhu.C.Job</RootNamespace>
+    <AssemblyName>Tuhu.C.Job</AssemblyName>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>虎标.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AngleSharp, Version=0.9.9.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
+      <HintPath>..\packages\AngleSharp.0.9.9\lib\net45\AngleSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="AopSdk, Version=4.0.0.1, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\AopSdk.4.0.0.1\lib\net45\AopSdk.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac, Version=4.1.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.4.1.0\lib\net45\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging, Version=3.4.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.3.4.1\lib\net40\Common.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging.Core, Version=3.4.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.Core.3.4.1\lib\net40\Common.Logging.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging.Log4Net1211, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.Log4Net1211.3.3.1\lib\net40\Common.Logging.Log4Net1211.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Confluent.Kafka.StrongName, Version=0.11.2.0, Culture=neutral, PublicKeyToken=12c514ca49093d1e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Confluent.Kafka.StrongName.0.11.2\lib\net46\Confluent.Kafka.StrongName.dll</HintPath>
+    </Reference>
+    <Reference Include="CrystalQuartz.Owin, Version=4.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CrystalQuartz.Owin.4.2.1.0\lib\CrystalQuartz.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Elasticsearch.Net, Version=2.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
+      <HintPath>..\packages\Elasticsearch.Net.2.5.4\lib\net46\Elasticsearch.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.ApplicationInsights, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.2.2.0\lib\net45\Microsoft.ApplicationInsights.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.ApplicationInsights.Log4NetAppender, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.Log4NetAppender.2.2.0\lib\net45\Microsoft.ApplicationInsights.Log4NetAppender.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Diagnostics.Tracing.EventSource, Version=1.1.28.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Diagnostics.Tracing.EventSource.Redist.1.1.28\lib\net46\Microsoft.Diagnostics.Tracing.EventSource.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.3.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Host.HttpListener, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Host.HttpListener.3.1.0\lib\net45\Microsoft.Owin.Host.HttpListener.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Hosting, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Hosting.3.1.0\lib\net45\Microsoft.Owin.Hosting.dll</HintPath>
+    </Reference>
+    <Reference Include="Nest, Version=2.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
+      <HintPath>..\packages\NEST.2.5.4\lib\net46\Nest.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Pinyin4net, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\pinyin4net.1.0.0\lib\net40\Pinyin4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Polly, Version=5.9.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc, processorArchitecture=MSIL">
+      <HintPath>..\packages\Polly-Signed.5.9.0\lib\net45\Polly.dll</HintPath>
+    </Reference>
+    <Reference Include="Quartz, Version=2.6.1.0, Culture=neutral, PublicKeyToken=f6b8c98a402cc8a4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Quartz.2.6.1\lib\net40\Quartz.dll</HintPath>
+    </Reference>
+    <Reference Include="RabbitMQ.Client, Version=5.0.0.0, Culture=neutral, PublicKeyToken=89e7d7c5feba84ce, processorArchitecture=MSIL">
+      <HintPath>..\packages\RabbitMQ.Client.5.0.1\lib\net451\RabbitMQ.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp, Version=106.2.1.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.106.2.1\lib\net452\RestSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="StackExchange.Redis.StrongName, Version=1.2.3.0, Culture=neutral, PublicKeyToken=c219ff1ca8c2ce46, processorArchitecture=MSIL">
+      <HintPath>..\packages\StackExchange.Redis.StrongName.1.2.3\lib\net46\StackExchange.Redis.StrongName.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ComponentModel.Annotations.4.5.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Interactive, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Interactive.3.1.1\lib\net45\System.Interactive.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net461\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Tuhu, Version=2.3.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.2.3.4\lib\net46\Tuhu.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Elasticsearch, Version=1.1.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Elasticsearch.1.1.3.0\lib\net45\Tuhu.Elasticsearch.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Log, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Log.2.2.5\lib\net46\Tuhu.Log.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.MessageQueue, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.MessageQueue.2.2.5\lib\net46\Tuhu.MessageQueue.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Nosql, Version=1.1.3.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Nosql.1.1.3.0\lib\net45\Tuhu.Nosql.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Nosql.Redis, Version=1.1.5.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Nosql.Redis.1.1.5.0\lib\net45\Tuhu.Nosql.Redis.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service, Version=2.3.1.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.2.3.8\lib\net46\Tuhu.Service.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Activity, Version=1.3.1.3, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\service\Tuhu.Service.Activity\Tuhu.Service.Activity\Tuhu.Service.Activity\bin\Debug\Tuhu.Service.Activity.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.BaoYang, Version=1.4.9.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.BaoYang.1.4.9.1\lib\net45\Tuhu.Service.BaoYang.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Config, Version=1.1.9.10, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Config.1.1.9.10\lib\net45\Tuhu.Service.Config.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.ConfigLog, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.ConfigLog.1.0.1\lib\net45\Tuhu.Service.ConfigLog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Tuhu.Service.GroupBuying, Version=1.2.9.2, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.GroupBuying.1.2.9.2\lib\net452\Tuhu.Service.GroupBuying.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Member, Version=1.6.3.6, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Member.1.6.3.6\lib\net45\Tuhu.Service.Member.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Order, Version=3.0.1.7, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Order.3.0.1.7\lib\net45\Tuhu.Service.Order.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Pay, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Pay.1.0.0\lib\net45\Tuhu.Service.Pay.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Tuhu.Service.Product, Version=1.3.11.16, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Product.1.3.11.16\lib\net45\Tuhu.Service.Product.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Product.ModelDefinition, Version=1.0.1.5, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Product.ModelDefinition.1.0.1.5\lib\net45\Tuhu.Service.Product.ModelDefinition.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Push, Version=1.1.4.12, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Push.1.1.4.12\lib\net45\Tuhu.Service.Push.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.SearchProduct, Version=1.0.0.19, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.SearchProduct.1.0.0.19\lib\net45\Tuhu.Service.SearchProduct.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Shop, Version=1.3.4.6, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Shop.1.3.4.6\lib\net45\Tuhu.Service.Shop.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.ThirdParty, Version=1.2.2.4, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.ThirdParty.1.2.2.4\lib\net45\Tuhu.Service.ThirdParty.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.UserAccount, Version=1.2.6.9, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.UserAccount.1.2.6.9\lib\net45\Tuhu.Service.UserAccount.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Utility, Version=1.2.2.7, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Utility.1.2.2.7\lib\net45\Tuhu.Service.Utility.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Vehicle, Version=1.2.7.2, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Vehicle.1.2.7.2\lib\net45\Tuhu.Service.Vehicle.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.ZooKeeper, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.ZooKeeper.2.1.2\lib\net45\Tuhu.ZooKeeper.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.ZooKeeper.ServiceProcess, Version=1.1.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.ZooKeeper.ServiceProcess.1.1.2\lib\net45\Tuhu.ZooKeeper.ServiceProcess.dll</HintPath>
+    </Reference>
+    <Reference Include="ZooKeeperNet, Version=3.4.6.1, Culture=neutral, PublicKeyToken=fefd2c046da35b56, processorArchitecture=MSIL">
+      <HintPath>..\packages\ZooKeeper.Net.3.4.6.2\lib\net40\ZooKeeperNet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ZooKeeperNetEx, Version=3.4.9.4, Culture=neutral, PublicKeyToken=42cd15de36f9b993, processorArchitecture=MSIL">
+      <HintPath>..\packages\ZooKeeperNetEx.3.4.9.4\lib\net45\ZooKeeperNetEx.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BLL\BaoYangAutoAssociationBLL.cs" />
+    <Compile Include="BLL\BeautyGroupBuyingBLL.cs" />
+    <Compile Include="DAL\BeautyGroupBuyingDal.cs" />
+    <Compile Include="DAL\DalGame.cs" />
+    <Compile Include="DAL\DalMessageBox.cs" />
+    <Compile Include="DAL\DalTaskBackup.cs" />
+    <Compile Include="DAL\LargeCustomerStaffInvalidOrderMonitorDal.cs" />
+    <Compile Include="DAL\Tuhu_log-tbl_WxUserMessageInfoDAL.cs" />
+    <Compile Include="Job\BaiduMapActivityJob.cs" />
+    <Compile Include="Job\BaoYangAutoAssociationJob.cs" />
+    <Compile Include="Job\AppNewUserGiftJob.cs" />
+    <Compile Include="Job\BaoYangFreeNewJob.cs" />
+    <Compile Include="Job\BaseJob.cs" />
+    <Compile Include="Job\BeautyGroupSoldInfoStatictisJob.cs" />
+    <Compile Include="Job\BestPayStatusJob.cs" />
+    <Compile Include="Job\CouponNotificationJob.cs" />
+    <Compile Include="Job\DeleteExpiredMessageBoxJob.cs" />
+    <Compile Include="Job\DistributedCacheController.cs" />
+    <Compile Include="Job\GameGivePrizeJob.cs" />
+    <Compile Include="Job\HandleExpiredMessageBoxJob.cs" />
+    <Compile Include="Job\HandleUserMessageSettingJob.cs" />
+    <Compile Include="Job\InstallOrderPushJob.cs" />
+    <Compile Include="Job\InsureExpireJob.cs" />
+    <Compile Include="Job\LargeCustomerStaffInvalidOrderMonitorJob.cs" />
+    <Compile Include="Job\LogWeiXinNewUserJob.cs" />
+    <Compile Include="Job\LuckyCharmJob.cs" />
+    <Compile Include="Job\ProductCommentToTopicJob.cs" />
+    <Compile Include="Job\RebuildUserWxAuthInfoJob.cs" />
+    <Compile Include="Job\RefreshProductExtraPropertiesCacheJob.cs" />
+    <Compile Include="Job\RunMonitorJob.cs" />
+    <Compile Include="Job\OrderGroupBuyJob.cs" />
+    <Compile Include="Job\OrderPushDeliveryCodeJob.cs" />
+    <Compile Include="Job\OrderPushJob.cs" />
+    <Compile Include="Job\OrderPushMessageJob.cs" />
+    <Compile Include="Job\OrderPushMessageInstallJob.cs" />
+    <Compile Include="Job\RefreshTiresRegionMarketingCacheJob.cs" />
+    <Compile Include="Job\SeckillJob.cs" />
+    <Compile Include="Job\SubscribeAllUserTokensJob.cs" />
+    <Compile Include="Job\SyncMessageBoxToEsJob.cs" />
+    <Compile Include="Job\UpdateVehicleBrandPinyin.cs" />
+    <Compile Include="Job\UpdateWxUserAuthJob.cs" />
+    <Compile Include="Job\VehicleAuthAutoAuditJob.cs" />
+    <Compile Include="Job\VehicleWeiZhangNotAutoLicensePushJob.cs" />
+    <Compile Include="Job\VehicleWeiZhangPushJob.cs" />
+    <Compile Include="Job\WeChatActivitySystemJob.cs" />
+    <Compile Include="Job\WeChatDelayConsumeMessageJob.cs" />
+    <Compile Include="Job\WeiXinKeyWordReplyJob.cs" />
+    <Compile Include="Job\WeiXinRecommendFriendJob.cs" />
+    <Compile Include="Models\BeautyGroupBuyingModel.cs" />
+    <Compile Include="Models\LargeCustomerInvalidOrderModel.cs" />
+    <Compile Include="Models\MessagePushConfig.cs" />
+    <Compile Include="Models\OrderGroupBuyModel.cs" />
+    <Compile Include="Models\ProductVehicleTypeConfigOpLog.cs" />
+    <Compile Include="Models\Enum\PriceRuleEnum.cs" />
+    <Compile Include="Models\InsureCarModel.cs" />
+    <Compile Include="Models\PriceMonitorReportDetail.cs" />
+    <Compile Include="Models\Product.cs" />
+    <Compile Include="Models\ProxyIpModel.cs" />
+    <Compile Include="Models\PushInfoModel.cs" />
+    <Compile Include="Models\wzcitys.cs" />
+    <Compile Include="ProjectInstaller.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ProjectInstaller.Designer.cs">
+      <DependentUpon>ProjectInstaller.cs</DependentUpon>
+    </Compile>
+    <Compile Include="QuartzService.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="QuartzService.Designer.cs">
+      <DependentUpon>QuartzService.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UserTask\TaskDataBackupStep1Job.cs" />
+    <Compile Include="UserTask\TaskDataBackupStep2Job.cs" />
+    <Compile Include="UserTask\TaskDataBackupStep3Job.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProjectInstaller.resx">
+      <DependentUpon>ProjectInstaller.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="DistrictCode.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DLL\AopSdk.dll" />
+    <Content Include="DLL\AopSdk.pdb" />
+    <Content Include="DLL\dev\libcryptAPIsmJni_64.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DLL\dev\libcryptAPIsm_64.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DLL\dev\libgcc_s_seh-1.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DLL\dev\libwinpthread-1.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DLL\pro\libcryptAPIsmJni_64.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DLL\pro\libcryptAPIsm_64.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DLL\pro\libgcc_s_seh-1.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DLL\pro\libwinpthread-1.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ShopList.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="虎标.ico" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="app.manifest" />
+    <Content Include="Cache.config" />
+    <None Include="quartz_jobs.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="log4net.config">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Keys\public-key-zhongan.pem">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Keys\rsa_private_key.pem">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Keys\rsa_private_key_first.pem">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Keys\rsa_public_key_tuhu.pem">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="quartz_jobs.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+      <Generator>quartz_jobs.xsd</Generator>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Tuhu.C.Job.ActivityMonitor\Tuhu.C.Job.ActivityMonitor.csproj">
+      <Project>{0531fcc5-b7b8-459c-92dd-719d7164a92a}</Project>
+      <Name>Tuhu.C.Job.ActivityMonitor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.BaoYangSuggest\Tuhu.C.Job.BaoYangSuggest.csproj">
+      <Project>{8f3da659-356c-48b3-8e9d-85134aaaf728}</Project>
+      <Name>Tuhu.C.Job.BaoYangSuggest</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.CheckAlipayShopJob\Tuhu.C.Job.CheckAlipayShopJob.csproj">
+      <Project>{26561fef-8a44-4edb-95bc-781cd9b3153c}</Project>
+      <Name>Tuhu.C.Job.CheckAlipayShopJob</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.CompetingProducts\Tuhu.C.Job.CompetingProducts.csproj">
+      <Project>{f6093769-183c-40ab-9bfd-2bcbc4a935be}</Project>
+      <Name>Tuhu.C.Job.CompetingProducts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.DailyShopSyncJob\Tuhu.C.Job.DailyShopSyncJob.csproj">
+      <Project>{258bcbb9-ac2f-4ee6-870a-7dfc13143e13}</Project>
+      <Name>Tuhu.C.Job.DailyShopSyncJob</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.DailySitemap\Tuhu.C.Job.DailySitemap.csproj">
+      <Project>{c108f415-0e0e-4d2b-9cd7-5759260bdd0b}</Project>
+      <Name>Tuhu.C.Job.DailySitemap</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.GaizhuangRecommendCache\Tuhu.C.Job.GaizhuangRecommendCache.csproj">
+      <Project>{b618bd39-be2e-400b-9672-0fa39f83f157}</Project>
+      <Name>Tuhu.C.Job.GaizhuangRecommendCache</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.HomePage\Tuhu.C.Job.HomePage.csproj">
+      <Project>{01e3c336-69cd-4267-b832-3c9ca91a1079}</Project>
+      <Name>Tuhu.C.Job.HomePage</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.Initialization\Tuhu.C.Job.Initialization.csproj">
+      <Project>{2073f8e3-d4e5-4d53-b6cc-4de65a174e0a}</Project>
+      <Name>Tuhu.C.Job.Initialization</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.ProductCache\Tuhu.C.Job.ProductCache.csproj">
+      <Project>{1fe4ca30-b11c-49a0-92d7-468043918368}</Project>
+      <Name>Tuhu.C.Job.ProductCache</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.PromotionTask\Tuhu.C.Job.PromotionTask.csproj">
+      <Project>{b6622bc6-30b2-4c1b-b663-c523b8382c08}</Project>
+      <Name>Tuhu.C.Job.PromotionTask</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.PushAdInfo\Tuhu.C.Job.PushAdInfo.csproj">
+      <Project>{1efb064f-6553-417f-8778-e9f631188923}</Project>
+      <Name>Tuhu.C.Job.PushAdInfo</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.PushProduct\Tuhu.C.Job.PushProduct.csproj">
+      <Project>{ff63f163-fdcd-454d-8abf-7b21490070de}</Project>
+      <Name>Tuhu.C.Job.PushProduct</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.SecondHandCar\Tuhu.C.Job.SecondHandCar.csproj">
+      <Project>{53eb5ca8-5f92-443e-b6e6-1199b15b2316}</Project>
+      <Name>Tuhu.C.Job.SecondHandCar</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.ShopSyncJob\Tuhu.C.Job.ShopSyncJob.csproj">
+      <Project>{494d0209-2beb-4e38-9d95-afa92f383010}</Project>
+      <Name>Tuhu.C.Job.ShopSyncJob</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.Sitemap\Tuhu.C.Job.WeeklySitemap.csproj">
+      <Project>{6247c547-6275-4cd3-ad68-b1ad5f6ace1b}</Project>
+      <Name>Tuhu.C.Job.WeeklySitemap</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.ThirdPart\Tuhu.C.Job.ThirdPart.csproj">
+      <Project>{38589ca8-8a9c-4dd7-95d1-df8ea9fa9a51}</Project>
+      <Name>Tuhu.C.Job.ThirdPart</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.Tire\Tuhu.C.Job.Tire.csproj">
+      <Project>{0cf0822f-783b-455f-acff-8ab90a0a023e}</Project>
+      <Name>Tuhu.C.Job.Tire</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.UserAccountCombine\Tuhu.C.Job.UserAccountCombine.csproj">
+      <Project>{9ed96931-0fba-487a-8560-2cf6f9ce5429}</Project>
+      <Name>Tuhu.C.Job.UserAccountCombine</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.UserAuthJob\Tuhu.C.Job.UserAuthJob.csproj">
+      <Project>{3192ea3a-c772-4a30-b4ad-9cd4cb6eada3}</Project>
+      <Name>Tuhu.C.Job.UserAuthJob</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.UserGrouping\Tuhu.C.Job.UserGrouping.csproj">
+      <Project>{75b5f9d1-667b-4abb-bbad-92dadee1cb08}</Project>
+      <Name>Tuhu.C.Job.UserGrouping</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.C.Job.UserShareJob\Tuhu.C.Job.UserShareJob.csproj">
+      <Project>{3a6027bd-051e-4dbb-b0fc-fbeb1750be42}</Project>
+      <Name>Tuhu.C.Job.UserShareJob</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.2.1.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.2.1.0\build\Microsoft.Net.Compilers.props'))" />
+    <Error Condition="!Exists('..\packages\librdkafka.redist.0.11.1\build\net\librdkafka.redist.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\librdkafka.redist.0.11.1\build\net\librdkafka.redist.props'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

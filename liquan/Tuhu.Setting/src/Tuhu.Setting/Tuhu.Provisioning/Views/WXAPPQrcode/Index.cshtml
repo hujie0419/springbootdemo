@@ -1,0 +1,228 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+
+<div style="padding-top:15px;width:695px; margin-left:auto;margin-right:auto;">
+    <form id="form1">
+        <table class="form">
+            <tr>
+                <td class="formTitle">小程序类型:</td>
+                <td class="formValue">
+                    <select id="WXAPPType" name="WXAPPType" style="width:160px;height:24px;"  >
+                        <option value="3">途虎养车Tuhu</option>
+                        <option value="5">发现小程序</option>
+                        <option value="2">洗车小程序</option>
+                        <option value="8">途虎工厂店小程序</option>
+                        <option value="6">拼团小程序</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="formTitle">生成码类型</td>
+                <td class="formValue">
+                    <input type="radio" name="Type" value="1" checked="checked" /><span>小程序码</span>
+                    <input type="radio" name="Type" value="2" /><span>小程序二维码</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="formTitle">小程序路径：</td>
+                <td class="formValue">
+                    <input type="text" id="Uri" name="Uri" class="form-control required" />
+                </td>
+            </tr>
+            <tr>
+                <td class="formTitle">二维码宽度：</td>
+                <td class="formValue">
+                    <input type="number" id="CWidth" name="CWidth" class="form-control required" value="430" max="1280" />
+                </td>
+            </tr>
+            <tr>
+                <td class="formTitle">颜色:</td>
+                <td class="formValue">
+                    <input type="radio" name="rbColor" value="1" checked="checked" /><span>默认</span>
+                    <input type="radio" name="rbColor" value="2" /><span>自定义</span>
+                    <div id="cRGB" style="display:inline;margin-left:5px;padding-left:5px;visibility:hidden;">
+                        R:<input type="number" width="120" id="R" name="R" max="255"  class="form-control" style="width:120px;display:inline;"  />
+                        G:<input type="number" width="120" id="G" name="G" max="255" class="form-control" style="width:120px;display:inline;" />
+                        B:<input type="number" width="120" id="B" name="B" max="255" class="form-control" style="width:120px;display:inline;" />
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: center;padding-top:10px;">
+                    <a id="NF-add" class="btn btn-primary dropdown-text" onclick="btn_submit()"><i class="fa fa-plus"></i>生成二维码</a>
+                </td>
+            </tr>
+        </table>
+    </form>
+    <div style="margin-top:10px;">
+        <pre>
+        小程序路径说明：
+        小程序首页：pages/home/home
+        轮胎列表页：pages/tire_list/tire_list
+        保养列表页：pages/keep_list2/keep_list2
+        保养列表页跳转到指定保养项目（如大保养）：
+                pages/keep_list2/keep_list2?baoyangtypes=dby
+        保养列表页跳转到指定保养活动（如胜牌机油）：
+                pages/keep_list2/keep_list2?actid=b7478cf3-d978-4029-b339-2152cb257481
+        美容洗车：pages/md/list
+        幸运大翻盘：pages/luck/luck?id=2613
+        活动页面（如买三送一）：pages/luck/luck?id=1921
+        个人中心：pages/personal/personal
+        如需其他路径请联系刘昕；
+        如需添加其他渠道参数，直接在路径后增加参数如，在朋友圈投放的页面添加方式如下：
+        pages/home/home?source=pyq
+        pages/luck/luck?id=1921&source=pyq；
+        </pre>
+    </div>
+   
+    <script src="~/Content/nfine/js/jqgrid/jqgrid.min.js"></script>
+    <link href="~/Content/nfine/js/jqgrid/jqgrid.css" rel="stylesheet" />
+    <script src="~/Content/nfine/js/jqgrid/grid.locale-cn.js"></script>
+    
+</div>
+<div class="gridPanel">
+    <table id="gridList"></table>
+    <div id="gridPager"></div>
+</div>
+<script type="text/javascript">
+    $('input[name="rbColor"]').on("change", function () {
+        var value = $(this).val();
+        if (value == 2) {
+            $("#cRGB").css("visibility", "visible");
+        } else {
+            $("#cRGB").css("visibility", "hidden");
+        }
+    });
+
+    function download(src) {
+        var $a = $("<a></a>").attr("href", src).attr("download", "img.png");
+        $a[0].click();
+    }
+
+    function btn_submit() {
+        var data = {
+            auto_color: false,
+            Type: 1,
+            WXAPPType: $('#WXAPPType').val(),
+            path: "",
+            width: 430,
+            line_color: {
+                r: 0,
+                g: 0,
+                b: 0
+            }
+        };
+        if ($('input[name="Type"]:checked').val() == 2) {
+            data.Type = 2;
+        }
+        if ($('input[name="rbColor"]:checked').val() == 2) {
+            $("#R").addClass("required");
+            $("#G").addClass("required");
+            $("#B").addClass("required");
+            data.auto_color = true;
+        } else {
+            $("#R").removeClass("required");
+            $("#G").removeClass("required");
+            $("#B").removeClass("required");
+        }
+
+        if (!$('#form1').formValid()) {
+            return false;
+        }
+        data.path = $("#Uri").val();
+        data.width = $("#CWidth").val();
+        if (data.auto_color) {
+            data.line_color.r = $("#R").val();
+            data.line_color.g = $("#G").val();
+            data.line_color.b = $("#B").val();
+        }
+        //  $("#downFile").attr("href",);
+        console.log(JSON.stringify(data));
+
+        $.ajax({
+            url: "/WXAPPQrcode/SubmitQcode",
+            type: "post",
+            data: {
+                data: JSON.stringify(data)
+            },
+            dataType: "json",
+            success: function (res) {
+                if (res.Code == 1) {
+                    download("/WXAPPQrcode/GetQcode");
+                    setTimeout(function () {
+                        $('#gridList').jqGrid('setGridParam', {
+                        }).trigger('reloadGrid');
+                    },1500);
+                } else {
+                    alert(res.Msg);
+                }
+            }
+        })
+
+        
+       
+    }
+
+    function gridList() {
+        var $gridList = $('#gridList');
+        $gridList.dataGrid({
+            height: $(window).height() - 500,
+            pager: "#gridPager",
+            url: '/WXAPPQrcode/GetGridJson',
+            colModel: [
+                { label: "PKID", name: "PKID", width: 120, align: "center", hidden: true },
+                {
+                    label: "二维码类型", name: "QcodeType", width: 100, align: 'left',
+                    formatter: function (cellvalue) {
+                        return cellvalue == 1 ? "小程序码" : "小程序二维码";
+                    }
+                },
+                { label: "页面路径", name: "Path", width: 180, align: "left" },
+                { label: "宽度", name: "Width", width: 80, align: "center" },
+                {
+                    label: "自定义颜色", name: "IsColor", width: 100, align: "left",
+                    formatter: function (cellvalue) {
+                        return cellvalue == 1 ? "<i class=\"fa fa-toggle-on\"></i>" : "<i class=\"fa fa-toggle-off\"></i>";
+                    }
+                },
+                {
+                    label: "图片地址", name: "Uri", width: 600, align: "left",
+                    formatter: function (cellvalue) {
+                        //return `<a href="${cellvalue}" traget="_bank" >${cellvalue}</a>`;
+                        //  return '<a href="' + cellvalue + '" traget="_bank">' + cellvalue + '</a>';
+                        return '<a style="cursor: pointer;" name="redictA" data-url="' + cellvalue + '">' + cellvalue + '</a>';
+                    }
+                },
+                { label: "R", name: "R", width: 30 },
+                 { label: "G", name: "G", width: 30 },
+                  { label: "B", name: "B", width: 30 },
+            {
+                label: "创建时间", name: "CreateDatetime", width: 200,
+                formatter: "date", formatoptions: { srcformat: 'Y-m-d H:i:s', newformat: 'Y-m-d H:i:s' }
+            }
+            ],
+            viewrecords: true,
+            sortname: "PKID desc,CreateDatetime desc",
+            rowNum: 10,
+            rowList: [10, 20, 30],
+            gridComplete: function () {
+                $('a[name="redictA"]').on("click", function () {
+                    openIamge($(this).data("url"));
+                });
+            }
+        });
+    }
+
+    function openIamge(url) {
+        window.open(url, "_bank");
+    }
+
+    $(function () {
+        gridList();
+       
+    });
+  
+</script>

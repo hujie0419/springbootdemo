@@ -1,0 +1,1035 @@
+﻿@model  IEnumerable<PromotionModel>
+@using Tuhu.Provisioning.DataAccess.Entity
+@{
+    var updateORcopy = !String.IsNullOrWhiteSpace(Request.QueryString["id"]);
+    var addOpr = !updateORcopy || (updateORcopy && !String.IsNullOrWhiteSpace(Request.QueryString["isCreate"]));
+    ViewBag.Title = addOpr ? (updateORcopy ? "优惠券复制" : "优惠券新增") : "优惠券修改";
+    var type = "";
+    int installtype = 0; 
+    int promotiontype = 0;
+    if (Model != null && Model.Count() > 0)
+    {
+        var example = Model.FirstOrDefault();
+        if (example != null)
+        {
+            installtype = example.InstallType;
+            promotiontype = example.PromotionType;
+            if (Model.Any(i => !string.IsNullOrWhiteSpace(i.ProductID)))
+            {
+                type += "PID|";
+            }
+            if (Model.Any(i => !string.IsNullOrWhiteSpace(i.Category) && string.IsNullOrWhiteSpace(i.Brand)))
+            {
+                type += "Category|";
+            }
+            if (Model.Any(i => !string.IsNullOrWhiteSpace(i.Brand)))
+            {
+                type += "Brand|";
+            }
+        }
+    }
+
+}
+@section head{
+    <link href="~/Styles/zTreeStyle.css" type="text/css" rel="stylesheet" />
+    <link href="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.css" rel="stylesheet" />
+    <style>
+        table {
+            width: 100%;
+        }
+
+            table th, table table td {
+                text-align: center;
+            }
+
+            table .type label {
+                cursor: pointer;
+            }
+
+            table .category {
+                width: 100%;
+            }
+
+                table .category .gouxuan {
+                    width: 15px;
+                    height: 15px;
+                    border: 1px solid grey;
+                    display: inline-block;
+                    vertical-align: top;
+                }
+
+                table .category .cate {
+                    vertical-align: top;
+                    display: inline-block;
+                    height: 15px;
+                    line-height: 15px;
+                }
+
+                table .category li {
+                    min-height: 30px;
+                    line-height: 30px;
+                }
+
+        .area {
+            margin-bottom: 20px;
+        }
+
+            .area > label {
+                font-size: 20px;
+                font-weight: bold;
+            }
+
+        #brand .select {
+            width: 90px;
+            display: inline-block;
+            float: left;
+            border: 1px solid #e8e8e8;
+            position: relative;
+            height: 22px;
+        }
+
+            #brand .select .arrow_down {
+                position: absolute;
+                display: inline-block;
+                border: 4px solid;
+                border-color: #666 #fff #fff #fff;
+                right: 4px;
+                top: 9px;
+            }
+
+            #brand .select .input {
+                border: none;
+                width: 100%;
+                float: left;
+                height: 20px;
+                line-height: 20px;
+                cursor: pointer;
+            }
+
+            #brand .select .item {
+                width: 90px;
+                position: absolute;
+                top: 23px;
+                left: -1px;
+                border-right-width: 1px;
+                border-bottom-width: 1px;
+                border-left-width: 1px;
+                border-style: none solid solid;
+                border-color: #e8eef4;
+                background-color:#FFFFFF;
+            }
+
+                #brand .select .item label {
+                    width: 90px;
+                    display: block;
+                    height: 20px;
+                    line-height: 20px;
+                    margin-bottom: 3px;
+                    margin-top: 3px;
+                    cursor: pointer;
+                    display: inline-block;
+                }
+
+
+            #brand .select.children, #brand .select.grandson {
+                display: none;
+                border-left: none;
+            }
+
+        #brand .branditem {
+            display: inline-block;
+            height: 20px;
+            line-height: 20px;
+            margin-right: 20px;
+        }
+
+            #brand .branditem input {
+                vertical-align: bottom;
+            }
+
+        .item_delete {
+            display: block;
+            width: 40px;
+            height: 30px;
+            margin: 0 auto;
+            background-color: #DEEEFE;
+            text-align: center;
+            line-height: 30px;
+        }
+
+        .tip {
+            color: red;
+            font-size: 14px;
+            font-weight: bolder;
+        }
+
+        h2 {
+            width: 200px;
+            color: #333;
+            float: left;
+        }
+
+        .button {
+            width: 50px;
+            height: 25px;
+            text-align: center;
+            line-height: 25px;
+            margin-top: 20px;
+            background: rgb(135, 182, 217);
+            cursor: pointer;
+        }
+
+        .addPromotion {
+            margin-left: 200px;
+            color: #08c;
+        }
+    </style>
+}
+<h2>@(addOpr ? (updateORcopy ? "优惠券复制" : "优惠券新增") : "优惠券修改")</h2>
+<h2 class="addPromotion"><a href="/Promotion/Index">返回优惠券配置</a></h2>
+
+<table style="margin-bottom: 20px;">
+    <tr>
+        <th width="100%" style="text-align:left;" colspan="2">优惠券规则配置</th>
+    </tr>
+    <tr>
+        <td>*备注:</td>
+        <td><textarea type="text" name="Name" placeholder="仅内部人员可见,用于区分不同活动">@(Model == null || Model.Count() == 0 ? null : Model.FirstOrDefault().Name)</textarea></td>
+    </tr>
+
+    <tr>
+        <td width="10%">订单类型:</td>
+        <td class="ordertype">
+            <label><input type="radio" name="ordertype" value="0" checked='@(installtype == 0 ? "checked" : null)' />所有订单</label>
+            <label><input type="radio" name="ordertype" value="1" checked='@(installtype == 1 ? "checked" : null)' />仅到家订单</label>
+            <label><input type="radio" name="ordertype" value="2" checked='@(installtype == 2 ? "checked" : null)' />仅到店订单</label>
+        </td>
+    </tr>
+
+    <tr>
+        <td>优惠券类型:</td>
+        <td class="promotiontype">
+            <label><input type="radio" name="promotiontype" value="0" checked='@(promotiontype == 0 ? "checked" : null)' />满减券</label>
+            <label><input type="radio" name="promotiontype" value="1" checked='@(promotiontype == 1 ? "checked" : null)' />后返券</label>
+            <label><input type="radio" name="promotiontype" value="2" checked='@(promotiontype == 2 ? "checked" : null)' />实付券</label>
+        </td>
+    </tr>
+    <tr>
+        <td>跳转着陆页：</td>
+        <td>
+            <label><input type="radio" name="HrefType" value="0" checked="@(Model==null||Model.Count()<=0||Model.FirstOrDefault().HrefType==0?"checked":null)" />优惠券说明</label>
+            <label><input type="radio" name="HrefType" value="1" checked="@(Model!=null&&Model.Count()>0&&Model.FirstOrDefault().HrefType==1?"checked":null)" />轮胎列表</label>
+            <label><input type="radio" name="HrefType" value="2" checked="@(Model!=null&&Model.Count()>0&&Model.FirstOrDefault().HrefType==2?"checked":null)" />保养列表</label>
+            <label><input type="radio" name="HrefType" value="3" checked="@(Model!=null&&Model.Count()>0&&Model.FirstOrDefault().HrefType==3?"checked":null)" />车品商城</label>
+            <label><input type="radio" name="HrefType" value="4" checked="@(Model!=null&&Model.Count()>0&&Model.FirstOrDefault().HrefType==4?"checked":null)" />商品列表</label>
+            <label><input type="radio" name="HrefType" value="5" checked="@(Model!=null&&Model.Count()>0&&Model.FirstOrDefault().HrefType==5?"checked":null)" />洗车</label>
+            <label><input type="radio" name="HrefType" value="6" checked="@(Model!=null&&Model.Count()>0&&Model.FirstOrDefault().HrefType==6?"checked":null)" />打蜡</label>
+            <label><input type="radio" name="HrefType" value="7" checked="@(Model!=null&&Model.Count()>0&&Model.FirstOrDefault().HrefType==7?"checked":null)" />内饰清洗</label>
+        </td>
+    </tr>
+    <tr>
+        <td>自定义跳转着陆页：</td>
+        <td >
+            <textarea type="text" name="CustomSkipPage" value="@((Model == null || Model.Count() == 0) ? null : Model.FirstOrDefault().CustomSkipPage)">@((Model == null || Model.Count() == 0) ? null : Model.FirstOrDefault().CustomSkipPage)</textarea>
+        </td>
+    </tr>
+    <tr>
+        <td>自定义跳转着陆页（小程序）：</td>
+        <td>
+            <textarea type="text" name="WxSkipPage" value="@((Model == null || Model.Count() == 0) ? null : Model.FirstOrDefault().WxSkipPage)">@((Model == null || Model.Count() == 0) ? null : Model.FirstOrDefault().WxSkipPage)</textarea>
+        </td>
+    </tr>
+    <tr>
+        <td>自定义跳转着陆页（H5）：</td>
+        <td>
+            <textarea type="text" name="H5SkipPage" value="@((Model == null || Model.Count() == 0) ? null : Model.FirstOrDefault().H5SkipPage)">@((Model == null || Model.Count() == 0) ? null : Model.FirstOrDefault().H5SkipPage)</textarea>
+        </td>
+    </tr>
+    <tr>
+        <td><span class="content">商品范围：</span></td>
+        <td>
+            <div class="area">
+                <label><input type="checkbox" name="name" value="" checked="@(type.Contains("Category") ? "checked" : null)" />按类别</label>
+                <div id="category" style="display:@(type.Contains("Category") ? null : "none")">
+                    <ul id="tree1" class="ztree"></ul>
+                </div>
+            </div>
+
+            <div class="area">
+                <label><input type="checkbox" name="name" value="" checked="@(type.Contains("Brand") ? "checked" : null)" />按品牌</label>
+                <div id="brand" style="display:@(type.Contains("Brand") ? "" : "none")">
+                    <table>
+                        <tr>
+                            <th width="25%">商品类别</th>
+                            <th>请选择品牌</th>
+                            <th width="10%">操作</th>
+                        </tr>
+                        @if (type.Contains("Brand"))
+                        {
+                            var result = Model.Where(s => !string.IsNullOrWhiteSpace(s.Brand)).GroupBy(m => m.Category).ToDictionary(group => group.Key, group => group);
+                            foreach (var r in result)
+                            {
+                                <tr class="per_categoryandbrand">
+                                    <td>
+                                        <input type="hidden" name="Category" value="@r.Key" />
+                                        <span class="select parent">
+                                            <span class="input"></span>
+                                            <label class="arrow_down"></label>
+                                            <span class="item" style="display:none;"></span>
+                                        </span>
+                                        <span class="select children" style="display:none;">
+                                            <span class="input">--请选择--</span>
+                                            <label class="arrow_down"></label>
+                                            <span class="item"></span>
+                                        </span>
+                                        <span class="select grandson" style="display:none;">
+                                            <span class="input"></span>
+                                            <label class="arrow_down"></label>
+                                            <span class="item"></span>
+                                        </span>
+                                    </td>
+                                    <td class="result"></td>
+                                    <td>
+                                        <a style="cursor:pointer;" class="item_delete">删除</a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="per_categoryandbrand">
+                                <td>
+                                    <input type="hidden" name="Category" />
+                                    <span class="select parent">
+                                        <span class="input">--请选择--</span>
+                                        <label class="arrow_down"></label>
+                                        <span class="item" style="display:none;"></span>
+                                    </span>
+                                    <span class="select children">
+                                        <span class="input">--请选择--</span>
+                                        <label class="arrow_down"></label>
+                                        <span class="item" style="display:none;"></span>
+                                    </span>
+                                    <span class="select grandson">
+                                        <span class="input">--请选择--</span>
+                                        <label class="arrow_down"></label>
+                                        <span class="item" style="display:none;"></span>
+                                    </span>
+                                </td>
+                                <td class="result"></td>
+                                <td>
+                                    <a style="cursor:pointer;" class="item_delete">删除</a>
+                                </td>
+                            </tr>
+                        }
+                        <tr>
+                            <td colspan="3">
+                                <a style="cursor:pointer;" class="brand_add">新增类别及品牌</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="area">
+                <label><input type="checkbox" name="name" value="" checked="@(type.Contains("PID") ? "checked" : null)" />按PID</label>
+                <div id="pid" style="display:@(type.Contains("PID") ? null : "none")">
+                    <div class="pidtype">
+                        <label><input type="radio" name="pidtype" value="1" checked="@((type.Contains("PID") && Model.Where(p => !String.IsNullOrWhiteSpace(p.ProductID)).FirstOrDefault().PIDType || !type.Contains("PID")) ? "checked" : null)" />增加PID</label>
+                        <label> <input type="radio" name="pidtype" value="0" checked="@(type.Contains("PID") && !Model.Where(p => !String.IsNullOrWhiteSpace(p.ProductID)).FirstOrDefault().PIDType ? "checked" : null)" />排除PID</label>
+                    </div>
+                    <table>
+                        <tr style="text-align:center;">
+                            <th style="width:25%;">产品编号</th>
+                            <th>产品名称</th>
+                            <th style="width:10%;">操作</th>
+                        </tr>
+                        @if (type.Contains("PID"))
+                        {
+                            foreach (var m in Model.Where(p => !string.IsNullOrWhiteSpace(p.ProductID)).Select(_=>_.ProductID).Distinct())
+                            {
+                                <tr style="text-align:center;" class="productDis">
+                                    <td><input type="text" name="PID" style="width:60%" value="@m" class="ChangeProductName bitian" /></td>
+                                    <td></td>
+                                    <td><a style="cursor:pointer;" class="item_delete">删除</a></td>
+                                </tr>
+                            }
+                        }
+                        <tr>
+                            <td colspan="3">
+                                <a style="cursor:pointer;" class="product_add">添加商品</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td><span>门店范围：</span></td>
+        <td>
+            <div class="area">
+                <label><input type="checkbox" name="name" value="" checked="@(Model!=null&&Model.Any(C=>C.ShopType>0)?"checked":null)" />按类型</label>
+                <div id="Shop_Type" style="display:@(Model != null && Model.Any(C => C.ShopType > 0 )? null:"none")">
+                    <label><input type="checkbox" name="shoptype" value="512" checked="@(Model!=null&&Model.Any(C=>C.ShopType==512)?"checked":null)" />工场店</label>
+                    <label><input type="checkbox" name="shoptype" value="129" checked="@(Model!=null&&Model.Any(C=>C.ShopType==129)?"checked":null)" />星级保养店</label>
+                    <label><input type="checkbox" name="shoptype" value="2048" checked="@(Model!=null&&Model.Any(C=>C.ShopType==2048)?"checked":null)" />技术中心</label>
+                </div>
+            </div>
+
+            <div class="area">
+                <label><input type="checkbox" name="name" value="" checked="@(Model!=null&&Model.Any(C=>C.ShopID>0)?"checked":null)" />按ShopID</label>
+                <div id="Shop_ID" style="display:@(Model != null && Model.Any(C => C.ShopID > 0 )? null:"none")">
+                    <table>
+                        <tr>
+                            <th width="25%">ShopID</th>
+                            <th>门店名称</th>
+                            <th width="15%">操作</th>
+                        </tr>
+                        @if (Model != null && Model.Any(C => C.ShopID > 0))
+                        {
+                            foreach (var item in Model.Where(C => C.ShopID > 0).Select(C => C.ShopID + "|" + C.ShopName).Distinct())
+                            {
+                                <tr>
+                                    <td><input type="text" name="shopid" value="@item.Split('|')[0]" onblur="FetchShopName(this)" /></td>
+                                    <td><span>@item.Split('|')[1]</span></td>
+                                    <td><a href="javascript:void(0)" onclick="$(this).parent().parent().remove()">删除</a></td>
+                                </tr>
+                            }
+                        }
+
+                        <tr class="appendShipButton">
+                            <td>
+                                <a href="javascript:void(0)" onclick="AppendShopID()">继续添加门店</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<div class="button">保存</div>
+@section scripts{
+    <script src="~/Scripts/jquery.ztree.all-3.5.min.js"></script>
+    <script src="~/Scripts/jquery-ui-timepicker-addon/jquery-ui-timepicker-addon.min.js"></script>
+    <script>
+
+
+        var AppendShopID = function() {
+            var trHtml = '<tr>';
+            trHtml += '<td><input type="text" name="shopid" value=""  onblur="FetchShopName(this)" /></td>';
+            trHtml += '<td></td>';
+            trHtml += '<td><a href="javascript:void(0)" onclick="$(this).parent().parent().remove()">删除</a></td>';
+            trHtml += '</tr>';
+            $(".appendShipButton").before(trHtml);
+        };
+        var FetchShopName = function(target) {
+            var $target = $(target);
+            var shopId = $target.val().trim();
+            if (shopId.length) {
+                $.get("/Promotion/FetchShopNameByID",
+                    { shopId: shopId },
+                    function(data) {
+                        if (data && data.length)
+                            $target.parent().next().html('<span>' + data + '</span>');
+                        else
+                            $target.parent().next().html('<span style="color:red;">门店不存在<span>');
+
+                    });
+
+            }
+
+        };
+
+        $(function() {
+            //商品范围 按类别/按品牌/按PID
+            $(".area>label").on("click",
+                function() {
+                    if ($(this).find("input").prop("checked"))
+                        $(this).next().show();
+                    else
+                        $(this).next().hide();
+
+                });
+
+
+            //获得产品的类别
+            var treeObj = null;
+            $.ajax({
+                url: "/Promotion/GetCategory",
+                type: "get",
+                dataType: "json",
+                data: { type: "category" },
+                success: function(data) {
+                    if (data != null) {
+                        var setting = {
+                            check: {
+                                enable: true,
+                                nocheckInherit: true,
+                                chkStyle: "checkbox",
+                                chkboxType: { "Y": "s", "N": "ps" }
+                            },
+                            callback: {
+                            }
+                        };
+                        treeObj = $.fn.zTree.init($("#tree1"), setting, data);
+                        if ("@type".indexOf("Category") >= 0) {
+                            var presentcate =
+                                "@(Model != null && Model.Count() > 0 ? String.Join(",", Model.Where(s => string.IsNullOrWhiteSpace(s.Brand) && !string.IsNullOrWhiteSpace(s.Category)).Select(m => m.Category).ToArray()) : "")"
+                                    .split(','); //原有的类别
+                            var nodes = treeObj.getNodes();
+                            if (presentcate.length > 0) {
+                                for (var i = 0, l = nodes.length; i < l; i++) {
+                                    if (presentcate.indexOf(nodes[i].title) >= 0)
+                                        treeObj.checkNode(nodes[i], true, true);
+                                    else if (nodes[i].children.length > 0) {
+                                        var f = true;
+                                        $.each(nodes[i].children,
+                                            function(i, v) {
+                                                if (presentcate.indexOf(v.title) >= 0)
+                                                    treeObj.checkNode(v, true, true);
+                                                else
+                                                    f = false;
+                                            });
+                                        if (f)
+                                            treeObj.checkNode(nodes[i], true, true);
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            var firstbrand = true;
+            var firstpid = true;
+
+            //获得产品品牌
+            var categories = [];
+            var children = [];
+            var content1 = ""; //产品大种类
+
+            if (firstbrand) {
+                $("#brand .parent .item").text("正在加载数据...");
+                $.ajax({
+                    url: "/Promotion/GetCategory",
+                    type: "get",
+                    dataType: "json",
+                    data: { type: "brand" },
+                    success: function(data) {
+                        if (data != null) {
+                            categories = data;
+                            firstbrand = false;
+                            $.each(data,
+                                function(i, v) {
+                                    children[v.CategoryName] = v.ChildrenCategory;
+                                    if (v.ChildrenCategory.length > 0) {
+                                        $.each(v.ChildrenCategory,
+                                            function(j, k) {
+                                                children[k.CategoryName] = k.ChildrenCategory;
+                                            });
+                                    }
+                                });
+                            $.each(categories,
+                                function(i, v) {
+                                    content1 += "<label data-catagory='" +
+                                        v.CategoryName +
+                                        "'>" +
+                                        v.DisplayName +
+                                        "</label>";
+                                });
+                            $("#brand .parent .item").text("").append(content1).css("display", "block").hide(); //
+                            $("#brand .parent").parent().parent()
+                                .css({ "vertical-align": "top" }); // "height": "230px",
+
+
+                            if ("@type".indexOf("Brand") >= 0) {
+                                $(".per_categoryandbrand input[name=Category]").each(function() {
+                                    var td = $(this).parent();
+                                    var val = $(this).val();
+                                    var self = $(this);
+                                    var content2 = "";
+                                    var content3 = "";
+                                    var originalbrands =
+                                        "@(Model != null && Model.Count() > 0 ? String.Join(",", Model.Select(m => m.Brand).ToArray()) : "")";
+                                    //品牌设置
+                                    $.ajax({
+                                        url: "/Promotion/GetBrand",
+                                        type: "get",
+                                        dataType: "json",
+                                        data: { type: val },
+                                        success: function(data) {
+                                            if (data != null) {
+                                                var content = "";
+                                                $.each(data,
+                                                    function(i, v) {
+                                                        if (originalbrands.length > 0 &&
+                                                            originalbrands.indexOf(v.Cp_Brand) >= 0) {
+                                                            content +=
+                                                                '<span class="branditem"><input type="checkbox" name="brand" value="' +
+                                                                v.Cp_Brand +
+                                                                '" checked="checked" />' +
+                                                                v.Cp_Brand +
+                                                                '</span>';
+                                                        } else {
+                                                            content +=
+                                                                '<span class="branditem"><input type="checkbox" name="brand" value="' +
+                                                                v.Cp_Brand +
+                                                                '" />' +
+                                                                v.Cp_Brand +
+                                                                '</span>';
+                                                        }
+                                                    });
+                                                td.next().text("").append(content);
+                                            }
+                                        }
+                                    });
+
+                                    //下拉框设置
+                                    $.each(categories,
+                                        function(i, v) {
+                                            //self.siblings(".parent").find(".item").append(content1);
+                                            //self.siblings(".parent").find(".item").hide();
+                                            if (v.CategoryName.trim() == val) {
+                                                self.siblings(".parent").find(".input").text(v.DisplayName);
+                                                return;
+                                            } else {
+                                                var parent = v.CategoryName;
+                                                var grandpa = v.CategoryName;
+                                                var grandpaName = v.DisplayName;
+                                                var parentName = v.DisplayName;
+                                                if (v.ChildrenCategory.length > 0) {
+                                                    $.each(v.ChildrenCategory,
+                                                        function(i, v) {
+                                                            parentName = v.DisplayName;
+                                                            if (v.CategoryName.trim() == val) {
+                                                                $.each(children[parent],
+                                                                    function(i, v) {
+                                                                        content2 += "<label data-catagory='" +
+                                                                            v.CategoryName +
+                                                                            "'>" +
+                                                                            v.DisplayName +
+                                                                            "</label>";
+                                                                    });
+                                                                self.siblings(".parent").find(".input")
+                                                                    .text(grandpaName);
+                                                                self.siblings(".parent").find(".item").hide();
+                                                                self.siblings(".children").find(".input")
+                                                                    .text(parentName);
+                                                                self.siblings(".children").show().find(".item")
+                                                                    .append(content2).hide();
+                                                                return;
+                                                            } else {
+                                                                if (v.ChildrenCategory.length > 0) {
+                                                                    parent = v.CategoryName;
+                                                                    $.each(v.ChildrenCategory,
+                                                                        function(i, v) {
+                                                                            if (v.CategoryName.trim() == val) {
+                                                                                self.siblings(".children")
+                                                                                    .find(".input").text(parentName);
+                                                                                $.each(children[parent],
+                                                                                    function(i, v) {
+                                                                                        content3 +=
+                                                                                            "<label data-catagory='" +
+                                                                                            v.CategoryName +
+                                                                                            "'>" +
+                                                                                            v.DisplayName +
+                                                                                            "</label>";
+                                                                                    });
+                                                                                $.each(children[grandpa],
+                                                                                    function(i, v) {
+                                                                                        content2 +=
+                                                                                            "<label data-catagory='" +
+                                                                                            v.CategoryName +
+                                                                                            "'>" +
+                                                                                            v.DisplayName +
+                                                                                            "</label>";
+                                                                                    });
+                                                                                self.siblings(".parent").find(".input")
+                                                                                    .text(grandpaName);
+                                                                                self.siblings(".parent").find(".item")
+                                                                                    .hide();
+                                                                                self.siblings(".children").show()
+                                                                                    .find(".item").append(content2)
+                                                                                    .hide();
+                                                                                self.siblings(".children").show()
+                                                                                    .find(".input").text(parentName);
+                                                                                self.siblings(".grandson").show()
+                                                                                    .find(".item").append(content3)
+                                                                                    .hide();
+                                                                                self.siblings(".grandson").show()
+                                                                                    .find(".input").text(v.DisplayName);
+                                                                                return;
+                                                                            }
+                                                                        });
+                                                                }
+                                                            }
+                                                        });
+                                                }
+                                            }
+                                        });
+                                });
+                            }
+                        }
+                    }
+                });
+
+            }
+
+            $("input[name=type]").click(function() {
+                if ($(this).val() == "brand") {
+                    $("#category").hide();
+                    $("#brand").show();
+                    $("#pid").hide();
+                } else if ($(this).val() == "category") {
+                    $("#category").show();
+                    $("#brand").hide();
+                    $("#pid").hide();
+                } else if ($(this).val() == "pid") {
+                    $("#category").hide();
+                    $("#brand").hide();
+                    $("#pid").show();
+                }
+            });
+            //下拉框点击
+            $("#brand").on("click",
+                ".select .input",
+                function() {
+                    var s = $(this);
+                    //s.siblings(".item").toggleClass("current");
+                    if (s.siblings(".item").is(":visible") == false) {
+                        s.parent().parent().parent().css({ "height": "320px", "vertical-align": "top" });
+                        s.siblings(".item").css("display", "block");
+
+                        //让其前后下拉框隐藏
+                        s.parent().next().find(".item").hide();
+                        s.parent().prev().find(".item").hide();
+                        s.parent().next().next().find(".item").hide();
+                        s.parent().prev().prev().find(".item").hide();
+                    } else {
+                        s.siblings(".item").hide();
+                        s.parent().parent().parent().css({ "height": "auto", "vertical-align": "top" });
+                    }
+                });
+            //新增产品类别及品牌
+            $("#brand").on("click",
+                ".brand_add",
+                function() {
+                    var content =
+                        '<tr style="height:230px; vertical-align:top;" class="per_categoryandbrand"><td><input type="hidden" name="Category" /><span class="select parent"><span class="input">--请选择--</span><label class="arrow_down"></label><span class="item">' +
+                            content1 +
+                            '</span></span><span class="select children"><span class="input">--请选择--</span><label class="arrow_down"></label><span class="item" style="display:none;"></span></span><span class="select grandson"><span class="input">--请选择--</span><label class="arrow_down"></label><span class="item" style="display:none;"></span></span></td><td></td><td><a style="cursor:pointer;" class="item_delete" >删除</a></td></tr>';
+                    $(this).parent().parent().before(content);
+                });
+
+            //添加商品
+            $("#pid").on("click",
+                ".product_add",
+                function() {
+                    var content =
+                        '<tr style="text-align:center;" class="productDis"><td><input type="text" name="PID" style="width:60%" value="" class="ChangeProductName bitian" /></td><td></td><td><a style="cursor:pointer;" class="item_delete">删除</a></td></tr>';
+                    $(this).parent().parent().before(content);
+                });
+
+            //某一行数据删除
+            $("table").on("click",
+                ".item_delete",
+                function() {
+                    $(this).parent().parent().remove();
+                });
+
+            //每个类别的改变事件
+            $("#brand").on("click",
+                ".item label",
+                function() {
+                    var s = $(this);
+                    var td = s.parent().parent().parent();
+                    var content2 = "";
+                    s.parent().siblings(".input").text(s.text());
+                    s.parent().hide();
+                    s.parent().parent().next().hide().find(".input").text("--请选择--");
+                    s.parent().parent().next().find(".item label").remove();
+                    s.parent().parent().next().next().hide().find(".input").text("--请选择--");
+                    s.parent().parent().next().next().find(".item label").remove();
+                    if (children[s.attr("data-catagory")] != null && children[s.attr("data-catagory")].length > 0) {
+                        $.each(children[s.attr("data-catagory")],
+                            function(i, v) {
+                                content2 += "<label data-catagory='" +
+                                    v.CategoryName +
+                                    "'>" +
+                                    v.DisplayName +
+                                    "</label>";
+                            });
+                        s.parent().parent().next().css("display", "inline-block").find(".item label").remove();
+                        s.parent().parent().next().find(".item").css("display", "block").append(content2);
+
+                        s.parent().parent().siblings("input[type=hidden]").val(null);
+                        td.parent().css({ "height": "320px", "vertical-align": "top" });
+                        td.next().text("");
+                    } else {
+                        s.parent().parent().siblings("input[type=hidden]").val(s.attr("data-catagory"));
+                        //table行的高度
+                        td.parent().css({ "height": "auto", "vertical-align": "top" });
+                        //单元格
+                        //加载品牌
+                        $.ajax({
+                            url: "/Promotion/GetBrand",
+                            type: "get",
+                            dataType: "json",
+                            data: { type: s.attr("data-catagory") },
+                            success: function(data) {
+                                if (data != null) {
+                                    var content = "";
+                                    $.each(data,
+                                        function(i, v) {
+                                            content +=
+                                                '<span class="branditem"><input type="checkbox" name="brand" value="' +
+                                                v.Cp_Brand +
+                                                '" />' +
+                                                v.Cp_Brand +
+                                                '</span>';
+                                        });
+                                    td.next().text("").append(content);
+                                }
+                            }
+                        });
+
+                    }
+
+                });
+
+            //当输入产品ID时将显示它的名称 价格
+            $("#pid").on("input",
+                ".productDis .ChangeProductName",
+                function() {
+                    var _ParentTr = $(this).parent();
+                    var _NewPID = $(this).val();
+                    if (_NewPID != "") {
+                        $.ajax({
+                            type: "post",
+                            url: '/Advertise/GetProductNamebyPID',
+                            data: { "PID": _NewPID, "Cate": 1 },
+                            success: function(result) {
+                                if (result != "")
+                                    _ParentTr.next().text(result);
+                                else
+                                    _ParentTr.next().text("无此产品");
+                            }
+                        });
+                    }
+                });
+            if ("@type".indexOf("PID") >= 0) {
+                $("#pid .ChangeProductName").each(function() {
+                    $(this).trigger("input");
+                });
+            }
+
+            //信息保存
+            $(".button").click(function() {
+                $(".tip").remove();
+                var type = "";
+                var button = $(this);
+                button.css("pointer-events", "none");
+
+                var data = [];
+
+                var allCategory = [];
+
+
+                var Name = $("[name=Name]").val(),
+                    pidtype = $("[name=pidtype]:checked").val() - 0, //1增加PID 0排除PID
+                    orderType = $("[name=ordertype]:checked").val(), //订单类型 0所有 1 仅到家 2仅到店
+                    hrefType = $("[name=HrefType]:checked").val(),
+                    promotionType = $("[name=promotiontype]:checked").val(),
+                    customSkipPage = $("[name=CustomSkipPage]").val(),
+                    wxSkipPage = $("[name=WxSkipPage]").val(),
+                    h5SkipPage = $("[name=H5SkipPage]").val();
+
+                //校验数据
+                var tip = "";
+                var flag = true; //是否可以提交信息
+
+
+                function ShowWrongTit(target, titText) {
+                    flag = false;
+                    target.after('<span class="tip">' + titText + '</span>');
+                    button.css("pointer-events", "all");
+                    return;
+                }
+
+                //检验商品范围
+                if (!$("#category").prev().find("[type=checkbox]").prop("checked") &&
+                    !$("#brand").prev().find("[type=checkbox]").prop("checked") &&
+                    !$("#pid").prev().find("[type=checkbox]").prop("checked")) {
+                    ShowWrongTit($("#category"), '类别,品牌.PID都未配置');
+                } else if ($("#pid").prev().find("[type=checkbox]").prop("checked") &&
+                    $("input[name=pidtype]:checked").val() == 0) { //如果配置了排除pid，那么必须配置类别和品牌其中一种
+                    if (!$("#category").prev().find("[type=checkbox]").prop("checked") &&
+                        !$("#brand").prev().find("[type=checkbox]").prop("checked")) {
+                        ShowWrongTit($("#category"), '类别,品牌必须配置其中一个');
+                    }
+            }
+            else
+            if ($("#category").prev().find("[type=checkbox]").prop("checked")) {
+                var allNodes = treeObj.getNodes();
+                $.each(allNodes,
+                    function(i, v) {
+                        if (v.check_Child_State == 2) {
+                            data.push({
+                                Name: Name,
+                                InstallType: orderType,
+                                HrefType: hrefType,
+                                PromotionType: promotionType,
+                                CustomSkipPage: customSkipPage,
+                                WxSkipPage: wxSkipPage,
+                                H5SkipPage: h5SkipPage,
+                                ParentID: "@((!updateORcopy) ? "0" : Request.QueryString["id"])",
+                                Category: v.title
+                            });
+                        } else if (v.check_Child_State == 1) {
+                            $.each(v.children,
+                                function(i, v) {
+                                    if (v.checked)
+                                        data.push({
+                                            Name: Name,
+                                            InstallType: orderType,
+                                            HrefType: hrefType,
+                                            PromotionType: promotionType,
+                                            CustomSkipPage: customSkipPage,
+                                            WxSkipPage: wxSkipPage,
+                                            H5SkipPage: h5SkipPage,
+                                            ParentID: "@((!updateORcopy) ? "0" : Request.QueryString["id"])",
+                                            Category: v.title
+                                        });
+                                });
+                        }
+                    });
+                if (data.length <= 0)
+                    ShowWrongTit($("#category").prev(), '请至少选择一种类别');
+            }
+            if ($("#brand").prev().find("[type=checkbox]").prop("checked")) {
+                $(".per_categoryandbrand").each(function() {
+                    var b_flag = false;
+                    var cate = $(this).find("input[name=Category]").val();
+                    $(this).find("input[name=brand]").each(function() {
+                        if ($(this)[0].checked) {
+                            data.push({
+                                Name: Name,
+                                InstallType: orderType,
+                                HrefType: hrefType,
+                                PromotionType: promotionType,
+                                CustomSkipPage: customSkipPage,
+                                WxSkipPage: wxSkipPage,
+                                H5SkipPage: h5SkipPage,
+                                ParentID: "@(!updateORcopy ? "0" : Request.QueryString["id"])",
+                                Category: cate,
+                                Brand: $(this).val()
+                            });
+                            b_flag = true;
+                        }
+                    });
+                    if (!b_flag) {
+                        ShowWrongTit($("#brand").prev(), '请完善品牌的选择');
+                    }
+                });
+            }
+            if ($("#pid").prev().find("[type=checkbox]").prop("checked")) {
+                $("input[name=PID]").each(function() {
+                    if ($(this).val() == "") {
+                        ShowWrongTit($(this), '请完善PID');
+                    } else if ($(this).parent().next().text() == "无此产品") {
+                        ShowWrongTit($(this), '请正确填写PID');
+                    } else
+                        data.push({
+                            Name: Name,
+                            InstallType: orderType,
+                            HrefType: hrefType,
+                            PromotionType: promotionType,
+                            CustomSkipPage: customSkipPage,
+                            WxSkipPage: wxSkipPage,
+                            H5SkipPage: h5SkipPage,
+                            ParentID: "@(!updateORcopy ? "0" : Request.QueryString["id"])",
+                            ProductID: $(this).val(),
+                            PIDType: pidtype
+                        });
+                });
+            }
+
+
+            var shopTypeArr = [];
+            var shopIDArr = [];
+            //门店Type
+            if ($("#Shop_Type").prev().find("[type=checkbox]").prop("checked")) {
+                if ($("input[name=shoptype]:checked").length == 0)
+                    ShowWrongTit($("#Shop_Type"), '请选择门店类型');
+                else
+                    $("input[name=shoptype]:checked").each(function() {
+                        shopTypeArr.push($(this).val());
+                    });
+            }
+
+            //门店ID
+            if ($("#Shop_ID").prev().find("[type=checkbox]").prop("checked")) {
+                $("input[name=shopid]").each(function() {
+                    if ($(this).val() == "") {
+                        ShowWrongTit($(this), '请填写门店ID');
+                    } else if ($(this).parent().next().find("span").text() == "门店不存在") {
+                        ShowWrongTit($(this), '请正确填写门店ID');
+                    } else
+                        shopIDArr.push($(this).val());
+                });
+            }
+            //if (promotionType == 2) {
+            //    if (!shopTypeArr.length && !shopIDArr.length) {
+            //        alert("实付券必须有门店");
+            //        button.css("pointer-events", "all");
+            //        return false;
+            //    }
+            //}
+
+
+            //信息提交之前的验证
+            if (flag) {
+                var r = confirm("是否确定保存信息？");
+                if (r) {
+                    console.log(data);
+                    $.ajax({
+                        url: "/Promotion/SaveInfo",
+                        type: "post",
+                        dataType: "json",
+                        data: {
+                            "PromotionModel": JSON.stringify(eval(data)),
+                            shopids: shopIDArr.length ? shopIDArr.join('|') : "",
+                            shoptypes: shopTypeArr.length ? shopTypeArr.join('|') : "",
+                            "action": "@(addOpr ? "add" : "update")",
+                            ParentID: "@Request.QueryString["id"]"
+                        },
+                        success: function(result) {
+                            if (result > 0) {
+                                alert("保存成功！");
+                                $.get("/WebSiteActivity/InsertHistoryAction",
+                                    {
+                                        ActiveID: 0,
+                                        ObjectType: "Promotion",
+                                        AfterValue: result,
+                                        Operation: "@(addOpr ? "add" : "update")"
+                                    },
+                                    function() {});
+                                window.location.href = "/Promotion/Index";
+                            }
+                        }
+                    });
+                } else {
+                    button.css("pointer-events", "all");
+                }
+            } else {
+                button.css("pointer-events", "all");
+            };
+        })
+
+    })
+    </script>
+}

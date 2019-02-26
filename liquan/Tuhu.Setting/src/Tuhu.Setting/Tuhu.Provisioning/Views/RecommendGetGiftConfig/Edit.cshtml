@@ -1,0 +1,365 @@
+﻿@model Tuhu.Provisioning.DataAccess.Entity.RecommendGetGiftConfig
+@{
+    Layout = null;
+
+}
+<script src="~/Scripts/UEditor/ueditor.config.js"></script>
+<script src="~/Scripts/UEditor/ueditor.all.min.js"></script>
+<script src="~/Scripts/UEditor/lang/zh-cn/zh-cn.js"></script>
+<style>
+    .btn {
+        margin-top: 20px;
+        padding: 5px 25px;
+        border: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+        background: cornflowerblue;
+        border-color: cornflowerblue;
+    }
+
+    a {
+        color: cornflowerblue;
+    }
+</style>
+<script src="../../Scripts/ajaxfileupload.js" type="text/javascript"></script>
+<script src="~/Scripts/UEditor/ueditor.config.js"></script>
+<script src="~/Scripts/UEditor/ueditor.all.min.js"></script>
+<script src="~/Scripts/UEditor/lang/zh-cn/zh-cn.js"></script>
+<form action="/RecommendGetGiftConfig/Edit" method="post">
+    <input type="hidden" value="@Model.Id" name="Id" />
+    <div>
+        <table>
+            <tr>
+                <td style="width:30%">名称</td>
+                <td style="width:70%">
+                    <input type="text" value="@Model.Name" name="Name" />
+                </td>
+            </tr>
+            <tr>
+                <td>背景图</td>
+                <td>
+                    <img height="50" class="vwPicture" src="@Model.Banner" />
+                    <form method="post" action="" enctype="multipart/form-data">
+                        <input style="width:150px;" type="file" onchange="UploadImg(this)" id="1" name="1" />
+                    </form>
+                    <br />
+                    <input type="text" name="Banner" class="image" value="@Model.Banner" />
+                </td>
+            </tr>
+            <tr>
+                <td>分享模式<br>(已经开始的配置该选项无法更改)</td>
+                <td>
+                    <input type="radio" value="0" name="IsSendCode" @((Model.IsSendCode??false) ? "" : "checked='checked'") />普通分享<br />
+                    <input type="radio" value="1" name="IsSendCode" @((Model.IsSendCode??false) ? "checked='checked'" : "") />发码分享     人群编号<input type="text" id="userGroupId" name="userGroupId" value="@Model.UserGroupId"/>
+                </td>
+            </tr>
+            <tr>
+                <td>每天首次分享积分奖励额度</td>
+                <td><input type="number" value="@Model.AwardLimit" name="AwardLimit" /></td>
+            </tr>
+
+            <tr>
+                <td>用户下单奖励</td>
+                <td>
+                    <select id="AwardType" name="AwardType">
+                        @if (Model.AwardType.Trim() == "Coupon")
+                        {
+                            <option value="Coupon" selected="selected">优惠券</option>
+                            <option value="Point">定额积分</option>
+                            <option value="Times">订单金额倍数积分奖励</option>
+                        }
+                        else if (Model.AwardType.Trim() == "Point")
+                        {
+                            <option value="Coupon">优惠券</option>
+                            <option value="Point" selected="selected">定额积分</option>
+                            <option value="Times">订单金额倍数积分奖励</option>
+                        }
+                        else if (Model.AwardType.Trim() == "Times")
+                        {
+                            <option value="Coupon">优惠券</option>
+                            <option value="Point">定额积分</option>
+                            <option value="Times" selected="selected">订单金额倍数积分奖励</option>
+                        }
+                        else
+                        {
+                            <option value="Point">定额积分</option>
+                            <option value="Coupon">优惠券</option>
+                            <option value="Times">订单金额倍数积分奖励</option>
+                        }
+
+                    </select>
+
+                </td>
+            </tr>
+            <tr>
+                <td>用户下单奖励值</td>
+                <td>
+                    <input type="number" value="@Model.AwardValue" min="0" name="AwardValue" id="AwardValue" /><br />
+                    <label style="color:red">当用户下单奖励为(订单金额积分倍数奖励)：最高为20，支持倍数后一位小数</label><br />
+                    <label style="color:red">当用户下单奖励为(定额积分)：输入奖励积分数，不能小于0</label>
+                </td>
+            </tr>
+            <tr>
+                <td>优惠券GUID</td>
+                <td>
+                    @{
+                        string[] coupons = new string[] { "" };
+                        if (!string.IsNullOrWhiteSpace(Model.GetRuleGUID))
+                        {
+                            coupons = Model.GetRuleGUID.Split(',');
+                        }
+
+                    }
+
+                    <input type="text" value="@(coupons.Length>=1?coupons[0]:"")" class="GetRuleGUID" /><br />
+                    <input type="text" value="@(coupons.Length>=2?coupons[1]:"")" class="GetRuleGUID" /><br />
+                    <input type="text" value="@(coupons.Length>=3?coupons[2]:"")" class="GetRuleGUID" /><br />
+                    <input type="text" value="@(coupons.Length>=4?coupons[3]:"")" class="GetRuleGUID" /><br />
+                    <input type="text" value="@(coupons.Length>=5?coupons[4]:"")" class="GetRuleGUID" /><br />
+                    <label style="color:red">当用户下单奖励为(优惠券)：输入优惠券ID或GUID</label>
+                </td>
+            </tr>
+            <tr>
+                <td style="width:35%"><span class="hint"></span>配置开始生效时间：<input type="text" id="StartTime" name="StartTime" readonly="readonly" value="@Model.StartTime"/></td>
+                <td><span class="hint"></span>配置结束生效时间：<input type="text" id="EndTime" name="EndTime" readonly="readonly" value="@Model.EndTime"/></td>
+            </tr>
+            <tr>
+                <td>推荐新用户完成注册文案</td>
+                <td>
+                    <input type="text" value="@Model.RegisteredText" name="RegisteredText" />
+                </td>
+            </tr>
+            <tr>
+                <td>推荐的新用户完成订单的奖励到账</td>
+                <td>
+                    <input type="text" value="@Model.AwardedText" name="AwardedText" />
+                </td>
+            </tr>
+            <tr>
+                <td>分享按钮文案</td>
+                <td>
+                    <input type="text" value="@Model.ShareButtonValue" name="ShareButtonValue" />
+                </td>
+
+            </tr>
+            <tr>
+                <td>任务tab名称</td>
+                <td>
+                    <input type="text" value="@Model.TabName" name="TabName" />
+                </td>
+            </tr>
+        </table>
+        <table>
+            <tbody>
+                <tr>
+                    <td>推荐有礼活动规则</td>
+                </tr>
+                <tr>
+                    <td>
+                        <textarea id="editor_recommend" name="editor_recommend"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td>好友限时召集活动规则</td>
+                </tr>
+                <tr>
+                    <td>
+                        <textarea id="editor_convene" name="editor_convene"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="button" value="保存" class="btn" onclick="saveModel()" /></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <input type="hidden" id="ShareChannel" value="@Model.ShareChannel" />
+</form>
+<script>
+    $(".GetRuleGUID").blur(function () {
+        var t=$(this);
+        $.ajax({
+            type: "POST",
+            url: "/RecommendGetGiftConfig/GetCoupon",
+            data: {
+                "guidOrId": t.val()
+            },
+            dataType: "JSON",
+            success: function (result) {
+                if (result) {
+                    t.val(result.GetRuleGUID);
+
+                }else{
+                    t.val("");
+                }
+            },
+            error: function (result) {
+
+            }
+        });
+    })
+
+    var ueditor_recommend = UE.getEditor('editor_recommend', {
+        UEDITOR_HOME_URL: "/Scripts/UEditor/",
+        allowDivTransToP: false,
+        autoHeightEnabled: false,
+        initialFrameWidth: 650,
+        initialFrameHeight: 250,
+        zIndex: 1000,
+        enterTag: ''
+    });
+
+    var ueditor_convene = UE.getEditor('editor_convene', {
+        UEDITOR_HOME_URL: "/Scripts/UEditor/",
+        allowDivTransToP: false,
+        autoHeightEnabled: false,
+        initialFrameWidth: 650,
+        initialFrameHeight: 250,
+        zIndex: 1000,
+        enterTag: ''
+    });
+
+    //$("#AwardType").change(function(){
+    //    if ($("#AwardType").val()=="Coupon") {
+    //        $("#AwardValue").attr("disabled","disabled");
+    //    }else{
+    //        $("#GetRuleGUID").attr("disabled","disabled");
+    //    }
+    //})
+    $(function () {
+
+        //if ($("#AwardType").val()!="Coupon") {
+        //    $("#GetRuleGUID").attr("disabled","disabled");
+        //}else{
+        //    $("#AwardValue").attr("disabled","disabled");
+        //}
+        if(@Model.Id!=0){
+            ueditor_recommend.addListener( 'ready', function() {
+                ueditor_recommend.setContent(decodeURIComponent('@Model.Rules'), "");
+            });
+
+            ueditor_convene.addListener( 'ready', function() {
+                ueditor_convene.setContent(decodeURIComponent('@Model.TimeLimitCollectRules'), "");
+            } );
+        }
+    })
+    function saveModel() {
+
+        var awardValue=0;
+        if ($("#AwardType").val()=="Times") {
+            var val=$("input[name='AwardValue']").val();
+            var sp1=val.toString().split(".")[1]||"1";
+            if (val<0||val>20||sp1.length>1) {
+                alert("用户下单奖励倍数不能小于0 且不能大于20且小数点后只有一位")
+                return false;
+            }else{
+                AwardValue=val;
+            }
+
+        }else{
+            var val=$("input[name='AwardValue']").val();
+            if (val<0) {
+                alert("积分奖励值不能小于0")
+                return false;
+            }else{
+                AwardValue=val;
+            }
+
+        }
+        if ($("input[name='IsSendCode']:checked").val()==1&&$("input[name='userGroupId']").val()<=0) {
+            alert("发码分享用户人群编号不符合要求");
+            return false;
+        }
+        if ($("input[name='StartTime']").val().length>0&&$("input[name='EndTime']").val().length<=0) {
+            alert("配置结束生效期没有设置");
+            return false;
+        }
+        if ($("input[name='StartTime']").val().length<=0&&$("input[name='EndTime']").val().length>0) {
+            alert("配置开始生效期没有设置");
+            return false;
+        }
+        var coupons="";
+        $(".GetRuleGUID").each(function(i) {
+            if ($(this).val()) {
+                coupons += $(this).val() + ",";
+            }
+        });
+        var dataStr = {
+            "Id": $("input:[name='Id']").val(),
+            "Name": $("input:[name='Name']").val(),
+            "Banner": $("input[name='Banner']").val(),
+            "AwardLimit": $("input[name='AwardLimit']").val(),
+            "AwardType": $("#AwardType").val(),
+            "AwardValue":AwardValue ,
+            "GetRuleGUID":coupons,
+            "RegisteredText": $("input[name='RegisteredText']").val(),
+            "AwardedText": $("input[name='AwardedText']").val(),
+            "ShareButtonValue": $("input[name='ShareButtonValue']").val(),
+            "ShareChannel": $("#ShareChannel").val(),
+            "Rules": encodeURIComponent(ueditor_recommend.getContent()),
+            "TimeLimitCollectRules": encodeURIComponent(ueditor_convene.getContent()),
+            "TabName":$("input[name='TabName']").val(),
+            "IsSendCode":($("input[name='IsSendCode']:checked").val()==1? true:false),
+            "UserGroupId":$("input[name='userGroupId']").val(),
+            "StartTime":$("input[name='StartTime']").val(),
+            "EndTime":$("input[name='EndTime']").val()
+        }
+        console.log(JSON.stringify(dataStr));
+        $.ajax({
+            type: "POST",
+            url: "/RecommendGetGiftConfig/Edit",
+            data: {
+                "data": JSON.stringify(dataStr)
+            },
+            success: function (result) {
+                if (result) {
+                    window.location.href = "/RecommendGetGiftConfig/Index";
+                } else {
+                    alert("保存失败!");
+                }
+            },
+            error: function (result) {
+                alert("失败!");
+            }
+        });
+    }
+
+    function UploadImg(e) {
+        var $e = $(e);
+        var $ee = $e.parents("tr").find("td").eq(1).find("img");
+        var $smallImage = $e.parents("tr").find("td").eq(1).find("input[class='smallImage']");
+        var $image = $e.parents("tr").find("td").eq(1).find("input[class='image']");
+        $.ajaxFileUpload({
+            url: '/Article/AddArticleImg2',
+            secureuri: false,
+            fileElementId: $e.attr("id"),
+            dataType: 'json',
+            data: {},
+            type: "post",
+            success: function (result) {
+                if (result.BImage != "" && result.SImage != "") {
+                    $ee.attr("src", result.SImage);
+                    $(".vwPicture").show();
+                    $smallImage.val(result.SImage);
+                    $image.val(result.BImage);
+                } else {
+                    alert("上传失败！");
+                }
+            }
+        })
+    }
+    $(function () {
+        $(document).ready(function () {
+            $("#StartTime").datepicker({
+                controlType: 'select',
+                dateFormat: "yy.mm.dd"
+            });
+            $("#EndTime").datepicker({
+                controlType: 'select',
+                dateFormat: "yy.mm.dd"
+            });
+        });
+    });
+</script>

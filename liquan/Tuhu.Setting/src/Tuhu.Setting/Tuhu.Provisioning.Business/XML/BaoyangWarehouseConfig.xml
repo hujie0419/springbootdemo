@@ -1,5 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<!--配置方式：orderNo|仓库名称-->
-<Mapping Name="保养仓库配置-描述配置">
-	<Exp Key="BaoYangWareHouseList" Description="-26|上海百世仓库,-32|北京百世仓库,-34|广州百世仓库,-44|武汉保养仓库,-9|成都仓库,-48|上海保养仓库,-50|北京保养仓库" />
-</Mapping>

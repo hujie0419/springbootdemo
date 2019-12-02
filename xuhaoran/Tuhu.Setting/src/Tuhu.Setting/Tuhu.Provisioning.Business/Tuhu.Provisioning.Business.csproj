@@ -1,0 +1,270 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3CD73CC2-643F-4FE8-ACD0-A5CE083C765A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Tuhu.Provisioning.Business</RootNamespace>
+    <AssemblyName>Tuhu.Provisioning.Business</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AopSdk, Version=4.0.0.1, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\AopSdk.4.0.0.1\lib\net45\AopSdk.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac, Version=4.1.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.4.1.0\lib\net45\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="AutoMapper, Version=6.2.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.6.2.1\lib\net45\AutoMapper.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging, Version=3.4.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.3.4.1\lib\net40\Common.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging.Core, Version=3.4.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.Core.3.4.1\lib\net40\Common.Logging.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging.Log4Net1211, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.Log4Net1211.3.3.1\lib\net40\Common.Logging.Log4Net1211.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Elasticsearch.Net, Version=2.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
+      <HintPath>..\packages\Elasticsearch.Net.2.5.4\lib\net46\Elasticsearch.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Nest, Version=2.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
+      <HintPath>..\packages\NEST.2.5.4\lib\net46\Nest.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="QPL.WebService.ServiceClient, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\QPL.WebService.ServiceClient.1.0.0\lib\net45\QPL.WebService.ServiceClient.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="QPL.WebService.TuHu.Core, Version=1.0.0.12, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\QPL.WebService.TuHu.Core.1.0.0.12\lib\net45\QPL.WebService.TuHu.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="RabbitMQ.Client, Version=3.6.0.0, Culture=neutral, PublicKeyToken=89e7d7c5feba84ce, processorArchitecture=MSIL">
+      <HintPath>..\packages\RabbitMQ.Client.3.6.0\lib\net45\RabbitMQ.Client.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="ThBiz.Common">
+      <HintPath>..\Tuhu.Provisioning\Lib\ThBiz.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="ThBiz.DataAccess">
+      <HintPath>..\Tuhu.Provisioning\Lib\ThBiz.DataAccess.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.2.2.5\lib\net46\Tuhu.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Component, Version=1.0.0.14, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Component.1.0.0.14\lib\net45\Tuhu.Component.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Component.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Tuhu.Provisioning\Lib\Tuhu.Component.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Component.Framework, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Tuhu.Provisioning\Lib\Tuhu.Component.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Elasticsearch, Version=1.1.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Elasticsearch.1.1.3.0\lib\net45\Tuhu.Elasticsearch.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Framework">
+      <HintPath>..\DLL\Tuhu.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.MessageQueue, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.MessageQueue.2.1.1.0\lib\net45\Tuhu.MessageQueue.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Nosql, Version=1.1.3.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Nosql.1.1.3.1\lib\net45\Tuhu.Nosql.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Profiling, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Profiling.1.0.0\lib\net46\Tuhu.Profiling.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.2.2.0\lib\net46\Tuhu.Service.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Activity, Version=1.2.3.19, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\DLL\Tuhu.Service.Activity.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.BaoYang, Version=1.4.9.48, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.BaoYang.1.4.9.48\lib\net45\Tuhu.Service.BaoYang.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.CallCenter, Version=1.5.0.5, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.CallCenter.1.5.0.5\lib\net45\Tuhu.Service.CallCenter.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Comment, Version=1.0.3.9, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Comment.1.0.3.9\lib\net45\Tuhu.Service.Comment.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Config, Version=1.1.6.8, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Config.1.1.6.8\lib\net45\Tuhu.Service.Config.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.ConfigLog, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.ConfigLog.1.0.1\lib\net45\Tuhu.Service.ConfigLog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Tuhu.Service.EmailProcess, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.EmailProcess.1.0.6\lib\net45\Tuhu.Service.EmailProcess.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.GroupBuying, Version=1.2.4.9, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.GroupBuying.1.2.4.9\lib\net452\Tuhu.Service.GroupBuying.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.KuaiXiu, Version=1.0.2.6, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.KuaiXiu.1.0.2.6\lib\net45\Tuhu.Service.KuaiXiu.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Member, Version=1.5.7.4, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Member.1.5.7.4\lib\net45\Tuhu.Service.Member.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.OprLog, Version=1.0.8.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.OprLog.1.0.8.0\lib\net45\Tuhu.Service.OprLog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Tuhu.Service.Order, Version=2.3.5.16, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Order.2.3.5.16\lib\net45\Tuhu.Service.Order.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Paint, Version=1.0.0.4, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Paint.1.0.0.4\lib\net45\Tuhu.Service.Paint.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Tuhu.Service.Pay, Version=1.2.1.14, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Pay.1.2.1.14\lib\net45\Tuhu.Service.Pay.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.PinTuan, Version=1.0.0.8, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.PinTuan.1.0.0.8\lib\net45\Tuhu.Service.PinTuan.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Product, Version=1.3.10.1, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Product.1.3.10.1\lib\net45\Tuhu.Service.Product.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Purchase, Version=1.2.6.18, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Purchase.1.2.6.18\lib\net45\Tuhu.Service.Purchase.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Push, Version=1.1.4.12, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Push.1.1.4.12\lib\net45\Tuhu.Service.Push.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Shop, Version=1.3.2.9, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Shop.1.3.2.9\lib\net45\Tuhu.Service.Shop.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.SignalLibrary, Version=1.0.0.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.SignalLibrary.1.0.0.8\lib\net45\Tuhu.Service.SignalLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Stock, Version=1.2.3.34, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Stock.1.2.3.34\lib\net45\Tuhu.Service.Stock.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.ThirdParty, Version=1.1.1.6, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.ThirdParty.1.1.1.6\lib\net45\Tuhu.Service.ThirdParty.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Tousu, Version=1.5.7.14, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Tousu.1.5.7.14\lib\net45\Tuhu.Service.Tousu.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.UserAccount, Version=1.2.5.8, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.UserAccount.1.2.5.8\lib\net45\Tuhu.Service.UserAccount.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Utility, Version=1.2.2.6, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Utility.1.2.2.6\lib\net45\Tuhu.Service.Utility.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Vehicle, Version=1.2.5.9, Culture=neutral, PublicKeyToken=adb5f91fad4934fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Vehicle.1.2.5.9\lib\net45\Tuhu.Service.Vehicle.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.Vender, Version=1.0.9.4, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.Vender.1.0.9.4\lib\net45\Tuhu.Service.Vender.dll</HintPath>
+    </Reference>
+    <Reference Include="Tuhu.Service.WMS.Warehouse, Version=1.0.0.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tuhu.Service.WMS.Warehouse.1.0.0.8\lib\net45\Tuhu.Service.WMS.Warehouse.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Activity\ActivityHandler.cs" />
+    <Compile Include="Activity\ActivityManager.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Tuhu.CryptoService\Tuhu.CryptoService.csproj">
+      <Project>{6b253aba-b664-417e-98ad-4a44b27f9d98}</Project>
+      <Name>Tuhu.CryptoService</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tuhu.Provisioning.DataAccess\Tuhu.Provisioning.DataAccess.csproj">
+      <Project>{c3f1b986-5567-4dd7-a05f-c9c39ad4a71d}</Project>
+      <Name>Tuhu.Provisioning.DataAccess</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

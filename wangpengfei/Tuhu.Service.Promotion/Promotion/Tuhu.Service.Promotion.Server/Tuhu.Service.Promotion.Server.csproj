@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <AllowedReferenceRelatedFileExtensions>$(AllowedReferenceRelatedFileExtensions);.xml</AllowedReferenceRelatedFileExtensions>
+    <!--<AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>-->
+    <CopyLocalLockFileAssemblies Condition="'$(Configuration)'=='Release'">true</CopyLocalLockFileAssemblies>
+    <DefineConstants>$(DefineConstants);SERVER</DefineConstants>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>1591</NoWarn>
+    <TargetFramework>$(NETCoreAppVersion)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\Tuhu.Service.Promotion\bin\$(Configuration)\netstandard2.0\Tuhu.Service.Promotion.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Compile Include="..\Tuhu.Service.Promotion\Promotion.generated.cs" />
+
+    <!--<PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="2.2.*" />-->
+    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.*" PrivateAssets="All" />
+    <PackageReference Include="Tuhu.C.Utility" Version="1.1.5" />
+    <PackageReference Include="Tuhu.HealthChecks.Cpu" Version="$(TuhuPackageVersion)" />
+    <PackageReference Include="Tuhu.HealthChecks.Data" Version="$(TuhuPackageVersion)" />
+    <PackageReference Include="Tuhu.HealthChecks.IIS" Version="$(TuhuPackageVersion)" />
+    <PackageReference Include="Tuhu.HealthChecks.Memory" Version="$(TuhuPackageVersion)" />
+    <PackageReference Include="Tuhu.HealthChecks.Web" Version="$(TuhuPackageVersion)" />
+    <PackageReference Include="Tuhu.Nosql" Version="4.5.8.5" />
+    <PackageReference Include="Tuhu.Service.C.Monitor" Version="1.0.2" />
+    <PackageReference Include="Tuhu.Service.ConfigBase" Version="1.0.0.2" />
+    <PackageReference Include="Tuhu.Service.ConfigLog" Version="1.0.2.6" />
+    <PackageReference Include="Tuhu.Service.CreatePromotion" Version="1.0.1.4" />
+    <PackageReference Include="Tuhu.Service.Order" Version="3.1.7.74" />
+    <PackageReference Include="Tuhu.Service.ProductQuery" Version="1.0.0.28" />
+    <PackageReference Include="Tuhu.Service.Push" Version="1.1.6.10" />
+    <PackageReference Include="Tuhu.Service.Server" Version="4.5.28" />
+    <PackageReference Include="Tuhu.Service.Shop" Version="1.3.5.7" />
+    <PackageReference Include="Tuhu.Service.UserAccount" Version="1.3.1.5" />
+    <PackageReference Include="Tuhu.Service.Utility" Version="2.3.2" />
+
+    <ProjectReference Include="..\Tuhu.Service.Promotion.DataAccess\Tuhu.Service.Promotion.DataAccess.csproj" />
+  </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JSONSchema="" /></VisualStudio></ProjectExtensions>
+
+
+</Project>

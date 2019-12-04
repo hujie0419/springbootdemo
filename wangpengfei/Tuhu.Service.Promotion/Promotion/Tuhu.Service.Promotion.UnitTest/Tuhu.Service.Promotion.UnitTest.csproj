@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.Net.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NETCoreAppVersion)</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tuhu.Test" Version="$(TuhuPackageVersion)" />
+    <ProjectReference Include="..\Tuhu.Service.Promotion.Server\Tuhu.Service.Promotion.Server.csproj" />
+  </ItemGroup>
+
+</Project>

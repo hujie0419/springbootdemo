@@ -1,0 +1,59 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.902
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tuhu.Service.Promotion", "Promotion\Tuhu.Service.Promotion\Tuhu.Service.Promotion.csproj", "{75122F17-456C-4633-94CA-D0B64AC5E57E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tuhu.Service.Promotion.DataAccess", "Promotion\Tuhu.Service.Promotion.DataAccess\Tuhu.Service.Promotion.DataAccess.csproj", "{ED6B5898-F8B4-451B-9FD6-8052930F1127}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tuhu.Service.Promotion.IntegrationTest", "Promotion\Tuhu.Service.Promotion.IntegrationTest\Tuhu.Service.Promotion.IntegrationTest.csproj", "{42B35285-4602-4364-BA97-09F3E81E0EEC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tuhu.Service.Promotion.Server", "Promotion\Tuhu.Service.Promotion.Server\Tuhu.Service.Promotion.Server.csproj", "{C488EEB2-8E2B-4A45-8792-305D538C0E52}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tuhu.Service.Promotion.UnitTest", "Promotion\Tuhu.Service.Promotion.UnitTest\Tuhu.Service.Promotion.UnitTest.csproj", "{B8DC7D48-8584-4FDE-A5EA-E5ABB8C31640}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3BDF4690-BBE0-4555-BF5E-F1EA8BC9EAFF}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		Directory.Build.props = Directory.Build.props
+		ServiceDefinition.tt = ServiceDefinition.tt
+		Tuhu.props = Tuhu.props
+		Tuhu.snk = Tuhu.snk
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{75122F17-456C-4633-94CA-D0B64AC5E57E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75122F17-456C-4633-94CA-D0B64AC5E57E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75122F17-456C-4633-94CA-D0B64AC5E57E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75122F17-456C-4633-94CA-D0B64AC5E57E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED6B5898-F8B4-451B-9FD6-8052930F1127}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED6B5898-F8B4-451B-9FD6-8052930F1127}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED6B5898-F8B4-451B-9FD6-8052930F1127}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED6B5898-F8B4-451B-9FD6-8052930F1127}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42B35285-4602-4364-BA97-09F3E81E0EEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42B35285-4602-4364-BA97-09F3E81E0EEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42B35285-4602-4364-BA97-09F3E81E0EEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42B35285-4602-4364-BA97-09F3E81E0EEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C488EEB2-8E2B-4A45-8792-305D538C0E52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C488EEB2-8E2B-4A45-8792-305D538C0E52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C488EEB2-8E2B-4A45-8792-305D538C0E52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C488EEB2-8E2B-4A45-8792-305D538C0E52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8DC7D48-8584-4FDE-A5EA-E5ABB8C31640}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8DC7D48-8584-4FDE-A5EA-E5ABB8C31640}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8DC7D48-8584-4FDE-A5EA-E5ABB8C31640}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8DC7D48-8584-4FDE-A5EA-E5ABB8C31640}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {579195AC-F09B-420A-8DAB-7C718A730CFC}
+	EndGlobalSection
+EndGlobal

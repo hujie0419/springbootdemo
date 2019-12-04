@@ -1,0 +1,308 @@
+﻿<#+
+internal class ServiceDefinition
+{
+    /// <summary>服务名字</summary>
+    public string Name { get; }
+
+    /// <summary>服务说明</summary>
+    public string Summary { get; }
+
+    /// <summary>默认false，客户端是否强制使用WebApi。记录将该服务里的Route2替换为Route、Query2替换为Query</summary>
+    public bool UseWebApi { get; set; }
+
+    public IReadOnlyList<ApiDefinition> Apis { get; }
+
+    public ServiceDefinition(string name, string summary, IReadOnlyList<ApiDefinition> apis)
+        : this(name, summary, false, apis) { }
+
+    public ServiceDefinition(string name, string summary, bool useWebApi, IReadOnlyList<ApiDefinition> apis)
+    {
+        Name = name;
+        Summary = summary;
+        UseWebApi = useWebApi;
+        Apis = apis;
+    }
+
+    public string FormatSummary()
+    {
+        return string.IsNullOrWhiteSpace(Summary) ? "" : "/// <summary>" + Summary.Replace(Environment.NewLine, Environment.NewLine + "/// ") + "</summary>";
+    }
+}
+
+internal class ApiDefinition
+{
+    /// <summary>方法名字</summary>
+    public string Name { get; }
+
+    /// <summary>/// <summary></summary></summary>
+    public string Summary { get; set; }
+
+    /// <summary>/// <returns></returns></summary>
+    public string Returns { get; set; }
+
+    /// <summary>方法是否还可继续使用</summary>
+    public ObsoleteAttribute Obsolete { get; set; }
+
+    /// <summary>Wcf方法别名，不定义则留空</summary>
+    public string ActionName { get; set; }
+
+    /// <summary>WebApi HttpMethod，第一个为默认</summary>
+    public IReadOnlyList<HttpMethod> Methods { get; }
+
+    /// <summary>WebApi路由，第一个为默认。key为路由，value为无Constraint的路由，value为空时值就为key<see href="https://docs.microsoft.com/zh-cn/aspnet/core/fundamentals/routing#route-constraint-reference" /><see href="https://docs.microsoft.com/zh-cn/aspnet/web-api/overview/web-api-routing-and-actions/attribute-routing-in-web-api-2#route-constraints" /></summary>
+    public IReadOnlyDictionary<string, string> Routes { get; set; }
+
+    /// <summary>如果参数是FromRoute，则需要注意参数名和Routes配置的名字是否一致</summary>
+    public IReadOnlyDictionary<string, ParameterInfo> Parameters { get; set; }
+
+    public string ReturnType { get; }
+
+    /// <summary>兼容之前动态生成的WebApi，如果没有人使用或已不再使用请删除！！！</summary>
+    public Tuple<string, string> CompatibleMode { get; set; }
+
+    /// <summary>自动生成客户端</summary>
+    public bool GenerateClient { get; set; }
+
+    public ApiDefinition(string name, string returnType, params HttpMethod[] methods)
+    {
+        Name = name;
+        ReturnType = returnType;
+        Methods = methods;
+        GenerateClient = true;
+    }
+
+    public ApiDefinition(string name, string returnType, HttpMethod method, string route, params string[] routes) : this(name, returnType, method)
+    {
+        Routes = new Dictionary<string, string> { { route, route } };
+        foreach (var r in routes)
+        {
+		    ((Dictionary<string, string>)Routes)[r] = r;
+        }
+    }
+
+	public string FormatReturnType()
+    {
+        return RemoveReadOnly(ReturnType);
+    }
+
+    private string RemoveReadOnly(string type)
+    {
+        return System.Text.RegularExpressions.Regex.Replace(type, @"[^\.< ](I?)ReadOnly(\w+)", matchs => matchs.Groups[1].Value + matchs.Groups[2].Value);
+    }
+
+    /// <param name="type">0：Client；1：WebApi；2：Wcf Service</param>
+    public string FormatParameter(int type, bool addToken = false)
+    {
+        if (Parameters == null || Parameters.Count == 0)
+            return addToken ? "CancellationToken cancellationToken = default(CancellationToken)" : "";
+
+        IReadOnlyDictionary<string, ParameterInfo> parameters;
+        if (addToken)
+        {
+            var data = new Dictionary<string, ParameterInfo>();
+            foreach (var para in Parameters)
+                data[para.Key] = para.Value;
+
+            data["cancellationToken"] = new ParameterInfo("CancellationToken", defaultValue: "default(CancellationToken)");
+
+            parameters = data;
+        }
+        else
+            parameters = Parameters;
+
+        var sb = new StringBuilder();
+
+        foreach (var para in parameters)
+        {
+            if (para.Value.From == ParameterFrom.Form && para.Value.Type == "FormFile")
+            {
+                if (type == 1)
+                    sb.Append("[FromForm(Name = \"").Append(para.Value.FromName ?? para.Key).Append("\")]IFormFile ").Append(para.Key);
+                else if (type == 0)
+                    sb.Append("[NotNull]Tuple<string, Stream> ").Append(para.Key);
+            }
+            else
+            {
+                if (para.Value.From != null)
+                {
+                    if (type == 1)
+                    {
+                        sb.Append("[From");
+                        if (para.Value.From == ParameterFrom.Query2 || para.Value.From == ParameterFrom.Route2)
+                            sb.Append("Uri").Append("(Name = \"").Append(para.Value.FromName ?? para.Key).Append("\")");
+                        else if(para.Value.From == ParameterFrom.Query || para.Value.From == ParameterFrom.Header || para.Value.From == ParameterFrom.Route)
+                        {
+                            sb.Append(para.Value.From);
+                            if (para.Value.Source != ParameterSource.Dictionay && para.Value.Source != ParameterSource.ObjectDictionay)
+                                sb.Append("(Name = \"").Append(para.Value.FromName ?? para.Key).Append("\")");
+                        }
+                        else
+                            sb.Append(para.Value.From);
+                        sb.Append("] ");
+                    }
+                    else if (type == 2)
+                    {
+                        if (para.Value.From == ParameterFrom.Services)
+                            sb.Append("[FromServices]");
+                    }
+                    else if (para.Value.From == ParameterFrom.Services)
+                        continue;
+                }
+
+                if (para.Value.IsParams && !addToken && type == 0)
+                    sb.Append("params ");
+
+                if (type == 2 || type == 3)
+                    sb.Append(RemoveReadOnly(para.Value.Type));
+                else
+                    sb.Append(para.Value.Type);
+
+                sb.Append(" ").Append(para.Key);
+                if (!string.IsNullOrWhiteSpace(para.Value.DefaultValue))
+                    sb.Append(" = ").Append(para.Value.DefaultValue);
+            }
+            sb.Append(", ");
+        }
+
+        if (sb.Length > 1)
+            sb.Length = sb.Length - 2;
+
+        return sb.ToString();
+    }
+
+    public string GetParameterNames(bool addToken = false, string defaultName = "default(CancellationToken)")
+    {
+        if (Parameters == null || Parameters.Count == 0)
+            return addToken ? defaultName : "";
+
+        var names = Parameters.Where(param => param.Value.From == null || param.Value.From != ParameterFrom.Services)
+                .Select(param => param.Key);
+
+        if (addToken)
+            names = names.Union(new [] { defaultName });
+
+        return string.Join(", ", names);
+    }
+
+    public string GetParameterNames(string name)
+    {
+        if (Parameters == null || Parameters.Count == 0)
+            return "\"" + name + "\"";
+
+        var names = Parameters.Where(param => param.Value.From == null || param.Value.From != ParameterFrom.Services)
+                .Select(param => param.Key);
+
+        if (name != null)
+            names = new [] { name }.Union(names);
+
+        return "\"" + string.Join("\", \"", names) + "\"";
+    }
+
+    public string FormatComment(bool addToken = false, bool allowFromServices = false)
+    {
+        var sb = new StringBuilder();
+
+        if (!string.IsNullOrWhiteSpace(Summary))
+        {
+            sb.Append("/// <summary>");
+            sb.Append(Summary.Replace(Environment.NewLine, Environment.NewLine + "/// "));
+            sb.AppendLine("</summary>");
+        }
+
+        var parameters = new Dictionary<string, ParameterInfo>();
+        if (Parameters != null)
+            foreach (var param in Parameters)
+                if (allowFromServices || param.Value.From == null || param.Value.From != ParameterFrom.Services)
+                    parameters[param.Key] = param.Value;
+
+        if (addToken)
+            parameters["cancellationToken"] = new ParameterInfo("CancellationToken");
+
+        if (parameters != null)
+            foreach (var param in parameters)
+            {
+                sb.Append("/// <param name=\"");
+                sb.Append(param.Key);
+                sb.Append("\">");
+                if (param.Value.Description != null)
+                    sb.Append(param.Value.Description.Replace(Environment.NewLine, Environment.NewLine + "/// "));
+                sb.AppendLine("</param>");
+            }
+
+        if (!string.IsNullOrWhiteSpace(Returns))
+        {
+            sb.Append("/// <returns>");
+            sb.Append(Returns.Replace(Environment.NewLine, Environment.NewLine + "/// "));
+            sb.AppendLine("</returns>");
+        }
+
+         if (sb.Length > 1)
+             sb.Length = sb.Length - 2;
+
+        return sb.ToString();
+    }
+}
+
+internal class ParameterInfo
+{
+    public string Type { get; }
+
+    /// <summary>Asp.net只支持FromBody和FromUri，Asp.net core支持FromBody、FromHeader、FromQuery、FromRoute、FromServices。</summary>
+    public ParameterFrom? From { get; }
+
+    /// <summary>作用于Header、Route、Query和Header，指定一个和参数名字不一样的名字。比如参数a是Header头x-request-a的值</summary>
+    public string FromName { get;set; }
+
+    public string DefaultValue { get; }
+
+    public string Description { get; }
+
+    public bool IsParams { get; }
+
+    /// <summary>只支持From为Query</summary>
+    public ParameterSource Source { get; }
+
+    public ParameterInfo(string type, ParameterFrom? from = null, string defaultValue = null, bool isParams = false, string description = null, string fromName = null, ParameterSource source = ParameterSource.None)
+    {
+        Type = type;
+        From = from;
+        FromName = fromName;
+        DefaultValue = defaultValue;
+        IsParams = isParams;
+        Description = description;
+        Source = source;
+    }
+}
+
+internal enum ParameterFrom
+{
+    /// <summary>Asp.net和Asp.net core都支持</summary>
+    Body = 0,
+    /// <summary>Asp.net和Asp.net core都支持，但不建议使用</summary>
+    Header = 1,
+    /// <summary>限Asp.net core</summary>
+    Query = 2,
+    /// <summary>限Asp.net，转换成FromUri</summary>
+    Query2 = 3,
+    /// <summary>限Asp.net core</summary>
+    Route = 4,
+    /// <summary>限Asp.net，转换成FromUri</summary>
+    Route2 = 5,
+    /// <summary>Wcf、Asp.net和Asp.net core都支持，只会在服务端生成此参数</summary>
+    Services = 6,
+    /// <summary>限Asp.net core，接口需要文件上传时才支持</summary>
+    Form = 7
+}
+
+internal enum ParameterSource
+{
+    /// <summary>普通参数</summary>
+    None = 0,
+    /// <summary>集合</summary>
+    Collection = 1,
+    /// <summary>字典</summary>
+    Dictionay = 2,
+    /// <summary>字典</summary>
+    ObjectDictionay = 3,
+}
+#>

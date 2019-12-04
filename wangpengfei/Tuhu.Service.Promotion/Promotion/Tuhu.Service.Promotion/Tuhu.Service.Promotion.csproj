@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\Tuhu.props" />
+
+  <PropertyGroup>
+    <PackageTags>Promotion</PackageTags>
+    <TargetFrameworks>net45;net471;netstandard2.0</TargetFrameworks>
+    <Version>1.1.1.8</Version>
+    <Description>
+      1.1.1.8
+      1.优惠券任务 发券接口增加每人限发次数参数 IsLimitOnce
+      1.1.1.8
+      1.优惠券任务 发券接口增加每人限发次数参数
+      1.1.1.7
+      1.优惠券任务校验增加 预算逻辑 并 新增 筛选条件
+      1.1.1.6
+      1.订单发券前优惠券任务验证 - CheckSendCouponAsync
+      1.1.1.5
+      1.批量作废优惠券 - 根据渠道【仅内部使用】-ObsoleteCouponListByChannel
+      1.1.1.4
+      1.新增批量作废优惠券接口【仅内部使用】-ObsoleteCouponListAsync
+      1.1.1.3
+      1.UpdateCouponReduceCost- 修改优惠券金额
+      2.ObsoleteCoupon - 作废优惠券
+      1.1.1.2
+      1. GetCouponRuleList - 查询优惠券领取规则 【分页】
+      2. DelayCouponEndTime - 延期优惠券时间
+      1.1.1.1 新增  根据订单号匹配有效的优惠券任务 - CheckSendCouponByOrderIdAsync
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+    <Compile Update="Promotion.cs">
+      <DependentUpon>Promotion.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Promotion.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Promotion.tt</DependentUpon>
+    </Compile>
+    <None Update="Promotion.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Promotion.generated.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+</Project>

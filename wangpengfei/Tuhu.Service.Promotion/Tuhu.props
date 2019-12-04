@@ -1,0 +1,31 @@
+﻿<Project>
+
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\..\Tuhu.snk</AssemblyOriginatorKeyFile>
+    <AssemblyTitle>$(MSBuildProjectName) ($(TargetFramework))</AssemblyTitle>
+    <Authors>Tuhu</Authors>
+    <Company>途虎养车</Company>
+    <Copyright>Copyright © 2017</Copyright>
+    <DebugSymbols>true</DebugSymbols>
+    <Deterministic>true</Deterministic>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <NoWarn>1591</NoWarn>
+    <RepositoryUrl>https://gitlab.tuhu.cn/arch_public/Tuhu.Service/tree/master</RepositoryUrl>
+    <PackageProjectUrl>$(RepositoryUrl)/$(MSBuildProjectName)/$(MSBuildProjectName)</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <SignAssembly>true</SignAssembly>
+    <TargetFrameworks>net45;$(NETFrameworkVersion);$(NETStandardVersion)</TargetFrameworks>
+    <Tuhu4 Condition="'$(TargetFramework)' != 'net45'">True</Tuhu4>
+    <DefineConstants Condition="'$(Tuhu4)' != ''">$(DefineConstants);TUHU4</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tuhu.Service" Version="4.1.*" Condition="'$(Tuhu4)' != ''" />
+    <PackageReference Include="Tuhu.Service" Version="2.3.*" Condition="'$(Tuhu4)' == ''" />
+
+    <Reference Include="System.ServiceModel" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,553 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Net.Http" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Net" #>
+<#@ import namespace="System.Net.Http" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ output extension=".generated.cs" #>
+<#@ include file="..\..\ServiceDefinition.tt"#>
+
+<# var projectName = Path.GetFileNameWithoutExtension(Host.TemplateFile).Split('.')[0]; #>
+#if TUHU4
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+#endif
+#if SERVER
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
+#else
+using JetBrains.Annotations;
+using System.ServiceModel;
+#endif
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Tuhu.Service.<#= projectName #>.Request;
+using Tuhu.Service.<#= projectName #>.Response;
+using Tuhu.Models;
+
+
+<#var services = new []{
+    new ServiceDefinition("Promotion", "优惠券", new []{
+         new ApiDefinition("GetCouponByUserID", "List<CouponModel>", HttpMethod.Post, "GetCouponByUserID")
+        {
+	        Summary = "获取用户的优惠券",
+	        Returns = "用户的优惠券",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("GetCouponByUserIDRequest", ParameterFrom.Body, description: "用户id和类型") },
+	        }
+        },
+         new ApiDefinition("GetCouponByID", "GetCouponByIDResponse", HttpMethod.Post, "GetCouponByID")
+        {
+	        Summary = "根据pkid获取用户的优惠券",
+	        Returns = "用户的优惠券",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("GetCouponByIDRequest", ParameterFrom.Body, description: "用户优惠券pkid") },
+	        }
+        },
+         new ApiDefinition("DelayCouponEndTime", "bool", HttpMethod.Post, "DelayCouponEndTime")
+        {
+	        Summary = "延期优惠券时间",
+	        Returns = "是否成功",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("DelayCouponEndTimeRequest", ParameterFrom.Body, description: "") },
+	        }
+        },
+        new ApiDefinition("UpdateCouponReduceCost", "bool", HttpMethod.Post, "UpdateCouponReduceCost")
+        {
+	        Summary = "修改优惠券金额",
+	        Returns = "是否成功",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("UpdateCouponReduceCostRequest", ParameterFrom.Body, description: "") },
+	        }
+        },
+         new ApiDefinition("ObsoleteCoupon", "bool", HttpMethod.Post, "ObsoleteCoupon")
+        {
+	        Summary = "作废优惠券-单张",
+	        Returns = "是否成功",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("ObsoleteCouponRequest", ParameterFrom.Body, description: "") },
+	        }
+        },
+         new ApiDefinition("ObsoleteCouponList", "ObsoleteCouponListReponse", HttpMethod.Post, "ObsoleteCouponList")
+        {
+	        Summary = "批量作废优惠券 - 根据用户id",
+	        Returns = "作废信息",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("ObsoleteCouponListRequest", ParameterFrom.Body, description: "") },
+	        }
+        },
+         new ApiDefinition("ObsoleteCouponListByChannel", "ObsoleteCouponListReponse", HttpMethod.Post, "ObsoleteCouponListByChannel")
+        {
+	        Summary = "批量作废优惠券 - 根据渠道",
+	        Returns = "作废信息",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("ObsoleteCouponsByChannelRequest", ParameterFrom.Body, description: "") },
+	        }
+        },
+    }),
+     new ServiceDefinition("CouponUseRule", "使用规则", new []{
+         new ApiDefinition("GetRuleByID", "CouponModel", HttpMethod.Post, "GetRuleByID")
+        {
+	        Summary = "通过使用规则ID查询使用规则",
+	        Returns = "使用规则",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "ID", new ParameterInfo("int", ParameterFrom.Body, description: "") },
+	        }
+        },
+    }),
+    new ServiceDefinition("PromotionTask", "优惠券任务", new []{
+         new ApiDefinition("GetPromotionTaskList", "List<PromotionTaskModel>", HttpMethod.Post, "GetPromotionTaskList")
+        {
+	        Summary = "获取所有有效的优惠券任务",
+	        Returns = "优惠券任务列表",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("GetPromotionTaskListRequest", ParameterFrom.Body, description: "有效的优惠券任务筛选项") },
+	        }
+        },
+         new ApiDefinition("GetPromotionTaskListByOrderId", "GetPromotionTaskListByOrderIdResponse", HttpMethod.Post, "GetPromotionTaskListByOrderId")
+        {
+	        Summary = "根据订单号匹配有效的优惠券任务",
+	        Returns = "优惠券任务列表",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("GetPromotionTaskListByOrderIdRequest", ParameterFrom.Body, description: "订单号和优惠券任务列表") },
+	        }
+        },
+           new ApiDefinition("CheckSendCouponByOrderId", "GetPromotionTaskListByOrderIdResponse", HttpMethod.Post, "CheckSendCouponByOrderId")
+        {
+	        Summary = "根据订单号匹配有效的优惠券任务",
+	        Returns = "优惠券任务列表",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("CheckSendCouponByOrderIdRequest", ParameterFrom.Body, description: "") },
+	        }
+        },
+         new ApiDefinition("CheckSendCoupon", "GetPromotionTaskListByOrderIdResponse", HttpMethod.Post, "CheckSendCoupon")
+        {
+	        Summary = "根据订单号匹配有效的优惠券任务",
+	        Returns = "优惠券任务列表",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("CheckSendCouponRequest", ParameterFrom.Body, description: "") },
+	        }
+        },
+         new ApiDefinition("SendCoupon", "SendCouponResponse", HttpMethod.Post, "SendCoupon")
+        {
+	        Summary = "发放优惠券",
+	        Returns = "优惠券id",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("SendCouponRequest", ParameterFrom.Body, description: "发放优惠券") },
+	        }
+        },
+          new ApiDefinition("GetCouponRuleListByTaskID", "List<PromotionTaskPromotionListModel>", HttpMethod.Post, "GetCouponRuleByTaskID")
+        {
+	        Summary = "根据任务id获取发券规则",
+	        Returns = "发券规则",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("GetCouponRuleByTaskIDRequest", ParameterFrom.Body, description: "发放优惠券") },
+	        }
+        },
+          new ApiDefinition("ClosePromotionTaskByPKID", "bool", HttpMethod.Post, "ClosePromotionTaskByPkid")
+        {
+	        Summary = "根据任务id 关闭任务",
+	        Returns = "是否成功",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("ClosePromotionTaskByPkidRequest", ParameterFrom.Body, description: "任务id") },
+	        }
+        },
+    }),
+    new ServiceDefinition("CouponGetRule", "优惠券领取规则", new []{
+            new ApiDefinition("CreateCouponGetRuleAudit", "int", HttpMethod.Post, "CreateCouponGetRuleAudit")
+        {
+            Summary = "创建优惠券审核记录",
+            Returns = "优惠券审核的pkid",
+            Parameters = new Dictionary<string, ParameterInfo>
+            {
+				{ "request", new ParameterInfo("CreateCouponGetRuleAuditRequest", ParameterFrom.Body, description: "优惠券审核内容") },
+            }
+        },
+            new ApiDefinition("GetCouponGetRuleList", "IEnumerable<CouponGetRuleModel>", HttpMethod.Post, "GetCouponGetRuleList")
+        {
+            Summary = "根据多个GetRuleId获取优惠券领取规则",
+            Returns = "优惠券规则",
+            Parameters = new Dictionary<string, ParameterInfo>
+            {
+				{ "GetRuleGUIDs", new ParameterInfo("IEnumerable<Guid>", ParameterFrom.Body, description: "优惠券领取规则Guid") },
+            }
+        },
+            new ApiDefinition("UpdateCouponGetRuleAudit", "bool", HttpMethod.Post, "UpdateCouponGetRuleAudit")
+        {
+	        Summary = "更新优惠券审核状态",
+	        Returns = "更新结果",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("UpdateCouponGetRuleAuditRequest", ParameterFrom.Body, description: "优惠券审核内容") },
+	        }
+        },
+            new ApiDefinition("GetCouponGetRuleAuditor", "GetCouponGetRuleAuditorResponse", HttpMethod.Get, "GetCouponGetRuleAuditor")
+        {
+	        Summary = "获取优惠券领取规则审核人",
+	        Returns = "审核人",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "Step", new ParameterInfo("int", ParameterFrom.Query, description: "审核步骤") },
+                { "WorkOrderId", new ParameterInfo("int", ParameterFrom.Query, description: "工单号") },
+	        }
+        },
+            new ApiDefinition("GetCouponGetRuleAuditList", "PagedModel<GetCouponRuleAuditModel>", HttpMethod.Post, "GetCouponGetRuleAuditList")
+        {
+            Summary = "获取获优惠券领取规则审核记录 - 分页",
+            Returns = "优惠券领取规则审核记录",
+            Parameters = new Dictionary<string, ParameterInfo>
+            {
+				{ "request", new ParameterInfo("GetCouponGetRuleAuditListRequest", ParameterFrom.Body, description: "获取获优惠券领取规则审核记录 - 分页") },
+            }
+        },
+            new ApiDefinition("GetPromotionBusinessLineConfigList", "List<PromotionBusinessLineConfigResponse>", HttpMethod.Get, "GetPromotionBusinessLineConfigList")
+        {
+            Summary = "获取所有业务线 [不包括已删除]",
+            Returns = "业务线",
+            Parameters = new Dictionary<string, ParameterInfo>
+            {
+            }
+        },
+        new ApiDefinition("GetCouponRuleList", " PagedModel<GetCouponRuleListResponse>", HttpMethod.Post, "GetCouponRuleList")
+        {
+	        Summary = "查询优惠券领取规则 - 分页",
+	        Returns = "领取规则",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("GetCouponRuleListRequest", ParameterFrom.Body, description: "") },
+	        }
+        },
+    }),
+    new ServiceDefinition("Activity", "活动", new []{
+
+     new ApiDefinition("GetActivityList","PagedModel<GetActivityResponse>", HttpMethod.Post, "GetActivityList")
+        {
+	        Summary = "获取所有活动列表",
+	        Returns = "活动信息列表",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+                { "request", new ParameterInfo("GetActivityListRequest", ParameterFrom.Query, description: "") },
+	        }
+        },
+        new ApiDefinition("GetActivityInfo","GetActivityResponse", HttpMethod.Post, "GetActivityInfo")
+        {
+	        Summary = "获取活动信息",
+	        Returns = "活动信息",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		         { "ActivityID", new ParameterInfo("int", ParameterFrom.Body, description: "活动ID") },
+	        }
+        },
+         new ApiDefinition("GetRegionList","List<GetRegionListResponse>", HttpMethod.Post, "GetRegionList")
+        {
+	        Summary = "获取区域信息",
+	        Returns = "区域信息",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "IsALL", new ParameterInfo("bool", ParameterFrom.Body, description: "") },
+	        }
+        },
+        new ApiDefinition("GetUserActivityApplyList","PagedModel<GetUserActivityApplyResponse>", HttpMethod.Post, "GetUserActivityApplyList")
+        {
+	        Summary = "获取活动申请信息",
+	        Returns = "活动申请信息",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("GetUserActivityApplyListRequest", ParameterFrom.Query, description: "") },
+	        }
+        },
+        new ApiDefinition("GetUserList","PagedModel<GetUserListResponse>", HttpMethod.Post, "GetUserList")
+        {
+	        Summary = "获取活动报名人员信息列表",
+	        Returns = "人员列表",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("GetUserListRequest", ParameterFrom.Query, description: "人员model") },
+	        }
+        },
+        new ApiDefinition("BatchPassUserActivityApplyByPKIDs","bool", HttpMethod.Post, "BatchPassUserActivityApplyByPKIDs")
+        {
+	        Summary = "批量通过活动申请信息",
+	        Returns = "成功/失败",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "PKIDs", new ParameterInfo("List<int>", ParameterFrom.Query, description: "") },
+	        }
+        },
+         new ApiDefinition("DeleteUserActivityApplyByPKID","bool", HttpMethod.Post, "DeleteUserActivityApplyByPKID")
+        {
+	        Summary = "批量通过活动申请信息",
+	        Returns = "成功/失败",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "PKID", new ParameterInfo("int", ParameterFrom.Query, description: "") },
+	        }
+        },
+        new ApiDefinition("CreateUserActivityApply","bool", HttpMethod.Post, "CreateUserActivityApply")
+        {
+	        Summary = "新增活动申请信息",
+	        Returns = "成功/失败",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("CreateUserActivityApplyRequest", ParameterFrom.Query, description: "") },
+	        }
+        },
+        new ApiDefinition("GetAutoPassUserActivityApplyPKIDs","List<int>", HttpMethod.Post, "GetAutoPassUserActivityApplyPKIDs")
+        {
+	        Summary = "取得自动通过的活动数据",
+	        Returns = "成功/失败",
+	        Parameters = new Dictionary<string, ParameterInfo>
+	        {
+		        { "request", new ParameterInfo("GetAutoPassUserActivityApplyPKIDsRequest", ParameterFrom.Query, description: "") },
+	        }
+        },
+    })
+};#>
+//不要在<#= projectName #>.generated.cs文件里加任何代码，此文件内容为自动生成。需要加接口请在<#= projectName #>.tt或<#= projectName #>.cs中添加
+namespace Tuhu.Service.<#= projectName #>
+{
+#pragma warning disable 618
+#if SERVER
+    <# foreach (var service in services)
+    { #>
+    <#= service.FormatSummary() #>
+    [ApiController, Route("<#= projectName #>/<#= service.Name #>")]
+    public abstract partial class <#= service.Name #>Service : ControllerBase
+    {
+    <# foreach (var method in service.Apis)
+       { #>
+       <#= method.FormatComment(false, true) #>
+       <# if (string.IsNullOrWhiteSpace(string.Join("\", \"", method.Methods)))
+              throw new NotSupportedException(method.Name + "必须配置Methods"); #>
+        [AcceptVerbs("<#= string.Join("\", \"", method.Methods) #>"), Route("<#= string.Join("\"), Route(\"", method.Routes == null ? new string[0] : method.Routes.Keys) #>")]
+        [TuhuServiceActionFilter("/<#= projectName #>/<#= service.Name #>/<#= method.ActionName ?? method.Name #>", <#= method.GetParameterNames(method.Name + "Async") #>)]
+        <# if (method.Obsolete != null)
+        { #>
+            [Obsolete("<#= method.Obsolete.Message #>", <#= method.Obsolete.IsError ? "true" : "false" #>)]
+        <# } #>
+        public abstract ValueTask<OperationResult<<#= method.ReturnType #>>> <#= method.Name #>Async(<#= method.FormatParameter(1) #>);
+	<# } #>}
+<# } #>
+#else
+#pragma warning disable CS0472
+<# foreach (var service in services)
+    { #>
+    <#= service.FormatSummary() #>
+#if !TUHU4
+    [ServiceContract(Namespace = TuhuSerivce.TuhuSerivceNamespace)]
+#endif
+    public partial interface I<#= service.Name #>Client : ITuhuServiceClient
+    {
+    <# foreach (var method in service.Apis)
+       { #>
+       <#= method.FormatComment(true) #>
+        <# if (method.Obsolete != null)
+        { #>
+           [Obsolete("<#= method.Obsolete.Message #>", <#= method.Obsolete.IsError ? "true" : "false" #>)]
+           <# } #>
+        Task<OperationResult<<#= method.ReturnType #>>> <#= method.Name #>Async(<#= method.FormatParameter(0, true) #>);
+	<# } #>}
+
+#if TUHU4
+    [Obsolete("此为兼容4.0以下版本升级，不要直接使用，请使用依赖注入I<#= service.Name #>Client")]
+    public partial class <#= service.Name #>Client : TuhuWebApiClient<I<#= service.Name #>Client>, I<#= service.Name #>Client
+    {
+        public <#= service.Name #>Client() : base() { }
+        public <#= service.Name #>Client(IServiceProvider provider) : base(provider) { }
+#else
+	public partial class <#= service.Name #>Client : TuhuServiceClient<I<#= service.Name #>Client>, I<#= service.Name #>Client
+    {
+#endif
+    <# foreach (var method in service.Apis)
+       { #>
+        /// <inherit />
+        public async Task<OperationResult<<#= method.ReturnType #>>> <#= method.Name #>Async(<#= method.FormatParameter(0, true) #>)
+        {
+            using (var _request_ = new HttpRequestMessage())
+            {
+            <# if (method.Methods.Count > 0 && method.Routes != null && method.Routes.Count > 0)
+            {
+            if (method.GenerateClient)
+            { #>
+                _request_.Method = new HttpMethod("<#= method.Methods[0] #>");
+                <# bool fromBody = false, fromForm = false, fromQuery = false;
+                   string routeValue = string.IsNullOrWhiteSpace(method.Routes.First().Value) ? method.Routes.First().Key : method.Routes.First().Value;
+                   if (method.Parameters != null)
+                   {
+                       var index = 0;
+                       foreach (var kv in method.Parameters)
+                       {
+                           if (kv.Value.From == ParameterFrom.Header)
+                           { #>
+                               if (<#= kv.Key #> != null)
+                               {
+                                   if (!(<#= kv.Key #> is string) && <#= kv.Key #> is System.Collections.IEnumerable _enumerable)
+                                   {
+                                        foreach (object _item in _enumerable)
+                                          if (_item != null)
+                                          _request_.Headers.TryAddWithoutValidation("<#= kv.Value.FromName ?? kv.Key #>", WebUtility.UrlEncode(_item.ToString()));
+                                   }
+                                   else
+                                      _request_.Headers.TryAddWithoutValidation("<#= kv.Value.FromName ?? kv.Key #>", WebUtility.UrlEncode(<#= kv.Key #>.ToString()));
+                              }
+                           <# }
+                           else if (kv.Value.From == ParameterFrom.Body)
+                           {
+                               if (fromBody)
+                                   throw new Exception(method.Name + "只能有一个FromBody参数");
+                               else if (fromForm)
+                                   throw new Exception(method.Name + "的FromBody和FromForm不能同时指定");
+                               else
+                               {
+                                   fromBody = true;#>
+                                   _request_.Content = SerializeBody(<#= kv.Key #>);
+                              <# }
+                           }
+                           else if (kv.Value.From == ParameterFrom.Form)
+                           {
+                               if (fromBody)
+                                   throw new Exception(method.Name + "的FromForm和FromBody不能同时指定");
+                               else
+                               {
+                                   if (!fromForm)
+                                   { #>
+                                   var _form_ = new MultipartFormDataContent("form--" + Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"));
+                                   _request_.Content = _form_;
+                                   <# }
+                                   fromForm = true; #>
+                                   if (<#= kv.Key #> != null)
+                                <# if (kv.Value.Type == "FormFile")
+                                   { #>
+                                       _form_.Add(new StreamContent(<#= kv.Key #>.Item2), "<#= kv.Value.FromName ?? kv.Key #>", <#= kv.Key #>.Item1);
+                                   <# }
+                                   else
+                                   { #>
+                                       _form_.Add(new StringContent(<#= kv.Key #>.ToString()), "<#= kv.Value.FromName ?? kv.Key #>");
+                                   <# } #>
+                              <# }
+                           }
+                           else if (kv.Value.From == ParameterFrom.Query || kv.Value.From == ParameterFrom.Query2)
+                           {
+                               if (!fromQuery)
+                               { #>
+                                var _query_ = new NameValueCollection();
+                               <#
+                                   fromQuery = true;
+                               }
+                               if (kv.Value.Source == ParameterSource.Collection)
+                                { #>
+                                    if (<#= kv.Key #> != null)
+                                    foreach (var _kv in <#= kv.Key #>)
+                                        _query_.Add("<#= kv.Value.FromName ?? kv.Key #>", _kv == null ? "" : _kv.ToString());
+                                <# }
+                                else if (kv.Value.Source == ParameterSource.Dictionay)
+                               { #>
+                                    if (<#= kv.Key #> != null)
+                                    foreach (var _kv in <#= kv.Key #>)
+                                        _query_.Add(_kv.Key, _kv.Value == null ? "" : _kv.Value.ToString());
+                                <# }
+                                else if (kv.Value.Source == ParameterSource.ObjectDictionay)
+                               { #>
+                                    if (<#= kv.Key #> != null)
+                                    foreach (var _kv in ObjectExtensions.ToDictionary(<#= kv.Key #>))
+                                        if(_kv.Value != null)
+                                        {
+                                            if (!(_kv.Value is string) && _kv.Value is System.Collections.IEnumerable _enumerable)
+                                                foreach (object _item in _enumerable)
+                                                 _query_.Add(_kv.Key, _item == null ? "" : _item.ToString());
+                                            else
+                                                _query_.Add(_kv.Key, _kv.Value == null ? "" : _kv.Value.ToString());
+                                        }
+                                <# }
+                                else
+                                { #>
+                                _query_.Add("<#= kv.Value.FromName ?? kv.Key #>", <#= kv.Key #> == null ? "" : <#= kv.Key #>.ToString());
+                                <# }
+                            }
+                            else if (kv.Value.From == ParameterFrom.Route || kv.Value.From == ParameterFrom.Route2 || (kv.Value.From == null && routeValue.Contains("{" + kv.Key + "}")))
+                            {
+                                routeValue = routeValue.Replace("{" + (kv.Value.FromName ?? kv.Key) + "}", "{_param" + index + "}");
+                                var match = Regex.Match(kv.Value.Type, @"^(System\.)?DateTime(Offset)?(\?)?$", RegexOptions.IgnoreCase);
+                                if (match.Success && string.IsNullOrEmpty(match.Groups[3].Value))
+                                { #>
+                               var _param<#= index++ #> = WebUtility.UrlEncode(<#= kv.Key #>.ToString("o"));
+                               <# }
+                                else if (match.Success && match.Groups[3].Value == "?")
+                                { #>
+                               var _param<#= index++ #> = <#= kv.Key #> == null ? null : WebUtility.UrlEncode(<#= kv.Key #>.Value.ToString("o"));
+                               <#
+                                }
+                                else
+                                { #>
+                               var _param<#= index++ #> = <#= kv.Key #> == null ? null : WebUtility.UrlEncode(<#= kv.Key #>.ToString());
+                             <# }
+                            }
+                            else if (kv.Value.From != ParameterFrom.Services)
+                                throw new NotSupportedException("请显示指定参数" + kv.Key + "的传参方式");
+                        }
+                    } #>
+                    _request_.RequestUri = GetUri($"/<#= projectName #>/<#= service.Name #><#= string.IsNullOrWhiteSpace(routeValue) ? "" : "/" + routeValue #>"<#= fromQuery ? ", _query_" : "" #>);
+                 <# }
+                    else
+                    { #>
+                    Set<#= method.Name #>Request(_request_);
+                    <# }
+                }
+                 else
+                    throw new NotSupportedException(method.Name + "必须配置Methods"); #>
+                return await SendAsync<<#= method.ReturnType #>>(_request_, cancellationToken).ConfigureAwait(false);
+            }
+        }
+	<# if (!method.GenerateClient)
+    { #>
+    partial void Set<#= method.Name #>Request(HttpRequestMessage request);
+	<# }
+    } #>
+    }
+<# } #>
+#pragma warning restore CS0472
+#if TUHU4
+    public static class WcfBuilderExtensions
+    {
+        public static IWcfBuilder Add<#= Path.GetFileNameWithoutExtension(Host.TemplateFile).Replace(".", "_") #>(this IWcfBuilder builder)
+        {
+<# foreach (var service in services)
+{ #>
+            builder.Services.TryAddScoped<I<#= service.Name #>Client, <#= service.Name #>Client>();
+<# } #>
+
+            return builder;
+        }
+    }
+#endif
+#endif
+#pragma warning restore 618
+}

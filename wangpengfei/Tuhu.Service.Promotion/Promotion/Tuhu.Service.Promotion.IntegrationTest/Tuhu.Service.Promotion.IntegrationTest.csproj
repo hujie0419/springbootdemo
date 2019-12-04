@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.Net.Sdk">
+
+  <PropertyGroup>
+    <Tuhu2Version Condition="'$(UnitTestVersion)' == ''">net461</Tuhu2Version>
+    <UnitTestVersion Condition="'$(UnitTestVersion)' == ''">$(Tuhu2Version);$(NETFrameworkVersion);$(NETStandardVersion)1</UnitTestVersion>
+    <TargetFrameworks>$(UnitTestVersion)</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="CouponGetRuleTest.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tuhu.Test" Version="$(TuhuPackageVersion)" />
+    <ProjectReference Include="..\Tuhu.Service.Promotion\Tuhu.Service.Promotion.csproj" />
+  </ItemGroup>
+
+
+</Project>

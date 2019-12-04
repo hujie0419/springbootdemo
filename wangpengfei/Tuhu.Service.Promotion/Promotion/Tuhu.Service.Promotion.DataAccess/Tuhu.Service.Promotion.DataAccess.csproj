@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(NETCoreAppVersion)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tuhu.Data.SqlClient" Version="4.5.*" />
+
+    <ProjectReference Include="..\Tuhu.Service.Promotion\Tuhu.Service.Promotion.csproj" />
+  </ItemGroup>
+
+
+</Project>

@@ -1,0 +1,27 @@
+server:
+  port: 8090
+
+spring:
+  datasource:
+    username: user_cl_newcomere
+    password: Tuhumima123%]
+    url: jdbc:mysql://172.16.28.82:3306/tuhu_cl_newcomere?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+mybatis:
+  mapper-locations: classpath:mapping/*Mapper.xml
+  config-location: classpath:mybatis-config.xml
+  type-aliases-package: com.tuhu.springbootmybatis.entity
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #mybatis生成sql打印
+
+
+logging:
+  level:
+    com:
+      tuhu:
+        springbootmybatis:
+          mapper : debug #生成sql打印
+  file:
+    path: D:/ #path的级别比name的级别要低 只有path才能生效  有name时path不生效
+    name: springbootmybatis.log
+  config: classpath:logging-config.xml
